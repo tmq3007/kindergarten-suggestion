@@ -22,7 +22,6 @@ export default function Page() {
             <button onClick={() => dispatch(reset())}>reset</button>
             <br/>
             <button onClick={() => router.back()}>back</button>
-            <p>test</p>
         </>
     );
 };

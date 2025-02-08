@@ -2,11 +2,18 @@ import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import counterReducer from '@/redux/features/counterSlice'
 import storage from "@/redux/ssr-safe-storage";
 import {persistReducer} from 'redux-persist';
-import {FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER} from "redux-persist/es/constants";
+import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/es/constants";
+import {pokemonApi} from "@/redux/services/pokemon";
+import apiMiddleware from "@/redux/middleware/apiMiddleware";
+import apiMiddlewares from "@/redux/middleware/apiMiddleware";
+import {postApi} from "@/redux/services/post";
 
 
 // Tạo rootReducer bao gồm reducers quản lý API và reducers quản lý state
 const rootReducer = combineReducers({
+    // Reducer quản lý api
+    [pokemonApi.reducerPath]: pokemonApi.reducer,
+    [postApi.reducerPath]: postApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
 })
@@ -16,7 +23,7 @@ export const persistConfig = {
     key: 'kss',
     storage,
     // Những reducer được đăng ký trong whitelist sẽ được lưu trữ trong local storage
-    blacklist: ['counter']
+    whitelist: ['counter']
 }
 
 // Cấu hình persist cho rootReducer để nó có thể lưu trữ dài hạn
@@ -31,7 +38,7 @@ export const makeStore = () => {
                 serializableCheck: {
                     ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
                 },
-            }),
+            }).concat(...apiMiddlewares) // middleware giúp cập nhật trạng thái khi dữ liệu trả
     });
 };
 

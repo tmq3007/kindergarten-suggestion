@@ -6,6 +6,7 @@ import {Provider} from "react-redux";
 import {Persistor} from "redux-persist/es/types";
 import {persistStore} from "redux-persist";
 import {PersistGate} from "redux-persist/integration/react";
+import {setupListeners} from "@reduxjs/toolkit/query";
 
 export interface props {
     children: React.ReactNode;
@@ -17,6 +18,8 @@ export default function StoreProvider({children}: props) {
     if (!storeRef.current) {
         // Khởi tạo store khi render lần đầu
         storeRef.current = makeStore();
+        // setupListeners để tự động xử lý trạng thái của query (loading, success, error)
+        setupListeners(storeRef.current.dispatch);
         // Khởi long Redux
         persistorRef.current = persistStore(storeRef.current);
     }
