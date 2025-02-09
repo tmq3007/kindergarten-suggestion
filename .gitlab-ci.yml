@@ -1,0 +1,74 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  # Lưu URL GitLab Container Registry của dự ánán
+  REGISTRY: registry.gitlab.com/pjb_01_g1/kindergarten-suggestion-system
+  # Tên Docker image của frontend
+  FRONTEND_IMAGE: $REGISTRY/kss_front
+
+# Sử dụng docker làm image mặc định cho runner
+default:
+  image: docker:20.10.16
+
+before_script:
+  # Đăng nhập vào GitLab Container Registry
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+# Build stage
+build-job:
+  stage: build
+  script:
+    # Build Docker image bằng docker-compose
+    - docker-compose build
+    # Push image lên GCR
+    - docker push $FRONTEND_IMAGE:latest
+  artifacts:
+    paths:
+      # Lưu lại .next/ để sử dụng trong bước tiếp theo
+      - front/.next/
+
+# Test stage
+test-next:
+  stage: test
+  dependencies:
+    - build-job
+  script:
+    # Khởi chạy container
+    - docker-compose up -d
+    # Chạy npm test trong container front (được định nghĩa trong docker-compose)
+    - docker-compose exec front npm test
+
+# Deploy stage
+deploy-ec2:
+  stage: deploy
+  image: alpine
+  dependencies:
+    - build-job
+  before_script:
+    # Cài đặt ssh trên Alpine
+    - apk add --no-cache openssh
+  script:
+    - echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
+
+    # Dùng rsync để đồng bộ code từ GitLab Runner lên EC2
+    - rsync -avz -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ec2-user@$EC2_HOST:/var/www/kindergarten-suggestion-system/ --exclude node_modules --exclude .git
+
+    # SSH vào EC2 để pull Docker image mới nhất và khởi động lại container
+    # Tải về phiên bản mới nhất của image
+    # Dừng & xóa các container đang chạy
+    # Chạy lại container với image mới nhất
+    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "
+      docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
+      cd /var/www/kindergarten-suggestion-system &&
+      docker-compose pull &&
+      docker-compose down &&
+      docker-compose up -d
+      "
+  only:
+    - main
+  environment:
+    name: production
+    url: http://$EC2_HOST
