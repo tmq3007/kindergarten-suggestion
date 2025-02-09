@@ -1,11 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Post } from "@/redux/services/types";
+import {baseQuery, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 
 export const postApi = createApi({
     reducerPath: 'postApi',
-    baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:5000/',
-    }),
+    baseQuery: baseQueryWithReauth,
     tagTypes: ['Post'],
     endpoints: (build) => ({
         getPost: build.query<Post, number>({
