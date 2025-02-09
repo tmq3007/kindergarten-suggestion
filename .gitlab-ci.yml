@@ -29,8 +29,10 @@ before_script:
 build-job:
   stage: build
   script:
+    # Kiểm tra xem Dockerfile có tồn tại hay không
+    - ls -la ./front/
     # Build Docker image với đúng thư mục chứa `Dockerfile`
-    - docker build -t $FRONTEND_IMAGE:latest -f front/Dockerfile ./front
+    - docker build -t $FRONTEND_IMAGE:latest -f ./front/Dockerfile ./front
     # Push image lên GitLab Container Registry
     - docker push $FRONTEND_IMAGE:latest
   artifacts:
