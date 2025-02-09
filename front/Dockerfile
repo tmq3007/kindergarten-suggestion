@@ -50,7 +50,7 @@ RUN if [ -d "/app/public" ]; then echo "Public folder exists, copying..."; cp -r
 RUN echo "Final files in /app:" && ls -la /app
 
 # Mở cổng 3000 cho Next.js
-EXPOSE 3333
+EXPOSE 3000
 
 # Chạy ứng dụng
 CMD ["npm", "start"]
