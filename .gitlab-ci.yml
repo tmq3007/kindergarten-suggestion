@@ -25,19 +25,19 @@ before_script:
   # Đăng nhập vào GitLab Container Registry bằng `--password-stdin` để bảo mật
   - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
 
-# Build stage
+# Build stage - Xây dựng Docker Image và đẩy lên GitLab Container Registry
 build-job:
   stage: build
   script:
-    # Build Docker image bằng docker-compose
-    - docker-compose build
+    # Build Docker image với đúng thư mục chứa `Dockerfile`
+    - docker build -t $FRONTEND_IMAGE:latest -f front/Dockerfile ./front
     # Push image lên GitLab Container Registry
     - docker push $FRONTEND_IMAGE:latest
   artifacts:
     paths:
       - front/.next/  # Lưu lại .next/ để sử dụng trong bước tiếp theo
 
-# Test stage
+# Test stage - Kiểm thử ứng dụng
 test-next:
   stage: test
   dependencies:
@@ -48,7 +48,7 @@ test-next:
     # Chạy npm test trong container front (được định nghĩa trong docker-compose)
     - docker-compose exec front npm test
 
-# Deploy stage
+# Deploy stage - Triển khai ứng dụng lên EC2
 deploy-ec2:
   stage: deploy
   image: alpine
@@ -80,4 +80,3 @@ deploy-ec2:
   environment:
     name: production
     url: http://$EC2_HOST
-
