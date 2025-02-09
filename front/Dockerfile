@@ -1,6 +1,4 @@
-# ============================
 # Giai đoạn 1 - Build Next.js
-# ============================
 FROM node:18-alpine AS builder
 
 # Tạo thư mục làm việc /app
@@ -13,8 +11,8 @@ RUN echo "Current WORKDIR:" && pwd
 RUN echo "Checking available files before COPY:" && ls -la /
 
 # Sao chép package.json và package-lock.json trước để tối ưu hóa cache
-COPY front/package.json ./package.json
-COPY front/package-lock.json ./package-lock.json
+COPY package.json ./package.json
+COPY package-lock.json ./package-lock.json
 
 # Kiểm tra lại file đã copy
 RUN echo "Files in /app after copying package.json:" && ls -la /app
@@ -23,7 +21,7 @@ RUN echo "Files in /app after copying package.json:" && ls -la /app
 RUN npm install --frozen-lockfile
 
 # Sao chép toàn bộ source code từ thư mục front vào container
-COPY front/ ./
+COPY . .
 
 # Kiểm tra danh sách file sau khi copy
 RUN echo "Files in /app before build:" && ls -la /app
@@ -34,9 +32,7 @@ RUN npm run build
 # Kiểm tra sau khi build
 RUN echo "Files in /app after build:" && ls -la /app && ls -la /app/.next
 
-# ============================
 # Giai đoạn 2 - Production
-# ============================
 FROM node:18-alpine
 
 # Tạo thư mục làm việc
