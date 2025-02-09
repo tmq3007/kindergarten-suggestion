@@ -50,8 +50,11 @@ deploy-ec2:
   script:
     - echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
 
-    # Xóa thư mục cũ trên EC2 trước khi rsync để tránh lỗi đồng bộ sót file
-    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "rm -rf /var/www/kindergarten-suggestion-system"
+    # Cấp quyền cho ec2-user trên EC2
+    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "sudo mkdir -p /var/www/kindergarten-suggestion-system && sudo chown -R ec2-user:ec2-user /var/www/kindergarten-suggestion-system"
+
+    # Xóa thư mục cũ để tránh lỗi đồng bộ
+    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "rm -rf /var/www/kindergarten-suggestion-system/*"
 
     # Dùng rsync để đồng bộ code từ GitLab Runner lên EC2
     - rsync -avz -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ec2-user@$EC2_HOST:/var/www/kindergarten-suggestion-system/ --exclude node_modules --exclude .git
