@@ -37,7 +37,7 @@ build-job:
     - docker push $FRONTEND_IMAGE:latest
   artifacts:
     paths:
-      - front/.next/  # Lưu lại .next/ để sử dụng trong bước tiếp theo
+      - ./front/.next/  # Lưu lại .next/ để sử dụng trong bước tiếp theo
 
 # Test stage - Kiểm thử ứng dụng
 test-next:
