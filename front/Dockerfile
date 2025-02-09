@@ -1,53 +1,27 @@
-# ============================
-# Giai đoạn 1 - Build Next.js
-# ============================
+# Sử dụng image chính thức của Node.js
 FROM node:18-alpine AS builder
 
-# Tạo thư mục làm việc /app trong container
+# Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Kiểm tra thư mục đang làm việc
-RUN echo "Current WORKDIR:" && pwd
+# Copy file package.json và package-lock.json vào thư mục làm việc
+COPY front/package.json front/package-lock.json ./
 
-# Sao chép package.json và package-lock.json trước để tối ưu hóa cache
-COPY ./front/package.json ./front/package-lock.json ./
-
-# Cài đặt dependencies
+# Cài đặt các phụ thuộc của dự án
 RUN npm install --frozen-lockfile
 
-# Sao chép toàn bộ source code từ thư mục front vào container
-COPY ./front ./
+# Copy toàn bộ mã nguồn của dự án vào thư mục làm việc
+COPY front ./
 
-# Xác nhận đã copy xong
-RUN echo "Files in /app before build:" && ls -la /app
-
-# Build Next.js
+# Xây dựng ứng dụng
 RUN npm run build
 
-# Kiểm tra sau khi build
-RUN echo "Files in /app after build:" && ls -la /app && ls -la /app/.next
-
-# ============================
-# Giai đoạn 2 - Production
-# ============================
+# Sử dụng một image khác để triển khai ứng dụng (nếu cần)
 FROM node:18-alpine
-
-# Tạo thư mục làm việc
 WORKDIR /app
 
-# Copy files từ build stage
-COPY --from=builder /app/.next .next
-COPY --from=builder /app/package.json package.json
-COPY --from=builder /app/node_modules node_modules
-
-# Kiểm tra nếu thư mục /app/public có tồn tại trước khi copy
-RUN if [ -d "/app/public" ]; then echo "Public folder exists, copying..."; COPY --from=builder /app/public public; else echo "No public folder found, skipping copy."; fi
-
-# Kiểm tra thư mục cuối cùng trước khi chạy
-RUN echo "Final files in /app:" && ls -la /app
-
-# Mở cổng 3000 cho Next.js
-EXPOSE 3000
+# Copy các file từ giai đoạn xây dựng vào image triển khai
+COPY --from=builder /app .
 
 # Chạy ứng dụng
 CMD ["npm", "start"]
