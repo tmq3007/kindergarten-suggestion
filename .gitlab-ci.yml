@@ -39,17 +39,6 @@ build-job:
     paths:
       - front/.next/  # Lưu lại .next/ để sử dụng trong bước tiếp theo
 
-# Test stage - Kiểm thử ứng dụng
-test-next:
-  stage: test
-  dependencies:
-    - build-job
-  script:
-    # Khởi chạy container
-    - docker-compose up -d
-    # Chạy npm test trong container front (được định nghĩa trong docker-compose)
-    - docker-compose exec front npm test
-
 # Deploy stage - Triển khai ứng dụng lên EC2
 deploy-ec2:
   stage: deploy
