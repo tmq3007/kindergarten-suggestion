@@ -3,10 +3,10 @@ import counterReducer from '@/redux/features/counterSlice'
 import storage from "@/redux/ssr-safe-storage";
 import {persistReducer} from 'redux-persist';
 import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/es/constants";
-import {pokemonApi} from "@/redux/services/pokemon";
+import {pokemonApi} from "@/redux/services/pokemonApi";
 import apiMiddleware from "@/redux/middleware/apiMiddleware";
 import apiMiddlewares from "@/redux/middleware/apiMiddleware";
-import {postApi} from "@/redux/services/post";
+import {postApi} from "@/redux/services/postApi";
 
 
 // Tạo rootReducer bao gồm reducers quản lý API và reducers quản lý state

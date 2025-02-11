@@ -3,8 +3,8 @@ import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {increment, decrement, incrementByAmount, reset} from "@/redux/features/counterSlice";
 import Link from "next/link";
-import {useGetPokemonByNameQuery} from '@/redux/services/pokemon'
-import {useGetPostQuery} from "@/redux/services/post";
+import {useGetPokemonByNameQuery} from '@/redux/services/pokemonApi'
+import {useGetPostQuery} from "@/redux/services/postApi";
 
 export default function Home() {
     const count = useSelector((state: RootState) => state.counter.value);
