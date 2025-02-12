@@ -1,0 +1,77 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  # URL GitLab Container Registry của dự án
+  REGISTRY: registry.gitlab.com/pjb_01_g1/kindergarten-suggestion-system
+  # Tên Docker image của frontend
+  FRONTEND_IMAGE: $REGISTRY/kss_front
+  # Cấu hình Docker-in-Docker (DinD)
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+# Sử dụng docker làm image mặc định cho runner và bật Docker-in-Docker
+default:
+  image: docker:20.10.16
+
+services:
+  - docker:dind
+
+before_script:
+  # Cài đặt Docker CLI (nếu chưa có)
+  - apk add --no-cache docker
+  # Đăng nhập vào GitLab Container Registry bằng `--password-stdin` để bảo mật
+  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+
+# Build stage - Xây dựng Docker Image và đẩy lên GitLab Container Registry
+build-job:
+  stage: build
+  script:
+    # Kiểm tra xem Dockerfile có tồn tại hay không
+    - ls -la ./front/
+    # Build Docker image với đúng thư mục chứa `Dockerfile`
+    - docker build -t $FRONTEND_IMAGE:latest -f ./front/Dockerfile ./front
+    # Push image lên GitLab Container Registry
+    - docker push $FRONTEND_IMAGE:latest
+  artifacts:
+    paths:
+      - front/.next/  # Lưu lại .next/ để sử dụng trong bước tiếp theo
+
+# Deploy stage - Triển khai ứng dụng lên EC2
+deploy-ec2:
+  stage: deploy
+  image: alpine
+  dependencies:
+    - build-job
+  before_script:
+    - apk add --no-cache openssh rsync
+  script:
+    - echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
+
+    # Cấp quyền cho ec2-user trên EC2
+    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "sudo mkdir -p /var/www/kindergarten-suggestion-system && sudo chown -R ec2-user:ec2-user /var/www/kindergarten-suggestion-system"
+
+    # Xóa thư mục cũ để tránh lỗi đồng bộ
+    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "rm -rf /var/www/kindergarten-suggestion-system/*"
+
+    # Dùng rsync để đồng bộ code từ GitLab Runner lên EC2
+    - rsync -avz -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ec2-user@$EC2_HOST:/var/www/kindergarten-suggestion-system/ --exclude node_modules --exclude .git
+
+    # SSH vào EC2 để pull Docker image mới nhất và khởi động lại container với sudo
+    - |
+      ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
+        sudo docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        cd /var/www/kindergarten-suggestion-system
+        sudo docker-compose pull
+        sudo docker-compose down
+        sudo docker image prune -af
+        sudo docker-compose up -d
+      EOF
+  only:
+    - main
+  environment:
+    name: production
+    url: http://$EC2_HOST
+

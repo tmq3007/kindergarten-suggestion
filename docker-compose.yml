@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  front:
+    image: registry.gitlab.com/pjb_01_g1/kindergarten-suggestion-system/kss_front:latest # Chỉ định Docker image lấy từ GitLab Container Registry
+    build: # Nếu image chưa tồn tại, Docker sẽ tự build từ source
+      context: ./front # Chỉ định thư mục front trong thư mục root là nơi chứ Dockerfile
+      dockerfile: Dockerfile # Sử dụng Dockerfile trong thư mục front
+    ports:
+      - "80:3000" # Chạy Next.js trên port 3000
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped # Nếu container bị lỗi thì tự động restart
