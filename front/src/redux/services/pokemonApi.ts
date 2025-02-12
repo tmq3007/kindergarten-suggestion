@@ -20,5 +20,5 @@ export const pokemonApi = createApi({
 });
 // useGetPokemonByNameQuery là hook tự động mà RTK Query tạo từ endpoint
 export const {
-    useGetPokemonByNameQuery,
+    useGetPokemonByNameQuery
 } = pokemonApi;

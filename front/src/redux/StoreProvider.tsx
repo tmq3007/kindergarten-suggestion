@@ -10,10 +10,10 @@ import {setupListeners} from "@reduxjs/toolkit/query";
 
 export interface Props {
     children: React.ReactNode;
-    params: { [key: string]: any };
+    params?: Promise<{ [key: string]: any }>;
 }
 
-export default function StoreProvider({children, params}: Props) {
+export default function StoreProvider({children}: Props) {
     const storeRef = useRef<AppStore>(undefined);
     const persistorRef = useRef<Persistor>({} as Persistor)
     if (!storeRef.current) {

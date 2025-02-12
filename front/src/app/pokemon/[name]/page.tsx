@@ -1,8 +1,6 @@
-import {Props} from "@/redux/StoreProvider";
-import {useStore} from "react-redux";
 import {pokemonApi} from "@/redux/services/pokemonApi";
-import {Pokemon} from "@/redux/services/types";
-import {AppDispatch, makeStore, RootState} from "@/redux/store";
+import {makeStore} from "@/redux/store";
+import Link from "next/link";
 
 
 async function getPokemonData(name: string) {
@@ -14,13 +12,20 @@ async function getPokemonData(name: string) {
     return data;
 }
 
-export default async function Page({params}: Props) {
-    const data = await getPokemonData(params.name);
+interface PageProps {
+    name: string,
+}
+
+export default async function Page({params}: { params: Promise<PageProps> }) {
+    const {name} = await params;
+    const data = await getPokemonData(name);
     console.log("data from server")
     console.log(data)
     return (
         <>
-            name from server {data.species.name}
+            name from server {data?.species.name}
+            <br/>
+            <Link href={'/'}>Back to Home</Link>
         </>
     )
 }
