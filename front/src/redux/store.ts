@@ -23,7 +23,7 @@ export const persistConfig = {
     key: 'kss',
     storage,
     // Những reducer được đăng ký trong whitelist sẽ được lưu trữ trong local storage
-    whitelist: ['counter']
+    whitelist: ['']
 }
 
 // Cấu hình persist cho rootReducer để nó có thể lưu trữ dài hạn
@@ -38,7 +38,7 @@ export const makeStore = () => {
                 serializableCheck: {
                     ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
                 },
-            }).concat(...apiMiddlewares) // middleware giúp cập nhật trạng thái khi dữ liệu trả
+            }).concat(...apiMiddlewares) // middlewares giúp cập nhật trạng thái khi dữ liệu trả
     });
 };
 

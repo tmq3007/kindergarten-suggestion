@@ -9,7 +9,11 @@ import {useGetPostQuery} from "@/redux/services/postApi";
 export default function Home() {
     const count = useSelector((state: RootState) => state.counter.value);
     const dispatch = useDispatch();
-    const {data: pokemonData, error: pokemonError, isLoading: isPokemonLoading} = useGetPokemonByNameQuery('bulbasaur');
+    const {
+        data: pokemonData,
+        error: pokemonError,
+        isLoading: isPokemonLoading
+    } = useGetPokemonByNameQuery('bulbasaur');
     const {data: postData, error: postError, isLoading: isPostLoading, isFetching} = useGetPostQuery(1, {
         // pollingInterval: 3000, // Làm mới dữ liệu sau mỗi 3 giây
         refetchOnMountOrArgChange: true,
@@ -30,6 +34,8 @@ export default function Home() {
             <br/>
             <Link href={'/test'}>to test</Link>
             <br/>
+            <br/>
+            <Link href={'/pokemon/bulbasaur'}>to Pokemon bulbasaur</Link>
             <p>POKEMON API</p>
             {pokemonError ? (
                 <>Oh no, there was an error</>

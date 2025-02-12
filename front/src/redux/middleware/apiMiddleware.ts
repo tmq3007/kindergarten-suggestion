@@ -1,4 +1,4 @@
-// Tổng hợp các middleware của api
+// Tổng hợp các middlewares của api
 import {pokemonApi} from "@/redux/services/pokemonApi";
 import {postApi} from "@/redux/services/postApi";
 
