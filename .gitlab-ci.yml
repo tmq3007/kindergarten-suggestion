@@ -88,23 +88,8 @@ push-to-company-gitlab:
     # Cấu hình Git với tên và email
     - git config --global user.name "HieuNM147"
     - git config --global user.email "hieunm147@fpt.com"
-
-    # Clone repository từ GitLab công ty sử dụng HTTP với PAT
-    - git clone http://$GIT_USERNAME:$GIT_PASSWORD@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git /tmp/company-repo
-
-    # Đồng bộ code từ thư mục hiện tại vào repository của công ty
-    - rsync -av --exclude='.git' . /tmp/company-repo/
-
-    # Di chuyển vào thư mục repository của công ty
-    - cd /tmp/company-repo
-
-    # Kiểm tra xem có thay đổi nào không
-    - if ! git diff --quiet; then
-      git add .
-      git commit -m "Deployed to EC2 and pushed to company GitLab"
-      git push http://$GIT_USERNAME:$GIT_PASSWORD@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git main
-      else
-      echo "No changes to commit."
-      fi
+    - git remote add origin http://git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git
+    - git branch -M main
+    - git push -uf origin main
   only:
     - main
