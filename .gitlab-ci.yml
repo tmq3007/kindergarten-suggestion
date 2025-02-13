@@ -88,13 +88,13 @@ push-to-company-gitlab:
     # Cấu hình Git với tên và email
     - git config --global user.name "HieuNM147"
     - git config --global user.email "hieunm147@fpt.com"
-    # Tạo và chuyển sang branch main
-    - git checkout -b main
+    # Tạo và chuyển sang nhánh tính năng mới
+    - git checkout -b feature-branch
     # Xóa remote origin nếu tồn tại
     - git remote remove origin || true
     # Thêm remote origin mới với token xác thực
     - git remote add origin https://oauth2:$COMPANY_GITLAB_TOKEN@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git
-    # Đẩy code lên remote origin
-    - git push -uf origin main
+    # Đẩy code lên nhánh tính năng mới
+    - git push -uf origin feature-branch
   only:
     - main
