@@ -84,6 +84,7 @@ push-to-company-gitlab:
     - deploy-ec2
   before_script:
     - apk add --no-cache git
+    - apk add --no-cache rsync
   script:
     # Cấu hình Git với tên và email
     - git config --global user.name "hieungo"
