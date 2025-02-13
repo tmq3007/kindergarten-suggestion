@@ -88,6 +88,7 @@ push-to-company-gitlab:
     # Cấu hình Git với tên và email
     - git config --global user.name "HieuNM147"
     - git config --global user.email "hieunm147@fpt.com"
+    - git remote remove origin || true
     - git remote add origin http://git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git
     - git branch -M main
     - git push -uf origin main
