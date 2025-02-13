@@ -3,13 +3,17 @@ import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {increment, decrement, incrementByAmount, reset} from "@/redux/features/counterSlice";
 import Link from "next/link";
-import {useGetPokemonByNameQuery} from '@/redux/services/pokemon'
-import {useGetPostQuery} from "@/redux/services/post";
+import {useGetPokemonByNameQuery} from '@/redux/services/pokemonApi'
+import {useGetPostQuery} from "@/redux/services/postApi";
 
 export default function Home() {
     const count = useSelector((state: RootState) => state.counter.value);
     const dispatch = useDispatch();
-    const {data: pokemonData, error: pokemonError, isLoading: isPokemonLoading} = useGetPokemonByNameQuery('bulbasaur');
+    const {
+        data: pokemonData,
+        error: pokemonError,
+        isLoading: isPokemonLoading
+    } = useGetPokemonByNameQuery('bulbasaur');
     const {data: postData, error: postError, isLoading: isPostLoading, isFetching} = useGetPostQuery(1, {
         // pollingInterval: 3000, // Làm mới dữ liệu sau mỗi 3 giây
         refetchOnMountOrArgChange: true,
@@ -30,6 +34,8 @@ export default function Home() {
             <br/>
             <Link href={'/test'}>to test</Link>
             <br/>
+            <br/>
+            <Link href={'/pokemon/bulbasaur'}>to Pokemon bulbasaur</Link>
             <p>POKEMON API</p>
             {pokemonError ? (
                 <>Oh no, there was an error</>

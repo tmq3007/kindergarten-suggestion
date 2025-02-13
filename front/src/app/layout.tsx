@@ -1,7 +1,6 @@
 import type {Metadata} from "next";
-import {Geist, Geist_Mono} from "next/font/google";
 import "./globals.css";
-import StoreProvider, {props} from "@/redux/StoreProvider";
+import StoreProvider, {Props} from "@/redux/StoreProvider";
 
 
 export const metadata: Metadata = {
@@ -9,7 +8,7 @@ export const metadata: Metadata = {
     description: "Website for parent to find ideal kindergarten",
 };
 
-export default function RootLayout({children}: props) {
+export default function RootLayout({children}: Props) {
     return (
         <html lang="en">
         <body>

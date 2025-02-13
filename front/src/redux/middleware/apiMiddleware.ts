@@ -1,6 +1,6 @@
-// Tổng hợp các middleware của api
-import {pokemonApi} from "@/redux/services/pokemon";
-import {postApi} from "@/redux/services/post";
+// Tổng hợp các middlewares của api
+import {pokemonApi} from "@/redux/services/pokemonApi";
+import {postApi} from "@/redux/services/postApi";
 
 const apiMiddlewares = [
     pokemonApi.middleware,
