@@ -1,34 +1,10 @@
 stages:
-  - build
   - test
   - deploy
   - push-to-company-gitlab
 
-variables:
-  # URL GitLab Container Registry của dự án
-  REGISTRY: registry.gitlab.com/pjb_01_g1/kindergarten-suggestion-system
-  # Tên Docker image của frontend
-  FRONTEND_IMAGE: $REGISTRY/kss_front
-  # Cấu hình Docker-in-Docker (DinD)
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
-
-# Sử dụng docker làm image mặc định cho runner và bật Docker-in-Docker
-default:
-  image: docker:20.10.16
-
-services:
-  - docker:dind
-
-before_script:
-  # Cài đặt Docker CLI (nếu chưa có)
-  - apk add --no-cache docker
-  # Đăng nhập vào GitLab Container Registry bằng `--password-stdin` để bảo mật
-  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-
-# Build stage - Xây dựng Docker Image và đẩy lên GitLab Container Registry
-build-job:
-  stage: build
+test_pipeline:
+  stage: test
   script:
     # Kiểm tra xem Dockerfile có tồn tại hay không
     - ls -la ./front/
