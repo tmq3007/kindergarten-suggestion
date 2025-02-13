@@ -1,8 +1,76 @@
 stages:
   - test
+  - deploy
+  - push-to-company-gitlab
 
 test_pipeline:
   stage: test
   script:
-    - echo "Hello, GitLab CI/CD!"
-    - echo "Pipeline is running successfully!"
+    # Kiểm tra xem Dockerfile có tồn tại hay không
+    - ls -la ./front/
+    # Build Docker image với đúng thư mục chứa `Dockerfile`
+    - docker build -t $FRONTEND_IMAGE:latest -f ./front/Dockerfile ./front
+    # Push image lên GitLab Container Registry
+    - docker push $FRONTEND_IMAGE:latest
+  artifacts:
+    paths:
+      - front/.next/  # Lưu lại .next/ để sử dụng trong bước tiếp theo
+
+# Deploy stage - Triển khai ứng dụng lên EC2
+deploy-ec2:
+  stage: deploy
+  image: alpine
+  dependencies:
+    - build-job
+  before_script:
+    - apk add --no-cache openssh rsync
+  script:
+    - echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
+
+    # Cấp quyền cho ec2-user trên EC2
+    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "sudo mkdir -p /var/www/kindergarten-suggestion-system && sudo chown -R ec2-user:ec2-user /var/www/kindergarten-suggestion-system"
+
+    # Xóa thư mục cũ để tránh lỗi đồng bộ
+    - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "rm -rf /var/www/kindergarten-suggestion-system/*"
+
+    # Dùng rsync để đồng bộ code từ GitLab Runner lên EC2
+    - rsync -avz -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ec2-user@$EC2_HOST:/var/www/kindergarten-suggestion-system/ --exclude node_modules --exclude .git
+
+    # SSH vào EC2 để pull Docker image mới nhất và khởi động lại container với sudo
+    - |
+      ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
+        sudo docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        cd /var/www/kindergarten-suggestion-system
+        sudo docker-compose pull
+        sudo docker-compose down
+        sudo docker image prune -af
+        sudo docker-compose up -d
+      EOF
+  only:
+    - main
+  environment:
+    name: production
+    url: http://$EC2_HOST
+
+# Push lên git.fa.edu.vn
+push-to-company-gitlab:
+  stage: push-to-company-gitlab
+  image: alpine
+  dependencies:
+    - deploy-ec2
+  before_script:
+    - apk add --no-cache git rsync
+  script:
+    # Cấu hình Git với tên và email
+    - git config --global user.name "HieuNM147"
+    - git config --global user.email "hieunm147@fpt.com"
+    # Tạo và chuyển sang nhánh tính năng mới
+    - git checkout -b feature-branch
+    # Xóa remote origin nếu tồn tại
+    - git remote remove origin || true
+    # Thêm remote origin mới với token xác thực
+    - git remote add origin https://oauth2:$COMPANY_GITLAB_TOKEN@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git
+    # Đẩy code lên nhánh tính năng mới
+    - git push -uf origin feature-branch
+  only:
+    - main
