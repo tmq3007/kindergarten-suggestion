@@ -89,9 +89,13 @@ push-to-company-gitlab:
     - git config --global user.name "hieungo"
     - git config --global user.email "hieunmhe182607@fpt.edu.vn"
 
+    # Checkout branch chính (main hoặc master)
+    - git checkout main
+
     # Clone repository từ GitLab công ty sử dụng HTTP
     - git remote set-url origin http://git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git
-
+    # Copy code từ thư mục hiện tại vào working directory (nếu cần)
+    - cp -r ../* .
     # Commit và push code lên GitLab công ty
     - git add .
     - git commit -m "Deployed to EC2 and pushed to company GitLab"
