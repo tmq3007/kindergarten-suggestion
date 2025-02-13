@@ -91,7 +91,7 @@ push-to-company-gitlab:
     - git config --global user.email "hieunmhe182607@fpt.edu.vn"
 
     # Clone repository từ GitLab công ty sử dụng HTTP
-    - git clone http://git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git /tmp/company-repo
+    - git clone http://$GIT_USERNAME:$GIT_PASSWORD@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git /tmp/company-repo
 
     # Đồng bộ code từ thư mục hiện tại vào repository của công ty
     - rsync -av --exclude='.git' . /tmp/company-repo/
@@ -103,7 +103,7 @@ push-to-company-gitlab:
     - if ! git diff --quiet; then
       git add .
       git commit -m "Deployed to EC2 and pushed to company GitLab"
-      git push http://$CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git main
+      git push http://$GIT_USERNAME:$GIT_PASSWORD@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git main
       else
       echo "No changes to commit."
       fi
