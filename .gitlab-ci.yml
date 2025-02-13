@@ -86,8 +86,8 @@ push-to-company-gitlab:
     - apk add --no-cache git rsync
   script:
     # Cấu hình Git với tên và email
-    - git config --global user.name "hieungo"
-    - git config --global user.email "hieunmhe182607@fpt.edu.vn"
+    - git config --global user.name "HieuNM147"
+    - git config --global user.email "hieunm147@fpt.com"
 
     # Clone repository từ GitLab công ty sử dụng HTTP với PAT
     - git clone http://$GIT_USERNAME:$GIT_PASSWORD@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git /tmp/company-repo
