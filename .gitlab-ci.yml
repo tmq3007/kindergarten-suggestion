@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - deploy
+  - push-to-company-gitlab
 
 variables:
   # URL GitLab Container Registry của dự án
