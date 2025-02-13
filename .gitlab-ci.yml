@@ -94,8 +94,13 @@ push-to-company-gitlab:
 
     # Clone repository từ GitLab công ty sử dụng HTTP
     - git remote set-url origin http://git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git
-    # Copy code từ thư mục hiện tại vào working directory (nếu cần)
-    - cp -r ../* .
+    # Sử dụng rsync để copy nội dung từ thư mục hiện tại vào thư mục tạm thời
+    - mkdir -p /tmp/source
+    - rsync -av --exclude='.git' . /tmp/source/
+
+    # Copy nội dung từ thư mục tạm thời vào thư mục hiện tại
+    - rsync -av /tmp/source/ .
+
     # Commit và push code lên GitLab công ty
     - git add .
     - git commit -m "Deployed to EC2 and pushed to company GitLab"
