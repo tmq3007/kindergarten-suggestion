@@ -1,5 +1,7 @@
 package fa.pjb.back;
 
+import fa.pjb.back.model.entity.Users;
+import fa.pjb.back.repository.UsersRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,8 +14,8 @@ class BackApplicationTests {
 
     @Autowired
     DataSource dataSource;
-
-
+    @Autowired
+    UsersRepository usersRepository;
 
     @Test
     public void testDataSource() {
@@ -28,7 +30,10 @@ class BackApplicationTests {
 
     @Test
     public void testCRUD() {
-
+        Iterable<Users> users = usersRepository.findAll();
+        for (Users user : users) {
+            System.out.println(user);
+        }
     }
 
 

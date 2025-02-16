@@ -1,4 +1,4 @@
-package fa.pjb.back.entity;
+package fa.pjb.back.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

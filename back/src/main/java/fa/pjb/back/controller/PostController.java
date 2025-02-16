@@ -1,6 +1,6 @@
 package fa.pjb.back.controller;
 
-import fa.pjb.back.entity.Post;
+import fa.pjb.back.model.entity.Post;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
