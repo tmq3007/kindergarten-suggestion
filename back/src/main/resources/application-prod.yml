@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:mysql://marco.cpwqmg2akccy.ap-southeast-2.rds.amazonaws.com:3306/test_db
+    username: root
+    password: admin123
+    driver-class-name: com.mysql.cj.jdbc.Driver

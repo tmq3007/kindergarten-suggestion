@@ -1,7 +1,7 @@
 import {BaseQueryApi, FetchArgs, fetchBaseQuery, FetchBaseQueryMeta} from "@reduxjs/toolkit/query/react";
 
 // BASE_URL của server
-export const BASE_URL = 'http://localhost:5000';
+export const BASE_URL = 'http://localhost:8080';
 
 export const baseQuery = fetchBaseQuery({
     baseUrl: BASE_URL,
@@ -11,6 +11,7 @@ export const baseQuery = fetchBaseQuery({
         if (token) {
             headers.set('Authorization', `Bearer ${token}`);
         }
+        headers.set('Accept', 'application/json');
         return headers;
     },
     // Để bảo mật hơn, ta nên lưu token trong Cookie với httpOnly >> không cần gắn token vào header
