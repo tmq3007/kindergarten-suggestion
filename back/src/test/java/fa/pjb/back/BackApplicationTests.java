@@ -1,0 +1,40 @@
+package fa.pjb.back;
+
+import fa.pjb.back.model.entity.Users;
+import fa.pjb.back.repository.UsersRepository;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.sql.DataSource;
+
+
+@SpringBootTest
+class BackApplicationTests {
+
+    @Autowired
+    DataSource dataSource;
+    @Autowired
+    UsersRepository usersRepository;
+
+    @Test
+    public void testDataSource() {
+        try {
+            if (dataSource.getConnection() != null) {
+                System.out.println("Kết nối cơ sở dữ liệu thành công!");
+            }
+        } catch (Exception e) {
+            System.out.println("Kết nối cơ sở dữ liệu thất bại: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testCRUD() {
+        Iterable<Users> users = usersRepository.findAll();
+        for (Users user : users) {
+            System.out.println(user);
+        }
+    }
+
+
+}

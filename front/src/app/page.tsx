@@ -19,6 +19,7 @@ export default function Home() {
         refetchOnMountOrArgChange: true,
         skip: false,
     });
+    console.log('================')
     console.log(postData)
     return (
         <>

@@ -3,20 +3,43 @@ stages:
   - deploy
   - push-to-company-gitlab
 
-test_pipeline:
-  stage: test
+variables:
+  REGISTRY: registry.gitlab.com/pjb_01_g1/kindergarten-suggestion-system
+  FRONTEND_IMAGE: $REGISTRY/kss_front
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+default:
+  image: docker:20.10.16
+
+services:
+  - docker:dind
+
+before_script:
+  - apk add --no-cache docker
+  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+
+# 🛠 Build Docker Image - Chỉ build khi có thay đổi trong front/
+build-job:
+  stage: build
   script:
-    # Kiểm tra xem Dockerfile có tồn tại hay không
-    - ls -la ./front/
-    # Build Docker image với đúng thư mục chứa `Dockerfile`
-    - docker build -t $FRONTEND_IMAGE:latest -f ./front/Dockerfile ./front
-    # Push image lên GitLab Container Registry
-    - docker push $FRONTEND_IMAGE:latest
+    - export IMAGE_TAG=$FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
+
+    # Kiểm tra xem có thay đổi trong thư mục front/ không
+    - |
+      if git diff --quiet HEAD~1 -- front/; then
+        echo "No changes in front/, skipping build."
+        exit 0
+      fi
+
+    # Build và push Docker image với commit hash tag
+    - docker build -t $IMAGE_TAG -f ./front/Dockerfile ./front
+    - docker push $IMAGE_TAG
   artifacts:
     paths:
-      - front/.next/  # Lưu lại .next/ để sử dụng trong bước tiếp theo
+      - front/.next/
 
-# Deploy stage - Triển khai ứng dụng lên EC2
+# 🚀 Deploy lên EC2
 deploy-ec2:
   stage: deploy
   image: alpine
@@ -33,17 +56,28 @@ deploy-ec2:
     # Xóa thư mục cũ để tránh lỗi đồng bộ
     - ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "rm -rf /var/www/kindergarten-suggestion-system/*"
 
-    # Dùng rsync để đồng bộ code từ GitLab Runner lên EC2
+    # Đồng bộ code từ GitLab Runner lên EC2
     - rsync -avz -e "ssh -i private_key -o StrictHostKeyChecking=no" ./ ec2-user@$EC2_HOST:/var/www/kindergarten-suggestion-system/ --exclude node_modules --exclude .git
 
-    # SSH vào EC2 để pull Docker image mới nhất và khởi động lại container với sudo
+    # SSH vào EC2 để pull Docker image mới nhất và khởi động lại container
     - |
       ssh -i private_key -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
+        export IMAGE_TAG=$FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
         sudo docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-        cd /var/www/kindergarten-suggestion-system
-        sudo docker-compose pull
-        sudo docker-compose down
+      
+        # Kiểm tra xem image đã tồn tại trên máy chưa, nếu chưa thì pull về
+        if ! sudo docker images | grep -q "$IMAGE_TAG"; then
+          sudo docker pull $IMAGE_TAG
+        fi
+      
+        # Dọn dẹp container, image, volume cũ để tránh hết dung lượng
+        sudo docker container prune -f
         sudo docker image prune -af
+        sudo docker volume prune -f
+
+        # Khởi động lại container
+        cd /var/www/kindergarten-suggestion-system
+        sudo docker-compose down
         sudo docker-compose up -d
       EOF
   only:
@@ -52,7 +86,7 @@ deploy-ec2:
     name: production
     url: http://$EC2_HOST
 
-# Push lên git.fa.edu.vn
+# 🔄 Push lên GitLab nội bộ
 push-to-company-gitlab:
   stage: push-to-company-gitlab
   image: alpine
@@ -61,16 +95,18 @@ push-to-company-gitlab:
   before_script:
     - apk add --no-cache git rsync
   script:
-    # Cấu hình Git với tên và email
     - git config --global user.name "HieuNM147"
     - git config --global user.email "hieunm147@fpt.com"
-    # Tạo và chuyển sang nhánh tính năng mới
+
+    # Kiểm tra nếu nhánh feature-branch đã tồn tại thì xóa đi trước khi tạo lại
+    - git branch -D feature-branch || true
     - git checkout -b feature-branch
-    # Xóa remote origin nếu tồn tại
+
+    # Cấu hình GitLab nội bộ
     - git remote remove origin || true
-    # Thêm remote origin mới với token xác thực
     - git remote add origin https://oauth2:$COMPANY_GITLAB_TOKEN@git.fa.edu.vn/hn25_cpl_pjb_01/hn25_cpl_pjb_01_g1/kindergarten-suggestion.git
-    # Đẩy code lên nhánh tính năng mới
+
+    # Push code lên GitLab nội bộ
     - git push -uf origin feature-branch
   only:
     - main
