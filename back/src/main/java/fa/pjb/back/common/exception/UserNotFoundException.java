@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseErrorCode("1000")
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class UserNotFoundException extends RuntimeException{
-//    @ResponseErrorProperty
-    private final String id;
-    public UserNotFoundException(String id) {
-        super("Could not found user with id " + id);
-        this.id = id;
+
+    public UserNotFoundException(String username) {
+        super("Could not found user with username " + username);
     }
 }

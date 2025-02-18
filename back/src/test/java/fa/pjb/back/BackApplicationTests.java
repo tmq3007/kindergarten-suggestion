@@ -1,7 +1,7 @@
 package fa.pjb.back;
 
 import fa.pjb.back.model.entity.KssUser;
-import fa.pjb.back.repository.UsersRepository;
+import fa.pjb.back.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +15,7 @@ class BackApplicationTests {
     @Autowired
     DataSource dataSource;
     @Autowired
-    UsersRepository usersRepository;
+    UserRepository userRepository;
 
     @Test
     public void testDataSource() {
@@ -30,7 +30,7 @@ class BackApplicationTests {
 
     @Test
     public void testCRUD() {
-        Iterable<KssUser> users = usersRepository.findAll();
+        Iterable<KssUser> users = userRepository.findAll();
         for (KssUser user : users) {
             System.out.println(user);
         }
