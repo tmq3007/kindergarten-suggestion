@@ -2,7 +2,7 @@ package fa.pjb.back.filter;
 
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtUtil;
-import fa.pjb.back.service.impl.KssUserDetailsService;
+import fa.pjb.back.service.impl.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-    private final KssUserDetailsService kssUserDetailsService;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
     private final JwtUtil jwtUtil;
     private final HttpRequestHelper httpRequestHelper;
 
@@ -65,7 +65,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Bằng cách kiểm tra xem có tồn tại Authentication (người dùng đã xác thực) trong SecurityContext hay không
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Nếu người dùng chưa xác thực thì ta tiến hành xác thực thông qua UserDetailsService
-            UserDetails userDetails = kssUserDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
             // Sau khi đã xác thực xong, ta tiếp tục kiểm tra tính hợp lệ của token
             // Nếu token hợp lệ, ta tiến hành tạo UsernamePasswordAuthenticationToken chứa thông tin và quyền hạn người dùng (không cần chứa password)
             if (jwtUtil.validateToken(jwt, userDetails)) {
