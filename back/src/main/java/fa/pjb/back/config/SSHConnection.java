@@ -2,6 +2,7 @@ package fa.pjb.back.config;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -12,6 +13,7 @@ import java.util.Properties;
 public class SSHConnection {
     // Biến giữ phiên SSH toàn cục, giúp quản lý trạng thái của SSH Tunnel trong suốt vòng đời ứng dụng
     private static Session session;
+    private static final Dotenv dotenv = Dotenv.load();
 
     public static void setupSshTunnel(String sshHost, String sshUser, String sshKeyPath, int sshPort, String dbHost, int dbPort) throws Exception {
         // Tạo kết nối SSH
@@ -27,9 +29,9 @@ public class SSHConnection {
         session.setConfig(config);
         session.connect();
 
-        // Chuyển tiếp kết nối từ localhost:3306 đến database-host:3306 qua SSH Tunnel
-        // >>> Ứng dụng sẽ kết nối MySQL bằng localhost:3306 nhưng thực chất dữ liệu được chuyển đến database từ xa thông qua SSH
-        int localPort = 3306;
+        // Chuyển tiếp kết nối từ localhost:xxx đến database-host:3306 qua SSH Tunnel
+        // >>> Ứng dụng sẽ kết nối MySQL bằng localhost:xxx nhưng thực chất dữ liệu được chuyển đến database từ xa thông qua SSH
+        int localPort = 3307;
         session.setPortForwardingL(localPort, dbHost, dbPort);
         log.info("SSH connection established on port {}", localPort);
     }
