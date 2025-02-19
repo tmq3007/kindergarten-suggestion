@@ -31,7 +31,7 @@ public class SSHConnection {
 
         // Chuyển tiếp kết nối từ localhost:xxx đến database-host:3306 qua SSH Tunnel
         // >>> Ứng dụng sẽ kết nối MySQL bằng localhost:xxx nhưng thực chất dữ liệu được chuyển đến database từ xa thông qua SSH
-        int localPort = 3307;
+        int localPort = 3308;
         session.setPortForwardingL(localPort, dbHost, dbPort);
         log.info("SSH connection established on port {}", localPort);
     }

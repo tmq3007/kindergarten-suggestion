@@ -12,3 +12,13 @@ export type Post = {
     title: string,
     content: string,
 };
+
+export type LoginDTO = {
+    username: string,
+    password: string,
+}
+
+export type LoginVO = {
+    accessToken: string,
+    csrfToken: string,
+}

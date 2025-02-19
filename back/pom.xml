@@ -45,6 +45,7 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!--Database connection-->
 
         <!--Read environment variables-->
         <dependency>
@@ -52,6 +53,7 @@
             <artifactId>dotenv-java</artifactId>
             <version>3.0.0</version>
         </dependency>
+        <!--Read environment variables-->
 
         <!--JWT Token-->
         <dependency>
@@ -59,12 +61,54 @@
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
         </dependency>
+        <!--JWT Token-->
 
+        <!--Error Handling-->
         <dependency>
             <groupId>io.github.wimdeblauwe</groupId>
             <artifactId>error-handling-spring-boot-starter</artifactId>
             <version>4.5.0</version>
         </dependency>
+        <!--Error Handling-->
+
+        <!--Swagger-->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+        <!--Swagger-->
+
+        <!--Redis-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+        <!--Redis-->
+
+        <!--JSON convert-->
+        <!--Hỗ trợ Jackson để serialize/deserialize các kiểu dữ liệu java.time-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+        <!--Hỗ trợ chuyển đổi XML <-> Java Object-->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <!--JSON convert-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -5,13 +5,15 @@ export const BASE_URL = 'http://localhost:8080/api';
 
 export const baseQuery = fetchBaseQuery({
     baseUrl: BASE_URL,
+    // Đảm bảo cookie được gửi kèm request
+    credentials: 'include',
     // Chỉnh sử header để gắn CSRF token vào request trước khi được gửi đi
     prepareHeaders: (headers) => {
         // Lấy CSRF token từ Cookie
         const csrfToken = Cookies.get('CSRF_TOKEN');
         // Gắn CSRF token vào Header
         if (csrfToken) {
-            headers.set('X-CSRF-TOKEN', csrfToken);
+            headers.set('X-Csrf-Token', csrfToken);
         }
         headers.set('Accept', 'application/json');
         return headers;

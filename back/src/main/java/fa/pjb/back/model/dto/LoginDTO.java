@@ -7,7 +7,7 @@ public record LoginDTO(
         @NotBlank(message = "Username cannot be empty")
         String username,
 
-        @Pattern(regexp = ".{8,}", message = "Password must be at least 8 characters long")
+        @Pattern(regexp = ".{3,}", message = "Password must be at least 3 characters long")
         String password
 ) {
 }

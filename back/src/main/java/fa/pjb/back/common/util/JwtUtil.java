@@ -4,6 +4,9 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +16,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+
 @Service
 public class JwtUtil {
     private final Dotenv dotenv = Dotenv.load();
     private final String SECRET_KEY = dotenv.get("SECRET_KEY");
-    private final long ACCESS_TOKEN_EXP = Long.parseLong(dotenv.get("ACCESS_TOKEN_EXP"));
-    private final long REFRESH_TOKEN_EXP = Long.parseLong(dotenv.get("REFRESH_TOKEN_EXP"));
+    @Value("${access-token-exp}")
+    private long ACCESS_TOKEN_EXP;
+    @Value("${refresh-token-exp}")
+    private long REFRESH_TOKEN_EXP;
 
     /**
      * Phuơng thức dùng để trích xuất tất cà các claims (thông tin được mã hóa) từ token
