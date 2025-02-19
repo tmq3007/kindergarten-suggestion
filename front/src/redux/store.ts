@@ -6,6 +6,7 @@ import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/e
 import {pokemonApi} from "@/redux/services/pokemonApi";
 import apiMiddlewares from "@/middleware/apiMiddleware";
 import {postApi} from "@/redux/services/postApi";
+import {authApi} from "@/redux/services/authApi";
 
 
 // Tạo rootReducer bao gồm reducers quản lý API và reducers quản lý state
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
     // Reducer quản lý api
     [pokemonApi.reducerPath]: pokemonApi.reducer,
     [postApi.reducerPath]: postApi.reducer,
+    [authApi.reducerPath]: authApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
 })
