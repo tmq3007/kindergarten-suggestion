@@ -1,4 +1,7 @@
 package fa.pjb.back.model.vo;
 
-public record LoginVO(boolean isLogged, String csrfToken) {
+import lombok.Builder;
+
+@Builder
+public record LoginVO(String accessToken, String csrfToken) {
 }

@@ -4,55 +4,63 @@ import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.TokenService;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
     private final Dotenv dotenv = Dotenv.load();
-    private final int ACCESS_TOKEN_EXP = Integer.parseInt(dotenv.get("ACCESS_TOKEN_EXP"));
-    private final int REFRESH_TOKEN_EXP = Integer.parseInt(dotenv.get("REFRESH_TOKEN_EXP"));
-    private final int CSRF_TOKEN_EXP = Integer.parseInt(dotenv.get("CSRF_TOKEN_EXP"));
+    @Value("${access-token-exp}")
+    private int ACCESS_TOKEN_EXP;
+    @Value("${refresh-token-exp}")
+    private int REFRESH_TOKEN_EXP;
+    @Value("${csrf-token-exp}")
+    private int CSRF_TOKEN_EXP;
+
 
     @Override
     public LoginVO login(LoginDTO loginDTO, HttpServletResponse response) {
-        // Xác thực để trả về UserDetails rồi lưu trong SecurityContext
+        // Tạo 1 token gồm username & password dùng để xác thực
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.username(), loginDTO.password());
+        // Xác thực token đó bằng AuthenticationManager
+        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        // Nếu xác thực thành công thì thêm authentication (người dùng đã xác thực) vào SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Lấy ra UserDetails từ Authentication
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        // Tạo ra các Token
+        // Tạo ra các Token ==========================================================
+
         // Access Token: Lưu vào Cookie với HttpOnly
-        String accessToken = jwtUtil.generateAccessToken(null);
-        Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", accessToken);
-        // Thiết lập cờ HttpOnly để ngăn truy cập côokie thông qua JavaScript
-        accessTokenCookie.setHttpOnly(true);
-        // Thiết lập cờ Secure = false để gửi Cookie qua HTTP
-        accessTokenCookie.setSecure(false);
-        // Thiết lập đường dẫn mà Cookie có hiệu lực ("/" có nghĩa là toàn bộ ứng dụng)
-        accessTokenCookie.setPath("/");
-        // Thiết lập thời gian sống
-        accessTokenCookie.setMaxAge(ACCESS_TOKEN_EXP);
-
-        response.addCookie(accessTokenCookie);
-
+        String accessToken = jwtUtil.generateAccessToken(userDetails);
+//        tokenService.saveTokenInCookieWithHttpOnly("ACCESS_TOKEN", accessToken, ACCESS_TOKEN_EXP, response);
 
         // CSRF Token: Lưu vào Cookie không HttpOnly
         String csrfToken = jwtUtil.generateCsrfToken();
-
-        Cookie csrfTokenCookie = new Cookie("CSRF_TOKEN", csrfToken);
-        csrfTokenCookie.setSecure(false);
-        csrfTokenCookie.setPath("/");
-        csrfTokenCookie.setMaxAge(CSRF_TOKEN_EXP);
-
-        response.addCookie(csrfTokenCookie);
+//        tokenService.saveTokenInCookie("CSRF_TOKEN", csrfToken, CSRF_TOKEN_EXP, response);
 
         // Refresh Token: Lưu vào Redis
+        String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+        tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
 
-
-        return null;
+        return LoginVO.builder()
+                .accessToken(accessToken)
+                .csrfToken(csrfToken)
+                .build();
     }
 
     @Override

@@ -28,13 +28,4 @@ class BackApplicationTests {
         }
     }
 
-    @Test
-    public void testCRUD() {
-        Iterable<KssUser> users = userRepository.findAll();
-        for (KssUser user : users) {
-            System.out.println(user);
-        }
-    }
-
-
 }

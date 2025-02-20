@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   front:
     image: registry.gitlab.com/pjb_01_g1/kindergarten-suggestion-system/kss_front:latest # Chỉ định Docker image lấy từ GitLab Container Registry
@@ -11,3 +9,32 @@ services:
     environment:
       - NODE_ENV=production
     restart: unless-stopped # Nếu container bị lỗi thì tự động restart
+    networks:
+      - app-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  back:
+    build: ./back
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
