@@ -9,14 +9,19 @@ variables:
   FRONTEND_IMAGE: $REGISTRY/kss_front
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  DB_HOST: $DB_HOST
+  DB_PORT: $DB_PORT
+  DB_NAME: $DB_NAME
+  DB_USER: $DB_USER
+  DB_PASSWORD: $DB_PASSWORD
+  SECRET_KEY: $SECRET_KEY
 
 default:
   image: docker:20.10.16
 
 services:
   - name: docker:dind
-    command: ["--tls=false"]
-    network_mode: bridge
+    network_mode: "host"
 
 before_script:
   - apk add --no-cache docker
