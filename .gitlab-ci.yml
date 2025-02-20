@@ -14,8 +14,9 @@ default:
   image: docker:20.10.16
 
 services:
-  - docker:dind
-  - command: [ "--privileged" ]
+  - name: docker:dind
+    command: ["--tls=false"]
+    privileged: true
 
 before_script:
   - apk add --no-cache docker
