@@ -11,6 +11,8 @@ services:
     restart: unless-stopped # Nếu container bị lỗi thì tự động restart
     networks:
       - app-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   back:
     build: ./back
@@ -28,6 +30,8 @@ services:
       - redis
     networks:
       - app-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   redis:
     image: redis:latest

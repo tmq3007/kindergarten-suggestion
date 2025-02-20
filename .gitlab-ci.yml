@@ -20,8 +20,7 @@ default:
   image: docker:20.10.16
 
 services:
-  - name: docker:dind
-    network_mode: "host"
+  - docker:dind
 
 before_script:
   - apk add --no-cache docker
