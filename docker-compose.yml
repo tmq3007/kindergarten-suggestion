@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   front:
     image: registry.gitlab.com/pjb_01_g1/kindergarten-suggestion-system/kss_front:latest # Chỉ định Docker image lấy từ GitLab Container Registry

@@ -15,6 +15,7 @@ default:
 
 services:
   - docker:dind
+  - command: [ "--privileged" ]
 
 before_script:
   - apk add --no-cache docker
