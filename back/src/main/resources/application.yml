@@ -15,6 +15,21 @@ spring:
       idle-timeout: 30000
       connection-timeout: 30000
       max-lifetime: 1800000
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kienduccml@gmail.com
+    password: pdqmspuihpebobhu
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  freemarker:
+    template-loader-path: classpath:/templates/
+    suffix: .html
+    charset: UTF-8
 error:
   handling:
     search-super-class-hierarchy: true
