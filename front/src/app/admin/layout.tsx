@@ -40,8 +40,6 @@ export default function DashboardLayout({
                         height={60}
                         className="logo-responsive"
                     />
-
-
                 </div>
 
                 {/* MENU */}
@@ -51,9 +49,9 @@ export default function DashboardLayout({
             </div>
 
             {/* RIGHT */}
-            <div className="flex flex-col w-full bg-[#F7F8FA] overflow-scroll">
-                <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
-                {children}
+            <div className="flex flex-col w-full bg-[#F7F8FA] overflow-scroll ">
+                <Navbar collapsed={collapsed} setCollapsed={setCollapsed}    />
+                <div className="p-2">{children}</div>
             </div>
         </div>
     );
