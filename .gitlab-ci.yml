@@ -18,14 +18,15 @@ variables:
   SECRET_KEY: $SECRET_KEY
 
 default:
-  image: docker:20.10.16
+  image: docker:latest
 
 services:
   - name: docker:dind
-    command: ["--tls=false", "--host=tcp://0.0.0.0:2375"]
+    command: [ "--tls=false", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock" ]
+
 before_script:
   - apk add --no-cache docker
-  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  - echo "$CI_REGISTRY_PASSWORD" | sudo docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
 
 # 🛠 Build Docker Image - Chỉ build khi có thay đổi trong front/
 build-job:
@@ -41,7 +42,7 @@ build-job:
       fi
 
     # Build và push Docker image với commit hash tag
-    - docker build --no-cache -t $IMAGE_TAG -f ./front/Dockerfile ./front
+    - docker build --no-cache --pull -t $IMAGE_TAG -f ./front/Dockerfile ./front
     - docker push $IMAGE_TAG
   artifacts:
     paths:
