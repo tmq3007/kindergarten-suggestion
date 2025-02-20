@@ -9,13 +9,11 @@ variables:
   FRONTEND_IMAGE: $REGISTRY/kss_front
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: "1" # ✅ Sử dụng BuildKit để build Docker mà không cần docker:dind
+  BUILDKIT_PROGRESS: "plain"
 
 default:
   image: docker:20.10.16
-
-services:
-  - name: docker:dind
-    command: [ "--tls=false" ]
 
 before_script:
   - apk add --no-cache docker
@@ -34,10 +32,9 @@ build-job:
         exit 0
       fi
 
-    # Build và push Docker image với commit hash tag
-    - docker build -t $IMAGE_TAG -f ./front/Dockerfile ./front
+    # Build và push Docker image với commit hash tag (dùng BuildKit thay vì docker:dind)
+    - docker build --progress=plain --pull --rm -t $IMAGE_TAG -f ./front/Dockerfile ./front
     - docker push $IMAGE_TAG
-  privileged: true
   artifacts:
     paths:
       - front/.next/
