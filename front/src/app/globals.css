@@ -1,4 +1,4 @@
-@tailwind base;
+ @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -13,9 +13,133 @@
     --foreground: #ededed;
   }
 }
+ @media (max-width: 428px) {
+   .navbar-icons {
+     justify-content: flex-end !important;
+     width: 100%;
+   }
+ }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+
+ .logo-responsive {
+     width: auto  ; /* Đảm bảo logo không bị co nhỏ */
+     height: auto  ;
+     max-width: 100px; /* Giới hạn kích thước tối đa */
+     max-height: 60px; /* Giới hạn chiều cao */
+ }
+ @media (max-width: 425px) {
+     .logo-responsive {
+         width: 30px  !important;
+         height: 34px !important;
+     }
+ }
+
+ /*body {*/
+/*  color: var(--foreground);*/
+/*  background: var(--background);*/
+/*  font-family: Arial, Helvetica, sans-serif;*/
+/*}*/
+
+
+/*!*Admin*!*/
+/*.header{*/
+/*  padding-top: 12px;*/
+/*  background: #fff;*/
+/*  !*position: fixed  !important;*!*/
+/*}*/
+/* .content {*/
+/*   margin: 24px 16px;*/
+/*   padding: 20px;*/
+/*   padding-top: 60px; !* Đẩy nội dung xuống để tránh bị che *!*/
+/* }*/
+
+/*.trigger-btn{*/
+/*  font-size: 16px;*/
+/*  width: 50px;*/
+/*  height: 50px;*/
+/*  position: fixed;*/
+/*  bottom: 10px;*/
+/*  left: 25px;*/
+
+/*}*/
+/*!*Sider*!*/
+
+/*.sider {*/
+/*  height: 100vh;*/
+/*  position: sticky !important;*/
+/*  left: 0;*/
+/*  bottom: 0;*/
+/*  top:0;*/
+/*}*/
+/*.logo{*/
+/*  font-size: 2rem;*/
+/*  color: #7db9e0;*/
+/*}*/
+
+/*.bs{*/
+/*  color: #7db9e0;*/
+/*  font-size: 1.2rem;*/
+/*  font-weight: bold;*/
+/*  margin-left: 8px;*/
+/*}*/
+/*.menu-bar{*/
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  gap: 10px;*/
+/*  font-weight: 500;*/
+
+/*}*/
+/*.ant-menu-item-selected{*/
+/*  background-color: #7db9e0 !important;*/
+/*  color: #ffffff !important;*/
+/*}*/
+
+
+
+
+/* .header-icon {*/
+/*   font-size: 20px;*/
+/*   color: #7db9e0;*/
+/*   cursor: pointer;*/
+/* }*/
+
+/* .header-logout {*/
+/*   font-size: 16px;*/
+/*   color: #7db9e0;*/
+/*   cursor: pointer;*/
+/*   transition: color 0.3s ease-in-out;*/
+/* }*/
+/* .header-logout:hover {*/
+/*   color: #005b99;*/
+/* }*/
+
+/* !* Responsive *!*/
+/* @media (max-width: 768px) {*/
+/*   .header {*/
+/*     padding: 8px;*/
+/*   }*/
+/* }*/
+
+
+/* !* Responsive for Sidebar *!*/
+/* @media (max-width: 1024px) {*/
+/*   .sider {*/
+/*     width: 80px !important;*/
+/*   }*/
+
+/*   .menu-bar {*/
+/*     font-size: 14px;*/
+/*   }*/
+
+/*   .bs {*/
+/*     display: none;*/
+/*   }*/
+/* }*/
+
+/* !* Responsive for Content *!*/
+/* @media (max-width: 768px) {*/
+/*   .content {*/
+/*     margin: 16px;*/
+/*     padding: 10px;*/
+/*   }*/
+/* }*/
