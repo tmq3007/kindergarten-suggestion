@@ -4,3 +4,15 @@ spring:
     username: root
     password: admin123
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: marcowu.shop
+      port: 6379
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 8

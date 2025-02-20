@@ -4,6 +4,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {decrement, increment, incrementByAmount, reset} from "@/redux/features/counterSlice";
 import {useRouter} from "next/navigation";
+import Login from "@/components/Login";
 
 export default function Page() {
     const count = useSelector((state: RootState) => state.counter.value);
@@ -22,6 +23,7 @@ export default function Page() {
             <button onClick={() => dispatch(reset())}>reset</button>
             <br/>
             <button onClick={() => router.back()}>back</button>
+            <Login></Login>
         </>
     );
 };

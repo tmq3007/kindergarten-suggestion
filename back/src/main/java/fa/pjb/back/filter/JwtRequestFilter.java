@@ -3,12 +3,14 @@ package fa.pjb.back.filter;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.service.impl.UserDetailsServiceImpl;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -28,11 +31,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     // Danh sách URL không cần xác thực
     private static final List<String> PUBLIC_URLS = List.of(
-            "/",
-            "/auth/login",
-            "/auth/register",
-            "/public/",
-            "/docs"
+//            "/",
+            "/api/auth/login",
+            "/api/auth/refresh"
     );
 
     @Override
@@ -56,14 +57,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Trích xuất JWT Access Token từ Cookie
         String jwt = httpRequestHelper.extractJwtTokenFromCookie(request, "ACCESS_TOKEN");
-        String username = null;
+        if (jwt == null) {
+            throw new JwtException("Invalid Access Token");
+        }
         // Nếu có jwt thì trích xuất username từ jwt
-        if (jwt != null) {
-            username = jwtUtil.extractUsername(jwt);
+        String username = jwtUtil.extractUsername(jwt);
+        if (username == null) {
+            throw new JwtException("Invalid Access Token");
         }
         // Nếu có username thì kiểm tra người dùng đã xác thực chưa
         // Bằng cách kiểm tra xem có tồn tại Authentication (người dùng đã xác thực) trong SecurityContext hay không
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             // Nếu người dùng chưa xác thực thì ta tiến hành xác thực thông qua UserDetailsService
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
             // Sau khi đã xác thực xong, ta tiếp tục kiểm tra tính hợp lệ của token

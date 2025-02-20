@@ -2,8 +2,10 @@ package fa.pjb.back.common.util;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class HttpRequestHelper {
     private static final String AUTHORIZATION_HEADER = "Authorization";

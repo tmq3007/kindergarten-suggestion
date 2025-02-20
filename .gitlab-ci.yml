@@ -9,16 +9,25 @@ variables:
   FRONTEND_IMAGE: $REGISTRY/kss_front
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  DOCKER_DRIVER: "overlay2"
+  DB_HOST: $DB_HOST
+  DB_PORT: $DB_PORT
+  DB_NAME: $DB_NAME
+  DB_USER: $DB_USER
+  DB_PASSWORD: $DB_PASSWORD
+  SECRET_KEY: $SECRET_KEY
 
 default:
-  image: docker:20.10.16
+  image: docker:latest
 
 services:
-  - docker:dind
+  - name: docker:dind
+    alias: docker
+    command: ["--network=host"]
 
 before_script:
   - apk add --no-cache docker
-  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
 
 # 🛠 Build Docker Image - Chỉ build khi có thay đổi trong front/
 build-job:
@@ -34,7 +43,7 @@ build-job:
       fi
 
     # Build và push Docker image với commit hash tag
-    - docker build -t $IMAGE_TAG -f ./front/Dockerfile ./front
+    - docker build --no-cache --pull -t $IMAGE_TAG -f ./front/Dockerfile ./front
     - docker push $IMAGE_TAG
   artifacts:
     paths:
@@ -96,8 +105,8 @@ push-to-company-gitlab:
   before_script:
     - apk add --no-cache git rsync
   script:
-    - git config --global user.name "HieuNM147"
-    - git config --global user.email "hieunm147@fpt.com"
+    - git config --global user.name "hieungo"
+    - git config --global user.email "hieunmhe182607@fpt.edu.vn"
 
     # Kiểm tra nếu nhánh feature-branch đã tồn tại thì xóa đi trước khi tạo lại
     - git branch -D feature-branch || true
