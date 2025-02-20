@@ -1,7 +1,7 @@
 import {BaseQueryApi, FetchArgs, fetchBaseQuery, FetchBaseQueryMeta} from "@reduxjs/toolkit/query/react";
 import Cookies from 'js-cookie'
 // BASE_URL của server
-export const BASE_URL = 'http://localhost:8080';
+export const BASE_URL = 'http://localhost:8080/api';
 
 export const baseQuery = fetchBaseQuery({
     baseUrl: BASE_URL,
