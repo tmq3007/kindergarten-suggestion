@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -27,6 +28,8 @@ public class EmailServiceImpl implements EmailService {
 
     private final Configuration freemarkerConfig;
 
+    private final UserRepository userRepository;
+
     public void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> model) throws MessagingException, IOException, TemplateException {
 
         // Load email template
@@ -49,16 +52,16 @@ public class EmailServiceImpl implements EmailService {
 
 
     @Override
-    public String sendPasswordResetEmail(String to, String resetLink) {
+    public String sendLinkPasswordResetEmail(String to, String name, String resetLink) {
         try {
             // Truyền dữ liệu vào template Freemarker
             Map<String, Object> model = new HashMap<>();
-            model.put("name", "John Doe");
+            model.put("name", name);
             model.put("resetLink", resetLink);
 
             // Gửi email
             sendEmailWithTemplate(to, "Password Reset", "password-reset", model);
-            return "Password reset email sent successfully!";
+            return "Link password reset sent successfully!";
 
 
         } catch (MessagingException | IOException | TemplateException e) {

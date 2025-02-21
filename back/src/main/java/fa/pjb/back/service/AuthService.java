@@ -1,6 +1,8 @@
 package fa.pjb.back.service;
 
+import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
+import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -10,4 +12,6 @@ public interface AuthService {
     LoginVO refresh(LoginDTO loginDTO, HttpServletResponse response);
 
     LoginVO logout(HttpServletResponse response);
+
+    ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response);
 }
