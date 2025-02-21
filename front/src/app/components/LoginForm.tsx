@@ -10,8 +10,8 @@ import {ApiResponse, CustomFetchBaseQueryError} from "@/redux/services/config/ba
 import {useRouter} from "next/navigation";
 
 type FieldType = {
-    username?: string;
-    password?: string;
+    username: string;
+    password: string;
 };
 
 const indie = Indie_Flower({
@@ -52,8 +52,6 @@ const LoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) =>
                 });
         }
 
-        console.log("Full error:", error);
-
         if (error && "data" in error) {
             const code = (error as CustomFetchBaseQueryError).data?.code;
 
@@ -88,7 +86,7 @@ const LoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) =>
             {contextHolder}
             <Form
                 className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/3 sm:w-full shadow-xl`}
-                name="basic"
+                name="login_form"
                 labelCol={{span: 8}}
                 wrapperCol={{span: 16}}
                 style={{maxWidth: 600}}
