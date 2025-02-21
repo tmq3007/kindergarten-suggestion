@@ -14,7 +14,6 @@ import java.util.Objects;
 @Setter
 @Embeddable
 public class UtilitiesOfSchoolId implements java.io.Serializable {
-    private static final long serialVersionUID = -5399660417732690524L;
     @NotNull
     @Column(name = "UID", nullable = false)
     private Byte uid;

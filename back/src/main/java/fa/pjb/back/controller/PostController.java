@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
     @Autowired
     UserRepository usersRepository;
+
     @GetMapping
     public String test(){
         return "test";
