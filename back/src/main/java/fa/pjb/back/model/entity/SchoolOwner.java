@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "school_owner")
+@Table(name = "School_Owner")
 public class SchoolOwner {
     @EmbeddedId
     private SchoolOwnerId id;

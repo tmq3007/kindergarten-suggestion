@@ -4,8 +4,6 @@ import fa.pjb.back.common.exception.EmailNotFoundException;
 import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
-import fa.pjb.back.model.entity.KssUser;
-import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
@@ -84,27 +82,5 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginVO logout(HttpServletResponse response) {
         return null;
-    }
-
-    @Override
-    public ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
-        //Lấy user theo email
-        Optional<KssUser> user = userRepository.findByEmail(forgotPasswordDTO.email());
-        //Kiểm tra nếu user tồn tại
-        if (user.isEmpty()) {
-            throw new EmailNotFoundException(forgotPasswordDTO.email());
-        }
-
-        //fpToken: Lưu vào Redis
-        String fpToken = jwtUtil.generateForgotPasswordToken();
-        tokenService.saveTokenInRedis("FORGOTPASS_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
-
-        String resetLink = "http://localhost:3000/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
-        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(),resetLink);
-
-        return ForgotPasswordVO.builder()
-                .fpToken(fpToken)
-                .username(user.get().getUsername())
-                .build();
     }
 }

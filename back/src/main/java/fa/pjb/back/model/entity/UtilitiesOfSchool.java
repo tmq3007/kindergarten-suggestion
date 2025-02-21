@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "utilities_of_school")
+@Table(name = "Utilities_of_School")
 public class UtilitiesOfSchool {
     @EmbeddedId
     private UtilitiesOfSchoolId id;

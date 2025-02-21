@@ -1,49 +1,63 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "Parent")
-@Data
 public class Parent {
-
     @Id
-    @Column(name = "UserID")
-    private Integer userID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "User_ID", nullable = false)
+    private Integer id;
 
-    @OneToOne
     @MapsId
-    @JoinColumn(name = "UserID")
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "User_ID", nullable = false)
     private User user;
 
-    @Column(nullable = false, length = 255)
-    private String fullName;
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "Fullname", nullable = false)
+    private String fullname;
 
-    @Column(nullable = false)
-    private Boolean gender;
+    @NotNull
+    @Column(name = "Gender", nullable = false)
+    private Boolean gender = false;
 
-    @Column(length = 20)
-    private String phoneNumber;
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "Phone", nullable = false, length = 20)
+    private String phone;
 
-    @Column(length = 500)
-    private String image;
+    @NotNull
+    @Column(name = "DOB", nullable = false)
+    private LocalDate dob;
 
-    @Column
-    private Date DOB;
-
-    @Column(length = 255)
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "District", nullable = false)
     private String district;
 
-    @Column(length = 255)
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "Ward", nullable = false)
     private String ward;
 
-    @Column(length = 255)
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "Province", nullable = false)
     private String province;
 
-    @Column(length = 255)
+    @Size(max = 255)
+    @Column(name = "Street")
     private String street;
-}
 
+}

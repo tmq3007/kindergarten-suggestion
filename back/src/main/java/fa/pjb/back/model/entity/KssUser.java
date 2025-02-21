@@ -7,7 +7,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Set;
 
 @Entity
 @Builder
@@ -16,7 +15,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString(exclude = "password")
-@Table(name = "User")
+@Table(name = "users")
 public class KssUser implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

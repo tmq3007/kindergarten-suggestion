@@ -3,10 +3,17 @@ import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.Set;
+
 @Entity
 @Table(name = "User")
 @Data
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,9 +31,14 @@ public class User {
     private Boolean status;
 
     @Column(nullable = false)
-    private Byte role;
+    private String role;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Parent Parent;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Set.of(new SimpleGrantedAuthority(role));
+    }
 
 }

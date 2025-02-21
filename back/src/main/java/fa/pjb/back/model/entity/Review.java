@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "review")
+@Table(name = "Review")
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
