@@ -3,10 +3,12 @@ package fa.pjb.back.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Date;
+
 @Entity
-@Table(name = "user_details")
+@Table(name = "Parent")
 @Data
-public class UserDetails {
+public class Parent {
 
     @Id
     @Column(name = "UserID")
@@ -29,7 +31,8 @@ public class UserDetails {
     @Column(length = 500)
     private String image;
 
-    private String dateOfBirth;
+    @Column
+    private Date DOB;
 
     @Column(length = 255)
     private String district;

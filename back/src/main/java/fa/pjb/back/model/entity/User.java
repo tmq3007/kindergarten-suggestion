@@ -9,7 +9,7 @@ import lombok.*;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userID;
+    private Integer id;
 
     @Column(nullable = false, unique = true, length = 50)
     private String username;
@@ -27,6 +27,6 @@ public class User {
     private Byte role;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserDetails userDetails;
+    private Parent Parent;
 
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { SearchOutlined } from "@ant-design/icons";
-import UserList from "./component/UserList";
+import UserList from "../../../components/UserList";
 export default () => {
     return (
         <>

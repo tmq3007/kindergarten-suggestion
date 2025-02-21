@@ -22,6 +22,7 @@ class BackApplicationTests {
         try {
             if (dataSource.getConnection() != null) {
                 System.out.println("Kết nối cơ sở dữ liệu thành công!");
+                System.out.println(userRepository.findAll());
             }
         } catch (Exception e) {
             System.out.println("Kết nối cơ sở dữ liệu thất bại: " + e.getCause());

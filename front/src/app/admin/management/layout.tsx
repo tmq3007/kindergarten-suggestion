@@ -1,5 +1,5 @@
 'use client'
-import React, {useState} from 'react';
+import React, {Children, useState} from 'react';
 import logo from '@public/logo2.png';
 import {
     BellOutlined,
@@ -104,7 +104,7 @@ export default function AdminLayout() {
                         borderRadius: borderRadiusLG,
                     }}
                 >
-                    Content
+                    
                 </Content>
             </Layout>
         </Layout>
