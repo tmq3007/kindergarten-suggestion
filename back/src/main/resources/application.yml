@@ -15,7 +15,8 @@ spring:
       minimum-idle: 2
       idle-timeout: 30000
       connection-timeout: 30000
-      max-lifetime: 1800000
+      validation-timeout: 5000
+      max-lifetime: 100000
   mail:
     host: smtp.gmail.com
     port: 587
@@ -46,3 +47,6 @@ access-token-exp: 600000
 refresh-token-exp: 6000000
 csrf-token-exp: 600000
 forgotpass-token-exp: 300000
+
+
+

@@ -1,15 +1,22 @@
 package fa.pjb.back.common.exception;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
-import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorProperty;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseErrorCode("1000")
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class UserNotFoundException extends RuntimeException{
+@Getter
+@Setter
+public class UserNotFoundException extends RuntimeException {
+    private final int code;
+    private final HttpStatus status;
 
-    public UserNotFoundException(String username) {
-        super("Could not found user with username " + username);
+    public UserNotFoundException() {
+        super("User not found");
+        this.code = 1000;
+        this.status = HttpStatus.NOT_FOUND; // 404
     }
 }

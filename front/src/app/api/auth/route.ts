@@ -4,11 +4,9 @@ import {jwtDecode} from 'jwt-decode';
 
 export async function POST(req: NextRequest) {
     try {
-        const {data} = await req.json();
+        const data = await req.json();
         const accessToken = data.accessToken;
         const csrfToken = data.csrfToken;
-        console.log("AT: " + accessToken)
-        console.log("CSRF:" + csrfToken)
         // Nếu thiếu 1 trong 2 token thì ném lỗi
         if (!accessToken || !csrfToken) {
             return NextResponse.json({message: 'Missing token'}, {status: 400});

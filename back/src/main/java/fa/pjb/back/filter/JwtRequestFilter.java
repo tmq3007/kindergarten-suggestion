@@ -31,7 +31,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     // Danh sách URL không cần xác thực
     private static final List<String> PUBLIC_URLS = List.of(
-//            "/",
+            "/",
             "/api/auth/login",
             "/api/auth/refresh",
             "/api/auth/forgot-password"

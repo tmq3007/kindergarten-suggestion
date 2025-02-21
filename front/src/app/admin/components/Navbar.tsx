@@ -1,5 +1,6 @@
 'use client'
 import { LogoutOutlined, MessageOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import React from "react";
 
 interface NavbarProps {
     collapsed: boolean;
