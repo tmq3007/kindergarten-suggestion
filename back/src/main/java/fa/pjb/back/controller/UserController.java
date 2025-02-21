@@ -28,7 +28,7 @@ public class UserController {
     @GetMapping("user")
     public ApiResponse<Page<UserVO>> getAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "1") int size
     ){
         Page<UserVO> users = userService.getAllUsers(PageRequest.of(page, size));
         return ApiResponse.<Page<UserVO>>builder()

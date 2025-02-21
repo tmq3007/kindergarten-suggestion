@@ -3,13 +3,11 @@ package fa.pjb.back.model.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -41,5 +39,10 @@ public class SchoolOwner {
     @NotNull
     @Column(name = "DOB", nullable = false)
     private LocalDate dob;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "School_ID", nullable = false)
+    private School school;
 
 }
