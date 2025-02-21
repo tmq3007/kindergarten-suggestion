@@ -5,6 +5,7 @@ import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.entity.KssUser;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.repository.UserRepository;
@@ -89,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         //Lấy user theo email
-        Optional<KssUser> user = userRepository.findByEmail(forgotPasswordDTO.email());
+        Optional<User> user = userRepository.findByEmail(forgotPasswordDTO.email());
         //Kiểm tra nếu user tồn tại
         if (user.isEmpty()) {
             throw new EmailNotFoundException(forgotPasswordDTO.email());

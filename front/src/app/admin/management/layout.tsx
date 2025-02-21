@@ -120,7 +120,7 @@ export default function AdminLayout({children}: Props) {
                         borderRadius: borderRadiusLG,
                     }}
                 >
-                    {children}
+                    
                 </Content>
             </Layout>
         </Layout>

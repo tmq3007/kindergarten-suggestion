@@ -21,3 +21,5 @@ target/
 *.ipr
 
 
+/src/main/resources/.env
+/src/main/resources/marco.pem

@@ -1,6 +1,7 @@
 package fa.pjb.back.model.entity;
-
 import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,22 +11,17 @@ import java.util.Collection;
 import java.util.Set;
 
 @Entity
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString(exclude = "password")
-@Table(name = "users")
-public class KssUser implements UserDetails {
+@Table(name = "User")
+@Data
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false, unique = true, length = 255)
@@ -34,12 +30,11 @@ public class KssUser implements UserDetails {
     @Column(nullable = false)
     private Boolean status;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(nullable = false)
-//    private ERole role;
-
     @Column(nullable = false)
     private String role;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Parent Parent;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
