@@ -1,6 +1,6 @@
 import type {Metadata} from "next";
-import "./globals.css";
 import StoreProvider, {Props} from "@/redux/StoreProvider";
+import Header from "@/app/home/components/Header";
 import Footer from "@/app/home/components/Footer";
 
 
@@ -14,8 +14,9 @@ export default function RootLayout({children}: Props) {
         <html lang="en">
         <body>
         <StoreProvider>
+            <Header/>
             {children}
-
+            <Footer/>
         </StoreProvider>
         </body>
         </html>
