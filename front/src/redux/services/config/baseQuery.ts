@@ -1,5 +1,6 @@
 import {BaseQueryApi, FetchArgs, fetchBaseQuery, FetchBaseQueryMeta} from "@reduxjs/toolkit/query/react";
 import Cookies from 'js-cookie'
+import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 // BASE_URL của server
 export const BASE_URL = 'http://localhost:8080/api';
 
@@ -74,4 +75,17 @@ export const baseQueryWithReauth = async (
         }
     }
     return result;
+};
+
+export type ApiResponse<T> = {
+    code: number;
+    message: string;
+    data: T;
+};
+
+export type CustomFetchBaseQueryError = FetchBaseQueryError & {
+    data?: {
+        code: number;
+        message: string;
+    };
 };
