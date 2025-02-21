@@ -4,7 +4,6 @@ import fa.pjb.back.common.exception.EmailNotFoundException;
 import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
-import fa.pjb.back.model.entity.KssUser;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
@@ -22,8 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import java.util.Optional;
 
