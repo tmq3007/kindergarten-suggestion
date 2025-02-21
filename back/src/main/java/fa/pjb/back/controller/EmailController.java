@@ -15,9 +15,9 @@ public class EmailController {
     private final EmailService emailService;
 
     @PostMapping("send-password-reset")
-    public ApiResponse<String> sendPasswordResetEmail(@RequestParam String to, @RequestParam String resetLink) {
+    public ApiResponse<String> sendPasswordResetEmail(@RequestParam String to, @RequestParam String name, @RequestParam String resetLink) {
         return ApiResponse.<String>builder()
-                .data(emailService.sendPasswordResetEmail(to, resetLink))
+                .data(emailService.sendLinkPasswordResetEmail(to, name, resetLink))
                 .build();
     }
 

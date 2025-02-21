@@ -1,9 +1,9 @@
 'use client'
-import React, {Children, useState} from 'react';
-import logo from '@public/logo2.png';
+import React, {useState} from 'react';
+import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
-    HomeOutlined,
+    HomeOutlined, LogoutOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     UsergroupAddOutlined,
@@ -14,8 +14,10 @@ import {Button, ConfigProvider, Layout, Menu, Space, theme} from 'antd';
 import Image from "next/image";
 
 const {Header, Sider, Content} = Layout;
+import StoreProvider, {Props} from "@/redux/StoreProvider";
+import Link from "next/link";
 
-export default function AdminLayout() {
+export default function AdminLayout({children}: Props) {
     const [collapsed, setCollapsed] = useState(false);
     const {
         token: {colorBgContainer, borderRadiusLG},
@@ -26,12 +28,10 @@ export default function AdminLayout() {
             <ConfigProvider
                 theme={{
                     components: {
-                        Layout: {
-                            siderBg: '#E2FFF8',
-                        },
+                        Layout: {},
                         Menu: {
                             iconSize: 20,
-                            itemSelectedColor: 'red'
+                            // itemSelectedColor: 'red'
                         }
                     },
                 }}
@@ -39,43 +39,29 @@ export default function AdminLayout() {
                 <Sider className={'hidden md:block'} trigger={null} collapsible collapsed={collapsed}>
                     <Image className={'mx-auto'} src={logo} alt={'logo'} height={70} width={70}/>
                     <div className="demo-logo-vertical"/>
-                    <Menu
-                    className={'bg-custom'}
-                    mode="inline"
-                    defaultSelectedKeys={['1']}
-                    items={[
-                    {
-                    key: '1',
-                    icon: <HomeOutlined/>,
-                    label: 'School Management',
-                    },
-                    {
-                    key: '2',
-                    icon: <UserOutlined/>,
-                    label: 'User Management',
-                    },
-                    {
-                    key: '3',
-                    icon: <BellOutlined/>,
-                    label: 'Reminder',
-                    },
-                    {
-                    key: '4',
-                    icon: <UsergroupAddOutlined/>,
-                    label: 'Parent Management',
-                    },
-                    {
-                    key: '5',
-                    icon: <WindowsOutlined/>,
-                    label: 'Request Management',
-                    },
-                    ]}
-                    />
+                    <Menu theme={'dark'} mode="inline" defaultSelectedKeys={['1']}>
+                        <Menu.Item key="1" icon={<HomeOutlined/>}>
+                            <Link href="/school-management">School Management</Link>
+                        </Menu.Item>
+                        <Menu.Item key="2" icon={<UserOutlined/>}>
+                            <Link href="/management/user/create-user">User Management</Link>
+                        </Menu.Item>
+                        <Menu.Item key="3" icon={<BellOutlined/>}>
+                            <Link href="/reminder">Reminder</Link>
+                        </Menu.Item>
+                        <Menu.Item key="4" icon={<UsergroupAddOutlined/>}>
+                            <Link href="/parent-management">Parent Management</Link>
+                        </Menu.Item>
+                        <Menu.Item key="5" icon={<WindowsOutlined/>}>
+                            <Link href="/request-management">Request Management</Link>
+                        </Menu.Item>
+                    </Menu>
                 </Sider>
 
             </ConfigProvider>
             <Layout>
-                <Header className={'flex'} style={{padding: 0, background: colorBgContainer}}>
+                <Header className={'flex justify-between items-center'}
+                        style={{padding: 0, background: colorBgContainer}}>
                     <Button
                         className={'hidden md:block'}
                         type="text"
@@ -88,12 +74,42 @@ export default function AdminLayout() {
                         }}
                     />
                     <Space className={'md:hidden flex justify-evenly w-full h-full'}>
-                        <HomeOutlined/>
-                        <UserOutlined/>
-                        <BellOutlined/>
-                        <UsergroupAddOutlined/>
-                        <WindowsOutlined/>
+                        <Link href="/school-management">
+                            <HomeOutlined/>
+                        </Link>
+                        <Link href="/user-management">
+                            <UserOutlined/>
+                        </Link>
+                        <Link href="/reminder">
+                            <BellOutlined/>
+                        </Link>
+                        <Link href="/parent-management">
+                            <UsergroupAddOutlined/>
+                        </Link>
+                        <Link href="/request-management">
+                            <WindowsOutlined/>
+                        </Link>
+                        <Link href="/logout">
+                            <LogoutOutlined />
+                        </Link>
                     </Space>
+                    <Link className="hidden md:block" href="/logout">
+                        <Button
+                            type="text"
+                            icon={<LogoutOutlined />}
+                            style={{
+                                fontSize: '16px',
+                                width: 'auto',
+                                height: 64,
+                                color:'red'
+                            }}
+                        >
+                            Logout
+                        </Button>
+                    </Link>
+
+
+
                 </Header>
                 <Content
                     style={{
@@ -104,7 +120,7 @@ export default function AdminLayout() {
                         borderRadius: borderRadiusLG,
                     }}
                 >
-                    
+                    {children}
                 </Content>
             </Layout>
         </Layout>

@@ -1,52 +1,22 @@
-"use client";
-import Image from "next/image";
-import Menu from "@/app/admin/components/Menu";
-import Navbar from "@/app/admin/components/Navbar";
-import { useState, useEffect } from "react";
+import type {Metadata} from "next";
+import StoreProvider, {Props} from "@/redux/StoreProvider";
+import HeaderHome from "@/app/(public)/component/HeaderHome";
 
-export default function DashboardLayout({
-    children,
-}: Readonly<{ children: React.ReactNode }>) {
-    const [collapsed, setCollapsed] = useState(false);
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setCollapsed(true);
-            } else {
-                setCollapsed(false);
-            }
-        };
+export const metadata: Metadata = {
+    title: "Kindergarten Suggestion System",
+    description: "Website for parent to find ideal kindergarten",
+};
 
-        handleResize();
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
+export default function RootLayout({children}: Props) {
     return (
-        <div className="h-screen flex">
-            {/* LEFT */}
-            <div
-                className={`flex flex-col ${collapsed ? "w-[10%]" : "w-[24%] lg:w-[16%] xl:w-[14%]"
-                    } transition-all duration-300 p-4 shadow-md`}
-            >
-                {/* LOGO */}
-                <div className="flex items-center justify-center w-full">
-                    <Image
-                        src="/logo.png"
-                        alt="logo"
-                        width={100}
-                        height={60}
-                        className="logo-responsive"
-                    />
-                </div>
-            </div>
-
-            {/* RIGHT */}
-            <div className="flex flex-col w-full bg-[#F7F8FA] overflow-scroll ">
-                <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
-                <div className="p-2">{children}</div>
-            </div>
-        </div>
+        <html lang="en">
+        <body>
+        <StoreProvider>
+            <HeaderHome/>
+             {children}
+         </StoreProvider>
+        </body>
+        </html>
     );
-}
+};
