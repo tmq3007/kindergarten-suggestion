@@ -36,6 +36,9 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Parent Parent;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private SchoolOwner SchoolOwner;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Set.of(new SimpleGrantedAuthority(role));

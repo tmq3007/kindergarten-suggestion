@@ -1,3 +1,6 @@
+import { Pagination } from "antd";
+import UserTableRow from "./UserTableRow";
+
 export default function UserList() {
     return (
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -15,59 +18,13 @@ export default function UserList() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                    </tr>
-                    <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                    </tr>
-                    <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                    </tr>
+                    {
+                        
+                    }
                 </tbody>
             </table>
             <div className="flex justify-between items-center px-4 py-3">
-                <div className="text-sm text-slate-500">
-                    Showing <b>1-5</b> of 45
-                </div>
-                <div className="flex space-x-1">
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        Prev
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-white bg-slate-800 border border-slate-800 rounded hover:bg-slate-600 hover:border-slate-600 transition duration-200 ease">
-                        1
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        2
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        3
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        Next
-                    </button>
-                </div>
+                <Pagination defaultCurrent={1} total={500} size="default"/>
             </div>
         </div>
     );
