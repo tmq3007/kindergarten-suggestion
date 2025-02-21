@@ -8,6 +8,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+        physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
   datasource:
     hikari:
       maximum-pool-size: 10
@@ -44,3 +45,4 @@ application-version: '@project.version@'
 access-token-exp: 600000
 refresh-token-exp: 6000000
 csrf-token-exp: 600000
+forgotpass-token-exp: 300000

@@ -1,12 +1,17 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception.EmailNotFoundException;
 import fa.pjb.back.common.util.JwtUtil;
+import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
+import fa.pjb.back.model.entity.KssUser;
+import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
+import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.TokenService;
 import io.github.cdimascio.dotenv.Dotenv;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,13 +21,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
     private final TokenService tokenService;
+    private final EmailService emailService;
     private final Dotenv dotenv = Dotenv.load();
     @Value("${access-token-exp}")
     private int ACCESS_TOKEN_EXP;
@@ -30,6 +41,8 @@ public class AuthServiceImpl implements AuthService {
     private int REFRESH_TOKEN_EXP;
     @Value("${csrf-token-exp}")
     private int CSRF_TOKEN_EXP;
+    @Value("${forgotpass-token-exp}")
+    private int FORGOT_TOKEN_EXP;
 
 
     @Override
@@ -71,5 +84,27 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginVO logout(HttpServletResponse response) {
         return null;
+    }
+
+    @Override
+    public ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
+        //Lấy user theo email
+        Optional<KssUser> user = userRepository.findByEmail(forgotPasswordDTO.email());
+        //Kiểm tra nếu user tồn tại
+        if (user.isEmpty()) {
+            throw new EmailNotFoundException(forgotPasswordDTO.email());
+        }
+
+        //fpToken: Lưu vào Redis
+        String fpToken = jwtUtil.generateForgotPasswordToken();
+        tokenService.saveTokenInRedis("FORGOTPASS_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
+
+        String resetLink = "http://localhost:3000/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
+        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(),resetLink);
+
+        return ForgotPasswordVO.builder()
+                .fpToken(fpToken)
+                .username(user.get().getUsername())
+                .build();
     }
 }

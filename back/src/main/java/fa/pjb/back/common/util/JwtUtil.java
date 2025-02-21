@@ -118,6 +118,11 @@ public class JwtUtil {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    // Phương thức dùng để tạo ra ForgotPassword Token
+    public String generateForgotPasswordToken() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
     // Phương thúc dùng để kiểm tra tính hợp lệ của token
     // Token hợp lệ là token thỏa mãn cả 2 điều kiện:
     // 1. sub (trong trường hợp này là username) phải trùng với username của UserDetails

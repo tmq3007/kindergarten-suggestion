@@ -33,7 +33,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private static final List<String> PUBLIC_URLS = List.of(
 //            "/",
             "/api/auth/login",
-            "/api/auth/refresh"
+            "/api/auth/refresh",
+            "/api/auth/forgot-password"
     );
 
     @Override
