@@ -1,6 +1,5 @@
 package fa.pjb.back;
 
-import fa.pjb.back.model.entity.KssUser;
 import fa.pjb.back.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
