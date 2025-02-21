@@ -24,7 +24,7 @@ class BackApplicationTests {
                 System.out.println("Kết nối cơ sở dữ liệu thành công!");
             }
         } catch (Exception e) {
-            System.out.println("Kết nối cơ sở dữ liệu thất bại: " + e.getMessage());
+            System.out.println("Kết nối cơ sở dữ liệu thất bại: " + e.getCause());
         }
     }
 
