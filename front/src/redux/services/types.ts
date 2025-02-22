@@ -33,3 +33,10 @@ export type UserVO = {
     role: string,
     status: string,
 }
+
+export type Pageable = {
+    pageNumber: number,
+    pageSize: number,
+    totalElements: number,
+    totalPages: number,
+}

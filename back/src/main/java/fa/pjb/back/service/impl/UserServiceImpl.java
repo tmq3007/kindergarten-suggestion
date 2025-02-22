@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
                     .fullname(temp.getFullname())
                     .email(user.getEmail())
                     .phone(temp.getPhone())
-                    .address(temp.getStreet()+temp.getWard()+temp.getDistrict()+temp.getProvince()) // Assuming address is null for Parent
+                    .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
                     .role("Parent")
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
@@ -53,6 +53,7 @@ public class UserServiceImpl implements UserService {
                     .fullname(user.getSchoolOwner().getFullname())
                     .email(user.getEmail())
                     .phone(user.getSchoolOwner().getPhone())
+                    .address("N/A")
                     .role("School Owner")
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
@@ -61,8 +62,8 @@ public class UserServiceImpl implements UserService {
                     .id(user.getId())
                     .fullname(user.getUsername())
                     .email(user.getEmail())
-                    .phone("") // Assuming phone is null for generic users
-                    .address("") // Assuming address is null for generic users
+                    .phone("N/A")
+                    .address("N/A")
                     .role("Admin")
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
