@@ -1,127 +1,194 @@
 'use client'
 import React from 'react';
- import {
-    Button,
-    Cascader,
-    DatePicker,
-    Form,
-    Input,
-    InputNumber,
-    Mentions,
-    Segmented,
-    Select, Space,
-    TreeSelect, Typography,
+import {
+    Button, DatePicker, Form, Input, Select, Space, Typography, notification,
 } from 'antd';
 import { Breadcrumb } from 'antd';
 import Link from "next/link";
 import dayjs from "dayjs";
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/redux/store';
+import { setParent } from '@/redux/features/parentSlice';
+import { useCreateParentMutation } from '@/redux/services/User/parentApi';
+import {   Spin } from 'antd';
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
 const formItemLayout = {
-    labelCol: {
-        xs: { span: 24 },
-        sm: { span: 6 },
-    },
-    wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 14 },
-    },
+    labelCol: { xs: { span: 24 }, sm: { span: 8 } }, // Điều chỉnh chiều rộng label
+    wrapperCol: { xs: { span: 24 }, sm: { span: 16 } }, // Điều chỉnh input field
 };
 
 const CreateUser: React.FC = () => {
     const [form] = Form.useForm();
+    const [api, contextHolder] = notification.useNotification();
+    const dispatch = useDispatch<AppDispatch>();
+    const [createParent] = useCreateParentMutation();
+    const [spinning, setSpinning] = React.useState(false);
+    const [percent, setPercent] = React.useState(0);
+
+    const showLoader = () => {
+        setSpinning(true);
+        let ptg = -10;
+
+        const interval = setInterval(() => {
+            ptg += 5;
+            setPercent(ptg);
+
+            if (ptg > 120) {
+                clearInterval(interval);
+                setSpinning(false);
+                setPercent(0);
+            }
+        }, 100);
+    };
+    const onFinish = async (values: any) => {
+        setSpinning(true); // Bắt đầu hiển thị loader khi gửi request
+
+        const formattedValues = {
+            ...values,
+            dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
+            gender: values.gender === "male" ? 1 : 0,
+            status: values.status === "1" ? 1 : 0,
+            role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
+            ward: values.ward || "",
+            province: values.province || "",
+            street: values.street || "",
+            district: values.district || ""
+        };
+
+        try {
+            const response = await createParent(formattedValues).unwrap();
+            console.log("API response:", response);
+            if (response.data) {
+                dispatch(setParent(formattedValues));
+                openNotificationWithIcon('success');
+                form.resetFields();
+            } else {
+                openNotificationWithIcon('error');
+            }
+        } catch (error) {
+            openNotificationWithIcon('error');
+        } finally {
+            setSpinning(false); // Tắt loader sau khi API xử lý xong
+        }
+    };
+
+
+    const openNotificationWithIcon = (type: 'success' | 'error') => {
+        api[type]({
+            message: type === 'success' ? 'User created successfully!' : 'User creation failed!',
+            description: type === 'success' ? 'Check your email for username and password' : 'An error occurred while creating the user.',
+        });
+    };
+
     return (
-        <>
+        <div className={'h-[90%]'}>
+            {contextHolder}
             <Breadcrumb
                 items={[
-
-                    {
-                        title: <Link href="/management/user/create-user">User Management</Link>,
-                    },
-
-                    {
-                        title: 'Add New User',
-                    },
+                    { title: <Link href="/management/user/create-user">User Management</Link> },
+                    { title: 'Add New User' },
                 ]}
             />
             <Title level={3} className="my-2 ml-16">Add New User</Title>
             <Form
                 {...formItemLayout}
-                labelCol={{ flex: '110px' }}
+                form={form}
+                labelCol={{ flex: '120px' }}
                 labelAlign="left"
                 labelWrap
-                form={form}
-                variant={'filled'}
+                onFinish={onFinish}
                 style={{ maxWidth: 600 }}
-                initialValues={{ variant: 'filled' }}
-                className={'w-full mx-auto mt-5 '}
+                className="w-full mx-auto mt-3 "
             >
-
-                <Form.Item label="User Name"  name="username"  >
+                <Form.Item label="User Name" name="username">
                     <Input placeholder="System Auto Generate" disabled />
                 </Form.Item>
 
-                <Form.Item label="Full Name" name="fullname" rules={[{ required: true, message: 'Please input!' }]}>
+                <Form.Item
+                    label="Full Name"
+                    name="fullName"
+                    rules={[
+                        { required: true, message: 'Full name is required!' },
+                        { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: 'Full name must contain at least two words!' }
+                    ]}
+                >
                     <Input />
                 </Form.Item>
 
-                <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please input!' }]}>
-                    <Input />
-                </Form.Item>
 
-                <Form.Item label="Phone No." name="phonenumber" rules={[{ required: true, message: 'Please input!' }]}>
+                <Form.Item
+                    label="Email"
+                    name="email"
+                    rules={[
+                        { required: true, message: 'Email is required!' },
+                        { type: 'email', message: 'Enter a valid email address!' }
+                    ]}
+                >
                     <Input />
                 </Form.Item>
 
                 <Form.Item
-                    label="DOB"
-                    name="DOB"
-                    rules={[{ required: true, message: 'Please input!' }]}
+                    label="Phone No."
+                    name="phone"
+                    rules={[
+                        { required: true, message: 'Phone number is required!' },
+                        { pattern: /^\d{10}$/, message: 'Phone number must be exactly 10 digits!' }
+                    ]}
                 >
+                    <Input />
+                </Form.Item>
+
+                <Form.Item label="Gender" name="gender" rules={[{ required: true, message: 'Please select gender!' }]}>
+                    <Select
+                        placeholder="Select gender"
+                        options={[
+                            { value: 'male', label: 'Male' },
+                            { value: 'female', label: 'Female' },
+                        ]}
+                    />
+
+                </Form.Item>
+
+                <Form.Item label="DOB" name="dob" rules={[{ required: true, message: 'Date of birth is required!' }]}>
                     <DatePicker disabledDate={(current) => current && current > dayjs().endOf('day')} />
                 </Form.Item>
 
-
-                <Form.Item
-                    label="Role"
-                    name="role"
-                    rules={[{ required: true, message: 'Please select a role!' }]}
-                >
-                    <Select placeholder="Select a role">
-                        <Option value="admin">Admin</Option>
-                        <Option value="school_owner">School Owner</Option>
-                        <Option value="parent">Parent</Option>
-                    </Select>
+                <Form.Item label="Role" name="role" rules={[{ required: true, message: 'Please select a role!' }]}>
+                    <Select
+                        placeholder="Select a role"
+                        options={[
+                            { value: 'admin', label: 'Admin' },
+                            { value: 'school_owner', label: 'School Owner' },
+                            { value: 'parent', label: 'Parent' },
+                        ]}
+                    />
                 </Form.Item>
 
-                <Form.Item
-                    initialValue={'1'}
-                    label="Status"
-                    name="Select"
-                    rules={[{ required: true, message: 'Please choose status!' }]}
-                >
-                    <Select   placeholder="Select status">
-                        <Option value="1">Active</Option>
-                        <Option value="0">Inactive</Option>
-
-                    </Select>
+                <Form.Item initialValue={'1'} label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
+                    <Select
+                        placeholder="Select status"
+                        options={[
+                            { value: '1', label: 'Active' },
+                            { value: '0', label: 'Inactive' },
+                        ]}
+                    />
                 </Form.Item>
 
                 <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
-                    <Space>
+                    <Space className="absolute bottom-6 top-1  ">
                         <Button type="dashed" htmlType="button">
                             Cancel
                         </Button>
-                        <Button type="primary" htmlType="submit">
+                        <Button   type="primary" htmlType="submit">
                             Submit
                         </Button>
                     </Space>
                 </Form.Item>
-
             </Form>
-</>
+            <Spin spinning={spinning} percent={percent} fullscreen />
+        </div>
     );
 };
 

@@ -22,3 +22,16 @@ export type LoginVO = {
     accessToken: string,
     csrfToken: string,
 }
+
+export type ParentDTO = {
+    id: number;
+    gender: boolean;
+    fullName: string;
+    phone: string;
+    dob: string; // Vì TypeScript không có LocalDate, dùng string để nhận dạng ISO date
+    district: string;
+    ward: string;
+    province: string;
+    street: string;
+    role: "ROLE_PARENT"; // Định nghĩa cố định giá trị của role
+};

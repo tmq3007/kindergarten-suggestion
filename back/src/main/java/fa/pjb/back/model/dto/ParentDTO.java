@@ -21,6 +21,6 @@ public class ParentDTO extends UserDTO {
      String ward;
      String province;
      String street;
-     String role="ROLE_PARENT";
+
 }
 

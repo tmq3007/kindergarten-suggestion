@@ -14,7 +14,6 @@ public class SchoolOwnerDTO {
 
     String password;
 
-
     String role;
 
     Boolean status;

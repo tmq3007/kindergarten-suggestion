@@ -35,9 +35,9 @@ public class ParentServiceImpl implements ParentService {
         Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
         Optional<User> existingUserName = userRepository.findByUsername(parentDTO.getUsername());
 
-//        if (existingUserEmail.isPresent()) {
-//            throw new EmailExistException();
-//        }
+        if (existingUserEmail.isPresent()) {
+            throw new EmailExistException();
+        }
         if (existingUserName.isPresent()){
             throw new UsernameExistException();
         }

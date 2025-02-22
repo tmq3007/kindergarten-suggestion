@@ -36,30 +36,46 @@ export default function AdminLayout({children}: Props) {
                     },
                 }}
             >
-                <Sider className={'hidden md:block'} trigger={null} collapsible collapsed={collapsed}>
+                <Sider className={'hidden  md:block'} trigger={null} collapsible collapsed={collapsed}>
                     <Image className={'mx-auto'} src={logo} alt={'logo'} height={70} width={70}/>
                     <div className="demo-logo-vertical"/>
-                    <Menu theme={'dark'} mode="inline" defaultSelectedKeys={['1']}>
-                        <Menu.Item key="1" icon={<HomeOutlined/>}>
-                            <Link href="/school-management">School Management</Link>
-                        </Menu.Item>
-                        <Menu.Item key="2" icon={<UserOutlined/>}>
-                            <Link href="/management/user/create-user">User Management</Link>
-                        </Menu.Item>
-                        <Menu.Item key="3" icon={<BellOutlined/>}>
-                            <Link href="/reminder">Reminder</Link>
-                        </Menu.Item>
-                        <Menu.Item key="4" icon={<UsergroupAddOutlined/>}>
-                            <Link href="/parent-management">Parent Management</Link>
-                        </Menu.Item>
-                        <Menu.Item key="5" icon={<WindowsOutlined/>}>
-                            <Link href="/request-management">Request Management</Link>
-                        </Menu.Item>
-                    </Menu>
+                    <Menu
+                        theme="dark"
+                        mode="inline"
+                        defaultSelectedKeys={["1"]}
+                        items={[
+                            {
+                                key: "1",
+                                icon: <HomeOutlined />,
+                                label: <Link href="/school-management">School Management</Link>,
+                            },
+                            {
+                                key: "2",
+                                icon: <UserOutlined />,
+                                label: <Link href="/management/user/create-user">User Management</Link>,
+                            },
+                            {
+                                key: "3",
+                                icon: <BellOutlined />,
+                                label: <Link href="/reminder">Reminder</Link>,
+                            },
+                            {
+                                key: "4",
+                                icon: <UsergroupAddOutlined />,
+                                label: <Link href="/parent-management">Parent Management</Link>,
+                            },
+                            {
+                                key: "5",
+                                icon: <WindowsOutlined />,
+                                label: <Link href="/request-management">Request Management</Link>,
+                            },
+                        ]}
+                    />
+
                 </Sider>
 
             </ConfigProvider>
-            <Layout>
+            <Layout >
                 <Header className={'flex justify-between items-center'}
                         style={{padding: 0, background: colorBgContainer}}>
                     <Button
@@ -119,6 +135,8 @@ export default function AdminLayout({children}: Props) {
                         background: colorBgContainer,
                         borderRadius: borderRadiusLG,
                     }}
+                    className={'overflow-auto'}
+
                 >
                     {children}
                 </Content>
