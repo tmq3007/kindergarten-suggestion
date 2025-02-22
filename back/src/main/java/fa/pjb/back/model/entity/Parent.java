@@ -26,7 +26,7 @@ public class Parent {
     @Size(max = 255)
     @NotNull
     @Column(name = "Fullname", nullable = false)
-    private String fullname;
+    private String fullName;
 
     @NotNull
     @Column(name = "Gender", nullable = false)

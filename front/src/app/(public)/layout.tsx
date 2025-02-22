@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import StoreProvider, {Props} from "@/redux/StoreProvider";
 import HeaderHome from "@/app/(public)/component/HeaderHome";
+import FooterHome from "@/app/(public)/component/FooterHome";
 
 
 export const metadata: Metadata = {
@@ -8,14 +9,17 @@ export const metadata: Metadata = {
     description: "Website for parent to find ideal kindergarten",
 };
 
-export default function RootLayout({children}: Props) {
+export default function RootLayout({ children }: Props) {
     return (
         <html lang="en">
-        <body>
-        <StoreProvider>
-            <HeaderHome/>
-             {children}
-         </StoreProvider>
+        <body className="min-h-screen flex flex-col">
+        <HeaderHome />
+
+        <main className="">
+            {children}
+        </main>
+
+        <FooterHome />
         </body>
         </html>
     );

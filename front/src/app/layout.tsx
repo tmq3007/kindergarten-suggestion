@@ -1,7 +1,6 @@
 import type {Metadata} from "next";
 import "./globals.css";
 import StoreProvider, {Props} from "@/redux/StoreProvider";
-import Footer from "@/app/home/components/Footer";
 
 
 export const metadata: Metadata = {
