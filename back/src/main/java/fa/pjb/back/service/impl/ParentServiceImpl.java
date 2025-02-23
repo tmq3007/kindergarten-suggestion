@@ -1,21 +1,26 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailExistException;
+import fa.pjb.back.common.exception.UserNotFoundException;
 import fa.pjb.back.common.exception.UsernameExistException;
 import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.ParentService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static fa.pjb.back.config.SecurityConfig.passwordEncoder;
 
 @Service
 public class ParentServiceImpl implements ParentService {
@@ -28,6 +33,9 @@ public class ParentServiceImpl implements ParentService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     public ParentDTO createParent(ParentDTO parentDTO) {
@@ -42,11 +50,13 @@ public class ParentServiceImpl implements ParentService {
             throw new UsernameExistException();
         }
         // Tạo mới User
+        String usernameAutoGen =generateUsername(parentDTO.getFullName(), parentRepository.count() + 1);
+        String passwordautoGen = generateRandomPassword();
         User user = new User();
-        user.setUsername(generateUsername(parentDTO.getFullName(), parentRepository.count() + 1));
-        user.setPassword(generateRandomPassword());  // Mật khẩu tự tạo
+        user.setUsername(usernameAutoGen);
+        user.setPassword(passwordautoGen);  // Mật khẩu tự tạo
         user.setEmail(parentDTO.getEmail());
-        user.setRole("ROLE_PARENT");
+        user.setRole(ERole.ROLE_PARENT);
         user.setStatus(parentDTO.getStatus());
 
         // Lưu User vào database
@@ -80,13 +90,15 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setWard(parent.getWard());
         responseDTO.setProvince(parent.getProvince());
         responseDTO.setStreet(parent.getStreet());
+        responseDTO.setStatus(parent.getUser().getStatus());
+        responseDTO.setRole(String.valueOf(parent.getUser().getRole()));
 
         emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
-                generateUsername(parentDTO.getFullName(), parentRepository.count() + 1),generateRandomPassword());
+                usernameAutoGen,passwordautoGen);
         return responseDTO;
     }
 
-    // Hàm tạo tên người dùng từ Full Name
+    // Hàm tạo tên username từ Full Name
     private String generateUsername(String fullName, long id) {
         String[] parts = fullName.trim().split("\\s+");
         if (parts.length < 2) {
@@ -104,4 +116,88 @@ public class ParentServiceImpl implements ParentService {
     private String generateRandomPassword() {
         return RandomStringUtils.randomAlphanumeric(8);
     }
+
+
+    @Transactional
+    public ParentDTO editParent(Integer parentId, ParentDTO parentDTO) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new RuntimeException("Parent not found"));
+
+        User user = parent.getUser();
+
+        // Kiểm tra email đã tồn tại chưa (ngoại trừ email của chính User đó)
+        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
+        if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
+            throw new EmailExistException();
+        }
+
+        // Cập nhật thông tin User
+        user.setEmail(parentDTO.getEmail());
+        user.setUsername(parentDTO.getUsername());  // Cập nhật username nếu có thay đổi
+
+        // Cập nhật thông tin Parent
+        parent.setFullName(parentDTO.getFullName());
+        parent.setGender(parentDTO.getGender());
+        parent.setPhone(parentDTO.getPhone());
+        parent.setDob(parentDTO.getDob());
+
+        // Lưu thay đổi
+        userRepository.save(user);
+        parentRepository.save(parent);
+
+        // Trả về ParentDTO
+        ParentDTO responseDTO = new ParentDTO();
+        responseDTO.setId(parent.getId());
+        responseDTO.setUsername(user.getUsername());
+        responseDTO.setEmail(user.getEmail());
+        responseDTO.setFullName(parent.getFullName());
+        responseDTO.setGender(parent.getGender());
+        responseDTO.setPhone(parent.getPhone());
+        responseDTO.setDob(parent.getDob());
+        responseDTO.setDistrict(parent.getDistrict());
+        responseDTO.setWard(parent.getWard());
+        responseDTO.setProvince(parent.getProvince());
+        responseDTO.setStreet(parent.getStreet());
+        responseDTO.setStatus(parent.getUser().getStatus());
+        responseDTO.setRole(String.valueOf(parent.getUser().getRole()));
+
+        // Trả về thông tin đã cập nhật
+        return  responseDTO;
+    }
+
+    @Transactional
+    public ParentDTO getParentById(Integer parentId) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new UserNotFoundException());
+
+        User user = parent.getUser();
+
+        ParentDTO responseDTO = new ParentDTO();
+        responseDTO.setId(parent.getId());
+        responseDTO.setUsername(user.getUsername());
+        responseDTO.setEmail(user.getEmail());
+        responseDTO.setFullName(parent.getFullName());
+        responseDTO.setGender(parent.getGender());
+        responseDTO.setPhone(parent.getPhone());
+        responseDTO.setDob(parent.getDob());
+        responseDTO.setDistrict(parent.getDistrict());
+        responseDTO.setWard(parent.getWard());
+        responseDTO.setProvince(parent.getProvince());
+        responseDTO.setStreet(parent.getStreet());
+        responseDTO.setStatus(user.getStatus());
+        responseDTO.setRole(String.valueOf(user.getRole()));
+
+        return responseDTO;
+    }
+
+    @Transactional
+    public void changePassword(Integer parentId, String newPassword) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new UserNotFoundException());
+
+        User user = parent.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
 }

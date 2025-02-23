@@ -43,8 +43,7 @@ const CreateUser: React.FC = () => {
         }, 100);
     };
     const onFinish = async (values: any) => {
-        setSpinning(true); // Bắt đầu hiển thị loader khi gửi request
-
+        setSpinning(true);
         const formattedValues = {
             ...values,
             dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
@@ -59,39 +58,39 @@ const CreateUser: React.FC = () => {
 
         try {
             const response = await createParent(formattedValues).unwrap();
-            console.log("API response:", response);
             if (response.data) {
                 dispatch(setParent(formattedValues));
-                openNotificationWithIcon('success');
+                openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                 form.resetFields();
             } else {
-                openNotificationWithIcon('error');
+                openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
             }
-        } catch (error) {
-            openNotificationWithIcon('error');
+        } catch (error: any) {
+            openNotificationWithIcon('error', 'User creation failed!', error?.data?.message || 'An error occurred while creating the user.');
         } finally {
-            setSpinning(false); // Tắt loader sau khi API xử lý xong
+            setSpinning(false);
         }
     };
 
-
-    const openNotificationWithIcon = (type: 'success' | 'error') => {
+    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
         api[type]({
-            message: type === 'success' ? 'User created successfully!' : 'User creation failed!',
-            description: type === 'success' ? 'Check your email for username and password' : 'An error occurred while creating the user.',
+            message,
+            description,
         });
     };
 
+
     return (
-        <div className={'h-[90%]'}>
+        <div className={'h-[100%] p-0'}>
             {contextHolder}
             <Breadcrumb
+                className={'m-0'}
                 items={[
                     { title: <Link href="/management/user/create-user">User Management</Link> },
                     { title: 'Add New User' },
                 ]}
             />
-            <Title level={3} className="my-2 ml-16">Add New User</Title>
+            <Title level={3} className="mb-1 mt-0.5 ml-16">Add New User</Title>
             <Form
                 {...formItemLayout}
                 form={form}

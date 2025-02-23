@@ -5,8 +5,7 @@ import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
-import fa.pjb.back.repository.SchoolOwnerRepository;
-import fa.pjb.back.repository.UserRepository;
+ import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,9 +20,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private SchoolOwnerRepository schoolOwnerRepository;
-    @Autowired
-    private ParentRepository parentRepository;
+     private ParentRepository parentRepository;
 
     @Override
     public Page<UserVO> getAllUsers(Pageable of) {
@@ -40,7 +37,7 @@ public class UserServiceImpl implements UserService {
             Parent temp = user.getParent();
             return UserVO.builder()
                     .id(user.getId())
-                    .fullname(temp.getFullname())
+                    .fullname(temp.getFullName())
                     .email(user.getEmail())
                     .phone(temp.getPhone())
                     .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())

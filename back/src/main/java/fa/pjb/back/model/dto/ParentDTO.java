@@ -10,8 +10,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-
-public class ParentDTO extends UserDTO {
+ public class ParentDTO extends UserDTO {
     Integer id;
      Boolean gender;
     String fullName;
