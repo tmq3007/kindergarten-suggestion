@@ -19,53 +19,49 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("auth")
-@Tag(name = "Authentication",
-        description = "This API provides user the capability to authentication")
+@Tag(name = "Authentication", description = "This API provides user the capability to authentication")
 
 public class AuthController {
-    private final AuthService authService;
-    private final UserService userService;
+        private final AuthService authService;
+        private final UserService userService;
 
-    @Operation(
-            summary = "Login",
-            description = "Login"
-    )
-    @PostMapping("login")
-    public ApiResponse<LoginVO> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
-        return ApiResponse.<LoginVO>builder()
-                .code(HttpStatus.OK.value())
-                .message("Login successful")
-                .data(authService.login(loginDTO, response))
-                .build();
-    }
+        @Operation(summary = "Login", description = "Login")
+        @PostMapping("login")
+        public ApiResponse<LoginVO> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
+                return ApiResponse.<LoginVO>builder()
+                                .code(HttpStatus.OK.value())
+                                .message("Login successful")
+                                .data(authService.login(loginDTO, response))
+                                .build();
+        }
 
-    @Operation(
-            summary = "Forgot Password",
-            description = "Forgot Password"
-    )
-    @PostMapping("forgot-password")
-    public ApiResponse<ForgotPasswordVO> forgotpassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
-        return ApiResponse.<ForgotPasswordVO>builder()
-                .code(HttpStatus.OK.value())
-                .message("Link password reset sent successfully!")
-                .data(authService.forgotpassword(forgotPasswordDTO, response))
-                .build();
-    }
+        @Operation(summary = "Forgot Password", description = "Forgot Password")
+        @PostMapping("forgot-password")
+        public ApiResponse<ForgotPasswordVO> forgotpassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO,
+                        HttpServletResponse response) {
+                return ApiResponse.<ForgotPasswordVO>builder()
+                                .code(HttpStatus.OK.value())
+                                .message("Link password reset sent successfully!")
+                                .data(authService.forgotpassword(forgotPasswordDTO, response))
+                                .build();
+        }
 
-    @Operation(
-            summary = "Register",
-            description = "Register"
-    )
-    @PostMapping("register")
-    public ApiResponse<String> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
-        return ApiResponse.<String>builder()
-                .code(200)
-                .message("Register successfully!")
-                .data(userService.saveNewUser(registerDTO))
-                .build();
-    }
-    @GetMapping("/check-email")
-    public void checkEmail(@RequestParam String email) {
-        authService.checkEmailExists(email);
-    }
+        @Operation(summary = "Register", description = "Register")
+        @PostMapping("register")
+        public ApiResponse<String> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
+                return ApiResponse.<String>builder()
+                                .code(HttpStatus.OK.value())
+                                .message("Register successfully!")
+                                .data(userService.saveNewUser(registerDTO))
+                                .build();
+        }
+
+        @GetMapping("/check-email")
+        public ApiResponse<String> checkEmail(@RequestParam String email) {
+                return ApiResponse.<String>builder()
+                                .code(HttpStatus.OK.value())
+                                .message("Email available!")
+                                .data(authService.checkEmailExists(email))
+                                .build();
+        }
 }

@@ -40,3 +40,9 @@ export type Pageable = {
     totalElements: number,
     totalPages: number,
 }
+export type RegisterDTO = {
+    fullname: string,
+    email: string,
+    phone: string,
+    password: string,
+}

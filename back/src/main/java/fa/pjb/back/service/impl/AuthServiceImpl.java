@@ -108,9 +108,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void checkEmailExists(String email) {
+    public String checkEmailExists(String email) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new EmailAlreadyExistedException("Email is already in use!");
         }
+        return "Email is available!";
     }
 }

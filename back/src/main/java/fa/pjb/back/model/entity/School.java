@@ -21,75 +21,75 @@ public class School {
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Name", nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Size(max = 30)
     @NotNull
-    @Column(name = "Phone", nullable = false, length = 30)
+    @Column(name = "phone", nullable = false, length = 30)
     private String phone;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Email", nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @NotNull
     @ColumnDefault("0")
-    @Column(name = "Receiving_Age", nullable = false)
+    @Column(name = "receiving_age", nullable = false)
     private Byte receivingAge;
 
     @NotNull
     @ColumnDefault("0")
-    @Column(name = "Education_Method", nullable = false)
+    @Column(name = "education_method", nullable = false)
     private Byte educationMethod;
 
     @NotNull
     @ColumnDefault("0")
-    @Column(name = "School_Type", nullable = false)
+    @Column(name = "school_type", nullable = false)
     private Byte schoolType;
 
     @NotNull
     @ColumnDefault("0")
-    @Column(name = "Status", nullable = false)
+    @Column(name = "status", nullable = false)
     private Byte status;
 
     @Size(max = 255)
-    @Column(name = "Website")
+    @Column(name = "website")
     private String website;
 
     @Lob
-    @Column(name = "Description")
+    @Column(name = "description")
     private String description;
 
-    @Column(name = "Fee_From")
+    @Column(name = "fee_from")
     private Integer feeFrom;
 
-    @Column(name = "Fee_To")
+    @Column(name = "fee_to")
     private Integer feeTo;
 
     @Size(max = 255)
-    @Column(name = "Image")
+    @Column(name = "image")
     private String image;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "District", nullable = false)
+    @Column(name = "district", nullable = false)
     private String district;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Ward", nullable = false)
+    @Column(name = "ward", nullable = false)
     private String ward;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Province", nullable = false)
+    @Column(name = "province", nullable = false)
     private String province;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Street", nullable = false)
+    @Column(name = "street", nullable = false)
     private String street;
 
 }

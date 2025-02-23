@@ -3,7 +3,6 @@ package fa.pjb.back.service.impl;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
@@ -12,7 +11,6 @@ import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,10 +22,6 @@ import static fa.pjb.back.model.enums.ERole.*;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private SchoolOwnerRepository schoolOwnerRepository;
-    @Autowired
-    private ParentRepository parentRepository;
     @Autowired
     private AuthService authService;
     @Autowired
@@ -57,7 +51,7 @@ public class UserServiceImpl implements UserService {
         temp.setPhone(registerDTO.phone());
         temp.setFullname(registerDTO.fullname());
         user.setParent(temp);
-        User newUser = userRepository.save(user);
+        userRepository.save(user);
         return "User registered successfully";
     }
     //gen ra username từ fullname
@@ -82,7 +76,7 @@ public class UserServiceImpl implements UserService {
 
     private UserVO convertToUserVO(User user) {
 
-        if (user.getRole()== ROLE_PARENT) {
+        if (user.getRole()== ROLE_PARENT && user.getParent()!=null) {
             Parent temp = user.getParent();
             return UserVO.builder()
                     .id(user.getId())
@@ -93,7 +87,7 @@ public class UserServiceImpl implements UserService {
                     .role("Parent")
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
-        } else if (user.getRole()== ROLE_SCHOOL_OWNER) {
+        } else if (user.getRole()== ROLE_SCHOOL_OWNER && user.getSchoolOwner()!=null) {
             return UserVO.builder()
                     .id(user.getId())
                     .fullname(user.getSchoolOwner().getFullname())

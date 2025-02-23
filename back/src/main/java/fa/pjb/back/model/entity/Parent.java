@@ -16,43 +16,43 @@ import java.time.LocalDate;
 @Table(name = "Parent")
 public class Parent {
     @Id
-    @Column(name = "User_ID", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Integer id;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "User_ID", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Fullname", nullable = false)
+    @Column(name = "fullname", nullable = false)
     private String fullname;
 
-    @Column(name = "Gender", nullable = false)
+    @Column(name = "gender", nullable = false)
     private Boolean gender = false;
 
     @Size(max = 20)
     @NotNull
-    @Column(name = "Phone", nullable = false, length = 20)
+    @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
-    @Column(name = "DOB", nullable = false)
+    @Column(name = "dob", nullable = false)
     private LocalDate dob;
 
     @Size(max = 255)
-    @Column(name = "District", nullable = false)
+    @Column(name = "district", nullable = false)
     private String district;
 
     @Size(max = 255)
-    @Column(name = "Ward", nullable = false)
+    @Column(name = "ward", nullable = false)
     private String ward;
 
     @Size(max = 255)
-    @Column(name = "Province", nullable = false)
+    @Column(name = "province", nullable = false)
     private String province;
 
     @Size(max = 255)
-    @Column(name = "Street")
+    @Column(name = "street")
     private String street;
 }

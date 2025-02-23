@@ -22,19 +22,19 @@ public class ParentInSchool {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "School_ID", nullable = false)
+    @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "User_ID", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private Parent user;
 
     @NotNull
-    @Column(name = "`From`", nullable = false)
+    @Column(name = "`from`", nullable = false)
     private LocalDate from;
 
-    @Column(name = "`To`")
+    @Column(name = "`to`")
     private LocalDate to;
 
     @NotNull
