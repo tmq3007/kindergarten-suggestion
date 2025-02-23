@@ -40,8 +40,8 @@ public class SchoolOwner {
     @Column(name = "dob", nullable = false)
     private LocalDate dob;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "school_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id")
     private School school;
 
 }
