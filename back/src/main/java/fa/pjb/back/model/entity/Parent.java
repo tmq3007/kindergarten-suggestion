@@ -29,7 +29,6 @@ public class Parent {
     @Column(name = "Fullname", nullable = false)
     private String fullname;
 
-    @NotNull
     @Column(name = "Gender", nullable = false)
     private Boolean gender = false;
 
@@ -38,29 +37,22 @@ public class Parent {
     @Column(name = "Phone", nullable = false, length = 20)
     private String phone;
 
-    @NotNull
     @Column(name = "DOB", nullable = false)
     private LocalDate dob;
 
     @Size(max = 255)
-    @NotNull
     @Column(name = "District", nullable = false)
     private String district;
 
     @Size(max = 255)
-    @NotNull
     @Column(name = "Ward", nullable = false)
     private String ward;
 
     @Size(max = 255)
-    @NotNull
     @Column(name = "Province", nullable = false)
     private String province;
 
     @Size(max = 255)
     @Column(name = "Street")
     private String street;
-
-    @Version  // Enables optimistic locking
-    private Integer version;
 }

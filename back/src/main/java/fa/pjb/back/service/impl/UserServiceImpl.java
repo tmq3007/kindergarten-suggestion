@@ -52,12 +52,12 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(registerDTO.password()));
         user.setRole(ROLE_PARENT);
         user.setStatus(true);
-        User newUser = userRepository.save(user);
         Parent temp = new Parent();
-        temp.setUser(newUser);
+        temp.setUser(user);
         temp.setPhone(registerDTO.phone());
         temp.setFullname(registerDTO.fullname());
-        parentRepository.save(temp);
+        user.setParent(temp);
+        User newUser = userRepository.save(user);
         return "User registered successfully";
     }
     //gen ra username từ fullname
