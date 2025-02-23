@@ -14,35 +14,34 @@ import java.time.LocalDate;
 @Table(name = "School_Owner")
 public class SchoolOwner {
     @Id
-    @Column(name = "User_ID", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Integer id;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "User_ID", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Size(max = 20)
     @NotNull
-    @Column(name = "Phone", nullable = false, length = 20)
+    @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
     @NotNull
-    @Column(name = "Gender", nullable = false)
+    @Column(name = "gender", nullable = false)
     private Boolean gender = false;
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "Fullname", nullable = false)
+    @Column(name = "fullname", nullable = false)
     private String fullname;
 
     @NotNull
-    @Column(name = "DOB", nullable = false)
+    @Column(name = "dob", nullable = false)
     private LocalDate dob;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "School_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id")
     private School school;
 
 }

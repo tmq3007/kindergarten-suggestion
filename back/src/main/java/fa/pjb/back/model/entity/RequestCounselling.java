@@ -1,7 +1,6 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -22,35 +21,36 @@ public class RequestCounselling {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "Parent_ID", nullable = false)
+    @JoinColumn(name = "parent_id", nullable = false)
     private Parent parent;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "School_ID", nullable = false)
+    @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
     @Lob
-    @Column(name = "Inquiry")
+    @Column(name = "inquiry")
     private String inquiry;
 
     @NotNull
     @ColumnDefault("0")
-    @Column(name = "Status", nullable = false)
+    @Column(name = "status", nullable = false)
     private Byte status;
 
     @Size(max = 255)
-    @NotBlank
-    @Column(name = "Email", nullable = false)
+    @NotNull
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Size(max = 20)
-    @NotBlank
-    @Column(name = "Phone", nullable = false, length = 20)
+    @NotNull
+    @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
     @Size(max = 255)
-    @NotBlank
-    @Column(name = "Name", nullable = false)
+    @NotNull
+    @Column(name = "name", nullable = false)
     private String name;
+
 }

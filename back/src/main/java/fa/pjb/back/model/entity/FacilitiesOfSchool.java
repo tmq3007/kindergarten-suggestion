@@ -9,14 +9,15 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "Facilities_of_School")
+@Table(name = "School_Facilities")
 public class FacilitiesOfSchool {
-    @EmbeddedId
-    private FacilitiesOfSchoolId id;
+    @Id
+    @Column(name = "fid", nullable = false)
+    private Integer fid;
 
     @MapsId("schoolId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "School_ID", nullable = false)
+    @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
 }

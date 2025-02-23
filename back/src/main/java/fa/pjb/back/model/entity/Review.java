@@ -19,36 +19,36 @@ public class Review {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "School_ID", nullable = false)
+    @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "Parent_ID", nullable = false)
+    @JoinColumn(name = "parent_id", nullable = false)
     private Parent parent;
 
     @NotNull
-    @Column(name = "Learning_Program", nullable = false)
+    @Column(name = "learning_program", nullable = false)
     private Byte learningProgram;
 
     @NotNull
-    @Column(name = "Facilities_and_Utilities", nullable = false)
+    @Column(name = "facilities_and_utilities", nullable = false)
     private Byte facilitiesAndUtilities;
 
     @NotNull
-    @Column(name = "Extracurricular_Activities", nullable = false)
+    @Column(name = "extracurricular_activities", nullable = false)
     private Byte extracurricularActivities;
 
     @NotNull
-    @Column(name = "Teacher_and_Staff", nullable = false)
+    @Column(name = "teacher_and_staff", nullable = false)
     private Byte teacherAndStaff;
 
     @NotNull
-    @Column(name = "Hygiene_and_Nutrition", nullable = false)
+    @Column(name = "hygiene_and_nutrition", nullable = false)
     private Byte hygieneAndNutrition;
 
     @Lob
-    @Column(name = "Feedback")
+    @Column(name = "feedback")
     private String feedback;
 
 }

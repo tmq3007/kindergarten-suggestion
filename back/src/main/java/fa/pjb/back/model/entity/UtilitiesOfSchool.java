@@ -9,14 +9,12 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "Utilities_of_School")
+@Table(name = "School_Utilities")
 public class UtilitiesOfSchool {
-    @EmbeddedId
-    private UtilitiesOfSchoolId id;
 
-    @MapsId("schoolId")
+    @MapsId("school_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "School_ID", nullable = false)
+    @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
 }

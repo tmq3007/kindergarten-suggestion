@@ -17,6 +17,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.XSlf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -89,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
+    public ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         //Lấy user theo email
         Optional<User> user = userRepository.findByEmail(forgotPasswordDTO.email());
         //Kiểm tra nếu user tồn tại
@@ -101,8 +102,8 @@ public class AuthServiceImpl implements AuthService {
         String fpToken = jwtUtil.generateForgotPasswordToken(user.get().getUsername());
         tokenService.saveTokenInRedis("FORGOTPASS_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
 
-        String resetLink = "http://localhost:3000/forgot-password/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
-        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(),resetLink);
+        String resetLink = "http://localhost:3000/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
+        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(), resetLink);
 
         return ForgotPasswordVO.builder()
                 .fpToken(fpToken)
@@ -114,12 +115,20 @@ public class AuthServiceImpl implements AuthService {
     public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
         String tokenRedis = tokenService.getTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
 
-        if(tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())){
+        if (tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())) {
             throw new JwtUnauthorizedException("Token is invalid");
         }
 
         log.info("password{}", resetPasswordDTO.password());
 
         tokenService.deleteTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
+    }
+
+    @Override
+    public boolean checkEmailExists(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            return true;
+        }
+        return false;
     }
 }
