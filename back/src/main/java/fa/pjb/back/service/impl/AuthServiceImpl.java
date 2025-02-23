@@ -1,9 +1,11 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailNotFoundException;
+import fa.pjb.back.common.exception.JwtUnauthorizedException;
 import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
+import fa.pjb.back.model.dto.ResetPasswordDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
@@ -14,6 +16,7 @@ import fa.pjb.back.service.TokenService;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +29,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -85,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
+    public ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         //Lấy user theo email
         Optional<User> user = userRepository.findByEmail(forgotPasswordDTO.email());
         //Kiểm tra nếu user tồn tại
@@ -94,15 +98,28 @@ public class AuthServiceImpl implements AuthService {
         }
 
         //fpToken: Lưu vào Redis
-        String fpToken = jwtUtil.generateForgotPasswordToken();
+        String fpToken = jwtUtil.generateForgotPasswordToken(user.get().getUsername());
         tokenService.saveTokenInRedis("FORGOTPASS_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
 
-        String resetLink = "http://localhost:3000/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
+        String resetLink = "http://localhost:3000/forgot-password/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
         emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(),resetLink);
 
         return ForgotPasswordVO.builder()
                 .fpToken(fpToken)
                 .username(user.get().getUsername())
                 .build();
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
+        String tokenRedis = tokenService.getTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
+
+        if(tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())){
+            throw new JwtUnauthorizedException("Token is invalid");
+        }
+
+        log.info("password{}", resetPasswordDTO.password());
+
+        tokenService.deleteTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
     }
 }
