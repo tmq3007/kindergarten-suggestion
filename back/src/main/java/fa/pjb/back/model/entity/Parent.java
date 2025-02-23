@@ -45,22 +45,18 @@ public class Parent {
     private LocalDate dob;
 
     @Size(max = 255)
-    @NotBlank
-    @Column(name = "District", nullable = false)
+    @Column(name = "District", nullable = true)
     private String district;
 
     @Size(max = 255)
-    @NotBlank
-    @Column(name = "Ward", nullable = false)
+    @Column(name = "Ward", nullable = true)
     private String ward;
 
     @Size(max = 255)
-    @NotBlank
-    @Column(name = "Province", nullable = false)
+    @Column(name = "Province", nullable = true)
     private String province;
 
     @Size(max = 255)
-    @NotBlank
-    @Column(name = "Street", nullable = false)
+    @Column(name = "Street", nullable = true)
     private String street;
 }

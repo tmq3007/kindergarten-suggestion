@@ -5,12 +5,14 @@ import fa.pjb.back.model.dto.ChangePasswordDTO;
 import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.service.impl.ParentServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("parents")
+@Slf4j
 public class ParentController {
 
     @Autowired
@@ -19,6 +21,7 @@ public class ParentController {
     @PostMapping("")
     public ApiResponse<ParentDTO> createParent(@RequestBody ParentDTO parentDTO) {
         ParentDTO createdParent = parentService.createParent(parentDTO);
+        log.info("Received ParentDTO: {}", parentDTO);
         return ApiResponse.<ParentDTO>builder()
                 .code(200)
                 .message("Parent created successfully")

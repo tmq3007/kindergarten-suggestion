@@ -46,9 +46,9 @@ public class ParentServiceImpl implements ParentService {
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
-        if (existingUserName.isPresent()){
-            throw new UsernameExistException();
-        }
+//        if (existingUserName.isPresent()){
+//            throw new UsernameExistException();
+//        }
         // Tạo mới User
         String usernameAutoGen =generateUsername(parentDTO.getFullName(), parentRepository.count() + 1);
         String passwordautoGen = generateRandomPassword();
@@ -69,10 +69,11 @@ public class ParentServiceImpl implements ParentService {
         parent.setGender(parentDTO.getGender());
         parent.setPhone(parentDTO.getPhone());
         parent.setDob(parentDTO.getDob());
-        parent.setDistrict(parentDTO.getDistrict());
-        parent.setWard(parentDTO.getWard());
-        parent.setProvince(parentDTO.getProvince());
-        parent.setStreet(parentDTO.getStreet());
+        parent.setDistrict(parentDTO.getDistrict() != null ? parentDTO.getDistrict() : "");
+        parent.setWard(parentDTO.getWard() != null ? parentDTO.getWard() : "");
+        parent.setProvince(parentDTO.getProvince() != null ? parentDTO.getProvince() : "");
+        parent.setStreet(parentDTO.getStreet() != null ? parentDTO.getStreet() : "");
+
 
         // Lưu Parent vào database
         parent = parentRepository.save(parent);
@@ -93,8 +94,8 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setStatus(parent.getUser().getStatus());
         responseDTO.setRole(String.valueOf(parent.getUser().getRole()));
 
-        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
-                usernameAutoGen,passwordautoGen);
+//        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
+//                usernameAutoGen,passwordautoGen);
         return responseDTO;
     }
 
