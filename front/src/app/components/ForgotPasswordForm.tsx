@@ -109,10 +109,10 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
 
 
                 <Form.Item label={null} wrapperCol={{span: 24}} className="text-center">
-                    <Space>
+                    <Space className={'flex flex-col md:flex-row items-center justify-center'}>
                         <Link href={"/admin"}>
                             <Button
-                                className={'w-32 md:w-56 p-6 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition text-xl'}
+                                className={'w-60 md:w-32 p-6 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition text-xl'}
                                 type="primary"
                                 loading={isLoading} // Show loading when submitting
                             >
@@ -121,7 +121,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
                         </Link>
 
                         <Button
-                            className={'w-32 md:w-56 p-6 mx-4 font-bold bg-cyan-500 text-xl'}
+                            className={'w-60 md:w-32 p-6 mx-4 font-bold bg-cyan-500 text-xl'}
                             type="primary"
                             htmlType="submit"
                             loading={isLoading} // Show loading when submitting

@@ -101,8 +101,8 @@ public class AuthServiceImpl implements AuthService {
         String fpToken = jwtHelper.generateForgotPasswordToken(user.get().getUsername());
         tokenService.saveTokenInRedis("FORGOTPASS_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
 
-        String resetLink = "http://localhost:3000/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
-        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(), resetLink);
+        String resetLink = "http://localhost:3000/forgot-password/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
+        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(),resetLink);
 
         return ForgotPasswordVO.builder()
                 .fpToken(fpToken)
@@ -112,15 +112,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
-        String tokenRedis = tokenService.getTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
+        //Lấy token từ Redis
+        String tokenRedis = tokenService.getTokenFromRedis("FORGOT_PASSWORD_TOKEN", resetPasswordDTO.username());
 
-        if (tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())) {
+        //Kiểm tra nếu token không tồn tại hoặc không trùng với token gửi lên
+        if(tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())){
             throw new JwtUnauthorizedException("Token is invalid");
         }
 
+        //Thay đổi password
         log.info("password{}", resetPasswordDTO.password());
 
-        tokenService.deleteTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
+        //Xóa token từ Redis
+        tokenService.deleteTokenFromRedis("FORGOT_PASSWORD_TOKEN", resetPasswordDTO.username());
     }
 
     @Override
