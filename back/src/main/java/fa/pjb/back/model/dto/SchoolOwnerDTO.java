@@ -1,20 +1,19 @@
 package fa.pjb.back.model.dto;
- import lombok.*;
+
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SchoolOwnerDTO {
+public class SchoolOwnerDTO extends UserDTO {
     Integer id;
-
-    String username;
-
-    String password;
-
-    String role;
-
-    Boolean status;
+    Boolean gender;
+    String fullName;
+    String phone;
+    LocalDate dob;
+    SchoolDTO school; // Chứa thông tin của School
 }

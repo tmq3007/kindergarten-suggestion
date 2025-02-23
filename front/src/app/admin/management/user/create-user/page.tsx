@@ -11,6 +11,8 @@ import { AppDispatch } from '@/redux/store';
 import { setParent } from '@/redux/features/parentSlice';
 import { useCreateParentMutation } from '@/redux/services/User/parentApi';
 import {   Spin } from 'antd';
+import {setSchoolOwner} from "@/redux/features/schoolOwnerSlice";
+import {useCreateSchoolOwnerMutation} from "@/redux/services/User/schoolOwnerApi";
 const { Option } = Select;
 const { Title } = Typography;
 
@@ -24,6 +26,7 @@ const CreateUser: React.FC = () => {
     const [api, contextHolder] = notification.useNotification();
     const dispatch = useDispatch<AppDispatch>();
     const [createParent] = useCreateParentMutation();
+    const [createSchoolOwner] = useCreateSchoolOwnerMutation()
     const [spinning, setSpinning] = React.useState(false);
     const [percent, setPercent] = React.useState(0);
 
@@ -44,27 +47,57 @@ const CreateUser: React.FC = () => {
     };
     const onFinish = async (values: any) => {
         setSpinning(true);
-        const formattedValues = {
+        let formattedValues = {
             ...values,
             dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
-            gender: values.gender === "male" ? 1 : 0,
-            status: values.status === "1" ? 1 : 0,
+            gender: values.gender === "male", // Đúng kiểu Boolean
+            status: values.status === "1", // Đúng kiểu Boolean
             role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
-            ward: values.ward || "",
-            province: values.province || "",
-            street: values.street || "",
-            district: values.district || ""
         };
 
+        if (formattedValues.role === "ROLE_PARENT") {
+            formattedValues = {
+                ...formattedValues,
+                ward: values.ward || "",
+                province: values.province || "",
+                street: values.street || "",
+                district: values.district || "",
+            };
+        }
+
+        if (formattedValues.role === "ROLE_SCHOOL_OWNER") {
+            formattedValues = {
+                ...formattedValues,
+                school: values.school || {}, // SchoolDTO
+            };
+        }
+
+        console.log("formattedValues:",formattedValues)
+
         try {
-            const response = await createParent(formattedValues).unwrap();
-            if (response.data) {
-                dispatch(setParent(formattedValues));
-                openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
-                form.resetFields();
-            } else {
-                openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
+
+            if (formattedValues.role === "ROLE_PARENT") {
+                const response = await createParent(formattedValues).unwrap();
+                console.log("response",response)
+                if (response.data) {
+                    dispatch(setParent(formattedValues));
+                    openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
+                    form.resetFields();
+                } else {
+                    openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
+                }
+            }else{
+                const response = await createSchoolOwner(formattedValues).unwrap();
+                if (response.data) {
+                    dispatch(setSchoolOwner(formattedValues));
+                    openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
+                    form.resetFields();
+                }else {
+                    openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
+                }
             }
+
+
         } catch (error: any) {
             openNotificationWithIcon('error', 'User creation failed!', error?.data?.message || 'An error occurred while creating the user.');
         } finally {
