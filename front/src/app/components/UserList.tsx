@@ -1,73 +1,60 @@
-export default function UserList() {
+import { ApiResponse } from "@/redux/services/config/baseQuery";
+import { Pageable, UserVO } from "@/redux/services/types";
+import { Table, Tag, Space, Pagination } from "antd";
+import { useState } from "react";
+
+interface UserListProps {
+    data: ApiResponse<{ content: UserVO[]; pageable: Pageable }> | undefined;
+    isLoading: boolean;
+    error: any;
+    fetchPage: (page: number) => void;
+    isFetching: boolean;
+}
+
+//table layout
+const columns = [
+    { title: "Fullname", dataIndex: "fullname", key: "fullname" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Phone No.", dataIndex: "phone", key: "phone" },
+    { title: "Address", dataIndex: "address", key: "address" },
+    { title: "Role", dataIndex: "role", key: "role" },
+    {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        render: (status: string) => (
+            <Tag color={status === "Active" ? "green" : "volcano"}>
+                {status.toUpperCase()}
+            </Tag>
+        ),
+    },
+    {
+        title: "Action",
+        key: "action",
+        render: (_: any, record: UserVO) => (
+            <Space size="middle">
+                <a>Edit</a>
+                <a>Delete</a>
+            </Space>
+        ),
+    },
+];
+
+export default function UserList({ fetchPage, data, isLoading, error,isFetching }: UserListProps) {
+    const [current, setCurrent] = useState(1);
+    if (error) return <p>Error loading data</p>;
+
+    const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
+    const totalElements = data?.data.pageable.totalElements || 0;
+    const handlePageChange = (page: number) => {
+        setCurrent(page);
+        fetchPage(page - 1);
+    };
     return (
-        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-500">
-                    <tr>
-                        <th scope="col" className="px-6 py-3">Fullname</th>
-                        <th scope="col" className="px-6 py-3">Email</th>
-                        <th scope="col" className="px-6 py-3">Phone No.</th>
-                        <th scope="col" className="px-6 py-3">DOB</th>
-                        <th scope="col" className="px-6 py-3">Address</th>
-                        <th scope="col" className="px-6 py-3">Role</th>
-                        <th scope="col" className="px-6 py-3">Status</th>
-                        <th scope="col" className="px-6 py-3">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                    </tr>
-                    <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                    </tr>
-                    <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                        <td className="px-6 py-4">Test</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div className="shadow-md sm:rounded-lg p-4">
+            <Table className="over-flow-scroll" columns={columns} dataSource={users} pagination={false} loading={isFetching}/>
             <div className="flex justify-between items-center px-4 py-3">
-                <div className="text-sm text-slate-500">
-                    Showing <b>1-5</b> of 45
-                </div>
-                <div className="flex space-x-1">
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        Prev
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-white bg-slate-800 border border-slate-800 rounded hover:bg-slate-600 hover:border-slate-600 transition duration-200 ease">
-                        1
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        2
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        3
-                    </button>
-                    <button className="px-3 py-1 min-w-9 min-h-9 text-sm font-normal text-slate-500 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:border-slate-400 transition duration-200 ease">
-                        Next
-                    </button>
-                </div>
+                <Pagination current={current} total={totalElements} onChange={handlePageChange} />
             </div>
         </div>
     );

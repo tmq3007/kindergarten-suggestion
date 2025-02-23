@@ -22,3 +22,21 @@ export type LoginVO = {
     accessToken: string,
     csrfToken: string,
 }
+
+export type UserVO = {
+    id: string,
+    fullname: string,
+    email: string,
+    phoneNo: string,
+    dob: string,
+    address: string,
+    role: string,
+    status: string,
+}
+
+export type Pageable = {
+    pageNumber: number,
+    pageSize: number,
+    totalElements: number,
+    totalPages: number,
+}
