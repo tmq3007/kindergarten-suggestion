@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
+    public ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         //Lấy user theo email
         Optional<User> user = userRepository.findByEmail(forgotPasswordDTO.email());
         //Kiểm tra nếu user tồn tại
@@ -111,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void resetpassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
+    public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
         String tokenRedis = tokenService.getTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
 
         if(tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())){

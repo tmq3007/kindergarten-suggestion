@@ -4,7 +4,7 @@ import storage from "@/redux/ssr-safe-storage";
 import {persistReducer} from 'redux-persist';
 import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/es/constants";
 import {pokemonApi} from "@/redux/services/pokemonApi";
-import apiMiddlewares from "@/middleware/apiMiddleware";
+import apiMiddlewares from "@/redux/middleware/apiMiddleware";
 import {postApi} from "@/redux/services/postApi";
 import {authApi} from "@/redux/services/authApi";
 import { userListApi } from "./services/userListAppi";

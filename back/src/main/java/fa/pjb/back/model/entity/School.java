@@ -1,6 +1,7 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -20,17 +21,17 @@ public class School {
     private Integer id;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "Name", nullable = false)
     private String name;
 
     @Size(max = 30)
-    @NotNull
+    @NotBlank
     @Column(name = "Phone", nullable = false, length = 30)
     private String phone;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "Email", nullable = false)
     private String email;
 
@@ -73,23 +74,22 @@ public class School {
     private String image;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "District", nullable = false)
     private String district;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "Ward", nullable = false)
     private String ward;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "Province", nullable = false)
     private String province;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "Street", nullable = false)
     private String street;
-
 }
