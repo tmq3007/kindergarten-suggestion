@@ -4,7 +4,6 @@ import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.vo.UserVO;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 public interface UserService {
