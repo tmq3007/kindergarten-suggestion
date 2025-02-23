@@ -14,4 +14,6 @@ public interface AuthService {
     LoginVO logout(HttpServletResponse response);
 
     ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response);
+
+    void checkEmailExists(String email);
 }

@@ -3,19 +3,18 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
+import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 public class AuthController {
     private final AuthService authService;
+    private final UserService userService;
 
     @Operation(
             summary = "Login",
@@ -50,5 +50,22 @@ public class AuthController {
                 .message("Link password reset sent successfully!")
                 .data(authService.forgotpassword(forgotPasswordDTO, response))
                 .build();
+    }
+
+    @Operation(
+            summary = "Register",
+            description = "Register"
+    )
+    @PostMapping("register")
+    public ApiResponse<String> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message("Register successfully!")
+                .data(userService.saveNewUser(registerDTO))
+                .build();
+    }
+    @GetMapping("/check-email")
+    public void checkEmail(@RequestParam String email) {
+        authService.checkEmailExists(email);
     }
 }

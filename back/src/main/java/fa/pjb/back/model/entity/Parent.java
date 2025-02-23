@@ -16,7 +16,6 @@ import java.time.LocalDate;
 @Table(name = "Parent")
 public class Parent {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "User_ID", nullable = false)
     private Integer id;
 
@@ -62,4 +61,6 @@ public class Parent {
     @Column(name = "Street")
     private String street;
 
+    @Version  // Enables optimistic locking
+    private Integer version;
 }

@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception.EmailNotFoundException;
 import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
@@ -104,5 +105,12 @@ public class AuthServiceImpl implements AuthService {
                 .fpToken(fpToken)
                 .username(user.get().getUsername())
                 .build();
+    }
+
+    @Override
+    public void checkEmailExists(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new EmailAlreadyExistedException("Email is already in use!");
+        }
     }
 }
