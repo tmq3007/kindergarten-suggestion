@@ -50,7 +50,7 @@ public class ParentServiceImpl implements ParentService {
 //            throw new UsernameExistException();
 //        }
         // Tạo mới User
-        String usernameAutoGen =generateUsername(parentDTO.getFullName(), parentRepository.count() + 1);
+        String usernameAutoGen = generateUsername(parentDTO.getFullName());
         String passwordautoGen = generateRandomPassword();
         User user = new User();
         user.setUsername(usernameAutoGen);
@@ -100,18 +100,31 @@ public class ParentServiceImpl implements ParentService {
     }
 
     // Hàm tạo tên username từ Full Name
-    private String generateUsername(String fullName, long id) {
+    private String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
         if (parts.length < 2) {
             throw new IllegalArgumentException("Tên không hợp lệ");
         }
+
         String firstName = parts[parts.length - 1];
         StringBuilder initials = new StringBuilder();
         for (int i = 0; i < parts.length - 1; i++) {
             initials.append(parts[i].charAt(0));
         }
-        return firstName + initials.toString().toUpperCase() + id;
+        String baseUsername = firstName + initials.toString().toUpperCase();
+
+        // Kiểm tra xem username có bị trùng không
+        int count = 1;
+        String finalUsername = baseUsername + count;
+
+        while (userRepository.existsUserByUsername(finalUsername)) {
+            count++;
+            finalUsername = baseUsername + count;
+        }
+
+        return finalUsername;
     }
+
 
     // Hàm tạo mật khẩu ngẫu nhiên
     private String generateRandomPassword() {
