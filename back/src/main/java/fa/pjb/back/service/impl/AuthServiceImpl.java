@@ -1,6 +1,5 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception.EmailNotFoundException;
 import fa.pjb.back.common.util.JwtUtil;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
@@ -105,6 +104,19 @@ public class AuthServiceImpl implements AuthService {
                 .fpToken(fpToken)
                 .username(user.get().getUsername())
                 .build();
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
+        String tokenRedis = tokenService.getTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
+
+        if(tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())){
+            throw new JwtUnauthorizedException("Token is invalid");
+        }
+
+        log.info("password{}", resetPasswordDTO.password());
+
+        tokenService.deleteTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
     }
 
     @Override

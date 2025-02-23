@@ -117,8 +117,9 @@ public class JwtUtil {
     }
 
     // Phương thức dùng để tạo ra ForgotPassword Token
-    public String generateForgotPasswordToken() {
-        return UUID.randomUUID().toString().replace("-", "");
+    public String generateForgotPasswordToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, username, REFRESH_TOKEN_EXP);
     }
 
     // Phương thúc dùng để kiểm tra tính hợp lệ của token
