@@ -54,3 +54,36 @@ export type Pageable = {
     totalElements: number,
     totalPages: number,
 }
+
+export type SchoolDTO = {
+    id: number;
+    name: string;
+    phone: string;
+    email: string;
+    receivingAge: number | null;
+    educationMethod: string | null;
+    schoolType: string | null;
+    status: boolean | null;
+    website: string | null;
+    description: string | null;
+    feeFrom: number | null;
+    feeTo: number | null;
+    image: string | null;
+    district: string | null;
+    ward: string | null;
+    province: string | null;
+    street: string | null;
+};
+
+export type SchoolOwnerDTO  = {
+    id: number;
+    username: string;
+    email: string;
+    role: "ROLE_SCHOOL_OWNER";
+    status: boolean;
+    gender: boolean;
+    fullName: string;
+    phone: string;
+    dob: string; // Sử dụng kiểu string để tương thích với JSON Date
+    school: SchoolDTO; // Chứa toàn bộ thông tin của School
+};
