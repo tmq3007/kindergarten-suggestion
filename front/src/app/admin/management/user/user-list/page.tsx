@@ -2,11 +2,19 @@
 
 import Link from "next/link";
 import { SearchOutlined } from "@ant-design/icons";
-import UserList from "../../../components/UserList";
-export default () => {
+import UserList from "@/app/components/UserList";
+import { useGetUserListQuery } from "@/redux/services/userListAppi";
+import { useState } from "react";
+
+export default function Page() {
+    const [currentPage, setCurrentPage] = useState(0);
+    const { data, isLoading, error, isFetching } = useGetUserListQuery(currentPage);
+    const fetchPage = (page: number) => {
+        setCurrentPage(page);
+    };
     return (
         <>
-            <div className="  mx-auto mt-1.5 mr-2 ml-2 p-7 bg-white rounded-lg min-h-screen shadow-md">
+            <div>
                 {/* Breadcrumb */}
                 <nav className="text-sm text-gray-500 mb-4">
                     <span className="text-blue-600 cursor-pointer hover:underline">User Management</span> {" > "}
@@ -36,8 +44,13 @@ export default () => {
                     </div>
                 </div>
                 {/* User List */}
-                <div className="mt-6">
-                    <UserList/>
+                <div className="mt-4">
+                    <UserList
+                        fetchPage={fetchPage}
+                        data={data}
+                        error={error}
+                        isLoading={isLoading}
+                        isFetching={isFetching} />
                 </div>
             </div>
         </>

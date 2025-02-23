@@ -10,10 +10,8 @@ import {
     UserOutlined,
     WindowsOutlined,
 } from '@ant-design/icons';
-
-import { Button, ConfigProvider, Layout, Menu, MenuProps, Space, theme } from 'antd';
+import { Button, ConfigProvider, Layout, Menu, Space, theme } from 'antd';
 import Image from "next/image";
-
 
 const { Header, Sider, Content } = Layout;
 import StoreProvider, { Props } from "@/redux/StoreProvider";
@@ -21,25 +19,12 @@ import Link from "next/link";
 
 export default function AdminLayout({ children }: Props) {
     const [collapsed, setCollapsed] = useState(false);
-    const { Header, Content, Footer, Sider } = Layout;
-
-    const siderStyle: React.CSSProperties = {
-        overflow: 'auto',
-        height: '100vh',
-        position: 'sticky',
-        insetInlineStart: 0,
-        top: 0,
-        bottom: 0,
-        scrollbarWidth: 'thin',
-        scrollbarGutter: 'stable',
-    };
-
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
 
     return (
-        <Layout hasSider>
+        <Layout hasSider className={'h-screen'}> 
             <ConfigProvider
                 theme={{
                     components: {
@@ -51,7 +36,7 @@ export default function AdminLayout({ children }: Props) {
                     },
                 }}
             >
-                <Sider style={siderStyle} className={'hidden md:block'} trigger={null} collapsible collapsed={collapsed}>
+                <Sider className={'hidden md:block'} trigger={null} collapsible collapsed={collapsed}>
                     <Image className={'mx-auto'} src={logo} alt={'logo'} height={70} width={70} />
                     <div className="demo-logo-vertical" />
                     <Menu
@@ -89,70 +74,69 @@ export default function AdminLayout({ children }: Props) {
                 </Sider>
             </ConfigProvider>
             <Layout>
-                <Header className={'flex justify-between items-center px-2'}
+            <Header className={'flex justify-between items-center'}
+                style={{ padding: 0, background: colorBgContainer, position: 'sticky', }}>
+                <Button
+                    className={'hidden md:block'}
+                    type="text"
+                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                    onClick={() => setCollapsed(!collapsed)}
                     style={{
-                        position: 'sticky',
-                        top: 0,
-                        zIndex: 1,
-                        width: '100%',
-                        background: colorBgContainer,
-                    }} >
+                        fontSize: '16px',
+                        width: 64,
+                        height: 64,
+                    }}
+                />
+                <Space className={'md:hidden flex justify-evenly w-full h-full'}>
+                    <Link href="/school-management">
+                        <HomeOutlined />
+                    </Link>
+                    <Link href="/user-management">
+                        <UserOutlined />
+                    </Link>
+                    <Link href="/reminder">
+                        <BellOutlined />
+                    </Link>
+                    <Link href="/parent-management">
+                        <UsergroupAddOutlined />
+                    </Link>
+                    <Link href="/request-management">
+                        <WindowsOutlined />
+                    </Link>
+                    <Link href="/logout">
+                        <LogoutOutlined />
+                    </Link>
+                </Space>
+                <Link className="hidden md:block" href="/logout">
                     <Button
-                        className={'hidden md:block'}
                         type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                        onClick={() => setCollapsed(!collapsed)}
+                        icon={<LogoutOutlined />}
                         style={{
                             fontSize: '16px',
-                            width: 64,
+                            width: 'auto',
                             height: 64,
+                            color: 'red'
                         }}
-                    />
-                    <Space className={'md:hidden flex justify-evenly w-full h-full'}>
-                        <Link href="/school-management">
-                            <HomeOutlined />
-                        </Link>
-                        <Link href="/user-management">
-                            <UserOutlined />
-                        </Link>
-                        <Link href="/reminder">
-                            <BellOutlined />
-                        </Link>
-                        <Link href="/parent-management">
-                            <UsergroupAddOutlined />
-                        </Link>
-                        <Link href="/request-management">
-                            <WindowsOutlined />
-                        </Link>
-                        <Link href="/logout">
-                            <LogoutOutlined />
-                        </Link>
-                    </Space>
-                    <Link className="hidden md:block" href="/logout">
-                        <Button
-                            type="text"
-                            icon={<LogoutOutlined />}
-                            style={{
-                                fontSize: '16px',
-                                width: 'auto',
-                                height: 64,
-                                color: 'red'
-                            }}
-                        >
-                            Logout
-                        </Button>
-                    </Link>
-                </Header>
-                <Content style={{
-                    margin: '15px 10px 0px 10px',
+                    >
+                        Logout
+                    </Button>
+                </Link>
+            </Header>
+            <Content
+                className='overflow-visible'
+                style={{
+                    margin: '24px 16px',
+                    overflow: 'initial',
                     padding: 24,
                     minHeight: 280,
                     background: colorBgContainer,
                     borderRadius: borderRadiusLG,
-                }}>
-                    {children}
-                </Content>
+                }}
+            >
+                {children}
+            </Content>
             </Layout>
         </Layout>
+
     );
 };
