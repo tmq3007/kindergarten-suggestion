@@ -4,8 +4,6 @@ import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.UserVO;
-import fa.pjb.back.repository.ParentRepository;
-import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
@@ -36,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public String saveNewUser(RegisterDTO registerDTO) {
+    public User saveNewUser(RegisterDTO registerDTO) {
         authService.checkEmailExists(registerDTO.email());
         String username = generateUsername(registerDTO.fullname());
 
@@ -51,8 +49,8 @@ public class UserServiceImpl implements UserService {
         temp.setPhone(registerDTO.phone());
         temp.setFullname(registerDTO.fullname());
         user.setParent(temp);
-        userRepository.save(user);
-        return "User registered successfully";
+        return userRepository.save(user);
+
     }
     //gen ra username từ fullname
     public String generateUsername(String fullName) {
