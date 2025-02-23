@@ -45,11 +45,11 @@ public class AuthController {
             description = "Forgot Password"
     )
     @PostMapping("forgot-password")
-    public ApiResponse<ForgotPasswordVO> forgotpassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
+    public ApiResponse<ForgotPasswordVO> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         return ApiResponse.<ForgotPasswordVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Link password reset sent successfully!")
-                .data(authService.forgotpassword(forgotPasswordDTO, response))
+                .data(authService.forgotPassword(forgotPasswordDTO, response))
                 .build();
     }
 
@@ -58,8 +58,8 @@ public class AuthController {
             description = "Reset Password"
     )
     @PostMapping("reset-password")
-    public ApiResponse<?> resetpassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
-        authService.resetpassword(resetPasswordDTO, response);
+    public ApiResponse<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
+        authService.resetPassword(resetPasswordDTO, response);
         return ApiResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Password reset successfully!")

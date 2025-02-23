@@ -1,6 +1,7 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -39,18 +40,17 @@ public class RequestCounselling {
     private Byte status;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "Email", nullable = false)
     private String email;
 
     @Size(max = 20)
-    @NotNull
+    @NotBlank
     @Column(name = "Phone", nullable = false, length = 20)
     private String phone;
 
     @Size(max = 255)
-    @NotNull
+    @NotBlank
     @Column(name = "Name", nullable = false)
     private String name;
-
 }
