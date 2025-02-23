@@ -1,5 +1,6 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQuery} from "@/redux/services/config/baseQuery";
+import exp from "node:constants";
 
 export type LoginDTO = {
     username: string,
@@ -9,6 +10,21 @@ export type LoginDTO = {
 export type LoginVO = {
     accessToken: string,
     csrfToken: string,
+}
+
+export type ForgotPasswordDTO = {
+    email: string;
+}
+
+export type ForgotPasswordVO = {
+    fpToken: string;
+    username: string;
+}
+
+export type ResetPasswordDTO = {
+    username: string;
+    token: string;
+    password: string;
 }
 
 export const authApi = createApi({
@@ -22,9 +38,24 @@ export const authApi = createApi({
                 method: 'POST',
                 body: loginDTO, // Gửi dữ liệu loginDTO trong body của request
             }),
-        })
+        }),
+        forgotPassword: build.mutation<ApiResponse<ForgotPasswordVO>, ForgotPasswordDTO>({
+            query: (forgotPasswordDTO) => ({
+                url: '/auth/forgot-password',
+                method: 'POST',
+                body: forgotPasswordDTO, // Gửi dữ liệu forgotPasswordDTO trong body của request
+            }),
+        }),
+        resetPassword: build.mutation<ApiResponse<null>, ResetPasswordDTO>({
+            query: (resetPasswordDTO) => ({
+                url: '/auth/reset-password',
+                method: 'POST',
+                body: resetPasswordDTO, // Gửi dữ liệu resetPasswordDTO trong body của request
+            }),
+        }),
+
     }),
 })
 
-export const {useLoginMutation} = authApi
+export const {useLoginMutation, useForgotPasswordMutation, useResetPasswordMutation} = authApi
 

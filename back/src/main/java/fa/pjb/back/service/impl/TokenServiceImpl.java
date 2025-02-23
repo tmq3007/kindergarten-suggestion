@@ -17,4 +17,16 @@ public class TokenServiceImpl implements TokenService {
         String key = prefix + ":" + postfix;
         redisTemplate.opsForValue().set(key, token, Duration.ofSeconds(ttl));
     }
+
+    @Override
+    public String getTokenFromRedis(String prefix, String postfix) {
+        String key = prefix + ":" + postfix;
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    @Override
+    public void deleteTokenFromRedis(String prefix, String postfix) {
+        String key = prefix + ":" + postfix;
+        redisTemplate.delete(key);
+    }
 }
