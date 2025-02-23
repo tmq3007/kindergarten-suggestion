@@ -3,6 +3,7 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
+import fa.pjb.back.model.dto.ResetPasswordDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
@@ -49,6 +50,19 @@ public class AuthController {
                 .code(HttpStatus.OK.value())
                 .message("Link password reset sent successfully!")
                 .data(authService.forgotpassword(forgotPasswordDTO, response))
+                .build();
+    }
+
+    @Operation(
+            summary = "Reset Password",
+            description = "Reset Password"
+    )
+    @PostMapping("reset-password")
+    public ApiResponse<?> resetpassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
+        authService.resetpassword(resetPasswordDTO, response);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Password reset successfully!")
                 .build();
     }
 }

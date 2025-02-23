@@ -117,7 +117,7 @@ const LoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) =>
                 </Form.Item>
 
                 <div className={"text-right underline text-blue-500 pb-5"}>
-                    <Link href={""}>Forgot passwords</Link>
+                    <Link href={"/forgot-password"}>Forgot passwords</Link>
                 </div>
 
                 <Form.Item label={null} wrapperCol={{span: 24}} className="text-center">
