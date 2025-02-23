@@ -1,4 +1,4 @@
-package fa.pjb.back.model.entity;
+package fa.pjb.back.model.enums;
 
 public enum ERole {
     ROLE_ADMIN,

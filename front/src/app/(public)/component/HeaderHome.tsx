@@ -22,9 +22,7 @@ const Navbar: React.FC = () => {
                     theme={{
                         components: {
                             Menu: {
-                                itemColor:'#000',
-                                itemHoverColor:'#2764EB',
-                                itemActiveBg:'#2764EB'
+                                itemColor:'#2764EB'
                             },
                         },
                     }}
@@ -34,7 +32,7 @@ const Navbar: React.FC = () => {
                         className="border-none text-lg bg-transparent flex gap-6"
                         items={[
                             {
-                                label: <Link href="/view-account" className="text-blue-500 font-semibold">School Search</Link>,
+                                label: <Link href="/school" className="text-blue-500 font-semibold">School Search</Link>,
                                 key: 'school',
                             },
                             {

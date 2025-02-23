@@ -7,6 +7,7 @@ import {pokemonApi} from "@/redux/services/pokemonApi";
 import apiMiddlewares from "@/middleware/apiMiddleware";
 import {postApi} from "@/redux/services/postApi";
 import {authApi} from "@/redux/services/authApi";
+import { userListApi } from "./services/userListAppi";
 import {parentApi} from "@/redux/services/User/parentApi";
 
 
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
     [postApi.reducerPath]: postApi.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [parentApi.reducerPath]:parentApi.reducer,
+    [userListApi.reducerPath]: userListApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
 })

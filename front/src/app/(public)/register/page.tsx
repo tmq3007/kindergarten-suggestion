@@ -1,6 +1,6 @@
 "use client"
 
-import RegisterModal from "@/app/(public)/components/RegisterForm";
+import RegisterModal from "@/app/(public)/component/RegisterForm";
 import { useState } from "react";
 
 export default function RegisterPage() {

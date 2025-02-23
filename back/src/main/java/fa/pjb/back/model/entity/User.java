@@ -1,4 +1,6 @@
 package fa.pjb.back.model.entity;
+
+import fa.pjb.back.model.enums.ERole;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -10,9 +12,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Set;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "User")
-@Data
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,14 +36,18 @@ public class User implements UserDetails {
     private Boolean status;
 
     @Column(nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private ERole role;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Parent Parent;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private SchoolOwner SchoolOwner;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Set.of(new SimpleGrantedAuthority(role));
+        return Set.of(new SimpleGrantedAuthority(role.toString()));
     }
 
 }

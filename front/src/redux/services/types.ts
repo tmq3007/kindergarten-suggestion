@@ -35,3 +35,22 @@ export type ParentDTO = {
     street: string;
     role: "ROLE_PARENT"; // Định nghĩa cố định giá trị của role
 };
+
+
+export type UserVO = {
+    id: string,
+    fullname: string,
+    email: string,
+    phoneNo: string,
+    dob: string,
+    address: string,
+    role: string,
+    status: string,
+}
+
+export type Pageable = {
+    pageNumber: number,
+    pageSize: number,
+    totalElements: number,
+    totalPages: number,
+}

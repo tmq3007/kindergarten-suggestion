@@ -13,6 +13,6 @@ public class TestController {
     @GetMapping("hello")
     public String hello() {
         log.info("into controller");
-        return "hello";
+        return "hello1";
     }
 }

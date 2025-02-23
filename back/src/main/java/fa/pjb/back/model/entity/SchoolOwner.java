@@ -1,9 +1,6 @@
 package fa.pjb.back.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -16,8 +13,14 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "School_Owner")
 public class SchoolOwner {
-    @EmbeddedId
-    private SchoolOwnerId id;
+    @Id
+    @Column(name = "User_ID", nullable = false)
+    private Integer id;
+
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "User_ID", nullable = false)
+    private User user;
 
     @Size(max = 20)
     @NotNull
@@ -36,5 +39,10 @@ public class SchoolOwner {
     @NotNull
     @Column(name = "DOB", nullable = false)
     private LocalDate dob;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "School_ID", nullable = false)
+    private School school;
 
 }
