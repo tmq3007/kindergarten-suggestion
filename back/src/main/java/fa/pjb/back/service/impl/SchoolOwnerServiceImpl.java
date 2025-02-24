@@ -55,6 +55,8 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         user.setEmail(dto.getEmail());
         user.setRole(ERole.ROLE_SCHOOL_OWNER);
         user.setStatus(dto.getStatus());
+        user.setPhone(dto.getPhone());
+        user.setDob(dto.getDob());
 
         // Lưu User vào database
         user = userRepository.save(user);
@@ -69,10 +71,7 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         // Tạo SchoolOwner
         SchoolOwner schoolOwner = new SchoolOwner();
         schoolOwner.setUser(user);
-        schoolOwner.setPhone(dto.getPhone());
-        schoolOwner.setGender(dto.getGender());
         schoolOwner.setFullname(dto.getFullName());
-        schoolOwner.setDob(dto.getDob());
         schoolOwner.setSchool(school); // Chấp nhận null
 
         // Lưu SchoolOwner vào database
@@ -86,10 +85,9 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         responseDTO.setId(schoolOwner.getId());
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
-        responseDTO.setPhone(schoolOwner.getPhone());
-        responseDTO.setGender(schoolOwner.getGender());
-        responseDTO.setFullName(schoolOwner.getFullname());
-        responseDTO.setDob(schoolOwner.getDob());
+        responseDTO.setPhone(user.getPhone());
+         responseDTO.setFullName(schoolOwner.getFullname());
+        responseDTO.setDob(user.getDob());
         responseDTO.setSchool(school != null ? dto.getSchool() : null); // Nếu school null, thì giữ nguyên
         responseDTO.setStatus(user.getStatus());
         responseDTO.setRole(String.valueOf(schoolOwner.getUser().getRole()));

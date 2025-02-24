@@ -31,19 +31,6 @@ public class Parent {
     @Column(name = "Fullname", nullable = false)
     private String fullName;
 
-    @NotNull
-    @Column(name = "Gender", nullable = false)
-    private Boolean gender = false;
-
-    @Size(max = 20)
-    @NotBlank
-    @Column(name = "Phone", nullable = false, length = 20)
-    private String phone;
-
-    @NotNull
-    @Column(name = "DOB", nullable = false)
-    private LocalDate dob;
-
     @Size(max = 255)
     @Column(name = "District", nullable = true)
     private String district;

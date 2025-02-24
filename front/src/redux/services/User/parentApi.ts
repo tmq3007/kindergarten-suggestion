@@ -9,7 +9,7 @@ export const parentApi = createApi({
     endpoints: (build) => ({
         createParent: build.mutation<ApiResponse<ParentDTO>, ParentDTO>({
             query: (parentData) => ({
-                url: "parents",
+                url: "admin/parents",
                 method: "POST",
                 body: parentData, // Dữ liệu gửi lên API
             }),

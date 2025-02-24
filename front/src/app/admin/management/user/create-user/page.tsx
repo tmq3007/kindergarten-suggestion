@@ -119,7 +119,7 @@ const CreateUser: React.FC = () => {
             <Breadcrumb
                 className={'m-0'}
                 items={[
-                    { title: <Link href="/management/user/create-user">User Management</Link> },
+                    { title: <Link href="/admin/management/user/user-list">User Management</Link> },
                     { title: 'Add New User' },
                 ]}
             />
@@ -210,9 +210,12 @@ const CreateUser: React.FC = () => {
 
                 <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
                     <Space className="absolute bottom-6 top-1  ">
-                        <Button type="dashed" htmlType="button">
-                            Cancel
-                        </Button>
+
+                        <Link href={'/admin/management/user/user-list'}>
+                            <Button type="dashed" htmlType="button">
+                                Cancel
+                            </Button>
+                        </Link>
                         <Button   type="primary" htmlType="submit">
                             Submit
                         </Button>

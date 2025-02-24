@@ -62,6 +62,8 @@ public class ParentServiceImpl implements ParentService {
         user.setEmail(parentDTO.getEmail());
         user.setRole(ERole.ROLE_PARENT);
         user.setStatus(parentDTO.getStatus());
+        user.setPhone(parentDTO.getPhone());
+        user.setDob(parentDTO.getDob());
 
         // Lưu User vào database
         user = userRepository.save(user);
@@ -70,9 +72,7 @@ public class ParentServiceImpl implements ParentService {
         Parent parent = new Parent();
         parent.setUser(user);
         parent.setFullName(parentDTO.getFullName());
-        parent.setGender(parentDTO.getGender());
-        parent.setPhone(parentDTO.getPhone());
-        parent.setDob(parentDTO.getDob());
+
         parent.setDistrict(parentDTO.getDistrict() != null ? parentDTO.getDistrict() : "");
         parent.setWard(parentDTO.getWard() != null ? parentDTO.getWard() : "");
         parent.setProvince(parentDTO.getProvince() != null ? parentDTO.getProvince() : "");
@@ -88,9 +88,8 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
         responseDTO.setFullName(parent.getFullName());
-        responseDTO.setGender(parent.getGender());
-        responseDTO.setPhone(parent.getPhone());
-        responseDTO.setDob(parent.getDob());
+        responseDTO.setPhone(user.getPhone());
+        responseDTO.setDob(user.getDob());
         responseDTO.setDistrict(parent.getDistrict());
         responseDTO.setWard(parent.getWard());
         responseDTO.setProvince(parent.getProvince());
@@ -152,12 +151,11 @@ public class ParentServiceImpl implements ParentService {
         // Cập nhật thông tin User
         user.setEmail(parentDTO.getEmail());
         user.setUsername(parentDTO.getUsername());  // Cập nhật username nếu có thay đổi
-
+        user.setPhone(parentDTO.getPhone());
+        user.setDob(parentDTO.getDob());
         // Cập nhật thông tin Parent
         parent.setFullName(parentDTO.getFullName());
-        parent.setGender(parentDTO.getGender());
-        parent.setPhone(parentDTO.getPhone());
-        parent.setDob(parentDTO.getDob());
+
 
         // Lưu thay đổi
         userRepository.save(user);
@@ -169,9 +167,8 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
         responseDTO.setFullName(parent.getFullName());
-        responseDTO.setGender(parent.getGender());
-        responseDTO.setPhone(parent.getPhone());
-        responseDTO.setDob(parent.getDob());
+        responseDTO.setPhone(user.getPhone());
+        responseDTO.setDob(user.getDob());
         responseDTO.setDistrict(parent.getDistrict());
         responseDTO.setWard(parent.getWard());
         responseDTO.setProvince(parent.getProvince());
@@ -195,9 +192,8 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
         responseDTO.setFullName(parent.getFullName());
-        responseDTO.setGender(parent.getGender());
-        responseDTO.setPhone(parent.getPhone());
-        responseDTO.setDob(parent.getDob());
+        responseDTO.setPhone(user.getPhone());
+        responseDTO.setDob(user.getDob());
         responseDTO.setDistrict(parent.getDistrict());
         responseDTO.setWard(parent.getWard());
         responseDTO.setProvince(parent.getProvince());

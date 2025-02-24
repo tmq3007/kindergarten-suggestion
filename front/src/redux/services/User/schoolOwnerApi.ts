@@ -9,7 +9,7 @@ export const schoolOwnerApi = createApi({
     endpoints: (build) => ({
         createSchoolOwner: build.mutation<ApiResponse<SchoolOwnerDTO>, SchoolOwnerDTO>({
             query: (schoolOwnerData) => ({
-                url: "school-owners/create",
+                url: "admin/school-owners/create",
                 method: "POST",
                 body: schoolOwnerData, // Dữ liệu gửi lên API
             }),

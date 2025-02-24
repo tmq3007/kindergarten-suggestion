@@ -22,23 +22,10 @@ public class SchoolOwner {
     @JoinColumn(name = "User_ID", nullable = false)
     private User user;
 
-    @Size(max = 20)
-    @NotNull
-    @Column(name = "Phone", nullable = false, length = 20)
-    private String phone;
-
-    @NotNull
-    @Column(name = "Gender", nullable = false)
-    private Boolean gender = false;
-
     @Size(max = 255)
     @NotNull
     @Column(name = "Fullname", nullable = false)
     private String fullname;
-
-    @NotNull
-    @Column(name = "DOB", nullable = false)
-    private LocalDate dob;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "School_ID", nullable = true)

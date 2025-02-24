@@ -4,11 +4,15 @@ import fa.pjb.back.model.enums.ERole;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
@@ -38,6 +42,15 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ERole role;
+
+    @Size(max = 20)
+    @NotBlank
+    @Column(name = "Phone", nullable = false, length = 20)
+    private String phone;
+
+    @NotNull
+    @Column(name = "DOB", nullable = false)
+    private LocalDate dob;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Parent Parent;
