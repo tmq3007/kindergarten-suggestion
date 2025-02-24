@@ -24,10 +24,6 @@ public class Parent {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "fullname", nullable = false)
-    private String fullname;
 
     @Size(max = 255)
     @Column(name = "district", nullable = false)

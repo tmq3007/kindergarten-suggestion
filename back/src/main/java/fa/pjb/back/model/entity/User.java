@@ -38,6 +38,11 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean status;
 
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "fullname", nullable = false)
+    private String fullname;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ERole role;

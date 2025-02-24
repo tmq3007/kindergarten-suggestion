@@ -45,9 +45,9 @@ public class UserServiceImpl implements UserService {
         user.setRole(ROLE_PARENT);
         user.setStatus(true);
         user.setPhone(registerDTO.phone());
+        user.setFullname(registerDTO.fullname());
         Parent temp = new Parent();
         temp.setUser(user);
-        temp.setFullname(registerDTO.fullname());
         user.setParent(temp);
         //TODO: change to mapstruct
         return convertToUserVO(userRepository.save(user));
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
             Parent temp = user.getParent();
             return UserVO.builder()
                     .id(user.getId())
-                    .fullname(temp.getFullname())
+                    .fullname(user.getFullname())
                     .email(user.getEmail())
                     .phone(user.getPhone())
                     .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
         } else if (user.getRole()== ROLE_SCHOOL_OWNER && user.getSchoolOwner()!=null) {
             return UserVO.builder()
                     .id(user.getId())
-                    .fullname(user.getSchoolOwner().getFullname())
+                    .fullname(user.getFullname())
                     .email(user.getEmail())
                     .phone(user.getPhone())
                     .address("N/A")
