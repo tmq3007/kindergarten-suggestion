@@ -3,7 +3,6 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
-import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
@@ -42,7 +41,16 @@ public class AuthController {
                 return ApiResponse.<ForgotPasswordVO>builder()
                                 .code(HttpStatus.OK.value())
                                 .message("Link password reset sent successfully!")
-                                .data(authService.forgotpassword(forgotPasswordDTO, response))
+                                .data(authService.forgotPassword(forgotPasswordDTO, response))
                                 .build();
+        }
+
+        @GetMapping("/check-email")
+        public ApiResponse<String> checkEmail(@RequestParam String email) {
+                return ApiResponse.<String>builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Email available!")
+                        .data(String.valueOf(authService.checkEmailExists(email)))
+                        .build();
         }
 }

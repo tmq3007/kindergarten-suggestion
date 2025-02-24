@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 
 @Service
-public class JwtUtil {
+public class JwtHelper {
     private final Dotenv dotenv = Dotenv.load();
     private final String SECRET_KEY = dotenv.get("SECRET_KEY");
     @Value("${access-token-exp}")
