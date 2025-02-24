@@ -1,37 +1,46 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
-import fa.pjb.back.repository.ParentRepository;
- import fa.pjb.back.repository.UserRepository;
+import fa.pjb.back.repository.UserRepository;
+import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import static fa.pjb.back.model.enums.ERole.*;
-
+@RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-     private ParentRepository parentRepository;
+    private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final AuthService authService;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Override
     public Page<UserVO> getAllUsers(Pageable of) {
         Page<User> userEntitiesPage = userRepository.findAll(of);
-        return userEntitiesPage.map(this::convertToUserVO);
-    }
-    public void save(User user) {
-        userRepository.save(user);
+        return userMapper.toUserVOPage(userEntitiesPage);
     }
 
-    private UserVO convertToUserVO(User user) {
+    //generate username từ fullname
+    public String generateUsername(String fullName) {
+        String[] parts = fullName.trim().split("\\s+");
+
+        String firstName = parts[parts.length - 1];
+        firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
+
+        StringBuilder initials = new StringBuilder();
+        for (int i = 0; i < parts.length - 1; i++) {
+            initials.append(parts[i].charAt(0));
+        }
+
+        String baseUsername = firstName + initials.toString().toUpperCase();
 
         if (user.getRole()== ROLE_PARENT) {
             Parent temp = user.getParent();
@@ -65,5 +74,9 @@ public class UserServiceImpl implements UserService {
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
         }
+        // đếm số lượng username đã tồn tại với prefix này
+        long count = userRepository.countByUsernameStartingWith(baseUsername);
+
+        return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
     }
 }

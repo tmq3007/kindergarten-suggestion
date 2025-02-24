@@ -16,10 +16,12 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString(exclude = {"Parent", "SchoolOwner"})
 @Entity
 @Table(name = "User")
 public class User implements UserDetails {

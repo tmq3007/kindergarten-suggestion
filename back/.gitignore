@@ -20,6 +20,8 @@ target/
 *.iml
 *.ipr
 
+### VSCode ###
+
 
 /src/main/resources/.env
 /src/main/resources/marco.pem

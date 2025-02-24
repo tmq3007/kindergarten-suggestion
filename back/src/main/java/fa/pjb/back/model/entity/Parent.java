@@ -17,13 +17,12 @@ import java.time.LocalDate;
 @Table(name = "Parent")
 public class Parent {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "User_ID", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Integer id;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "User_ID", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Size(max = 255)

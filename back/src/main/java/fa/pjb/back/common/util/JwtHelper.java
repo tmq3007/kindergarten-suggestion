@@ -4,8 +4,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,7 @@ import java.util.function.Function;
 
 
 @Service
-public class JwtUtil {
+public class JwtHelper {
     private final Dotenv dotenv = Dotenv.load();
     private final String SECRET_KEY = dotenv.get("SECRET_KEY");
     @Value("${access-token-exp}")

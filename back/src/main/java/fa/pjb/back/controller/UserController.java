@@ -2,37 +2,34 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.vo.UserVO;
-import fa.pjb.back.repository.ParentRepository;
- import fa.pjb.back.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("admin")
+@RequestMapping("user")
 public class UserController {
+    private final UserService userService;
+    private final AuthService authService;
 
-    @Autowired
-    private UserService userService;
 
-
-    @GetMapping("user")
-    public ApiResponse<Page<UserVO>> getAll(
+    @GetMapping()
+    public ApiResponse<Page<UserVO>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
-    ){
+    ) {
         Page<UserVO> users = userService.getAllUsers(PageRequest.of(page, size));
         return ApiResponse.<Page<UserVO>>builder()
-                .code(200)
-                .message("OK")
+                .code(HttpStatus.OK.value())
+                .message("Users retrieved successfully")
                 .data(users)
                 .build();
     }
