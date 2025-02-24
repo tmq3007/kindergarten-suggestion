@@ -22,11 +22,6 @@ public class SchoolOwner {
     @JoinColumn(name = "User_ID", nullable = false)
     private User user;
 
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "Fullname", nullable = false)
-    private String fullname;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "School_ID", nullable = true)
     private School school;

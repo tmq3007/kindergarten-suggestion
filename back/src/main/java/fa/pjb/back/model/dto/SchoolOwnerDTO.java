@@ -11,6 +11,5 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SchoolOwnerDTO extends UserDTO {
     Integer id;
-    String fullName;
     SchoolDTO school; // Chứa thông tin của School
 }

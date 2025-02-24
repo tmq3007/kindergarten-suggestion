@@ -12,7 +12,6 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
  public class ParentDTO extends UserDTO {
     Integer id;
-    String fullName;
      String district;
      String ward;
      String province;

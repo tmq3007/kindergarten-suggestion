@@ -27,11 +27,6 @@ public class Parent {
     private User user;
 
     @Size(max = 255)
-    @NotBlank
-    @Column(name = "Fullname", nullable = false)
-    private String fullName;
-
-    @Size(max = 255)
     @Column(name = "District", nullable = true)
     private String district;
 

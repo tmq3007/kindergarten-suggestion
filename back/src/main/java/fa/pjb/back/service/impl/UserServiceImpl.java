@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
             Parent temp = user.getParent();
             return UserVO.builder()
                     .id(user.getId())
-                    .fullname(temp.getFullName())
+                    .fullname(user.getFullName())
                     .email(user.getEmail())
                     .phone(user.getPhone())
                     .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         } else if (user.getRole()== ROLE_SCHOOL_OWNER) {
             return UserVO.builder()
                     .id(user.getId())
-                    .fullname(user.getSchoolOwner().getFullname())
+                    .fullname(user.getFullName())
                     .email(user.getEmail())
                     .phone(user.getPhone())
                     .address("N/A")

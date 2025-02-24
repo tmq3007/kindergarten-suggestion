@@ -52,6 +52,11 @@ public class User implements UserDetails {
     @Column(name = "DOB", nullable = false)
     private LocalDate dob;
 
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "Fullname", nullable = false)
+    private String fullName;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Parent Parent;
 
