@@ -20,5 +20,4 @@ public class EmailController {
                 .data(emailService.sendLinkPasswordResetEmail(to, name, resetLink))
                 .build();
     }
-
 }

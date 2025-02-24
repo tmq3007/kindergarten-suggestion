@@ -1,29 +1,24 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.model.dto.RegisterDTO;
-import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import static fa.pjb.back.model.enums.ERole.*;
-
+@RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final AuthService authService;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -32,27 +27,7 @@ public class UserServiceImpl implements UserService {
         return userEntitiesPage.map(this::convertToUserVO);
     }
 
-    @Transactional
-    @Override
-    public UserVO saveNewUser(RegisterDTO registerDTO) {
-        authService.checkEmailExists(registerDTO.email());
-        String username = generateUsername(registerDTO.fullname());
-
-        User user = new User();
-        user.setEmail(registerDTO.email());
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(registerDTO.password()));
-        user.setRole(ROLE_PARENT);
-        user.setStatus(true);
-        user.setPhone(registerDTO.phone());
-        user.setFullname(registerDTO.fullname());
-        Parent temp = new Parent();
-        temp.setUser(user);
-        user.setParent(temp);
-        //TODO: change to mapstruct
-        return convertToUserVO(userRepository.save(user));
-    }
-    //gen ra username từ fullname
+    //generate username từ fullname
     public String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
 

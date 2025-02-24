@@ -1,7 +1,7 @@
 package fa.pjb.back.filter;
 
 import fa.pjb.back.common.util.HttpRequestHelper;
-import fa.pjb.back.common.util.JwtUtil;
+import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.service.impl.UserDetailsServiceImpl;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -26,7 +26,7 @@ import java.util.List;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final UserDetailsServiceImpl userDetailsServiceImpl;
-    private final JwtUtil jwtUtil;
+    private final JwtHelper jwtHelper;
     private final HttpRequestHelper httpRequestHelper;
 
     // Danh sách URL không cần xác thực
@@ -62,7 +62,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throw new JwtException("Invalid Access Token");
         }
         // Nếu có jwt thì trích xuất username từ jwt
-        String username = jwtUtil.extractUsername(jwt);
+        String username = jwtHelper.extractUsername(jwt);
         if (username == null) {
             throw new JwtException("Invalid Access Token");
         }
@@ -73,7 +73,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
             // Sau khi đã xác thực xong, ta tiếp tục kiểm tra tính hợp lệ của token
             // Nếu token hợp lệ, ta tiến hành tạo UsernamePasswordAuthenticationToken chứa thông tin và quyền hạn người dùng (không cần chứa password)
-            if (jwtUtil.validateToken(jwt, userDetails)) {
+            if (jwtHelper.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 // Gán thông tin bổ sung về request (IP, Session ID, thông tin trình duyệt,...)

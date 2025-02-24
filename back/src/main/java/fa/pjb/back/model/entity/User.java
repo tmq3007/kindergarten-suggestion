@@ -15,10 +15,12 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString(exclude = {"Parent", "SchoolOwner"})
 @Entity
 @Table(name = "User")
 public class User implements UserDetails {
@@ -47,11 +49,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private ERole role;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Parent Parent;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private SchoolOwner SchoolOwner;
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+//    private Parent Parent;
+//
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+//    private SchoolOwner SchoolOwner;
 
     @NotNull
     @Column(name = "dob", nullable = false)
