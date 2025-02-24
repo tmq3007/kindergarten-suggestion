@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
         user.setStatus(userDTO.getStatus());
         user.setPhone(userDTO.getPhone());
         user.setDob(userDTO.getDob());
-        user.setFullName(userDTO.getFullName());
+        user.setFullname(userDTO.getFullName());
 
         // Lưu User vào database
         user = userRepository.save(user);
@@ -94,14 +94,11 @@ public class UserServiceImpl implements UserService {
         responseDTO.setStatus(user.getStatus());
         responseDTO.setPhone(user.getPhone());
         responseDTO.setDob(user.getDob());
-        responseDTO.setFullName(user.getFullName());
+        responseDTO.setFullName(user.getFullname());
 
 
         return responseDTO;
     }
-
-    // Hàm tạo tên username từ Full Name
-
 
 
 

@@ -3,7 +3,6 @@ package fa.pjb.back.service.impl;
 import fa.pjb.back.common.exception.EmailExistException;
 import fa.pjb.back.common.exception.SchoolNotFoundException;
 import fa.pjb.back.common.exception.UsernameExistException;
-import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.SchoolOwnerDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
@@ -57,7 +56,7 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         user.setStatus(dto.getStatus());
         user.setPhone(dto.getPhone());
         user.setDob(dto.getDob());
-        user.setFullName(dto.getFullName());
+        user.setFullname(dto.getFullName());
         // Lưu User vào database
         user = userRepository.save(user);
 
@@ -86,7 +85,7 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
         responseDTO.setPhone(user.getPhone());
-         responseDTO.setFullName(user.getFullName());
+         responseDTO.setFullName(user.getFullname());
         responseDTO.setDob(user.getDob());
         responseDTO.setSchool(school != null ? dto.getSchool() : null); // Nếu school null, thì giữ nguyên
         responseDTO.setStatus(user.getStatus());

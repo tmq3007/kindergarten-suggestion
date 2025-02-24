@@ -1,7 +1,6 @@
 package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
-import fa.pjb.back.model.dto.ChangePasswordDTO;
 import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.model.dto.SchoolOwnerDTO;
 import fa.pjb.back.model.dto.UserDTO;
@@ -57,15 +56,7 @@ public class AdminController {
                 .build();
     }
 
-    // API đổi mật khẩu Parent
-    @PutMapping("/parents/{parentId}/change-password")
-    public ApiResponse<Void> changePassword(@PathVariable Integer parentId, @RequestBody ChangePasswordDTO request) {
-        parentService.changePassword(parentId, request.getNewPassword());
-        return ApiResponse.<Void>builder()
-                .code(200)
-                .message("Password changed successfully")
-                .build();
-    }
+
 
     //APT tao SO
     @PostMapping("/school-owners/create")

@@ -14,16 +14,16 @@ import java.time.LocalDate;
 @Table(name = "School_Owner")
 public class SchoolOwner {
     @Id
-    @Column(name = "User_ID", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Integer id;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "User_ID", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "School_ID", nullable = true)
+    @JoinColumn(name = "school_id")
     private School school;
 
 }

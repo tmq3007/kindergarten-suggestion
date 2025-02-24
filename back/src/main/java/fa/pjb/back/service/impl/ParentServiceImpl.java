@@ -13,6 +13,7 @@ import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.ParentService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static fa.pjb.back.config.SecurityConfig.passwordEncoder;
 
+@Slf4j
 @Service
 public class ParentServiceImpl implements ParentService {
 
@@ -66,7 +68,7 @@ public class ParentServiceImpl implements ParentService {
         user.setStatus(parentDTO.getStatus());
         user.setPhone(parentDTO.getPhone());
         user.setDob(parentDTO.getDob());
-        user.setFullName(parentDTO.getFullName());
+        user.setFullname(parentDTO.getFullName());
 
         // Lưu User vào database
         user = userRepository.save(user);
@@ -89,7 +91,7 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setId(parent.getId());
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
-        responseDTO.setFullName(user.getFullName());
+        responseDTO.setFullName(user.getFullname());
         responseDTO.setPhone(user.getPhone());
         responseDTO.setDob(user.getDob());
         responseDTO.setDistrict(parent.getDistrict());
@@ -162,7 +164,7 @@ public class ParentServiceImpl implements ParentService {
         user.setPhone(parentDTO.getPhone());
         user.setDob(parentDTO.getDob());
 
-        user.setFullName(parentDTO.getFullName());
+        user.setFullname(parentDTO.getFullName());
         // Cập nhật thông tin Parent
 
         // Lưu thay đổi
@@ -174,7 +176,7 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setId(parent.getId());
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
-        responseDTO.setFullName(user.getFullName());
+        responseDTO.setFullName(user.getFullname());
         responseDTO.setPhone(user.getPhone());
         responseDTO.setDob(user.getDob());
         responseDTO.setDistrict(parent.getDistrict());
@@ -190,8 +192,10 @@ public class ParentServiceImpl implements ParentService {
 
     @Transactional
     public ParentDTO getParentById(Integer parentId) {
-        Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> new UserNotFoundException());
+        Parent parent = parentRepository.findParentById(parentId);
+        if (parent == null) {
+            throw new UserNotFoundException();
+        }
 
         User user = parent.getUser();
 
@@ -199,7 +203,7 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setId(parent.getId());
         responseDTO.setUsername(user.getUsername());
         responseDTO.setEmail(user.getEmail());
-        responseDTO.setFullName(user.getFullName());
+        responseDTO.setFullName(user.getFullname());
         responseDTO.setPhone(user.getPhone());
         responseDTO.setDob(user.getDob());
         responseDTO.setDistrict(parent.getDistrict());
@@ -215,11 +219,14 @@ public class ParentServiceImpl implements ParentService {
     @Transactional
     public void changePassword(Integer parentId, String newPassword) {
         Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> new UserNotFoundException());
+                .orElseThrow(UserNotFoundException::new);
+        log.info("parent",parent);
 
         User user = parent.getUser();
+        log.info("user",user);
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
 
 }

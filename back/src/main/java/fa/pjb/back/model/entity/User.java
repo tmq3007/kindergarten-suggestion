@@ -4,7 +4,6 @@ import fa.pjb.back.model.enums.ERole;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -16,12 +15,10 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"Parent", "SchoolOwner"})
 @Entity
 @Table(name = "User")
 public class User implements UserDetails {
@@ -41,29 +38,29 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean status;
 
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "fullname", nullable = false)
+    private String fullname;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ERole role;
-
-    @Size(max = 20)
-    @NotBlank
-    @Column(name = "Phone", nullable = false, length = 20)
-    private String phone;
-
-    @NotNull
-    @Column(name = "DOB", nullable = false)
-    private LocalDate dob;
-
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "Fullname", nullable = false)
-    private String fullName;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Parent Parent;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private SchoolOwner SchoolOwner;
+
+    @NotNull
+    @Column(name = "dob", nullable = false)
+    private LocalDate dob;
+
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "phone", nullable = false, length = 20)
+    private String phone;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
