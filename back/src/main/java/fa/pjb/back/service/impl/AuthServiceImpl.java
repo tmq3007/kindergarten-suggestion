@@ -2,7 +2,7 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailNotFoundException;
 import fa.pjb.back.common.exception.JwtUnauthorizedException;
-import fa.pjb.back.common.util.JwtUtil;
+import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.dto.ResetPasswordDTO;
@@ -17,7 +17,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.extern.slf4j.XSlf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,7 +31,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class AuthServiceImpl implements AuthService {
-    private final JwtUtil jwtUtil;
+    private final JwtHelper jwtHelper;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final TokenService tokenService;
@@ -62,15 +61,15 @@ public class AuthServiceImpl implements AuthService {
         // Tạo ra các Token ==========================================================
 
         // Access Token: Lưu vào Cookie với HttpOnly
-        String accessToken = jwtUtil.generateAccessToken(userDetails);
+        String accessToken = jwtHelper.generateAccessToken(userDetails);
 //        tokenService.saveTokenInCookieWithHttpOnly("ACCESS_TOKEN", accessToken, ACCESS_TOKEN_EXP, response);
 
         // CSRF Token: Lưu vào Cookie không HttpOnly
-        String csrfToken = jwtUtil.generateCsrfToken();
+        String csrfToken = jwtHelper.generateCsrfToken();
 //        tokenService.saveTokenInCookie("CSRF_TOKEN", csrfToken, CSRF_TOKEN_EXP, response);
 
         // Refresh Token: Lưu vào Redis
-        String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+        String refreshToken = jwtHelper.generateRefreshToken(userDetails);
         tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
 
         return LoginVO.builder()
@@ -90,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
+    public ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         //Lấy user theo email
         Optional<User> user = userRepository.findByEmail(forgotPasswordDTO.email());
         //Kiểm tra nếu user tồn tại
@@ -99,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         //fpToken: Lưu vào Redis
-        String fpToken = jwtUtil.generateForgotPasswordToken(user.get().getUsername());
+        String fpToken = jwtHelper.generateForgotPasswordToken(user.get().getUsername());
         tokenService.saveTokenInRedis("FORGOTPASS_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
 
         String resetLink = "http://localhost:3000/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
@@ -126,9 +125,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean checkEmailExists(String email) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            return true;
-        }
-        return false;
+        return userRepository.findByEmail(email).isPresent();
     }
 }

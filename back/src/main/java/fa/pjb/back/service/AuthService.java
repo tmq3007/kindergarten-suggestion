@@ -14,7 +14,7 @@ public interface AuthService {
 
     LoginVO logout(HttpServletResponse response);
 
-    ForgotPasswordVO forgotpassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response);
+    ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response);
 
     void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response);
 
