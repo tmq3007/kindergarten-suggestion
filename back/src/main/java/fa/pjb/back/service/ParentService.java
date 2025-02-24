@@ -8,5 +8,6 @@ import jakarta.validation.Valid;
 
 public interface ParentService {
     ParentDTO createParent(ParentDTO parentDTO);
-    RegisterVO saveNewParent(RegisterDTO registerDTO);
+
+    RegisterVO saveNewParent( RegisterDTO registerDTO);
 }

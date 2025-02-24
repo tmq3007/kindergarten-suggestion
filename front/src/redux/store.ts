@@ -7,9 +7,8 @@ import {pokemonApi} from "@/redux/services/pokemonApi";
 import apiMiddlewares from "@/redux/middleware/apiMiddleware";
 import {postApi} from "@/redux/services/postApi";
 import {authApi} from "@/redux/services/authApi";
-import { userListApi } from "./services/userListAppi";
-import {parentApi} from "@/redux/services/User/parentApi";
 import { userListApi } from "./services/userListApi";
+import {parentApi} from "@/redux/services/User/parentApi";
 import { registerApi } from "./services/registerApi";
 
 

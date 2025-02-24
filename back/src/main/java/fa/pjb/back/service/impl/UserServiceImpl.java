@@ -42,38 +42,6 @@ public class UserServiceImpl implements UserService {
 
         String baseUsername = firstName + initials.toString().toUpperCase();
 
-        if (user.getRole()== ROLE_PARENT) {
-            Parent temp = user.getParent();
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullName())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
-                    .role("Parent")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else if (user.getRole()== ROLE_SCHOOL_OWNER) {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullName())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address("N/A")
-                    .role("School Owner")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getUsername())
-                    .email(user.getEmail())
-                    .phone("N/A")
-                    .address("N/A")
-                    .role("Admin")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        }
         // đếm số lượng username đã tồn tại với prefix này
         long count = userRepository.countByUsernameStartingWith(baseUsername);
 

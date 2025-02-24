@@ -5,9 +5,11 @@ import fa.pjb.back.common.exception.InvalidPhoneNumberException;
 import fa.pjb.back.common.exception.UserNotFoundException;
 import fa.pjb.back.common.exception.UsernameExistException;
 import fa.pjb.back.model.dto.ParentDTO;
+import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.ParentService;
@@ -101,6 +103,12 @@ public class ParentServiceImpl implements ParentService {
 //                usernameAutoGen,passwordautoGen);
         return responseDTO;
     }
+
+    @Override
+    public RegisterVO saveNewParent(RegisterDTO registerDTO) {
+        return null;
+    }
+
 
     // Hàm tạo tên username từ Full Name
     private String generateUsername(String fullName) {
