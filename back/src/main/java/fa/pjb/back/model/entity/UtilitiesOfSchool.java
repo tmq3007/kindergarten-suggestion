@@ -12,7 +12,10 @@ import lombok.*;
 @Table(name = "School_Utilities")
 public class UtilitiesOfSchool {
 
-    @MapsId("school_id")
+    @Id
+    @Column(name = "uid", nullable = false)
+    private Integer uid;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "school_id", nullable = false)
     private School school;

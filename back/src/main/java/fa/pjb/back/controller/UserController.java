@@ -41,11 +41,12 @@ public class UserController {
 
     @Operation(summary = "Register", description = "Register")
     @PostMapping("register")
-    public ApiResponse<User> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
-        return ApiResponse.<User>builder()
+    public ApiResponse<UserVO> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
+
+        return ApiResponse.<UserVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Register successfully!")
-                .data(userService.saveNewUser(registerDTO))
+                .data(userService.saveNewUser(registerDTO)) // No data to return
                 .build();
     }
 

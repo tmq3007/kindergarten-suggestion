@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User saveNewUser(RegisterDTO registerDTO) {
+    public UserVO saveNewUser(RegisterDTO registerDTO) {
         authService.checkEmailExists(registerDTO.email());
         String username = generateUsername(registerDTO.fullname());
 
@@ -44,13 +44,13 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(registerDTO.password()));
         user.setRole(ROLE_PARENT);
         user.setStatus(true);
+        user.setPhone(registerDTO.phone());
         Parent temp = new Parent();
         temp.setUser(user);
-        temp.setPhone(registerDTO.phone());
         temp.setFullname(registerDTO.fullname());
         user.setParent(temp);
-        return userRepository.save(user);
-
+        //TODO: change to mapstruct
+        return convertToUserVO(userRepository.save(user));
     }
     //gen ra username từ fullname
     public String generateUsername(String fullName) {
@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
                     .id(user.getId())
                     .fullname(temp.getFullname())
                     .email(user.getEmail())
-                    .phone(temp.getPhone())
+                    .phone(user.getPhone())
                     .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
                     .role("Parent")
                     .status(user.getStatus() ? "Active" : "Inactive")
@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
                     .id(user.getId())
                     .fullname(user.getSchoolOwner().getFullname())
                     .email(user.getEmail())
-                    .phone(user.getSchoolOwner().getPhone())
+                    .phone(user.getPhone())
                     .address("N/A")
                     .role("School Owner")
                     .status(user.getStatus() ? "Active" : "Inactive")

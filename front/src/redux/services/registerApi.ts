@@ -9,7 +9,7 @@ export const registerApi = createApi({
     endpoints: (builder) => ({
         register: builder.mutation<ApiResponse<string>, RegisterDTO>({
             query: (RegisterDTO) => ({
-                url: "/auth/register",
+                url: "/user/register",
                 method: "POST",
                 body: RegisterDTO,
             }),

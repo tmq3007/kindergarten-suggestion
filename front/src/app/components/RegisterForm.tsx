@@ -9,6 +9,7 @@ interface FieldType {
     phone?: string;
     password: string;
     confirm: string;
+    termAndCon: boolean;
 }
 
 interface RegisterFormProps {
@@ -16,22 +17,28 @@ interface RegisterFormProps {
 }
 
 export default function RegisterForm({ onCancel }: RegisterFormProps) {
-    const onFinish = (values: FieldType) => {
-        console.log(values);
-    };
+
+    const [form] = Form.useForm();
+    const [formValues, setFormValues] = useState<Partial<FieldType>>({ termAndCon: false });
     const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
 
-
+    const onFinish = (values: FieldType) => {
+        console.log(values);
+    };
     // Function to check if email exists in the backend
     const checkEmailExists = async (email: string) => {
         try {
             setEmailStatus('validating'); // Show validation in progress
             setEmailHelp('Checking email availability...');
 
-            const response = await fetch(BASE_URL + `/auth/check-email?email=${email}`);
+            const response = await fetch(BASE_URL + `/user/check-email?email=${email}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
 
-            if (response.status !== 200) {
+            const data = await response.json();
+            if (data === "true") {
                 setEmailStatus('error');
                 setEmailHelp('This email is already registered!');
                 return Promise.reject(new Error('This email is already registered!'));
@@ -50,7 +57,15 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
 
 
     return (
-        <Form<FieldType> className={'px-14'} name="register_form" layout="vertical" onFinish={onFinish} initialValues={{ remember: true }}>
+        <Form<FieldType>
+            form={form}
+            name='registerForm'
+            className={'px-14'}
+            layout="vertical"
+            onFinish={onFinish}
+            initialValues={formValues}
+            onValuesChange={(_, allValues) => setFormValues(allValues)}
+        >
             <Form.Item
                 name="fullname"
                 label="Full Name"
@@ -71,7 +86,7 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
                 help={emailHelp}
                 rules={[
                     { required: true, message: 'Please input your email!' },
-                    { type: 'email', message: 'Please enter a valid email address!'},
+                    { type: 'email', message: 'Please enter a valid email address!' },
                     { max: 50, message: 'Email cannot exceed 50 characters!' },
                     ({ getFieldValue }) => ({
                         validator: async (_, value) => {
@@ -103,7 +118,7 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
                 rules={[
                     { required: true, message: 'Please input your phone number!' },
                     { max: 20, message: 'Phone number cannot exceed 20 characters!' },
-                    { pattern: /^[0-9]+$/, message: 'Phone number must be numeric!' }
+                    { pattern: /^[0-9]$/, message: 'Phone number must be numeric!' }
                 ]}
             >
                 <Input />
@@ -114,10 +129,10 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
                 label="Password"
                 rules={[
                     { required: true, message: 'Please input your password!' },
-                    { min: 8, message: 'Password must be at least 8 characters!' },
+                    { min: 7, message: 'Password must be at least 7 characters!' },
                     {
-                        pattern: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                        message: 'Password must include uppercase, lowercase, and a number!'
+                        pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/,
+                        message: 'Password must contain at least one letter, and one number!'
                     }
                 ]}
                 hasFeedback
@@ -148,10 +163,24 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
                 <Input.Password />
             </Form.Item>
 
-            <Form.Item className={'text-center'}
-                name='termAndCon'
-                rules={[{ required: true, message: 'Please agree to our terms and conditions!' }]}>
-                <Checkbox />   By signing up, you agree with our <Link href={''} className={'underline text-blue-500 hover:underline'}>Terms and Conditions.</Link>
+            <Form.Item
+                name="termAndCon"
+                valuePropName="checked" // ✅ Important to bind the checkbox correctly
+                rules={[
+                    {
+                        validator: (_, value) =>
+                            value ? Promise.resolve() : Promise.reject(new Error('You must agree to the terms and conditions!'))
+                    }
+                    
+                ]}
+                shouldUpdate
+            >
+                <Checkbox>
+                    By signing up, you agree with our{' '}
+                    <Link href={''} className="underline text-blue-500 hover:underline">
+                        Terms and Conditions.
+                    </Link>
+                </Checkbox>
             </Form.Item>
 
             <div className={'flex justify-between'}>

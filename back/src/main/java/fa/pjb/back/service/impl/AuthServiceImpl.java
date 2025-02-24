@@ -126,9 +126,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean checkEmailExists(String email) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            return true;
-        }
-        return false;
+       return userRepository.findByEmail(email).isPresent();
     }
 }

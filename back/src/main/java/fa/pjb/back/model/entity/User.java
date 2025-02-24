@@ -4,11 +4,14 @@ import fa.pjb.back.model.enums.ERole;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
@@ -44,6 +47,15 @@ public class User implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private SchoolOwner SchoolOwner;
+
+    @NotNull
+    @Column(name = "dob", nullable = false)
+    private LocalDate dob;
+
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "phone", nullable = false, length = 20)
+    private String phone;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

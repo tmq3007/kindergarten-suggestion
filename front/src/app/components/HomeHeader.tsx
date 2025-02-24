@@ -105,7 +105,6 @@ export default function HomeHeader() {
                 onCancel={() => setIsModalOpen(false)}
                 centered
                 footer={null}
-                destroyOnClose={true}
             >
                 <RegisterForm onCancel={() => setIsModalOpen(false)}/>
             </Modal>

@@ -15,7 +15,6 @@ public class FacilitiesOfSchool {
     @Column(name = "fid", nullable = false)
     private Integer fid;
 
-    @MapsId("schoolId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "school_id", nullable = false)
     private School school;
