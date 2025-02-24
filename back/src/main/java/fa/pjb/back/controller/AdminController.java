@@ -4,6 +4,8 @@ import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangePasswordDTO;
 import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.model.dto.SchoolOwnerDTO;
+import fa.pjb.back.model.dto.UserDTO;
+import fa.pjb.back.service.UserService;
 import fa.pjb.back.service.impl.ParentServiceImpl;
 import fa.pjb.back.service.impl.SchoolOwnerServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ public class AdminController {
     private ParentServiceImpl parentService;
     @Autowired
     private  SchoolOwnerServiceImpl schoolOwnerService;
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/parents")
     public ApiResponse<ParentDTO> createParent(@RequestBody ParentDTO parentDTO) {
@@ -70,6 +74,17 @@ public class AdminController {
         return ApiResponse.<SchoolOwnerDTO>builder()
                 .code(200)
                 .message("Parent created successfully")
+                .data(response)
+                .build();
+    }
+
+    //API tao moi ADMIN
+    @PostMapping("/create")
+    public ApiResponse<UserDTO> createAdmin(@RequestBody UserDTO dto) {
+        UserDTO response = userService.createAdmin(dto);
+        return ApiResponse.<UserDTO>builder()
+                .code(200)
+                .message("Admin created successfully")
                 .data(response)
                 .build();
     }

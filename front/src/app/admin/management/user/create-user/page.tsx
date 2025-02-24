@@ -13,6 +13,7 @@ import { useCreateParentMutation } from '@/redux/services/User/parentApi';
 import {   Spin } from 'antd';
 import {setSchoolOwner} from "@/redux/features/schoolOwnerSlice";
 import {useCreateSchoolOwnerMutation} from "@/redux/services/User/schoolOwnerApi";
+import {useCreateAdminMutation} from "@/redux/services/User/adminApi";
 const { Option } = Select;
 const { Title } = Typography;
 
@@ -27,6 +28,7 @@ const CreateUser: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [createParent] = useCreateParentMutation();
     const [createSchoolOwner] = useCreateSchoolOwnerMutation()
+    const [createAdmin] = useCreateAdminMutation()
     const [spinning, setSpinning] = React.useState(false);
     const [percent, setPercent] = React.useState(0);
 
@@ -86,10 +88,18 @@ const CreateUser: React.FC = () => {
                 } else {
                     openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
                 }
-            }else{
+            }else if(formattedValues.role === "ROLE_SCHOOL_OWNER"){
                 const response = await createSchoolOwner(formattedValues).unwrap();
                 if (response.data) {
                     dispatch(setSchoolOwner(formattedValues));
+                    openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
+                    form.resetFields();
+                }else {
+                    openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
+                }
+            }else{
+                const response = await createAdmin(formattedValues).unwrap();
+                if (response.data) {
                     openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                     form.resetFields();
                 }else {
