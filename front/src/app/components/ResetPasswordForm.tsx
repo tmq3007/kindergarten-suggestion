@@ -37,35 +37,13 @@ type ResetPasswordFormProp = {
 const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLoading, data, error}) => {
     const [messageApi, contextHolder] = message.useMessage();
     const router = useRouter();
-    const searchParams = useSearchParams();
-
-    const [username, setUsername] = useState<string | null>(null);
-    const [token, setToken] = useState<string | null>(null);
-
-    useEffect(() => {
-        //Lấy username và token từ cookies
-        const storedUsername = Cookies.get("FORGOT_PASSWORD_USERNAME");
-        const storedToken = Cookies.get("FORGOT_PASSWORD_TOKEN");
-
-        console.log(storedUsername, storedToken);
-
-        //Nếu không có token thì thông báo lỗi
-        if (storedToken) {
-            setUsername(storedUsername || null);
-            setToken(storedToken);
-
-        } else {
-            alert("Link reset không hợp lệ!");
-            router.replace("/forgot-password");
-        }
-    }, []);
 
     useEffect(() => {
 
         //Nếu reset password thành công thì thông báo thành công
-        if (data?.data) {
+        if (data?.code === 200) {
             messageApi.success("Password has been reset").then(r => {
-                router.push("/admin")
+                router.replace("/admin")
             });
         }
 
@@ -88,8 +66,6 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
 
     const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
         const resetpasswordDTO: ResetPasswordDTO = {
-            username: username || '',
-            token: token || '',
             password: values.password || '',
         };
         resetpassword(resetpasswordDTO);
@@ -177,7 +153,6 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
                             <Button
                                 className={'w-60 md:w-32 p-6 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition text-xl'}
                                 type="primary"
-                                loading={isLoading} // Show loading when submitting
                             >
                                 Cancel
                             </Button>

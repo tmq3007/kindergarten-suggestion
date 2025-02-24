@@ -11,6 +11,7 @@ import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,11 +51,21 @@ public class AuthController {
         @Operation(summary = "Reset Password", description = "Reset Password")
         @PostMapping("reset-password")
         public ApiResponse<?> ressetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
-                        HttpServletResponse response) {
-                authService.resetPassword(resetPasswordDTO, response);
+                        HttpServletRequest request) {
+                authService.resetPassword(resetPasswordDTO, request);
                 return ApiResponse.builder()
                         .code(HttpStatus.OK.value())
                         .message("Password reset successfully!")
+                        .build();
+        }
+
+        @Operation(summary = "Logout" , description = "Logout")
+        @PostMapping("logout")
+        public ApiResponse<?> logout() {
+                authService.logout();
+                return ApiResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Logout successfully!")
                         .build();
         }
 

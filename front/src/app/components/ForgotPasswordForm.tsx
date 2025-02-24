@@ -114,7 +114,6 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
                             <Button
                                 className={'w-60 md:w-32 p-6 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition text-xl'}
                                 type="primary"
-                                loading={isLoading} // Show loading when submitting
                             >
                                 Cancel
                             </Button>

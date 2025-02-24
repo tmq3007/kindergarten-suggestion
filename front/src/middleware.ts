@@ -33,7 +33,7 @@ export async function middleware(req: NextRequest) {
             cookie.set({
                 name: 'FORGOT_PASSWORD_TOKEN',
                 value: forgotpasswordToken,
-                httpOnly: false,
+                httpOnly: true,
                 secure: false,
                 maxAge: ttl, // 1 tuần
                 path: '/',
@@ -44,7 +44,7 @@ export async function middleware(req: NextRequest) {
             cookie.set({
                 name: 'FORGOT_PASSWORD_USERNAME',
                 value: username,
-                httpOnly: false,
+                httpOnly: true,
                 secure: false,
                 maxAge: ttl, // 1 tuần
                 sameSite: 'strict',
