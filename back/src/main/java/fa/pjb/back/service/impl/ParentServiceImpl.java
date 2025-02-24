@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailExistException;
+import fa.pjb.back.common.exception.InvalidPhoneNumberException;
 import fa.pjb.back.common.exception.UserNotFoundException;
 import fa.pjb.back.common.exception.UsernameExistException;
 import fa.pjb.back.model.dto.ParentDTO;
@@ -45,6 +46,9 @@ public class ParentServiceImpl implements ParentService {
 
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
+        }
+        if (!parentDTO.getPhone().matches("\\d{10}")) {
+            throw new InvalidPhoneNumberException();
         }
 //        if (existingUserName.isPresent()){
 //            throw new UsernameExistException();
@@ -103,7 +107,7 @@ public class ParentServiceImpl implements ParentService {
     private String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
         if (parts.length < 2) {
-            throw new IllegalArgumentException("Tên không hợp lệ");
+            throw new IllegalArgumentException("Invalid Name");
         }
 
         String firstName = parts[parts.length - 1];

@@ -44,5 +44,4 @@ public class SchoolOwner {
     @JoinColumn(name = "School_ID", nullable = true)
     private School school;
 
-
 }
