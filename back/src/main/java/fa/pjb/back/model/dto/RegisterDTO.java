@@ -10,7 +10,7 @@ public record RegisterDTO(
         @Pattern(regexp = ".+@.+\\..+", message = "Invalid email format")
         String email,
         @NotBlank(message = "Phone cannot be empty")
-        @Pattern(regexp = "^[0-9]{10}$", message = "Invalid phone format")
+        @Pattern(regexp = "^\\+\\d{1,4}[-\\s]?\\d{4,14}$", message = "Invalid phone format")
         String phone,
         @NotBlank(message = "Password cannot be empty")
         @Pattern(

@@ -55,7 +55,6 @@ public class User implements UserDetails {
 //    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 //    private SchoolOwner SchoolOwner;
 
-    @NotNull
     @Column(name = "dob", nullable = false)
     private LocalDate dob;
 

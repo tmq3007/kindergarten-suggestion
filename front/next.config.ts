@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
     //         }
     //     ]
     // }
+    images: {
+        domains: ["flagcdn.com","upload.wikimedia.org"], // Allow external flag images
+      },
 };
 
 export default nextConfig;

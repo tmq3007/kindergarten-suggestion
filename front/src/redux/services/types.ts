@@ -46,3 +46,10 @@ export type RegisterDTO = {
     phone: string,
     password: string,
 }
+
+export type Country = {
+    code: string;
+    label: string;
+    dialCode: string;
+    flag: string;
+}

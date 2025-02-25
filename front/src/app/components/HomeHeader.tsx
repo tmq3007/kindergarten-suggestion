@@ -99,7 +99,7 @@ export default function HomeHeader() {
             </div>
 
             <Modal
-                title={<div className={'text-center text-2xl'}>Create a new user</div>}
+                title={<div className={'text-center text-2xl'}>Register</div>}
                 open={isModalOpen}
                 onOk={() => setIsModalOpen(false)}
                 onCancel={() => setIsModalOpen(false)}

@@ -40,11 +40,11 @@ public class ParentServiceImpl implements ParentService {
                 .password(passwordEncoder.encode(registerDTO.password()))
                 .role(ROLE_PARENT)
                 .status(true)
+                .fullname(registerDTO.fullname())
+                .phone(registerDTO.phone())
                 .build();
         Parent parent = Parent.builder()
                 .user(user)
-                .phone(registerDTO.phone())
-                .fullname(registerDTO.fullname())
                 .build();
 //        user.setParent(parent);
         return parentMapper.toRegisterVO(parentRepository.save(parent));

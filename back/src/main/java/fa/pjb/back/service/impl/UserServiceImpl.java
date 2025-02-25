@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.UserRepository;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static fa.pjb.back.model.enums.ERole.*;
 
 @RequiredArgsConstructor
 @Service
@@ -24,7 +27,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserVO> getAllUsers(Pageable of) {
         Page<User> userEntitiesPage = userRepository.findAll(of);
-        return userEntitiesPage.map(this::convertToUserVO);
+        return userEntitiesPage.map(userMapper::toUserVO);
     }
 
     //generate username từ fullname
@@ -47,39 +50,39 @@ public class UserServiceImpl implements UserService {
         return count == 0 ? baseUsername+1 : baseUsername + (count + 1);
     }
 
-    private UserVO convertToUserVO(User user) {
-
-        if (user.getRole()== ROLE_PARENT && user.getParent()!=null) {
-            Parent temp = user.getParent();
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
-                    .role("Parent")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else if (user.getRole()== ROLE_SCHOOL_OWNER && user.getSchoolOwner()!=null) {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address("N/A")
-                    .role("School Owner")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getUsername())
-                    .email(user.getEmail())
-                    .phone("N/A")
-                    .address("N/A")
-                    .role("Admin")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        }
-    }
+//    private UserVO convertToUserVO(User user) {
+//
+//        if (user.getRole()== ROLE_PARENT && user.getParent()!=null) {
+//            Parent temp = user.getParent();
+//            return UserVO.builder()
+//                    .id(user.getId())
+//                    .fullname(user.getFullname())
+//                    .email(user.getEmail())
+//                    .phone(user.getPhone())
+//                    .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
+//                    .role("Parent")
+//                    .status(user.getStatus() ? "Active" : "Inactive")
+//                    .build();
+//        } else if (user.getRole()== ROLE_SCHOOL_OWNER && user.getSchoolOwner()!=null) {
+//            return UserVO.builder()
+//                    .id(user.getId())
+//                    .fullname(user.getFullname())
+//                    .email(user.getEmail())
+//                    .phone(user.getPhone())
+//                    .address("N/A")
+//                    .role("School Owner")
+//                    .status(user.getStatus() ? "Active" : "Inactive")
+//                    .build();
+//        } else {
+//            return UserVO.builder()
+//                    .id(user.getId())
+//                    .fullname(user.getUsername())
+//                    .email(user.getEmail())
+//                    .phone("N/A")
+//                    .address("N/A")
+//                    .role("Admin")
+//                    .status(user.getStatus() ? "Active" : "Inactive")
+//                    .build();
+//        }
+//    }
 }
