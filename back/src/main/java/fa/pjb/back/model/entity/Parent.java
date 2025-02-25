@@ -28,16 +28,10 @@ public class Parent {
     @Column(name = "fullname", nullable = false)
     private String fullname;
 
-    @Column(name = "gender", nullable = false)
-    private Boolean gender = false;
-
     @Size(max = 20)
     @NotNull
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
-
-    @Column(name = "dob", nullable = false)
-    private LocalDate dob;
 
     @Size(max = 255)
     @Column(name = "district", nullable = false)

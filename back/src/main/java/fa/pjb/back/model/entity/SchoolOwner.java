@@ -26,18 +26,10 @@ public class SchoolOwner {
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
-    @NotNull
-    @Column(name = "gender", nullable = false)
-    private Boolean gender = false;
-
     @Size(max = 255)
     @NotNull
     @Column(name = "fullname", nullable = false)
     private String fullname;
-
-    @NotNull
-    @Column(name = "dob", nullable = false)
-    private LocalDate dob;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id")
