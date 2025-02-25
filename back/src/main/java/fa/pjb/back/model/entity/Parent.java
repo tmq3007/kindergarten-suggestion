@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "Parent")
-public class    Parent {
+public class Parent {
     @Id
     @Column(name = "user_id", nullable = false)
     private Integer id;
