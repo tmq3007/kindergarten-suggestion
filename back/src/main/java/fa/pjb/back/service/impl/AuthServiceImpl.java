@@ -80,16 +80,18 @@ public class AuthServiceImpl implements AuthService {
         // Lấy thông tin người dùng từ cơ sở dữ liệu
         User user = userRepository.findByEmail(loginDTO.email())
                 .orElseThrow(() -> new EmailNotFoundException(loginDTO.email()));
+        String userId = user.getId().toString();
+        String userRole = user.getRole().toString();
         // Tạo ra các Token ==========================================================
 
         // Access Token: Lưu vào Cookie với HttpOnly
-        String accessToken = jwtHelper.generateAccessToken(userDetails, user.getId().toString());
+        String accessToken = jwtHelper.generateAccessToken(userDetails, userId, userRole);
 
         // CSRF Token: Lưu vào Cookie không HttpOnly
         String csrfToken = jwtHelper.generateCsrfToken();
 
         // Refresh Token: Lưu vào Redis
-        String refreshToken = jwtHelper.generateRefreshToken(userDetails, user.getId().toString());
+        String refreshToken = jwtHelper.generateRefreshToken(userDetails, userId, userRole);
         tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
 
         return LoginVO.builder()

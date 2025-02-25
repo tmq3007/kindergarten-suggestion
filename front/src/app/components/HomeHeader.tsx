@@ -22,7 +22,6 @@ export default function HomeHeader() {
         return null;
     }
     const username = useSelector((state: RootState) => state.user?.username);
-    console.log("user====", useSelector((state: RootState) => state.user.id));
     return (
         <motion.nav
             initial={{ y: -100, opacity: 0 }} // Header bắt đầu từ vị trí trên và mờ dần
@@ -102,7 +101,7 @@ export default function HomeHeader() {
                 {
                     username ?
                         <UserDropdown username={username}/> :
-                        <Space>
+                        <Space className={'text-sm md:text-xl'}>
                             <Link href=""
                                   onClick={() => setIsLoginModalOpen(true)}
                             >

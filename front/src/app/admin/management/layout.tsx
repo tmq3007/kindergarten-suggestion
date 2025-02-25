@@ -3,7 +3,8 @@ import React, {useEffect, useRef, useState} from 'react';
 import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
-    HomeOutlined, LogoutOutlined,
+    HomeOutlined,
+    LogoutOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     UsergroupAddOutlined,
@@ -11,15 +12,17 @@ import {
     WindowsOutlined,
 } from '@ant-design/icons';
 
-import {Button, ConfigProvider, Layout, Menu, MenuProps, Modal, Space, theme} from 'antd';
+import {Button, ConfigProvider, Layout, Menu, Modal, Space, theme} from 'antd';
 import Image from "next/image";
 
 
-const { Header, Sider, Content } = Layout;
-import StoreProvider, { Props } from "@/redux/StoreProvider";
+import {Props} from "@/redux/StoreProvider";
 import Link from "next/link";
-import {useRouter} from "next/navigation";
 import {useLogoutMutation} from "@/redux/services/authApi";
+import {forbidden, useRouter} from "next/navigation";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
+import {ROLES} from "@/lib/constants";
 
 export default function AdminLayout({ children }: Props) {
     const [collapsed, setCollapsed] = useState(false);
@@ -29,6 +32,10 @@ export default function AdminLayout({ children }: Props) {
     const [logout] = useLogoutMutation();
     const processed = useRef(false);
 
+    const user = useSelector((state: RootState) => state.user);
+    if(user.role !== ROLES.ADMIN) {
+        forbidden();
+    }
 
     const siderStyle: React.CSSProperties = {
         overflow: 'auto',
