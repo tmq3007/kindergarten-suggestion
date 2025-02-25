@@ -1,16 +1,16 @@
-import React, {useEffect} from 'react';
-import {FormProps, message} from 'antd';
-import {Button, Form, Input} from 'antd';
+import React from 'react';
+import {Button, Form, FormProps, Input, message} from 'antd';
 import {Indie_Flower, Nunito} from "next/font/google";
 import Link from "next/link";
-import {LoginDTO, LoginVO} from "@/redux/services/types";
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {SerializedError} from "@reduxjs/toolkit";
-import {ApiResponse, CustomFetchBaseQueryError} from "@/redux/services/config/baseQuery";
-import {useRouter} from "next/navigation";
+import {ApiResponse} from "@/redux/services/config/baseQuery";
+import {LoginDTO, LoginVO} from "@/redux/services/authApi";
+import useAuthRedirect from "@/lib/useAuthRedirect";
+import { motion } from 'framer-motion';
 
 type FieldType = {
-    username: string;
+    email: string;
     password: string;
 };
 
@@ -30,55 +30,21 @@ type LoginFormProps = {
     error: FetchBaseQueryError | SerializedError | undefined;
 };
 
-
-const LoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) => {
+const AdminLoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) => {
     const [messageApi, contextHolder] = message.useMessage();
-    const router = useRouter();
-    useEffect(() => {
-        if (data?.data) {
-            // Gửi dữ liệu đăng nhập thành công đến /api/auth
-            fetch('/api/auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data.data),
-            })
-                .then(() => router.push('/admin/management'))
-                .catch(error => {
-                    messageApi.error("Authentication failed.").then(r => {
-                        console.log(error)
-                    });
-                });
-        }
 
-        if (error && "data" in error) {
-            const code = (error as CustomFetchBaseQueryError).data?.code;
-
-            if (code === 1000) {
-                messageApi.error("Username or password is wrong.").then(r => {
-                    console.log(code)
-                });
-            } else {
-                messageApi.error("Something went wrong. Try again later!").then(r => {
-                    console.log(code)
-                });
-            }
-
-        }
-
-    }, [data, error]);
+    useAuthRedirect(data, error, messageApi, '/admin/management', false);
 
     const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
         const loginDTO: LoginDTO = {
-            username: values.username || '',
+            email: values.email || '',
             password: values.password || '',
         };
         login(loginDTO);
     };
 
     const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
-        console.log('Failed:', errorInfo);
+        messageApi.error('Something went wrong. Try again later!').then(r => console.log(r));
     };
 
     return (
@@ -97,8 +63,8 @@ const LoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) =>
             >
                 <p className={`${indie.className} text-center text-4xl font-bold pb-6`}>Login into your account</p>
                 <Form.Item<FieldType>
-                    name="username"
-                    rules={[{required: true, message: 'Please input your username!'}]}
+                    name="email"
+                    rules={[{required: true, message: 'Please input your email!'}]}
                     label={<span className={`${nunito.className}`}>Email address</span>}
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
@@ -135,4 +101,4 @@ const LoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) =>
     );
 }
 
-export default LoginForm;
+export default AdminLoginForm;

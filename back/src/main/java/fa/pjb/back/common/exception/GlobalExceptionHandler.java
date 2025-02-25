@@ -1,5 +1,6 @@
 package fa.pjb.back.common.exception;
 
+import fa.pjb.back.common.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,7 +24,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleBadCredentialsException(BadCredentialsException ex) {
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("code", 1000);
+        errorResponse.put("code", "1000");
         errorResponse.put("message", "Invalid username or password");
 
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);

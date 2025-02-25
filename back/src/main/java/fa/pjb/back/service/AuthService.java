@@ -5,18 +5,24 @@ import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.dto.ResetPasswordDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
-    LoginVO login(LoginDTO loginDTO, HttpServletResponse response);
+    LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent);
+
+    LoginVO loginByAdmin(LoginDTO loginDTO);
+
+    LoginVO loginByParent(LoginDTO loginDTO);
+
 
     LoginVO refresh(LoginDTO loginDTO, HttpServletResponse response);
 
-    LoginVO logout(HttpServletResponse response);
+    void logout();
 
     ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response);
 
-    void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response);
+    void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletRequest request) ;
 
     boolean checkEmailExists(String email);
 }

@@ -52,59 +52,59 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
     return (
         <Form<FieldType> className={'px-14'} name="register_form" layout="vertical" onFinish={onFinish} initialValues={{ remember: true }}>
             <Form.Item
-                name="fullname"
-                label="Full Name"
-                rules={[
-                    { required: true, message: 'Please input your full name!' },
-                    { max: 255, message: 'Full name cannot exceed 255 characters!' }
-                ]}
+            name="fullname"
+            label="Full Name"
+            rules={[
+            { required: true, message: 'Please input your full name!' },
+            { max: 255, message: 'Full name cannot exceed 255 characters!' }
+            ]}
             >
-                <Input />
-            </Form.Item>
+            <Input />
+        </Form.Item>
 
-            <Form.Item
-                name="email"
-                label="Email Address"
-                validateTrigger="onBlur"
-                hasFeedback
-                validateStatus={emailStatus}
-                help={emailHelp}
-                rules={[
-                    { required: true, message: 'Please input your email!' },
-                    { type: 'email', message: 'Please enter a valid email address!'},
-                    { max: 50, message: 'Email cannot exceed 50 characters!' },
-                    ({ getFieldValue }) => ({
-                        validator: async (_, value) => {
-                            // nếu email trống thì thông báo lỗi
-                            if (!value) {
-                                setEmailStatus('error');
-                                setEmailHelp('Please input your email!');
-                                return Promise.reject(new Error('Please input your email!'));
-                            }
+    <Form.Item
+        name="email"
+        label="Email Address"
+        validateTrigger="onBlur"
+        hasFeedback
+        validateStatus={emailStatus}
+        help={emailHelp}
+        rules={[
+            { required: true, message: 'Please input your email!' },
+            { type: 'email', message: 'Please enter a valid email address!'},
+            { max: 50, message: 'Email cannot exceed 50 characters!' },
+            ({ getFieldValue }) => ({
+                validator: async (_, value) => {
+                    // nếu email trống thì thông báo lỗi
+                    if (!value) {
+                        setEmailStatus('error');
+                        setEmailHelp('Please input your email!');
+                        return Promise.reject(new Error('Please input your email!'));
+                    }
 
-                            // Kiểm tra email có đúng định dạng không
-                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                            if (!emailRegex.test(value)) {
-                                setEmailStatus('error');
-                                setEmailHelp('Please enter a valid email address!');
-                                return Promise.reject(new Error('Please enter a valid email address!'));
-                            }
-                            return checkEmailExists(value);
-                        },
-                    }),
-                ]}
-            >
-                <Input />
-            </Form.Item>
+                    // Kiểm tra email có đúng định dạng không
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        setEmailStatus('error');
+                        setEmailHelp('Please enter a valid email address!');
+                        return Promise.reject(new Error('Please enter a valid email address!'));
+                    }
+                    return checkEmailExists(value);
+                },
+            }),
+        ]}
+    >
+        <Input />
+    </Form.Item>
 
-            <Form.Item
-                name="phone"
-                label="Mobile No."
-                rules={[
-                    { required: true, message: 'Please input your phone number!' },
-                    { max: 20, message: 'Phone number cannot exceed 20 characters!' },
-                    { pattern: /^[0-9]+$/, message: 'Phone number must be numeric!' }
-                ]}
+    <Form.Item
+        name="phone"
+        label="Mobile No."
+        rules={[
+            { required: true, message: 'Please input your phone number!' },
+            { max: 20, message: 'Phone number cannot exceed 20 characters!' },
+            { pattern: /^[0-9]+$/, message: 'Phone number must be numeric!' }
+        ]}
             >
                 <Input />
             </Form.Item>

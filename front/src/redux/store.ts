@@ -1,5 +1,6 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import counterReducer from '@/redux/features/counterSlice'
+import userReducer from '@/redux/features/userSlice'
 import storage from "@/redux/ssr-safe-storage";
 import {persistReducer} from 'redux-persist';
 import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/es/constants";
@@ -23,6 +24,7 @@ const rootReducer = combineReducers({
     [registerApi.reducerPath]: registerApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
+    user: userReducer,
 })
 
 // Cấu hình Redux Persist
@@ -30,7 +32,7 @@ export const persistConfig = {
     key: 'kss',
     storage,
     // Những reducer được đăng ký trong whitelist sẽ được lưu trữ trong local storage
-    whitelist: ['']
+    whitelist: ['user']
 }
 
 // Cấu hình persist cho rootReducer để nó có thể lưu trữ dài hạn

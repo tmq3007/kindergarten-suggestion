@@ -4,11 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import org.aspectj.weaver.ast.Not;
 
 public record ResetPasswordDTO(
-        @NotBlank
-        String username,
-
-        @NotBlank
-        String token,
 
         @NotBlank
         String password

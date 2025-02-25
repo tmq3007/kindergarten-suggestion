@@ -11,17 +11,20 @@ import {
     WindowsOutlined,
 } from '@ant-design/icons';
 
-import { Button, ConfigProvider, Layout, Menu, MenuProps, Space, theme } from 'antd';
+import {Button, ConfigProvider, Layout, Menu, MenuProps, Modal, Space, theme} from 'antd';
 import Image from "next/image";
 
 
 const { Header, Sider, Content } = Layout;
 import StoreProvider, { Props } from "@/redux/StoreProvider";
 import Link from "next/link";
+import {useRouter} from "next/navigation";
 
 export default function AdminLayout({ children }: Props) {
     const [collapsed, setCollapsed] = useState(false);
     const { Header, Content, Footer, Sider } = Layout;
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const router = useRouter();
 
     const siderStyle: React.CSSProperties = {
         overflow: 'auto',
@@ -37,6 +40,11 @@ export default function AdminLayout({ children }: Props) {
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
+
+    const handleLogout = async () => {
+        setIsModalOpen(false);
+        router.push('/public/login'); // Điều hướng về trang login
+    };
 
     return (
         <Layout hasSider>
@@ -124,11 +132,13 @@ export default function AdminLayout({ children }: Props) {
                         <Link href="/request-management">
                             <WindowsOutlined />
                         </Link>
-                        <Link href="/logout">
+                        <Link href=""
+                              onClick={() => setIsModalOpen(true)}>
+
                             <LogoutOutlined />
                         </Link>
                     </Space>
-                    <Link className="hidden md:block" href="/logout">
+                    <Link className="hidden md:block" href="">
                         <Button
                             type="text"
                             icon={<LogoutOutlined />}
@@ -138,6 +148,7 @@ export default function AdminLayout({ children }: Props) {
                                 height: 64,
                                 color: 'red'
                             }}
+                            onClick={() => setIsModalOpen(true)}
                         >
                             Logout
                         </Button>
@@ -153,6 +164,19 @@ export default function AdminLayout({ children }: Props) {
                     {children}
                 </Content>
             </Layout>
+            <Modal
+                title="Are you leaving?"
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setIsModalOpen(false)}>Cancel</Button>,
+                    <Button key="logout" type="primary" danger onClick={handleLogout}>Yes</Button>
+                ]}
+            >
+                <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
+            </Modal>
         </Layout>
+
+
     );
 };
