@@ -1,6 +1,8 @@
 package fa.pjb.back.service.impl;
 
-
+import fa.pjb.back.common.exception.EmailExistException;
+import fa.pjb.back.common.exception.InvalidPhoneNumberException;
+import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.User;
@@ -10,20 +12,20 @@ import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
-import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
-
-
-
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final AuthService authService;
@@ -50,25 +52,71 @@ public class UserServiceImpl implements UserService {
 
         String baseUsername = firstName + initials.toString().toUpperCase();
 
+        // đếm số lượng username đã tồn tại với prefix này
         long count = userRepository.countByUsernameStartingWith(baseUsername);
 
         return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
+    }
+    // Hàm tạo mật khẩu ngẫu nhiên
+    private String generateRandomPassword() {
+        return RandomStringUtils.randomAlphanumeric(8);
+    }
+
+    @Override
+    public UserDTO createAdmin(UserDTO userDTO) {
+        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
+        Optional<User> existingUserName = userRepository.findByUsername(userDTO.getUsername());
+
+        if (existingUserEmail.isPresent()) {
+            throw new EmailExistException();
+        }
+        if (!userDTO.getPhone().matches("\\d{10}")) {
+            throw new InvalidPhoneNumberException();
+        }
+        // Tạo mới Admin
+        String usernameAutoGen = generateUsername(userDTO.getFullName());
+        String passwordautoGen = generateRandomPassword();
+        User user = new User();
+        user.setUsername(usernameAutoGen);
+        user.setPassword(passwordEncoder.encode(passwordautoGen)); // Mật khẩu tự tạo
+        user.setEmail(userDTO.getEmail());
+        user.setRole(ERole.ROLE_ADMIN);
+        user.setStatus(userDTO.getStatus());
+        user.setPhone(userDTO.getPhone());
+        user.setDob(userDTO.getDob());
+        user.setFullname(userDTO.getFullName());
+
+        // Lưu User vào database
+        user = userRepository.save(user);
+
+        UserDTO responseDTO = new UserDTO();
+        responseDTO.setId(user.getId());
+        responseDTO.setUsername(user.getUsername());
+        responseDTO.setEmail(user.getEmail());
+        responseDTO.setRole(String.valueOf(ERole.ROLE_ADMIN));
+        responseDTO.setStatus(user.getStatus());
+        responseDTO.setPhone(user.getPhone());
+        responseDTO.setDob(user.getDob());
+        responseDTO.setFullName(user.getFullname());
+
+
+        return responseDTO;
     }
 
     @Override
     public UserDetailDTO getUserDetailById(int userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         return new UserDetailDTO(
-            user.getId(),
-            user.getUsername(),
-            user.getFullname(),
-            user.getEmail(),
-            user.getDob() != null ? user.getDob().toString() : null,
-            user.getPhone(),
-            formatRole(user.getRole()),
-            user.getStatus() ? "Active" : "Inactive"
+                user.getId(),
+                user.getUsername(),
+                user.getFullname(),
+                user.getEmail(),
+                user.getDob() != null ? user.getDob().toString() : null,
+                user.getPhone(),
+                formatRole(user.getRole()),
+                user.getStatus() ? "Active" : "Inactive"
         );
 
     }
@@ -100,7 +148,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailDTO updateUser(UserUpdateDTO dto) {
         User user = userRepository.findById(dto.id())
-            .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
 
         if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
             throw new RuntimeException("Email already exists!");
@@ -120,9 +168,9 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return new UserDetailDTO(
-            user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
-            user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
-            user.getStatus() ? "Active" : "Inactive"
+                user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
+                user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
+                user.getStatus() ? "Active" : "Inactive"
         );
     }
 
@@ -130,22 +178,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailDTO toggleStatus(int userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         user.setStatus(!user.getStatus());
         userRepository.save(user);
 
         return new UserDetailDTO(
-            user.getId(),
-            user.getUsername(),
-            user.getFullname(),
-            user.getEmail(),
-            user.getDob() != null ? user.getDob().toString() : null,
-            user.getPhone(),
-            formatRole(user.getRole()),
-            user.getStatus() ? "Active" : "Inactive"
+                user.getId(),
+                user.getUsername(),
+                user.getFullname(),
+                user.getEmail(),
+                user.getDob() != null ? user.getDob().toString() : null,
+                user.getPhone(),
+                formatRole(user.getRole()),
+                user.getStatus() ? "Active" : "Inactive"
         );
     }
+
+
 
 
 

@@ -156,7 +156,7 @@ export default function AdminLayout({ children }: Props) {
                 </Header>
                 <Content style={{
                     margin: '15px 10px 0px 10px',
-                    padding: 24,
+                    padding: 20,
                     minHeight: 280,
                     background: colorBgContainer,
                     borderRadius: borderRadiusLG,

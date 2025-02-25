@@ -20,18 +20,10 @@ public class Parent {
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "fullname", nullable = false)
-    private String fullname;
-
-    @Size(max = 20)
-    @NotNull
-    @Column(name = "phone", nullable = false, length = 20)
-    private String phone;
 
     @Size(max = 255)
     @Column(name = "district", nullable = false)
@@ -46,6 +38,6 @@ public class Parent {
     private String province;
 
     @Size(max = 255)
-    @Column(name = "street")
+    @Column(name = "street" , nullable = true)
     private String street;
 }
