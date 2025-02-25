@@ -1,6 +1,6 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.UserNotCreatedException;
+import fa.pjb.back.common.exception.user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;

@@ -1,9 +1,8 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQuery} from "@/redux/services/config/baseQuery";
-import exp from "node:constants";
 
 export type LoginDTO = {
-    username: string,
+    email: string,
     password: string,
 }
 
@@ -22,8 +21,6 @@ export type ForgotPasswordVO = {
 }
 
 export type ResetPasswordDTO = {
-    username: string;
-    token: string;
     password: string;
 }
 
@@ -32,9 +29,16 @@ export const authApi = createApi({
     baseQuery: baseQuery,
     tagTypes: ['Auth'],
     endpoints: (build) => ({
-        login: build.mutation<ApiResponse<LoginVO>, LoginDTO>({
+        loginByAdmin: build.mutation<ApiResponse<LoginVO>, LoginDTO>({
             query: (loginDTO) => ({
-                url: '/auth/login',
+                url: '/auth/login/admin',
+                method: 'POST',
+                body: loginDTO, // Gửi dữ liệu loginDTO trong body của request
+            }),
+        }),
+        loginByParent: build.mutation<ApiResponse<LoginVO>, LoginDTO>({
+            query: (loginDTO) => ({
+                url: '/auth/login/public',
                 method: 'POST',
                 body: loginDTO, // Gửi dữ liệu loginDTO trong body của request
             }),
@@ -53,9 +57,21 @@ export const authApi = createApi({
                 body: resetPasswordDTO, // Gửi dữ liệu resetPasswordDTO trong body của request
             }),
         }),
+        logout: build.mutation<ApiResponse<undefined>, undefined>({
+            query: () => ({
+                url: '/auth/logout',
+                method: 'POST',
+            })
+        })
 
     }),
 })
 
-export const {useLoginMutation, useForgotPasswordMutation, useResetPasswordMutation} = authApi
+export const {
+    useLoginByAdminMutation,
+    useLoginByParentMutation,
+    useForgotPasswordMutation,
+    useResetPasswordMutation,
+    useLogoutMutation
+} = authApi
 

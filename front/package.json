@@ -12,6 +12,7 @@
     "@reduxjs/toolkit": "^2.5.1",
     "antd": "^5.24.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.4.7",
     "js-cookie": "^3.0.5",
     "json-server": "^1.0.0-beta.3",
     "jwt-decode": "^4.0.0",

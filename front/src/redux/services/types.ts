@@ -13,16 +13,6 @@ export type Post = {
     content: string,
 };
 
-export type LoginDTO = {
-    username: string,
-    password: string,
-}
-
-export type LoginVO = {
-    accessToken: string,
-    csrfToken: string,
-}
-
 export type UserVO = {
     id: string,
     fullname: string,

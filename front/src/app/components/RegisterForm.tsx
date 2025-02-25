@@ -1,11 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { Button, Checkbox, Form, Input, message, Select } from 'antd';
+import React, { useState } from 'react';
+import { Button, Checkbox, Form, Input, message } from 'antd';
 import Link from "next/link";
-import { BASE_URL } from '@/redux/services/config/baseQuery';
-import { useGetCountriesQuery, useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
-import { Country } from '@/redux/services/types';
-import { useRouter } from 'next/navigation';
+import { BASE_URL, baseQuery } from '@/redux/services/config/baseQuery';
 
 interface FieldType {
     fullname: string;
