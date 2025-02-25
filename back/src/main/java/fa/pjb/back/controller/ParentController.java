@@ -2,6 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangePasswordDTO;
+import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.service.ParentService;
@@ -39,6 +40,28 @@ public class ParentController {
         return ApiResponse.<Void>builder()
                 .code(200)
                 .message("Password changed successfully")
+                .build();
+    }
+
+    @PutMapping("/edit/{parentId}")
+    public ApiResponse<ParentDTO> editParent(@PathVariable Integer parentId,
+                                             @Valid
+                                             @RequestBody ParentDTO parentDTO) {
+        ParentDTO updatedParent = parentService.editParent(parentId, parentDTO);
+        return ApiResponse.<ParentDTO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent updated successfully")
+                .data(updatedParent)
+                .build();
+    }
+
+    @GetMapping("/{parentId}")
+    public ApiResponse<ParentDTO> getParentById(@PathVariable Integer parentId) {
+        ParentDTO parent = parentService.getParentById(parentId);
+        return ApiResponse.<ParentDTO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent details retrieved successfully")
+                .data(parent)
                 .build();
     }
 

@@ -1,104 +1,206 @@
 'use client';
 
-import React from "react";
-import { Breadcrumb, Tabs, Form, Input, DatePicker, Button } from "antd";
+import React, { useEffect } from "react";
+import { Breadcrumb, Tabs, Form, Input, DatePicker, Button, Spin, notification } from "antd";
 import Link from "next/link";
 import { Typography } from "antd";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useGetParentByIdQuery, useEditParentMutation,useChangePasswordMutation } from '@/redux/services/User/parentApi';
+import dayjs from "dayjs";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
 
 const Profile = () => {
-    return (
-        <div className="h-[90%]   flex flex-col p-10">
-            {/* Breadcrumb */}
-            <Breadcrumb
+    const parentId = useSelector((state: RootState) => state.user?.id);
+    const username = useSelector((state: RootState) => state.user?.username);
 
+    const parentIdNumber = Number(parentId);
+
+    const { data, isLoading, error } = useGetParentByIdQuery(parentIdNumber);
+    const [editParent] = useEditParentMutation();
+    const [form] = Form.useForm();
+    const [changePassword] = useChangePasswordMutation();
+    const [passwordForm] = Form.useForm();
+    // Khai báo notification ở ngoài render
+    const [api, contextHolder] = notification.useNotification();
+
+    useEffect(() => {
+        if (data?.data) {
+            form.setFieldsValue({
+                fullName: data.data.fullName,
+                username: data.data.username,
+                email: data.data.email,
+                phone: data.data.phone,
+                dob: data.data.dob ? dayjs(data.data.dob) : null,
+                province: data.data.province,
+                district: data.data.district,
+                ward: data.data.ward,
+                street: data.data.street,
+            });
+        }
+    }, [data, form]);
+
+    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
+        // Đặt thông báo trong useEffect để tránh lỗi
+        setTimeout(() => {
+            api[type]({
+                message,
+                description,
+            });
+        }, 0);
+    };
+
+    const onFinish1 = async (values: any) => {
+        try {
+            await editParent({
+                parentId,
+                data: {
+                    ...values,
+                    username: username || data?.data?.username,
+                    dob: values.dob ? values.dob.format("YYYY-MM-DD") : undefined,
+                    district: values.district || data?.data?.district,
+                    province: values.province || data?.data?.province,
+                    street: values.street || data?.data?.street,
+                    ward: values.ward || data?.data?.ward
+                }
+            }).unwrap();
+
+            openNotificationWithIcon('success', 'Updated successfully!', 'Your information has been updated');
+
+        } catch (error) {
+            console.error("Lỗi cập nhật:", error);
+            openNotificationWithIcon('error', 'Updated Fail!', 'Your information cannot be updated');
+        }
+    };
+    const onFinish2 = async (values: any) => {
+        if (values.newPassword !== values.confirmPassword) {
+            openNotificationWithIcon('error', 'Failed!', 'New password and confirm password do not match.');
+            return;
+        }
+
+        try {
+            await changePassword({
+                parentId: parentIdNumber,
+                data: {
+                    oldPassword: values.oldPassword,
+                    newPassword: values.newPassword,
+                }
+            }).unwrap();
+
+            openNotificationWithIcon('success', 'Success!', 'Password changed successfully');
+            passwordForm.resetFields();
+        } catch (error) {
+            console.error("Lỗi đổi mật khẩu:", error);
+            openNotificationWithIcon('error', 'Failed!', 'Current password is incorrect or request failed.');
+        }
+    };
+    if (isLoading) return <Spin size="large" className="flex justify-center items-center h-screen" />;
+    if (error) return <p className="text-red-500">Can not load data.</p>;
+
+    return (
+        <div className="h-[90%] flex flex-col p-10">
+            {contextHolder} {/* Thêm phần này để hiển thị notification */}
+
+            <Breadcrumb
                 items={[
-                    {
-                        title: <Link href="/">Home</Link>,
-                    },
-                    {
-                        title: "My Profile",
-                    },
+                    { title: <Link href="/">Home</Link> },
+                    { title: "My Profile" },
                 ]}
             />
 
-            {/* Title */}
             <Title level={3} className="my-2">My Profile</Title>
 
-            {/* Tabs */}
             <div className="flex-grow items-center justify-center flex flex-col">
-                <Tabs
-                    defaultActiveKey="1"
-                    type="card"
-                    size="small"
-                    centered
-                    className="flex-grow max-w-md flex flex-col"
-                    items={[
-                        {
-                            key: "1",
-                            label: "My Information",
-                            children: (
-                                <Form layout="vertical" className="h-full flex flex-col">
-                                    <div className="grid grid-cols-2 gap-4 flex-grow">
-                                        {/* Left Column */}
-                                        <div className="flex flex-col">
-                                            <Form.Item className={'mb-2'} label="Full Name">
-                                                <Input placeholder="Nguyễn Hoàng Anh" />
-                                            </Form.Item>
-                                            <Form.Item className={'mb-2'} label="Email Address">
-                                                <Input placeholder="info@sys.com" />
-                                            </Form.Item>
-                                            <Form.Item className={'mb-2'} label="Address">
-                                                <Input placeholder="City/Province" />
-                                                <Input placeholder="District" className="mt-2" />
-                                                <Input placeholder="Ward" className="mt-2" />
-                                                <Input placeholder="House Number, Street" className="mt-2" />
-                                            </Form.Item>
-                                        </div>
-                                        {/* Right Column */}
-                                        <div className="flex flex-col">
-                                            <Form.Item className={'mb-2'} label="Date of Birth">
-                                                <DatePicker style={{ width: "100%" }} />
-                                            </Form.Item>
-                                            <Form.Item className={'mb-2'} label="Mobile No.">
-                                                <Input placeholder="+91 - 66595 55000" />
-                                            </Form.Item>
-                                        </div>
-                                    </div>
-                                    <Form.Item className="mb-10 mt-3 justify-items-center">
-                                        <Button type="primary" htmlType="submit">Save</Button>
-                                        <Button className="ml-2">Cancel</Button>
+                <Tabs defaultActiveKey="1" type="card" size="small" centered className="flex-grow max-w-md flex flex-col">
+                    <TabPane tab="My Information" key="1">
+                        <Form form={form} layout="vertical" onFinish={onFinish1} className="h-full flex flex-col">
+                            <div className="grid grid-cols-2 gap-4 flex-grow">
+                                <div className="flex flex-col">
+                                    <Form.Item name="fullName" label="Full Name" className="mb-2">
+                                        <Input />
                                     </Form.Item>
-                                </Form>
-                            ),
-                        },
-                        {
-                            key: "2",
-                            label: "Change Password",
-                            children: (
-                                <Form layout="vertical" className="h-full flex flex-col">
-                                    <div className="flex-grow">
-                                        <Form.Item label="Current Password">
-                                            <Input.Password className={'mb-2'} style={{ width: "100%", height: "30px" }} />
-                                        </Form.Item>
-                                        <Form.Item label="New Password">
-                                            <Input.Password className={'mb-2'} style={{ width: "100%", height: "40px" }} />
-                                        </Form.Item>
-                                        <Form.Item label="Confirm New Password">
-                                            <Input.Password className={'mb-2'} style={{ width: "100%", height: "40px" }} />
-                                        </Form.Item>
-                                    </div>
-                                    <Form.Item className="mt-auto">
-                                        <Button type="primary" htmlType="submit">Change Password</Button>
+                                    <Form.Item name="email" label="Email Address" className="mb-2">
+                                        <Input />
                                     </Form.Item>
-                                </Form>
-                            ),
-                        },
-                    ]}
-                />
+                                    <Form.Item name="province" label="Province" className="mb-2">
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item name="district" label="District" className="mb-2">
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item name="ward" label="Ward" className="mb-2">
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item name="street" label="Street" className="mb-2">
+                                        <Input />
+                                    </Form.Item>
+                                </div>
+                                <div className="flex flex-col">
+                                    <Form.Item name="dob" label="Date of Birth" className="mb-2">
+                                        <DatePicker style={{ width: "100%" }} />
+                                    </Form.Item>
+                                    <Form.Item name="phone" label="Mobile No." className="mb-2">
+                                        <Input />
+                                    </Form.Item>
+                                </div>
+                            </div>
+                            <Form.Item className="mb-10 mt-3 justify-items-center">
+                                <Button type="primary" htmlType="submit">Save</Button>
+                                <Button className="ml-2" htmlType="reset">Cancel</Button>
+                            </Form.Item>
+                        </Form>
+                    </TabPane>
 
+                    <TabPane tab="Change Password" key="2">
+                        <Form
+                            form={passwordForm}
+                            layout="vertical"
+                            onFinish={onFinish2}
+                            className="h-full flex flex-col"
+                        >
+                            <div className="flex-grow">
+                                <Form.Item
+                                    name="oldPassword"
+                                    label="Current Password"
+                                    rules={[{ required: true, message: 'Please enter your current password' }]}
+                                >
+                                    <Input.Password className="mb-2" />
+                                </Form.Item>
+                                <Form.Item
+                                    name="newPassword"
+                                    label="New Password"
+                                    rules={[{ required: true, message: 'Please enter a new password' }]}
+                                >
+                                    <Input.Password className="mb-2" />
+                                </Form.Item>
+                                <Form.Item
+                                    name="confirmPassword"
+                                    label="Confirm New Password"
+                                    dependencies={['newPassword']}
+                                    rules={[
+                                        { required: true, message: 'Please confirm your new password' },
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+                                                if (!value || getFieldValue('newPassword') === value) {
+                                                    return Promise.resolve();
+                                                }
+                                                return Promise.reject(new Error('Passwords do not match!'));
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <Input.Password className="mb-2" />
+                                </Form.Item>
+                            </div>
+                            <Form.Item className="mt-auto">
+                                <Button type="primary" htmlType="submit">Change Password</Button>
+                            </Form.Item>
+                        </Form>
+                    </TabPane>
+
+                </Tabs>
             </div>
         </div>
     );

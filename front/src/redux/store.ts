@@ -19,7 +19,7 @@ const rootReducer = combineReducers({
     [pokemonApi.reducerPath]: pokemonApi.reducer,
     [postApi.reducerPath]: postApi.reducer,
     [authApi.reducerPath]: authApi.reducer,
-    [parentApi.reducerPath]:parentApi.reducer,
+    [parentApi.reducerPath]: parentApi.reducer,
     [userListApi.reducerPath]: userListApi.reducer,
     [registerApi.reducerPath]: registerApi.reducer,
     // Reducers quản lý state

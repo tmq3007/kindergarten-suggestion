@@ -191,6 +191,10 @@ public class ParentServiceImpl implements ParentService {
 
         user.setFullname(parentDTO.getFullName());
         // Cập nhật thông tin Parent
+        parent.setDistrict(parentDTO.getDistrict());
+        parent.setWard(parentDTO.getWard());
+        parent.setProvince(parentDTO.getProvince());
+        parent.setStreet(parentDTO.getStreet());
 
         // Lưu thay đổi
         userRepository.save(user);

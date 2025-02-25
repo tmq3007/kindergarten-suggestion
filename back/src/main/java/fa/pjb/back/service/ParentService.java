@@ -10,5 +10,7 @@ public interface ParentService {
     ParentDTO createParent(ParentDTO parentDTO);
 
     RegisterVO saveNewParent( RegisterDTO registerDTO);
+    ParentDTO editParent(Integer parentId, ParentDTO parentDTO);
+    ParentDTO getParentById(Integer parentId);
     void changePassword(Integer parentId, String oldPassword, String newPassword);
 }

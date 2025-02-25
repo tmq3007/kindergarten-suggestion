@@ -4,8 +4,10 @@ import storage from "@/redux/ssr-safe-storage";
 // Định nghĩa kiểu dữ liệu dựa trên ParentDTO
 export interface ParentState {
     id: number | null;
-    gender: boolean | null;
     fullName: string | null;
+    email?:string ;
+    status?:boolean;
+    username?:string;
     phone: string | null;
     dob: string | null;
     district: string | null;
@@ -13,12 +15,12 @@ export interface ParentState {
     province: string | null;
     street: string | null;
     role: "ROLE_PARENT" | null;
+
 }
 
 // Giá trị mặc định ban đầu
 const initialState: ParentState = {
     id: null,
-    gender: null,
     fullName: null,
     phone: null,
     dob: null,

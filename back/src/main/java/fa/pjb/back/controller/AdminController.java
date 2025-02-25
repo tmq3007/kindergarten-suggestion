@@ -45,16 +45,16 @@ public class AdminController {
                 .build();
     }
 
-    // API lấy thông tin Parent theo ID
-    @GetMapping("/parents/{parentId}")
-    public ApiResponse<ParentDTO> getParentById(@PathVariable Integer parentId) {
-        ParentDTO parent = parentService.getParentById(parentId);
-        return ApiResponse.<ParentDTO>builder()
-                .code(200)
-                .message("Parent retrieved successfully")
-                .data(parent)
-                .build();
-    }
+//    // API lấy thông tin Parent theo ID
+//    @GetMapping("/parents/{parentId}")
+//    public ApiResponse<ParentDTO> getParentById(@PathVariable Integer parentId) {
+//        ParentDTO parent = parentService.getParentById(parentId);
+//        return ApiResponse.<ParentDTO>builder()
+//                .code(200)
+//                .message("Parent retrieved successfully")
+//                .data(parent)
+//                .build();
+//    }
 
 
 

@@ -25,7 +25,9 @@ export type LoginVO = {
 
 export type ParentDTO = {
     id: number;
-    gender: boolean;
+    username?: string;
+    email?: string;
+    status?: boolean;
     fullName: string;
     phone: string;
     dob: string; // Vì TypeScript không có LocalDate, dùng string để nhận dạng ISO date
@@ -87,7 +89,6 @@ export type SchoolOwnerDTO  = {
     email: string;
     role: "ROLE_SCHOOL_OWNER";
     status: boolean;
-    gender: boolean;
     fullName: string;
     phone: string;
     dob: string; // Sử dụng kiểu string để tương thích với JSON Date
