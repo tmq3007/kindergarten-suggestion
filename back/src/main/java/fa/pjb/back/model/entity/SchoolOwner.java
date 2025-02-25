@@ -17,7 +17,6 @@ public class SchoolOwner {
     @Column(name = "user_id", nullable = false)
     private Integer id;
 
-    @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

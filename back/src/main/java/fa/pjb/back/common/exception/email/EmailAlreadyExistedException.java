@@ -1,4 +1,4 @@
-package fa.pjb.back.common.exception;
+package fa.pjb.back.common.exception.email;
 
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
