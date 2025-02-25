@@ -1,24 +1,41 @@
 'use client';
 
-import React, { useEffect } from "react";
-import { Breadcrumb, Tabs, Form, Input, DatePicker, Button, Spin, notification } from "antd";
+import React, {useEffect, useState} from "react";
+import {Breadcrumb, Tabs, Form, Input, DatePicker, Image, Button, Spin, notification, Select} from "antd";
 import Link from "next/link";
-import { Typography } from "antd";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { useGetParentByIdQuery, useEditParentMutation,useChangePasswordMutation } from '@/redux/services/User/parentApi';
+import {Typography} from "antd";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
+import {useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation} from '@/redux/services/User/parentApi';
 import dayjs from "dayjs";
-
-const { Title } = Typography;
-const { TabPane } = Tabs;
-
+import {useGetCountriesQuery} from '@/redux/services/registerApi';
+import {Country} from "@/redux/services/types";
+const { Option } = Select;
+const {Title} = Typography;
+const {TabPane} = Tabs;
+import { useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery, Province, District, Ward } from '@/redux/services/addressApi';
 const Profile = () => {
     const parentId = useSelector((state: RootState) => state.user?.id);
     const username = useSelector((state: RootState) => state.user?.username);
-
     const parentIdNumber = Number(parentId);
 
-    const { data, isLoading, error } = useGetParentByIdQuery(parentIdNumber);
+  //  console.log("country", countries);
+
+    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
+    const [selectedProvince, setSelectedProvince] = useState<number | undefined>();
+    const [selectedDistrict, setSelectedDistrict] = useState<number | undefined>();
+
+    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
+    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
+    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
+        skip: !selectedProvince,
+    });
+    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
+        skip: !selectedDistrict,
+    });
+
+    const {data, isLoading, error: errorParent} = useGetParentByIdQuery(parentIdNumber);
+
     const [editParent] = useEditParentMutation();
     const [form] = Form.useForm();
     const [changePassword] = useChangePasswordMutation();
@@ -96,52 +113,190 @@ const Profile = () => {
             openNotificationWithIcon('error', 'Failed!', 'Current password is incorrect or request failed.');
         }
     };
-    if (isLoading) return <Spin size="large" className="flex justify-center items-center h-screen" />;
-    if (error) return <p className="text-red-500">Can not load data.</p>;
 
+    // handle doi quoc gia
+    const handleCountryChange = (value: string) => {
+        if (countries) {
+            const country = countries.find((c) => c.code === value);
+            if (country) {
+                setSelectedCountry(country);
+            }
+        }
+    };
+
+    // Xu ly thay doi so dien thoai
+    const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value.replace(/\D/g, "");
+    };
+
+    // Chon quoc gia mac dinh la VN
+    useEffect(() => {
+        if (countries && !selectedCountry) {
+            const defaultCountry = countries.find((c) => c.code === "VN");
+            setSelectedCountry(defaultCountry);
+        }
+    }, [countries])
+    if (isLoading) return <Spin size="large" className="flex justify-center items-center h-screen"/>;
+    if (errorParent) return <p className="text-red-500">Can not load data.</p>;
+    interface Province {
+        code: string;
+        name: string;
+    }
     return (
         <div className="h-[90%] flex flex-col p-10">
             {contextHolder} {/* Thêm phần này để hiển thị notification */}
 
             <Breadcrumb
                 items={[
-                    { title: <Link href="/">Home</Link> },
-                    { title: "My Profile" },
+                    {title: <Link href="/">Home</Link>},
+                    {title: "My Profile"},
                 ]}
             />
 
             <Title level={3} className="my-2">My Profile</Title>
 
-            <div className="flex-grow items-center justify-center flex flex-col">
-                <Tabs defaultActiveKey="1" type="card" size="small" centered className="flex-grow max-w-md flex flex-col">
+            <div className="flex-grow  items-center justify-center flex flex-col">
+                <Tabs defaultActiveKey="1" type="card" size="small" centered
+                      className="flex-grow max-w-[1000px]   flex flex-col">
                     <TabPane tab="My Information" key="1">
                         <Form form={form} layout="vertical" onFinish={onFinish1} className="h-full flex flex-col">
                             <div className="grid grid-cols-2 gap-4 flex-grow">
                                 <div className="flex flex-col">
-                                    <Form.Item name="fullName" label="Full Name" className="mb-2">
-                                        <Input />
+                                    <Form.Item rules={[
+                                        { required: true, message: 'Full name is required!' },
+                                        { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: 'Full name must contain at least two words!' }
+                                    ]}
+                                               hasFeedback name="fullName" label="Full Name" className="mb-10">
+                                        <Input/>
                                     </Form.Item>
-                                    <Form.Item name="email" label="Email Address" className="mb-2">
-                                        <Input />
+                                    <Form.Item rules={[
+                                        { required: true, message: 'Email is required!' },
+                                        {pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' },
+                                        // { type: 'email', message: 'Enter a valid email address!' }
+                                    ]}
+                                               hasFeedback name="email" label="Email Address" className="mb-10">
+                                        <Input/>
                                     </Form.Item>
-                                    <Form.Item name="province" label="Province" className="mb-2">
-                                        <Input />
+                                    <Form.Item name="province" label="Province" className="mb-10">
+                                        <Select
+                                            loading={isLoadingProvince}
+                                            placeholder="Select province"
+                                            onChange={(value) => setSelectedProvince(Number(value))}
+                                        >
+                                            {provinces?.map((province) => (
+                                                <Option key={province.code} value={province.code}>
+                                                    {province.name}
+                                                </Option>
+                                            ))}
+                                        </Select>
                                     </Form.Item>
-                                    <Form.Item name="district" label="District" className="mb-2">
-                                        <Input />
+                                    <Form.Item name="district" label="District" className="mb-10">
+                                        <Select
+                                            loading={isLoadingDistrict}
+                                            placeholder="Select district"
+                                            onChange={(value) => setSelectedDistrict(Number(value))}
+                                            disabled={!selectedProvince}
+                                        >
+                                            {districts?.map((district) => (
+                                                <Option key={district.code} value={district.code}>
+                                                    {district.name}
+                                                </Option>
+                                            ))}
+                                        </Select>
                                     </Form.Item>
-                                    <Form.Item name="ward" label="Ward" className="mb-2">
-                                        <Input />
-                                    </Form.Item>
-                                    <Form.Item name="street" label="Street" className="mb-2">
-                                        <Input />
-                                    </Form.Item>
+
                                 </div>
                                 <div className="flex flex-col">
-                                    <Form.Item name="dob" label="Date of Birth" className="mb-2">
-                                        <DatePicker style={{ width: "100%" }} />
+                                    <Form.Item rules={[
+                                        { required: true, message: 'Date of birth is required!' },
+                                        {
+                                            validator: (_, value) => {
+                                                if (!value) return Promise.reject('Date of birth is required!');
+                                                if (value.isAfter(dayjs())) {
+                                                    return Promise.reject('Date of birth cannot be in the future!');
+                                                }
+                                                return Promise.resolve();
+                                            }
+                                        }
+                                    ]} name="dob" label="Date of Birth" className="mb-10">
+                                        <DatePicker style={{width: "100%"}}/>
                                     </Form.Item>
-                                    <Form.Item name="phone" label="Mobile No." className="mb-2">
+                                    <Form.Item name="phone"
+                                               label="Phone Number" className={'mb-10'}
+                                               rules={[
+                                                   { max: 10, message: 'Phone number cannot exceed 10 characters!' },
+                                                   { pattern: /^[0-9]+$/, message: 'Phone number must be numeric!' }
+                                               ]}
+                                    >
+                                        <div
+                                            className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                                            {/* Country Code Selector */}
+                                            <Select
+                                                className={'w-2'}
+                                                loading={isLoadingCountry}
+                                                value={selectedCountry?.code || ''}
+                                                onChange={handleCountryChange}
+                                                dropdownStyle={{width: 250}}
+                                                style={{width: 120, borderRight: "1px solid #ccc"}}
+                                                optionLabelProp="label2"
+                                                showSearch={false}
+                                                filterOption={(input, option) =>
+                                                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                }
+                                            >
+                                                {countries?.map((country) => (
+                                                    <Select.Option
+                                                        key={country.code}
+                                                        value={country.code}
+                                                        label={country.label}
+                                                        label2={
+                                                            <span className="flex items-center">
+                                            <Image src={country.flag}
+                                                   alt={country.label}
+                                                   width={20} height={14}
+                                                   className="mr-2 intrinsic" preview={false}/>
+                                                                {country.code} {country.dialCode}
+                                        </span>
+                                                        }
+                                                    >
+                                                        <div className="flex items-center ">
+                                                            <Image src={country.flag}
+                                                                   alt={country.label}
+                                                                   width={20} height={14}
+                                                                   className="mr-2 intrinsic"/>
+                                                            {country.dialCode} - {country.label}
+                                                        </div>
+                                                    </Select.Option>
+                                                ))}
+                                            </Select>
+                                            <Form.Item
+                                                name="phone"
+                                                rules={[{required: true, message: 'Please input your phone number!'}]}
+                                                noStyle
+                                            >
+                                                {/* Phone Number Input */}
+                                                <Input
+                                                    placeholder="Enter your phone number"
+                                                    onChange={handlePhoneNumberChange}
+                                                    style={{flex: 1, border: "none", boxShadow: "none"}}
+                                                />
+                                            </Form.Item>
+                                        </div>
+                                    </Form.Item>
+                                    <Form.Item name="ward" label="Ward" className="mb-10">
+                                        <Select
+                                            loading={isLoadingWard}
+                                            placeholder="Select ward"
+                                            disabled={!selectedDistrict}
+                                        >
+                                            {wards?.map((ward) => (
+                                                <Option key={ward.code} value={ward.code}>
+                                                    {ward.name}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                    <Form.Item name="street" label="Street" className="mb-10">
                                         <Input />
                                     </Form.Item>
                                 </div>
@@ -153,35 +308,45 @@ const Profile = () => {
                         </Form>
                     </TabPane>
 
+                    {/*Password Tab*/}
+
                     <TabPane tab="Change Password" key="2">
                         <Form
                             form={passwordForm}
                             layout="vertical"
                             onFinish={onFinish2}
-                            className="h-full flex flex-col"
+                            className="h-full flex flex-col w-[400px]"
                         >
                             <div className="flex-grow">
                                 <Form.Item
                                     name="oldPassword"
                                     label="Current Password"
-                                    rules={[{ required: true, message: 'Please enter your current password' }]}
+                                    rules={[{required: true, message: 'Please enter your current password'}]}
                                 >
-                                    <Input.Password className="mb-2" />
+                                    <Input.Password className="mb-10"/>
                                 </Form.Item>
                                 <Form.Item
                                     name="newPassword"
                                     label="New Password"
-                                    rules={[{ required: true, message: 'Please enter a new password' }]}
+                                    rules={[
+                                        {required: true, message: 'Please input your password!'},
+                                        {min: 8, message: 'Password must be at least 8 characters!'},
+                                        {
+                                            pattern: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                                            message: 'Password must include uppercase, ' +
+                                                'lowercase, and a number!'
+                                        }
+                                    ]} hasFeedback
                                 >
-                                    <Input.Password className="mb-2" />
+                                    <Input.Password className="mb-10"/>
                                 </Form.Item>
                                 <Form.Item
                                     name="confirmPassword"
                                     label="Confirm New Password"
                                     dependencies={['newPassword']}
                                     rules={[
-                                        { required: true, message: 'Please confirm your new password' },
-                                        ({ getFieldValue }) => ({
+                                        {required: true, message: 'Please confirm your new password'},
+                                        ({getFieldValue}) => ({
                                             validator(_, value) {
                                                 if (!value || getFieldValue('newPassword') === value) {
                                                     return Promise.resolve();
@@ -189,9 +354,9 @@ const Profile = () => {
                                                 return Promise.reject(new Error('Passwords do not match!'));
                                             },
                                         }),
-                                    ]}
+                                    ]} hasFeedback
                                 >
-                                    <Input.Password className="mb-2" />
+                                    <Input.Password className="mb-10"/>
                                 </Form.Item>
                             </div>
                             <Form.Item className="mt-auto">

@@ -94,3 +94,13 @@ export type SchoolOwnerDTO  = {
     dob: string; // Sử dụng kiểu string để tương thích với JSON Date
     school: SchoolDTO; // Chứa toàn bộ thông tin của School
 };
+
+export type Country = {
+    cca2: any;
+    idd: any;
+    code: string;
+    label: string;
+    dialCode: string;
+    flag: string;
+}
+
