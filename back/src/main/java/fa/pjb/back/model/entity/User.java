@@ -4,6 +4,7 @@ import fa.pjb.back.model.enums.ERole;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import java.time.LocalDate;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,6 +41,16 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ERole role;
+
+    @Column(nullable = false)
+    private LocalDate dob;
+
+    @Column(length = 255)
+    private String fullname;
+
+    @Column(length = 20)
+    private String phone;
+
 
 //    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 //    private Parent Parent;

@@ -1,20 +1,29 @@
 package fa.pjb.back.service.impl;
 
+
+import fa.pjb.back.model.dto.UserDetailDTO;
+import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
+
+
+
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final AuthService authService;
@@ -41,9 +50,103 @@ public class UserServiceImpl implements UserService {
 
         String baseUsername = firstName + initials.toString().toUpperCase();
 
-        // đếm số lượng username đã tồn tại với prefix này
         long count = userRepository.countByUsernameStartingWith(baseUsername);
 
         return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
     }
+
+    @Override
+    public UserDetailDTO getUserDetailById(int userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        return new UserDetailDTO(
+            user.getId(),
+            user.getUsername(),
+            user.getFullname(),
+            user.getEmail(),
+            user.getDob() != null ? user.getDob().toString() : null,
+            user.getPhone(),
+            formatRole(user.getRole()),
+            user.getStatus() ? "Active" : "Inactive"
+        );
+
+    }
+
+    private String formatRole(ERole role) {
+        switch (role) {
+            case ROLE_PARENT:
+                return "Parent";
+            case ROLE_SCHOOL_OWNER:
+                return "School Owner";
+            case ROLE_ADMIN:
+                return "Admin";
+            default:
+                return "Unknown Role";
+        }
+    }
+
+    //Chuyển role ra đúng format
+    private ERole convertRole(String role) {
+        return switch (role.toUpperCase()) {
+            case "PARENT" -> ERole.ROLE_PARENT;
+            case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+            case "ADMIN" -> ERole.ROLE_ADMIN;
+            default -> throw new IllegalArgumentException("Invalid role: " + role);
+        };
+    }
+
+    //Update UserDetail
+    @Override
+    public UserDetailDTO updateUser(UserUpdateDTO dto) {
+        User user = userRepository.findById(dto.id())
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+
+        if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
+            throw new RuntimeException("Email already exists!");
+        }
+        if (userRepository.existsByPhoneAndIdNot(dto.phone(), dto.id())) {
+            throw new RuntimeException("Phone number already exists!");
+        }
+
+        user.setFullname(dto.fullname());
+        user.setUsername(dto.username());
+        user.setEmail(dto.email());
+        user.setDob(LocalDate.parse(dto.dob()));
+        user.setPhone(dto.phone());
+        user.setRole(convertRole(dto.role()));
+        user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
+
+        userRepository.save(user);
+
+        return new UserDetailDTO(
+            user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
+            user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
+            user.getStatus() ? "Active" : "Inactive"
+        );
+    }
+
+    //Active hoặc Deactive
+    @Override
+    public UserDetailDTO toggleStatus(int userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        user.setStatus(!user.getStatus());
+        userRepository.save(user);
+
+        return new UserDetailDTO(
+            user.getId(),
+            user.getUsername(),
+            user.getFullname(),
+            user.getEmail(),
+            user.getDob() != null ? user.getDob().toString() : null,
+            user.getPhone(),
+            formatRole(user.getRole()),
+            user.getStatus() ? "Active" : "Inactive"
+        );
+    }
+
+
+
 }
