@@ -1,13 +1,15 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.EmailNotFoundException;
-import fa.pjb.back.common.exception.JwtUnauthorizedException;
+import fa.pjb.back.common.exception.auth.AccessDeniedException;
+import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
+import fa.pjb.back.common.exception.email.EmailNotFoundException;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.dto.ResetPasswordDTO;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.repository.UserRepository;
@@ -23,11 +25,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -53,25 +57,31 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public LoginVO login(LoginDTO loginDTO, HttpServletResponse response) {
+    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent) {
         // Tạo 1 token gồm username & password dùng để xác thực
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.username(), passwordEncoder.encode(loginDTO.password()));
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
         // Xác thực token đó bằng AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         // Nếu xác thực thành công thì thêm authentication (người dùng đã xác thực) vào SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // Lấy ra UserDetails từ Authentication
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        // Nếu checkParent = true, kiểm tra quyền của người dùng và từ chối nếu là PARENT
+        if (checkParent) {
+            boolean isParent = authorities.stream()
+                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_PARENT.toString()));
+            if (isParent) {
+                throw new AccessDeniedException("Access denied");
+            }
+        }
         // Tạo ra các Token ==========================================================
 
         // Access Token: Lưu vào Cookie với HttpOnly
         String accessToken = jwtHelper.generateAccessToken(userDetails);
-//        tokenService.saveTokenInCookieWithHttpOnly("ACCESS_TOKEN", accessToken, ACCESS_TOKEN_EXP, response);
 
         // CSRF Token: Lưu vào Cookie không HttpOnly
         String csrfToken = jwtHelper.generateCsrfToken();
-//        tokenService.saveTokenInCookie("CSRF_TOKEN", csrfToken, CSRF_TOKEN_EXP, response);
 
         // Refresh Token: Lưu vào Redis
         String refreshToken = jwtHelper.generateRefreshToken(userDetails);
@@ -81,6 +91,16 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(accessToken)
                 .csrfToken(csrfToken)
                 .build();
+    }
+
+    @Override
+    public LoginVO loginByAdmin(LoginDTO loginDTO) {
+        return loginWithCondition(loginDTO, true);
+    }
+
+    @Override
+    public LoginVO loginByParent(LoginDTO loginDTO) {
+        return loginWithCondition(loginDTO, false);
     }
 
     @Override

@@ -1,6 +1,4 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {persistStore} from "redux-persist";
-import {useStore} from "react-redux";
 import storage from "@/redux/ssr-safe-storage";
 
 export interface CounterState {
