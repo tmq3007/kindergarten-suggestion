@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Checkbox, Divider, Form, FormProps, Input, message} from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Checkbox, Divider, Form, FormProps, Input, message } from 'antd';
 import Link from "next/link";
-import {BASE_URL, baseQuery, CustomFetchBaseQueryError} from '@/redux/services/config/baseQuery';
-import {LoginDTO, useLoginByParentMutation} from "@/redux/services/authApi";
-import {useRouter} from "next/navigation";
+import { BASE_URL, baseQuery, CustomFetchBaseQueryError } from '@/redux/services/config/baseQuery';
+import { LoginDTO, useLoginByParentMutation } from "@/redux/services/authApi";
+import { useRouter } from "next/navigation";
 import useAuthRedirect from "@/lib/useAuthRedirect";
 
 interface FieldType {
@@ -16,8 +16,8 @@ interface RegisterFormProps {
     onSuccess: () => void;
 }
 
-export default function ParentLoginForm({onCancel, onSuccess}: RegisterFormProps) {
-    const [login, {data, isLoading, error}] = useLoginByParentMutation();
+export default function ParentLoginForm({ onCancel, onSuccess }: RegisterFormProps) {
+    const [login, { data, isLoading, error }] = useLoginByParentMutation();
     const [messageApi, contextHolder] = message.useMessage();
 
     useAuthRedirect(data, error, messageApi, '/public', true, onSuccess);
@@ -39,36 +39,36 @@ export default function ParentLoginForm({onCancel, onSuccess}: RegisterFormProps
         <>
             {contextHolder}
             <Form<FieldType> className={'px-14 py-4'} name="register_form" layout="vertical" onFinish={onFinish}
-                             initialValues={{remember: true}}>
+                initialValues={{ remember: true }}>
                 <Form.Item
                     name="email"
                     label="Email Address"
                     hasFeedback
                     rules={[
-                        {required: true, message: 'Please input your email!'},
-                        {type: 'email', message: 'Please enter a valid email address!'},
-                        {max: 50, message: 'Email cannot exceed 50 characters!'},
+                        { required: true, message: 'Please input your email!' },
+                        { type: 'email', message: 'Please enter a valid email address!' },
+                        { max: 50, message: 'Email cannot exceed 50 characters!' },
                     ]}
                 >
-                    <Input/>
+                    <Input />
                 </Form.Item>
                 <Form.Item
                     name="password"
                     label="Password"
                     rules={[
-                        {required: true, message: 'Please input your password!'},
-                        {min: 8, message: 'Password must be at least 8 characters!'},
+                        { required: true, message: 'Please input your password!' },
+                        { min: 7, message: 'Password must be at least 8 characters!' },
                         {
-                            pattern: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                            message: 'Password must include uppercase, lowercase, and a number!'
+                            pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/,
+                            message: 'Password must contain at least one letter, and one number!'
                         }
                     ]}
                     hasFeedback
                 >
-                    <Input.Password/>
+                    <Input.Password />
                 </Form.Item>
                 <Link href={'/forgot-password'}
-                      className={'block text-right text-blue-500 underline hover:underline mb-6'}>Forgot
+                    className={'block text-right text-blue-500 underline hover:underline mb-6'}>Forgot
                     password?</Link>
                 <Button className={'w-full border-blue-400'} type="primary" htmlType={"submit"} loading={isLoading}>
                     Login now

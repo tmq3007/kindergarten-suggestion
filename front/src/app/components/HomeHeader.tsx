@@ -12,11 +12,14 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import UserDropdown from "@/app/components/UserDropdown";
 import {motion} from 'framer-motion'
+import { useGetCountriesQuery } from '@/redux/services/registerApi';
 
 export default function HomeHeader() {
     const path = usePathname();
     const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+    const { data: countries, isLoading: isLoadingCountry, error } = useGetCountriesQuery();
+
     if (path === '/public/login') {
         return null;
     }
@@ -150,7 +153,10 @@ export default function HomeHeader() {
                 destroyOnClose={true}
                 getContainer={false}
             >
-                <RegisterForm onCancel={() => setIsSignupModalOpen(false)}/>
+                <RegisterForm onSuccess={()=> {
+                    setIsLoginModalOpen(true); 
+                    setIsSignupModalOpen(false)}} 
+                    countries={countries} isLoadingCountry={isLoadingCountry} onCancel={() => setIsSignupModalOpen(false)}/>
             </Modal>
         </motion.nav>
     );

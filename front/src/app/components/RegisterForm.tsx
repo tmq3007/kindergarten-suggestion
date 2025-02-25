@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Button, Checkbox, Form, Input, message } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Checkbox, Form, Image, Input, message, Select } from 'antd';
 import Link from "next/link";
-import { BASE_URL, baseQuery } from '@/redux/services/config/baseQuery';
+import { useGetCountriesQuery, useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
+import { useRouter } from 'next/navigation';
+import { Country } from '@/redux/services/types';
 
 interface FieldType {
     fullname: string;
@@ -12,11 +14,13 @@ interface FieldType {
     termAndCon: boolean;
 }
 interface RegisterFormProps {
+    onSuccess: () => void;
     onCancel: () => void;
+    countries?: Country[];
+    isLoadingCountry: boolean
 }
 
-export default function RegisterForm({ onCancel }: RegisterFormProps) {
-    const { data: countries, isLoading: isLoadingCountry, error } = useGetCountriesQuery();
+export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCountry }: RegisterFormProps) {
     const [form] = Form.useForm();
     const router = useRouter();
     const [formValues, setFormValues] = useState<Partial<FieldType>>({ termAndCon: false });
@@ -37,10 +41,9 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
     useEffect(() => {
         if (registerData?.code === 201) {
             messageApi.success("Register successfully! Redirecting to login page...");
-            form.resetFields();
             setFormValues({});
             setTimeout(() => {
-                router.push('public/login');
+                onSuccess();
             }, 2000);
         }
         if (registerError) {
@@ -277,8 +280,8 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
                                             <Image src={country.flag}
                                                 alt={country.label}
                                                 width={20} height={14}
-                                                className="mr-2 intrinsic" />
-                                            {country.code} {country.dialCode}
+                                                className="mr-2 intrinsic" preview={false}/>
+                                             {country.code} {country.dialCode}
                                         </span>
                                     }
                                 >

@@ -1,6 +1,8 @@
 import { ApiResponse } from "@/redux/services/config/baseQuery";
 import { Pageable, UserVO } from "@/redux/services/types";
-import { Table, Tag, Space, Pagination } from "antd";
+import { Table, Tag, Space, Pagination, Popconfirm } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import Link from "next/link";
 import { useState } from "react";
 
 interface UserListProps {
@@ -13,15 +15,16 @@ interface UserListProps {
 
 //table layout
 const columns = [
-    { title: "Fullname", dataIndex: "fullname", key: "fullname" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Phone No.", dataIndex: "phone", key: "phone" },
-    { title: "Address", dataIndex: "address", key: "address" },
-    { title: "Role", dataIndex: "role", key: "role" },
+    { title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120 ,fixed:true},
+    { title: "Email", dataIndex: "email", key: "email", width: 200 },
+    { title: "Phone No.", dataIndex: "phone", key: "phone", width: 100 },
+    { title: "Address", dataIndex: "address", key: "address", width: 400 },
+    { title: "Role", dataIndex: "role", key: "role", width: 100 },
     {
         title: "Status",
         dataIndex: "status",
         key: "status",
+        width: 120,
         render: (status: string) => (
             <Tag color={status === "Active" ? "green" : "volcano"}>
                 {status.toUpperCase()}
@@ -31,16 +34,28 @@ const columns = [
     {
         title: "Action",
         key: "action",
+        width: 100,
         render: (_: any, record: UserVO) => (
-            <Space size="middle">
-                <a>Edit</a>
-                <a>Delete</a>
+            <Space size="middle" className="flex justify-center">
+                <Link href={`edit-user?userId=${record.id}`}>
+                    <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
+                </Link>
+                <Popconfirm
+                    title="Are you sure you want to delete this user?"
+                    onConfirm={() => handleDelete(record.id)}
+                    okText="Yes"
+                    cancelText="No"
+                >
+                    <a href="#">
+                        <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
+                    </a>
+                </Popconfirm>
             </Space>
         ),
     },
 ];
 
-export default function UserList({ fetchPage, data, isLoading, error,isFetching }: UserListProps) {
+export default function UserList({ fetchPage, data, isLoading, error, isFetching }: UserListProps) {
     const [current, setCurrent] = useState(1);
     if (error) return <p>Error loading data</p>;
 
@@ -52,10 +67,14 @@ export default function UserList({ fetchPage, data, isLoading, error,isFetching 
     };
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} dataSource={users} pagination={false} loading={isFetching}/>
+            <Table className="over-flow-scroll" columns={columns} dataSource={users} pagination={false} loading={isFetching} scroll={{ x:"max-content" }} />
             <div className="flex justify-between items-center px-4 py-3">
-                <Pagination current={current} total={totalElements} onChange={handlePageChange} showSizeChanger={false}/>
+                <Pagination current={current} total={totalElements} onChange={handlePageChange} showSizeChanger={false} />
             </div>
         </div>
     );
 }
+function handleDelete(id: string): void {
+    throw new Error("Function not implemented.");
+}
+

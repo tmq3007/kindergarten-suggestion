@@ -24,7 +24,7 @@ class BackApplicationTests {
         try {
             if (dataSource.getConnection() != null) {
                 System.out.println("Kết nối cơ sở dữ liệu thành công!");
-                Optional<User> all = userRepository.findById(1);
+                List<User> all = userRepository.findAll();
                 System.out.println(all);
             }
         } catch (Exception e) {

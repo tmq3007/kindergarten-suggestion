@@ -1,8 +1,13 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.model.dto.UserDetailDTO;
+import fa.pjb.back.model.dto.UserUpdateDTO;
+import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
+import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
@@ -12,11 +17,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
+import static fa.pjb.back.model.enums.ERole.*;
+
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final ParentRepository parentRepository;
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
 
@@ -49,8 +59,8 @@ public class UserServiceImpl implements UserService {
 
     private UserVO convertToUserVO(User user) {
 
-        if (user.getRole()== ROLE_PARENT && user.getParent()!=null) {
-            Parent temp = user.getParent();
+        if (user.getRole()== ROLE_PARENT ) {
+            Parent temp = parentRepository.getReferenceById(user.getId());
             return UserVO.builder()
                     .id(user.getId())
                     .fullname(user.getFullname())

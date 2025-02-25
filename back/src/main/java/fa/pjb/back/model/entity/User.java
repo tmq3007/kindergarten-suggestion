@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -49,22 +48,20 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ERole role;
-
-    @Column(nullable = false)
-    private LocalDate dob;
-
-    @Column(length = 255)
-    private String fullname;
-
-    @Column(length = 20)
-    private String phone;
-
-
+//
 //    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 //    private Parent Parent;
 //
 //    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 //    private SchoolOwner SchoolOwner;
+
+    @Column(name = "dob", nullable = false)
+    private LocalDate dob;
+
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "phone", nullable = false, length = 20)
+    private String phone;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

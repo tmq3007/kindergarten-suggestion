@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.boot.registry.selector.spi.StrategyCreator;
 
 import java.time.LocalDate;
 
@@ -16,10 +17,10 @@ import java.time.LocalDate;
 @Table(name = "Parent")
 public class Parent {
     @Id
-    @Column(name = "user_id", nullable = false)
     private Integer id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
+    @OneToOne(optional = false, cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
