@@ -22,8 +22,6 @@ export type ForgotPasswordVO = {
 }
 
 export type ResetPasswordDTO = {
-    username: string;
-    token: string;
     password: string;
 }
 
@@ -53,9 +51,15 @@ export const authApi = createApi({
                 body: resetPasswordDTO, // Gửi dữ liệu resetPasswordDTO trong body của request
             }),
         }),
+        logout: build.mutation<ApiResponse<undefined>, undefined>({
+            query: () => ({
+                url: '/auth/logout',
+                method: 'POST',
+            })
+        })
 
     }),
 })
 
-export const {useLoginMutation, useForgotPasswordMutation, useResetPasswordMutation} = authApi
+export const {useLoginMutation, useForgotPasswordMutation, useResetPasswordMutation, useLogoutMutation} = authApi
 

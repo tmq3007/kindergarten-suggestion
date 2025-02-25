@@ -3,12 +3,15 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
+import fa.pjb.back.model.dto.RegisterDTO;
+import fa.pjb.back.model.dto.ResetPasswordDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +46,27 @@ public class AuthController {
                                 .message("Link password reset sent successfully!")
                                 .data(authService.forgotPassword(forgotPasswordDTO, response))
                                 .build();
+        }
+
+        @Operation(summary = "Reset Password", description = "Reset Password")
+        @PostMapping("reset-password")
+        public ApiResponse<?> ressetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
+                        HttpServletRequest request) {
+                authService.resetPassword(resetPasswordDTO, request);
+                return ApiResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Password reset successfully!")
+                        .build();
+        }
+
+        @Operation(summary = "Logout" , description = "Logout")
+        @PostMapping("logout")
+        public ApiResponse<?> logout() {
+                authService.logout();
+                return ApiResponse.builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Logout successfully!")
+                        .build();
         }
 
         @GetMapping("/check-email")

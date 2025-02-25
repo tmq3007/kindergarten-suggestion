@@ -2,6 +2,7 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailNotFoundException;
 import fa.pjb.back.common.exception.JwtUnauthorizedException;
+import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
@@ -14,6 +15,7 @@ import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.TokenService;
 import io.github.cdimascio.dotenv.Dotenv;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -32,10 +35,12 @@ import java.util.Optional;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
     private final JwtHelper jwtHelper;
+    private final HttpRequestHelper httpRequestHelper;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
     private final Dotenv dotenv = Dotenv.load();
     @Value("${access-token-exp}")
     private int ACCESS_TOKEN_EXP;
@@ -50,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginVO login(LoginDTO loginDTO, HttpServletResponse response) {
         // Tạo 1 token gồm username & password dùng để xác thực
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.username(), loginDTO.password());
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.username(), passwordEncoder.encode(loginDTO.password()));
         // Xác thực token đó bằng AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         // Nếu xác thực thành công thì thêm authentication (người dùng đã xác thực) vào SecurityContext
@@ -84,8 +89,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginVO logout(HttpServletResponse response) {
-        return null;
+    public void logout() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getDetails();
+
+        // Xóa token từ Redis
+        tokenService.deleteTokenFromRedis("REFRESH_TOKEN", user.getUsername());
+
     }
 
     @Override
@@ -99,10 +108,10 @@ public class AuthServiceImpl implements AuthService {
 
         //fpToken: Lưu vào Redis
         String fpToken = jwtHelper.generateForgotPasswordToken(user.get().getUsername());
-        tokenService.saveTokenInRedis("FORGOTPASS_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
+        tokenService.saveTokenInRedis("FORGOT_PASSWORD_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
 
-        String resetLink = "http://localhost:3000/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
-        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(), resetLink);
+        String resetLink = "http://localhost:3000/forgot-password/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
+        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(),resetLink);
 
         return ForgotPasswordVO.builder()
                 .fpToken(fpToken)
@@ -111,16 +120,26 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletResponse response) {
-        String tokenRedis = tokenService.getTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
+    public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletRequest request) {
 
-        if (tokenRedis == null || !tokenRedis.equals(resetPasswordDTO.token())) {
+        String forgot_password_token = httpRequestHelper.extractJwtTokenFromCookie(request, "FORGOT_PASSWORD_TOKEN");
+        String username = httpRequestHelper.extractJwtTokenFromCookie(request, "FORGOT_PASSWORD_USERNAME");
+
+        //Lấy token từ Redis
+        String tokenRedis = tokenService.getTokenFromRedis("FORGOT_PASSWORD_TOKEN", username);
+
+        //Kiểm tra nếu token không tồn tại hoặc không trùng với token gửi lên
+        if(tokenRedis == null || !tokenRedis.equals(forgot_password_token)){
             throw new JwtUnauthorizedException("Token is invalid");
         }
 
-        log.info("password{}", resetPasswordDTO.password());
+        //Thay đổi password
+        User user = userRepository.findByUsername(username).get();
 
-        tokenService.deleteTokenFromRedis("FORGOTPASS_TOKEN", resetPasswordDTO.username());
+        user.setPassword(passwordEncoder.encode(resetPasswordDTO.password()));
+
+        //Xóa token từ Redis
+        tokenService.deleteTokenFromRedis("FORGOT_PASSWORD_TOKEN", username);
     }
 
     @Override
