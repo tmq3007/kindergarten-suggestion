@@ -4,11 +4,12 @@ import {useRouter} from "next/navigation";
 import {useEffect, useRef} from "react";
 import {CustomFetchBaseQueryError} from "@/redux/services/config/baseQuery";
 import {useDispatch} from "react-redux";
-import {updateUsername} from "@/redux/features/userSlice";
+import {updateUser} from "@/redux/features/userSlice";
 import {jwtDecode} from "jwt-decode";
 
 interface JwtPayload {
     sub: string;
+    id: string;
     exp: number;
     iat: number;
 }
@@ -38,7 +39,7 @@ const useAuthRedirect = (
                         const accessToken = data.data.accessToken;
                         try {
                             const decoded = jwtDecode<JwtPayload>(accessToken);
-                            dispatch(updateUsername(decoded.sub));
+                            dispatch(updateUser({username: decoded.sub, id: decoded.id}));
                         } catch (e) {
                             messageApi.error("Failed to decode token.", 1);
                         }
