@@ -148,6 +148,7 @@ const CreateUser: React.FC = () => {
                     <Input placeholder="System Auto Generate" disabled />
                 </Form.Item>
 
+                {/* Full Name */}
                 <Form.Item
                     label="Full Name"
                     name="fullName"
@@ -155,11 +156,12 @@ const CreateUser: React.FC = () => {
                         { required: true, message: 'Full name is required!' },
                         { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: 'Full name must contain at least two words!' }
                     ]}
+                    hasFeedback
                 >
                     <Input />
                 </Form.Item>
 
-
+                {/* Email */}
                 <Form.Item
                     label="Email"
                     name="email"
@@ -167,10 +169,12 @@ const CreateUser: React.FC = () => {
                         { required: true, message: 'Email is required!' },
                         { type: 'email', message: 'Enter a valid email address!' }
                     ]}
+                    hasFeedback
                 >
                     <Input />
                 </Form.Item>
 
+                {/* Phone Number */}
                 <Form.Item
                     label="Phone No."
                     name="phone"
@@ -178,6 +182,7 @@ const CreateUser: React.FC = () => {
                         { required: true, message: 'Phone number is required!' },
                         { pattern: /^\d{10}$/, message: 'Phone number must be exactly 10 digits!' }
                     ]}
+                    hasFeedback
                 >
                     <Input />
                 </Form.Item>

@@ -1,9 +1,6 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.EmailExistException;
-import fa.pjb.back.common.exception.InvalidPhoneNumberException;
-import fa.pjb.back.common.exception.UserNotFoundException;
-import fa.pjb.back.common.exception.UsernameExistException;
+import fa.pjb.back.common.exception.*;
 import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
@@ -16,6 +13,7 @@ import fa.pjb.back.service.ParentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -217,16 +215,25 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Transactional
-    public void changePassword(Integer parentId, String newPassword) {
+    public void changePassword(Integer parentId, String oldPassword, String newPassword) {
         Parent parent = parentRepository.findById(parentId)
                 .orElseThrow(UserNotFoundException::new);
-        log.info("parent",parent);
+        log.info("parent: {}", parent);
 
         User user = parent.getUser();
-        log.info("user",user);
+        log.info("user: {}", user.getPassword());
+
+        // Kiểm tra mật khẩu cũ có đúng không
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IncorrectPasswordException();
+        }
+
+        // Cập nhật mật khẩu mới
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
+
 
 
 }
