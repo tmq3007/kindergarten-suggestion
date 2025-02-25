@@ -100,14 +100,16 @@ public class JwtHelper {
     }
 
     // Phương thức dùng để tạo ra Access Token từ thông tin người dùng (UserDetails)
-    public String generateAccessToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails, String userId) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id", userId); // Thêm id vào claims
         return createToken(claims, userDetails.getUsername(), ACCESS_TOKEN_EXP);
     }
 
     // Phương thức dùng để tạo ra Refresh Token từ thông tin người dùng (UserDetails)
-    public String generateRefreshToken(UserDetails userDetails) {
+    public String generateRefreshToken(UserDetails userDetails, String userId) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id", userId); // Thêm id vào claims
         return createToken(claims, userDetails.getUsername(), REFRESH_TOKEN_EXP);
     }
 

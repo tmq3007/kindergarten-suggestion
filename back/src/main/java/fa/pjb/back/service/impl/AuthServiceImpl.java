@@ -75,16 +75,19 @@ public class AuthServiceImpl implements AuthService {
                 throw new AccessDeniedException("Access denied");
             }
         }
+        // Lấy thông tin người dùng từ cơ sở dữ liệu
+        User user = userRepository.findByEmail(loginDTO.email())
+                .orElseThrow(() -> new EmailNotFoundException(loginDTO.email()));
         // Tạo ra các Token ==========================================================
 
         // Access Token: Lưu vào Cookie với HttpOnly
-        String accessToken = jwtHelper.generateAccessToken(userDetails);
+        String accessToken = jwtHelper.generateAccessToken(userDetails, user.getId().toString());
 
         // CSRF Token: Lưu vào Cookie không HttpOnly
         String csrfToken = jwtHelper.generateCsrfToken();
 
         // Refresh Token: Lưu vào Redis
-        String refreshToken = jwtHelper.generateRefreshToken(userDetails);
+        String refreshToken = jwtHelper.generateRefreshToken(userDetails, user.getId().toString());
         tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
 
         return LoginVO.builder()
@@ -131,7 +134,7 @@ public class AuthServiceImpl implements AuthService {
         tokenService.saveTokenInRedis("FORGOT_PASSWORD_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
 
         String resetLink = "http://localhost:3000/forgot-password/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
-        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(),resetLink);
+        emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(), resetLink);
 
         return ForgotPasswordVO.builder()
                 .fpToken(fpToken)
@@ -149,7 +152,7 @@ public class AuthServiceImpl implements AuthService {
         String tokenRedis = tokenService.getTokenFromRedis("FORGOT_PASSWORD_TOKEN", username);
 
         //Kiểm tra nếu token không tồn tại hoặc không trùng với token gửi lên
-        if(tokenRedis == null || !tokenRedis.equals(forgot_password_token)){
+        if (tokenRedis == null || !tokenRedis.equals(forgot_password_token)) {
             throw new JwtUnauthorizedException("Token is invalid");
         }
 
