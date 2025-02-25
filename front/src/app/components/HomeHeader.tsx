@@ -13,6 +13,7 @@ import {RootState} from "@/redux/store";
 import UserDropdown from "@/app/components/UserDropdown";
 import {motion} from 'framer-motion'
 
+
 export default function HomeHeader() {
     const path = usePathname();
     const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);
@@ -21,6 +22,7 @@ export default function HomeHeader() {
         return null;
     }
     const username = useSelector((state: RootState) => state.user?.username);
+    console.log("user====", useSelector((state: RootState) => state.user.id));
     return (
         <motion.nav
             initial={{ y: -100, opacity: 0 }} // Header bắt đầu từ vị trí trên và mờ dần
