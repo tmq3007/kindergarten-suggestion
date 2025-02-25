@@ -167,7 +167,8 @@ const CreateUser: React.FC = () => {
                     name="email"
                     rules={[
                         { required: true, message: 'Email is required!' },
-                        { type: 'email', message: 'Enter a valid email address!' }
+                        {pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' },
+                        // { type: 'email', message: 'Enter a valid email address!' }
                     ]}
                     hasFeedback
                 >

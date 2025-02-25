@@ -1,16 +1,20 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.*;
+import fa.pjb.back.common.exception.user.UserNotFoundException;
 import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.common.exception.user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
+import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.ParentService;
+import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -38,6 +42,7 @@ public class ParentServiceImpl implements ParentService {
     private final PasswordEncoder passwordEncoder;
     private final ParentRepository parentRepository;
     private final ParentMapper parentMapper;
+    private final UserRepository userRepository;
 
 
     @Transactional
@@ -52,17 +57,17 @@ public class ParentServiceImpl implements ParentService {
                 .username(username)
                 .password(passwordEncoder.encode(registerDTO.password()))
                 .role(ROLE_PARENT)
+                .phone(registerDTO.phone())
+                .fullname(registerDTO.fullname())
                 .status(true)
                 .build();
         Parent parent = Parent.builder()
                 .user(user)
-                .phone(registerDTO.phone())
-                .fullname(registerDTO.fullname())
                 .build();
 //        user.setParent(parent);
         return parentMapper.toRegisterVO(parentRepository.save(parent));
     }
-}
+
 
     @Transactional
     public ParentDTO createParent(ParentDTO parentDTO) {
@@ -80,57 +85,55 @@ public class ParentServiceImpl implements ParentService {
 //            throw new UsernameExistException();
 //        }
         // Tạo mới User
-        String usernameAutoGen = generateUsername(parentDTO.getFullName());
+        String usernameAutoGen = userService.generateUsername(parentDTO.getFullName());
         String passwordautoGen = generateRandomPassword();
-        User user = new User();
-        user.setUsername(usernameAutoGen);
-        user.setPassword(passwordautoGen);  // Mật khẩu tự tạo
-        user.setEmail(parentDTO.getEmail());
-        user.setRole(ERole.ROLE_PARENT);
-        user.setStatus(parentDTO.getStatus());
-        user.setPhone(parentDTO.getPhone());
-        user.setDob(parentDTO.getDob());
-        user.setFullname(parentDTO.getFullName());
+
+        User newUser = User.builder()
+                .email(parentDTO.getEmail())
+                .username(usernameAutoGen)
+                .password(passwordEncoder.encode(passwordautoGen))
+                .role(ROLE_PARENT)
+                .phone(parentDTO.getPhone())
+                .fullname(parentDTO.getFullName())
+                .status(parentDTO.getStatus())
+                .dob(parentDTO.getDob())
+                .build();
 
         // Lưu User vào database
-        user = userRepository.save(user);
+         userRepository.save(newUser);
 
         // Tạo Parent mới
-        Parent parent = new Parent();
-        parent.setUser(user);
-
-        parent.setDistrict(parentDTO.getDistrict() != null ? parentDTO.getDistrict() : "");
-        parent.setWard(parentDTO.getWard() != null ? parentDTO.getWard() : "");
-        parent.setProvince(parentDTO.getProvince() != null ? parentDTO.getProvince() : "");
-        parent.setStreet(parentDTO.getStreet() != null ? parentDTO.getStreet() : "");
-
+        Parent newParent = Parent.builder()
+                .user(newUser)
+               // .id(newUser.getId())
+                .district(parentDTO.getDistrict() != null ? parentDTO.getDistrict() : "")
+                .ward(parentDTO.getWard() != null ? parentDTO.getWard() : "")
+                .province(parentDTO.getProvince() != null ? parentDTO.getProvince() : "")
+                .street(parentDTO.getStreet() != null ? parentDTO.getStreet() : "")
+                .build();
 
         // Lưu Parent vào database
-        parent = parentRepository.save(parent);
+        parentRepository.save(newParent);
 
         // Trả về ParentDTO
-        ParentDTO responseDTO = new ParentDTO();
-        responseDTO.setId(parent.getId());
-        responseDTO.setUsername(user.getUsername());
-        responseDTO.setEmail(user.getEmail());
-        responseDTO.setFullName(user.getFullname());
-        responseDTO.setPhone(user.getPhone());
-        responseDTO.setDob(user.getDob());
-        responseDTO.setDistrict(parent.getDistrict());
-        responseDTO.setWard(parent.getWard());
-        responseDTO.setProvince(parent.getProvince());
-        responseDTO.setStreet(parent.getStreet());
-        responseDTO.setStatus(parent.getUser().getStatus());
-        responseDTO.setRole(String.valueOf(parent.getUser().getRole()));
+        ParentDTO responseDTO = ParentDTO.builder()
+                .id(newParent.getId())
+                .username(usernameAutoGen)
+                .email(parentDTO.getEmail())
+                .fullName(parentDTO.getFullName())
+                .phone(parentDTO.getPhone())
+                .dob(parentDTO.getDob())
+                .district(newParent.getDistrict())
+                .ward(newParent.getWard())
+                .province(newParent.getProvince())
+                .street(newParent.getStreet())
+                .status(parentDTO.getStatus())
+                .role(String.valueOf(ROLE_PARENT))
+                .build();
 
 //        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
 //                usernameAutoGen,passwordautoGen);
         return responseDTO;
-    }
-
-    @Override
-    public RegisterVO saveNewParent(RegisterDTO registerDTO) {
-        return null;
     }
 
 
@@ -209,7 +212,7 @@ public class ParentServiceImpl implements ParentService {
         responseDTO.setRole(String.valueOf(parent.getUser().getRole()));
 
         // Trả về thông tin đã cập nhật
-        return  responseDTO;
+        return responseDTO;
     }
 
     @Transactional
@@ -221,19 +224,20 @@ public class ParentServiceImpl implements ParentService {
 
         User user = parent.getUser();
 
-        ParentDTO responseDTO = new ParentDTO();
-        responseDTO.setId(parent.getId());
-        responseDTO.setUsername(user.getUsername());
-        responseDTO.setEmail(user.getEmail());
-        responseDTO.setFullName(user.getFullname());
-        responseDTO.setPhone(user.getPhone());
-        responseDTO.setDob(user.getDob());
-        responseDTO.setDistrict(parent.getDistrict());
-        responseDTO.setWard(parent.getWard());
-        responseDTO.setProvince(parent.getProvince());
-        responseDTO.setStreet(parent.getStreet());
-        responseDTO.setStatus(user.getStatus());
-        responseDTO.setRole(String.valueOf(user.getRole()));
+        ParentDTO responseDTO = ParentDTO.builder()
+                .id(parent.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullname())
+                .phone(user.getPhone())
+                .dob(user.getDob())
+                .district(parent.getDistrict())
+                .ward(parent.getWard())
+                .province(parent.getProvince())
+                .street(parent.getStreet())
+                .status(user.getStatus())
+                .role(String.valueOf(user.getRole()))
+                .build();
 
         return responseDTO;
     }
@@ -258,6 +262,6 @@ public class ParentServiceImpl implements ParentService {
     }
 
 
-
-
 }
+
+

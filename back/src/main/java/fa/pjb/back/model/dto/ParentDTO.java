@@ -2,14 +2,14 @@ package fa.pjb.back.model.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
-
 @Data
-@NoArgsConstructor
+ @NoArgsConstructor
 @AllArgsConstructor
-
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@SuperBuilder
+ @FieldDefaults(level = AccessLevel.PRIVATE)
  public class ParentDTO extends UserDTO {
     Integer id;
      String district;

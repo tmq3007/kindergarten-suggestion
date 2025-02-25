@@ -13,6 +13,7 @@ import {RootState} from "@/redux/store";
 import UserDropdown from "@/app/components/UserDropdown";
 import {motion} from 'framer-motion'
 
+
 export default function HomeHeader() {
     const path = usePathname();
     const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);

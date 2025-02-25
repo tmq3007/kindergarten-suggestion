@@ -14,12 +14,13 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "Parent")
-public class Parent {
+public class    Parent {
     @Id
     @Column(name = "user_id", nullable = false)
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -37,6 +38,6 @@ public class Parent {
     private String province;
 
     @Size(max = 255)
-    @Column(name = "street")
+    @Column(name = "street" , nullable = true)
     private String street;
 }

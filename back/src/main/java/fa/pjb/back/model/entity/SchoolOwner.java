@@ -18,6 +18,7 @@ public class SchoolOwner {
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

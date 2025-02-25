@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         String passwordautoGen = generateRandomPassword();
         User user = new User();
         user.setUsername(usernameAutoGen);
-        user.setPassword(passwordautoGen);  // Mật khẩu tự tạo
+        user.setPassword(passwordEncoder.encode(passwordautoGen)); // Mật khẩu tự tạo
         user.setEmail(userDTO.getEmail());
         user.setRole(ERole.ROLE_ADMIN);
         user.setStatus(userDTO.getStatus());

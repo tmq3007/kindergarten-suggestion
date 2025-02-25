@@ -48,17 +48,17 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         String usernameAutoGen = generateUsername(dto.getFullName());
         String passwordAutoGen = generateRandomPassword();
 
-        User user = new User();
-        user.setUsername(usernameAutoGen);
-        user.setPassword(passwordEncoder.encode(passwordAutoGen)); // Mã hóa mật khẩu
-        user.setEmail(dto.getEmail());
-        user.setRole(ERole.ROLE_SCHOOL_OWNER);
-        user.setStatus(dto.getStatus());
-        user.setPhone(dto.getPhone());
-        user.setDob(dto.getDob());
-        user.setFullname(dto.getFullName());
-        // Lưu User vào database
-        user = userRepository.save(user);
+        User user = User.builder()
+                .email(dto.getEmail())
+                .username(passwordEncoder.encode(usernameAutoGen))
+                .password(passwordAutoGen)
+                .role(ERole.ROLE_SCHOOL_OWNER)
+                .phone(dto.getPhone())
+                .fullname(dto.getFullName())
+                .status(dto.getStatus())
+                .dob(dto.getDob())
+                .build();
+         userRepository.save(user);
 
         // Kiểm tra nếu dto.getSchool() != null thì mới tìm trong database
         School school = null;
@@ -70,7 +70,6 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         // Tạo SchoolOwner
         SchoolOwner schoolOwner = new SchoolOwner();
         schoolOwner.setUser(user);
-
         schoolOwner.setSchool(school); // Chấp nhận null
 
         // Lưu SchoolOwner vào database
@@ -80,16 +79,19 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         emailService.sendUsernamePassword(dto.getEmail(), dto.getFullName(), usernameAutoGen, passwordAutoGen);
 
         // Tạo response DTO
-        SchoolOwnerDTO responseDTO = new SchoolOwnerDTO();
-        responseDTO.setId(schoolOwner.getId());
-        responseDTO.setUsername(user.getUsername());
-        responseDTO.setEmail(user.getEmail());
-        responseDTO.setPhone(user.getPhone());
-         responseDTO.setFullName(user.getFullname());
-        responseDTO.setDob(user.getDob());
-        responseDTO.setSchool(school != null ? dto.getSchool() : null); // Nếu school null, thì giữ nguyên
-        responseDTO.setStatus(user.getStatus());
-        responseDTO.setRole(String.valueOf(schoolOwner.getUser().getRole()));
+
+        SchoolOwnerDTO responseDTO = SchoolOwnerDTO.builder()
+                .school(dto.getSchool()!= null ? dto.getSchool() : null)
+                .status(dto.getStatus())
+                .phone(dto.getPhone())
+                .fullName(dto.getFullName())
+                .dob(dto.getDob())
+                .email(dto.getEmail())
+                .username(usernameAutoGen)
+                .role(String.valueOf(schoolOwner.getUser().getRole()))
+                .id(schoolOwner.getId())
+                .build();
+
 
         return responseDTO;
     }

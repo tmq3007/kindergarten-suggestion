@@ -7,14 +7,15 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@SuperBuilder
+ @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserDTO {
     Integer id;
 
