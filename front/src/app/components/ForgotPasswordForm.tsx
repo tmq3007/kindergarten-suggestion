@@ -87,9 +87,9 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
                 autoComplete="off"
             >
 
-                    <p className={`${indie.className} text-center text-5xl font-bold pb-6`}>Forgot Password</p>
+                    <p className={`${indie.className} text-center text-4xl font-bold pb-6`}>Forgot Password</p>
 
-                    <p className={'text-gray-400 text-center text-xl mx-10 my-5'}>
+                    <p className={'text-gray-400 text-center mx-20 mb-5'}>
                         Please enter your email address and we'll send you a link to reset your password
                     </p>
 
@@ -99,28 +99,27 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
                     name="email"
                     className={'p-2'}
                     rules={[{required: true, message: 'Please input your email!'}]}
-                    label={<span className={`${nunito.className} text-xl`}>Email address</span>}
+                    label={<span className={`${nunito.className}`}>Email address</span>}
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                 >
-                    <Input className={'h-10'}/>
+                    <Input/>
                 </Form.Item>
 
 
 
                 <Form.Item label={null} wrapperCol={{span: 24}} className="text-center">
-                    <Space className={'flex flex-col md:flex-row items-center justify-center'}>
-                        <Link href={"/admin"}>
+                    <Space className={'flex flex-col md:flex-row justify-center'}>
+
                             <Button
-                                className={'w-60 md:w-32 p-6 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition text-xl'}
+                                className={'block w-80 md:w-36 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition'}
                                 type="primary"
                             >
                                 Cancel
                             </Button>
-                        </Link>
 
                         <Button
-                            className={'w-60 md:w-32 p-6 mx-4 font-bold bg-cyan-500 text-xl'}
+                            className={'block w-80 md:w-36 mx-4 font-bold bg-cyan-500 '}
                             type="primary"
                             htmlType="submit"
                             loading={isLoading} // Show loading when submitting

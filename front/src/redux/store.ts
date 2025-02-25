@@ -23,8 +23,7 @@ const rootReducer = combineReducers({
     [registerApi.reducerPath]: registerApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
-    auth: authReducer
-
+    auth: authReducer,
     user: userReducer,
 })
 

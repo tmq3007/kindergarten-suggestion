@@ -1,8 +1,11 @@
-import {Dropdown, MenuProps, Modal, Space} from "antd";
+import {Button, Dropdown, MenuProps, Modal, Space} from "antd";
 import {DownOutlined, UserOutlined} from "@ant-design/icons";
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 import {useDispatch} from "react-redux";
 import {resetUser} from "@/redux/features/userSlice"; // Import action updateUsername
+import {useRouter} from "next/navigation";
+import {useLogoutMutation} from "@/redux/services/authApi"; // Import action updateUsername
+
 
 interface UserDropdownProps {
     username: string;
@@ -10,24 +13,36 @@ interface UserDropdownProps {
 
 export default function UserDropdown({username}: UserDropdownProps) {
     const dispatch = useDispatch();
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const router = useRouter();
+    const [logout] = useLogoutMutation();
+    const processed = useRef(false);
 
-    const showModal = () => {
-        setIsModalVisible(true);
+    const handleLogout = async () => {
+        try {
+            setIsModalOpen(false);
+
+            const result = await logout(undefined).unwrap();
+
+            if (result?.code === 200 && !processed.current) {
+                processed.current = true;
+                await fetch('/api/logout', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+            }
+
+            dispatch(resetUser());
+            router.push("/public");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     };
 
-    const handleOk = () => {
-        // Nếu người dùng xác nhận, thực hiện logout
 
 
-        // Thực hiên logic logout
-        dispatch(resetUser());
-        setIsModalVisible(false); // Đóng modal sau khi logout
-    };
-
-    const handleCancel = () => {
-        setIsModalVisible(false); // Đóng modal nếu người dùng hủy
-    };
 
     const items: MenuProps['items'] = [
         {
@@ -55,8 +70,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
             type: 'divider',
         },
         {
-            label: <div onClick={showModal}
-                        className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">Logout</div>,
+            label: <div onClick={() => setIsModalOpen(true)} className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">Logout</div>,
             key: '4',
         },
     ];
@@ -79,17 +93,15 @@ export default function UserDropdown({username}: UserDropdownProps) {
 
             {/* Modal xác nhận Logout */}
             <Modal
-                title="Confirm Logout"
-                open={isModalVisible}
-                onOk={handleOk}
-                onCancel={handleCancel}
-                okText="Yes"
-                cancelText="No"
-                okButtonProps={{
-                    danger: true,
-                }}
+                title="Are you leaving?"
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setIsModalOpen(false)}>Cancel</Button>,
+                    <Button key="logout" type="primary" danger onClick={handleLogout}>Yes</Button>
+                ]}
             >
-                <p>Are you sure you want to log out?</p>
+                <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
             </Modal>
         </>
     );

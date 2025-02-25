@@ -45,10 +45,11 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(ALLOWED_URLS).permitAll()
-                                .requestMatchers("/api/auth/login").permitAll()
+                                .requestMatchers("/api/auth/login/admin").permitAll()
+                                .requestMatchers("/api/auth/login/public").permitAll()
                                 .requestMatchers("/api/auth/refresh").permitAll()
-                                .anyRequest().permitAll()
-//                        .anyRequest().authenticated()
+//                                .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
