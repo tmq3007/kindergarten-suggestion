@@ -2,13 +2,13 @@ import {Dropdown, MenuProps, Modal, Space} from "antd";
 import {DownOutlined, UserOutlined} from "@ant-design/icons";
 import React, {useState} from "react";
 import {useDispatch} from "react-redux";
-import {updateUsername} from "@/redux/features/userSlice"; // Import action updateUsername
+import {resetUser} from "@/redux/features/userSlice"; // Import action updateUsername
 
 interface UserDropdownProps {
     username: string;
 }
 
-export default function UserDropdown({ username }: UserDropdownProps) {
+export default function UserDropdown({username}: UserDropdownProps) {
     const dispatch = useDispatch();
     const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -20,10 +20,8 @@ export default function UserDropdown({ username }: UserDropdownProps) {
         // Nếu người dùng xác nhận, thực hiện logout
 
 
-
         // Thực hiên logic logout
-
-        dispatch(updateUsername(''));
+        dispatch(resetUser());
         setIsModalVisible(false); // Đóng modal sau khi logout
     };
 
@@ -33,28 +31,32 @@ export default function UserDropdown({ username }: UserDropdownProps) {
 
     const items: MenuProps['items'] = [
         {
-            label: <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">My Schools</div>,
+            label: <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">My
+                Schools</div>,
             key: '1',
         },
         {
             type: 'divider',
         },
         {
-            label: <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">My Requests</div>,
+            label: <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">My
+                Requests</div>,
             key: '2',
         },
         {
             type: 'divider',
         },
         {
-            label: <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">My Profiles</div>,
+            label: <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">My
+                Profiles</div>,
             key: '3',
         },
         {
             type: 'divider',
         },
         {
-            label: <div onClick={showModal} className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">Logout</div>,
+            label: <div onClick={showModal}
+                        className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">Logout</div>,
             key: '4',
         },
     ];
@@ -68,9 +70,9 @@ export default function UserDropdown({ username }: UserDropdownProps) {
             <Dropdown className={'text-blue-500'} menu={menuProps}>
                 <div>
                     <Space>
-                        <UserOutlined className={'text-black text-2xl'} />
+                        <UserOutlined className={'text-black text-2xl'}/>
                         <span className={'text-sm hover:cursor-pointer'}>{`Welcome! ${username}`}</span>
-                        <DownOutlined />
+                        <DownOutlined/>
                     </Space>
                 </div>
             </Dropdown>

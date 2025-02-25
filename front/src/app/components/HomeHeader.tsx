@@ -31,7 +31,7 @@ export default function HomeHeader() {
                 ease: "easeInOut", // Kiểu chuyển động
                 opacity: { duration: 1.5, ease: "easeInOut" }, // Tùy chỉnh riêng cho opacity
             }}
-            className="sticky top-0 bg-cyan-100 shadow-md z-10">
+            className="fixed w-full top-0 bg-cyan-200 shadow-md z-10">
             <div className="flex items-center justify-between md:px-8 py-3">
                 {/* Logo */}
                 <div className="flex items-center">
@@ -130,6 +130,7 @@ export default function HomeHeader() {
                 centered
                 footer={null}
                 destroyOnClose={true}
+                getContainer={false}
             >
                 <ParentLoginForm
                     onSuccess={() => setIsLoginModalOpen(false)}
@@ -148,6 +149,7 @@ export default function HomeHeader() {
                 centered
                 footer={null}
                 destroyOnClose={true}
+                getContainer={false}
             >
                 <RegisterForm onCancel={() => setIsSignupModalOpen(false)}/>
             </Modal>
