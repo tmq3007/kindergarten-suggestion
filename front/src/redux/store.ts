@@ -1,5 +1,6 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import counterReducer from '@/redux/features/counterSlice'
+import authReducer from '@/redux/features/authSlice';
 import userReducer from '@/redux/features/userSlice'
 import storage from "@/redux/ssr-safe-storage";
 import {persistReducer} from 'redux-persist';
@@ -22,6 +23,8 @@ const rootReducer = combineReducers({
     [registerApi.reducerPath]: registerApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
+    auth: authReducer
+
     user: userReducer,
 })
 
