@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -73,7 +74,6 @@ public class ParentServiceImpl implements ParentService {
     public ParentDTO createParent(ParentDTO parentDTO) {
         // Kiểm tra User đã tồn tại chưa
         Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
-        Optional<User> existingUserName = userRepository.findByUsername(parentDTO.getUsername());
 
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
@@ -81,11 +81,14 @@ public class ParentServiceImpl implements ParentService {
         if (!parentDTO.getPhone().matches("\\d{10}")) {
             throw new InvalidPhoneNumberException();
         }
-//        if (existingUserName.isPresent()){
-//            throw new UsernameExistException();
-//        }
+
+        // Kiểm tra ngày sinh phải là ngày trong quá khứ
+        if (parentDTO.getDob() == null || !parentDTO.getDob().isBefore(LocalDate.now())) {
+            throw new InvalidDateException("Dob must be in the past");
+        }
+
         // Tạo mới User
-        String usernameAutoGen = userService.generateUsername(parentDTO.getFullName());
+        String usernameAutoGen =  generateUsername(parentDTO.getFullName());
         String passwordautoGen = generateRandomPassword();
 
         User newUser = User.builder()
@@ -115,25 +118,9 @@ public class ParentServiceImpl implements ParentService {
         // Lưu Parent vào database
         parentRepository.save(newParent);
 
-        // Trả về ParentDTO
-        ParentDTO responseDTO = ParentDTO.builder()
-                .id(newParent.getId())
-                .username(usernameAutoGen)
-                .email(parentDTO.getEmail())
-                .fullName(parentDTO.getFullName())
-                .phone(parentDTO.getPhone())
-                .dob(parentDTO.getDob())
-                .district(newParent.getDistrict())
-                .ward(newParent.getWard())
-                .province(newParent.getProvince())
-                .street(newParent.getStreet())
-                .status(parentDTO.getStatus())
-                .role(String.valueOf(ROLE_PARENT))
-                .build();
-
 //        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
 //                usernameAutoGen,passwordautoGen);
-        return responseDTO;
+        return parentMapper.toParentDTO(newParent);
     }
 
 
@@ -174,13 +161,24 @@ public class ParentServiceImpl implements ParentService {
     public ParentDTO editParent(Integer parentId, ParentDTO parentDTO) {
         Parent parent = parentRepository.findById(parentId)
                 .orElseThrow(() -> new RuntimeException("Parent not found"));
-
+// Kiểm tra số điện thoại có đúng 10 chữ số không
+        if (parentDTO.getPhone() == null || !parentDTO.getPhone().matches("\\d{10}")) {
+            throw new InvalidPhoneNumberException();
+        }
         User user = parent.getUser();
 
         // Kiểm tra email đã tồn tại chưa (ngoại trừ email của chính User đó)
         Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
         if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
             throw new EmailExistException();
+        }
+        if (!parentDTO.getPhone().matches("\\d{10}")) {
+            throw new InvalidPhoneNumberException();
+        }
+
+        // Kiểm tra ngày sinh phải là ngày trong quá khứ
+        if (parentDTO.getDob() == null || !parentDTO.getDob().isBefore(LocalDate.now())) {
+            throw new InvalidDateException("Dob must be in the past");
         }
 
         // Cập nhật thông tin User
@@ -201,22 +199,9 @@ public class ParentServiceImpl implements ParentService {
         parentRepository.save(parent);
 
         // Trả về ParentDTO
-        ParentDTO responseDTO = new ParentDTO();
-        responseDTO.setId(parent.getId());
-        responseDTO.setUsername(user.getUsername());
-        responseDTO.setEmail(user.getEmail());
-        responseDTO.setFullName(user.getFullname());
-        responseDTO.setPhone(user.getPhone());
-        responseDTO.setDob(user.getDob());
-        responseDTO.setDistrict(parent.getDistrict());
-        responseDTO.setWard(parent.getWard());
-        responseDTO.setProvince(parent.getProvince());
-        responseDTO.setStreet(parent.getStreet());
-        responseDTO.setStatus(parent.getUser().getStatus());
-        responseDTO.setRole(String.valueOf(parent.getUser().getRole()));
 
         // Trả về thông tin đã cập nhật
-        return responseDTO;
+        return parentMapper.toParentDTO(parent);
     }
 
     @Transactional
@@ -226,24 +211,7 @@ public class ParentServiceImpl implements ParentService {
             throw new UserNotFoundException();
         }
 
-        User user = parent.getUser();
-
-        ParentDTO responseDTO = ParentDTO.builder()
-                .id(parent.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .fullName(user.getFullname())
-                .phone(user.getPhone())
-                .dob(user.getDob())
-                .district(parent.getDistrict())
-                .ward(parent.getWard())
-                .province(parent.getProvince())
-                .street(parent.getStreet())
-                .status(user.getStatus())
-                .role(String.valueOf(user.getRole()))
-                .build();
-
-        return responseDTO;
+        return parentMapper.toParentDTO(parent);
     }
 
     @Transactional

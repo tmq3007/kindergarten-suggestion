@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailExistException;
+import fa.pjb.back.common.exception.InvalidDateException;
 import fa.pjb.back.common.exception.InvalidPhoneNumberException;
 import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
@@ -41,7 +42,9 @@ public class UserServiceImpl implements UserService {
     //generate username từ fullname
     public String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
-
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Invalid Name");
+        }
         String firstName = parts[parts.length - 1];
         firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
 
@@ -65,13 +68,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO createAdmin(UserDTO userDTO) {
         Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
-        Optional<User> existingUserName = userRepository.findByUsername(userDTO.getUsername());
 
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
         if (!userDTO.getPhone().matches("\\d{10}")) {
             throw new InvalidPhoneNumberException();
+        }
+        // Kiểm tra ngày sinh phải là ngày trong quá khứ
+        if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
+            throw new InvalidDateException("Dob must be in the past");
         }
         // Tạo mới Admin
         String usernameAutoGen = generateUsername(userDTO.getFullName());

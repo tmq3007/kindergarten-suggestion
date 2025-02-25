@@ -1,13 +1,12 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.EmailExistException;
-import fa.pjb.back.common.exception.SchoolNotFoundException;
-import fa.pjb.back.common.exception.UsernameExistException;
+import fa.pjb.back.common.exception.*;
 import fa.pjb.back.model.dto.SchoolOwnerDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.SOMapper;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UserRepository;
@@ -19,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -30,9 +30,10 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
     private final SchoolRepository schoolRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final SOMapper soMapper;
 
-    @Transactional
     public SchoolOwnerDTO createSchoolOwner(SchoolOwnerDTO dto) {
+
         // Kiểm tra User có tồn tại không
         Optional<User> existingUserEmail = userRepository.findByEmail(dto.getEmail());
         Optional<User> existingUserName = userRepository.findByUsername(dto.getUsername());
@@ -43,7 +44,15 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         if (existingUserName.isPresent()) {
             throw new UsernameExistException();
         }
+        // Kiểm tra số điện thoại có đúng 10 chữ số không
+        if (dto.getPhone() == null || !dto.getPhone().matches("\\d{10}")) {
+            throw new InvalidPhoneNumberException();
+        }
 
+        // Kiểm tra ngày sinh phải là ngày trong quá khứ
+        if (dto.getDob() == null || !dto.getDob().isBefore(LocalDate.now())) {
+            throw new InvalidDateException("Dob must be in the past");
+        }
         // Tạo User mới
         String usernameAutoGen = generateUsername(dto.getFullName());
         String passwordAutoGen = generateRandomPassword();
@@ -58,7 +67,7 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
                 .status(dto.getStatus())
                 .dob(dto.getDob())
                 .build();
-         userRepository.save(user);
+        userRepository.save(user);
 
         // Kiểm tra nếu dto.getSchool() != null thì mới tìm trong database
         School school = null;
@@ -78,22 +87,8 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         // Gửi email thông báo tài khoản
         emailService.sendUsernamePassword(dto.getEmail(), dto.getFullName(), usernameAutoGen, passwordAutoGen);
 
-        // Tạo response DTO
-
-        SchoolOwnerDTO responseDTO = SchoolOwnerDTO.builder()
-                .school(dto.getSchool()!= null ? dto.getSchool() : null)
-                .status(dto.getStatus())
-                .phone(dto.getPhone())
-                .fullName(dto.getFullName())
-                .dob(dto.getDob())
-                .email(dto.getEmail())
-                .username(usernameAutoGen)
-                .role(String.valueOf(schoolOwner.getUser().getRole()))
-                .id(schoolOwner.getId())
-                .build();
-
-
-        return responseDTO;
+        // Trả về DTO
+        return soMapper.toSchoolOwner(schoolOwner);
     }
 
 
