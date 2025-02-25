@@ -4,7 +4,10 @@ import fa.pjb.back.model.enums.ERole;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +16,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

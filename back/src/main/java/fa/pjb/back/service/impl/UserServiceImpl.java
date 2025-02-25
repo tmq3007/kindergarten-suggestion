@@ -1,5 +1,10 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception.EmailExistException;
+import fa.pjb.back.common.exception.InvalidPhoneNumberException;
+import fa.pjb.back.model.dto.UserDTO;
+import fa.pjb.back.model.dto.UserDetailDTO;
+import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
@@ -16,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
