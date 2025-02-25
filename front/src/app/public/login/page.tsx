@@ -1,11 +1,11 @@
 'use client'
 import React from 'react';
-import {useLoginMutation} from "@/redux/services/authApi";
-import LoginForm from "@/app/components/LoginForm";
+import {useLoginByParentMutation} from "@/redux/services/authApi";
+import AdminLoginForm from "@/app/components/AdminLoginForm";
 
 
 export default function Page() {
-    const [login, {data, isLoading, error}] = useLoginMutation();
+    const [login, {data, isLoading, error}] = useLoginByParentMutation();
 
     return (
         <div className="relative min-h-screen bg-cyan-700 bg-opacity-50">
@@ -16,7 +16,7 @@ export default function Page() {
             >
             </div>
             <div className="flex items-center justify-center min-h-screen w-100">
-                <LoginForm
+                <AdminLoginForm
                 login={login}
                 data={data}
                 isLoading={isLoading}

@@ -7,15 +7,30 @@ import {ConfigProvider, Menu, Modal, Space} from 'antd';
 import {usePathname} from "next/navigation";
 import clsx from "clsx";
 import RegisterForm from "@/app/components/RegisterForm";
+import ParentLoginForm from "@/app/components/ParentLoginForm";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
+import UserDropdown from "@/app/components/UserDropdown";
+import {motion} from 'framer-motion'
 
 export default function HomeHeader() {
     const path = usePathname();
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
     if (path === '/public/login') {
         return null;
     }
+    const username = useSelector((state: RootState) => state.user?.username);
     return (
-        <nav className="sticky top-0 bg-cyan-100 shadow-md z-10">
+        <motion.nav
+            initial={{ y: -100, opacity: 0 }} // Header bắt đầu từ vị trí trên và mờ dần
+            animate={{ y: 0, opacity: 1 }} // Hiệu ứng cuộn từ trên xuống 0px
+            transition={{
+                duration: 1, // Thời gian tổng thể của hiệu ứng
+                ease: "easeInOut", // Kiểu chuyển động
+                opacity: { duration: 1.5, ease: "easeInOut" }, // Tùy chỉnh riêng cho opacity
+            }}
+            className="fixed w-full top-0 bg-cyan-200 shadow-md z-10">
             <div className="flex items-center justify-between md:px-8 py-3">
                 {/* Logo */}
                 <div className="flex items-center">
@@ -82,34 +97,62 @@ export default function HomeHeader() {
 
 
                 {/* Login & Signup */}
-                <Space>
-                    <Link href="public/login">
+                {
+                    username ?
+                        <UserDropdown username={username}/> :
                         <Space>
-                            <UserOutlined/>
-                            Login
+                            <Link href=""
+                                  onClick={() => setIsLoginModalOpen(true)}
+                            >
+                                <Space>
+                                    <UserOutlined/>
+                                    Login
+                                </Space>
+                            </Link>
+                            <span>|</span>
+                            <Link href={""}
+                                  onClick={() => setIsSignupModalOpen(true)}
+                                  className="pr-4"
+                            >
+                                Sign Up
+                            </Link>
                         </Space>
-                    </Link>
-                    <span>|</span>
-                    <Link href={""}
-                          onClick={() => setIsModalOpen(true)}
-                          className="pr-4">
-                        Sign Up
-                    </Link>
-                </Space>
+                }
             </div>
 
+            {/*Login Modal*/}
             <Modal
-                title={<div className={'text-center text-2xl'}>Create a new user</div>}
-                open={isModalOpen}
-                onOk={() => setIsModalOpen(false)}
-                onCancel={() => setIsModalOpen(false)}
+                title={<div className={'text-center text-2xl'}>Login into your account</div>}
+                open={isLoginModalOpen}
+                onOk={() => setIsLoginModalOpen(false)}
+                onCancel={() => setIsLoginModalOpen(false)}
                 centered
                 footer={null}
                 destroyOnClose={true}
+                getContainer={false}
             >
-                <RegisterForm onCancel={() => setIsModalOpen(false)}/>
+                <ParentLoginForm
+                    onSuccess={() => setIsLoginModalOpen(false)}
+                    onCancel={() => {
+                        setIsLoginModalOpen(false);
+                        setIsSignupModalOpen(true);
+                    }}/>
             </Modal>
-        </nav>
+
+            {/*Signup Modal*/}
+            <Modal
+                title={<div className={'text-center text-2xl'}>Create a new user</div>}
+                open={isSignupModalOpen}
+                onOk={() => setIsSignupModalOpen(false)}
+                onCancel={() => setIsSignupModalOpen(false)}
+                centered
+                footer={null}
+                destroyOnClose={true}
+                getContainer={false}
+            >
+                <RegisterForm onCancel={() => setIsSignupModalOpen(false)}/>
+            </Modal>
+        </motion.nav>
     );
 };
 
