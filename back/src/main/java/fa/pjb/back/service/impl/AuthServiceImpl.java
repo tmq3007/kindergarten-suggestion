@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.auth.AccessDeniedException;
+import fa.pjb.back.common.exception.auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
 import fa.pjb.back.common.exception.email.EmailNotFoundException;
 import fa.pjb.back.common.util.HttpRequestHelper;
@@ -31,6 +32,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.rmi.server.LogStream;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -113,10 +115,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getDetails();
+        Object principal =  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String username = "";
+
+        if (principal instanceof User user) {
+            username = user.getUsername();
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
 
         // Xóa token từ Redis
-        tokenService.deleteTokenFromRedis("REFRESH_TOKEN", user.getUsername());
+        tokenService.deleteTokenFromRedis("REFRESH_TOKEN", username);
 
     }
 

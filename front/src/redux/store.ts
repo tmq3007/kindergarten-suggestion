@@ -1,5 +1,6 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import counterReducer from '@/redux/features/counterSlice'
+import authReducer from '@/redux/features/authSlice';
 import userReducer from '@/redux/features/userSlice'
 import storage from "@/redux/ssr-safe-storage";
 import {persistReducer} from 'redux-persist';
@@ -8,8 +9,9 @@ import {pokemonApi} from "@/redux/services/pokemonApi";
 import apiMiddlewares from "@/redux/middleware/apiMiddleware";
 import {postApi} from "@/redux/services/postApi";
 import {authApi} from "@/redux/services/authApi";
-import {userListApi} from "./services/userListApi";
-import {registerApi} from "./services/registerApi";
+import { userListApi } from "./services/userListApi";
+import {parentApi} from "@/redux/services/User/parentApi";
+import { registerApi } from "./services/registerApi";
 
 
 // Tạo rootReducer bao gồm reducers quản lý API và reducers quản lý state
@@ -18,10 +20,12 @@ const rootReducer = combineReducers({
     [pokemonApi.reducerPath]: pokemonApi.reducer,
     [postApi.reducerPath]: postApi.reducer,
     [authApi.reducerPath]: authApi.reducer,
+    [parentApi.reducerPath]: parentApi.reducer,
     [userListApi.reducerPath]: userListApi.reducer,
     [registerApi.reducerPath]: registerApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
+    auth: authReducer,
     user: userReducer,
 })
 

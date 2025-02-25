@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
@@ -19,12 +19,16 @@ const { Header, Sider, Content } = Layout;
 import StoreProvider, { Props } from "@/redux/StoreProvider";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
+import {useLogoutMutation} from "@/redux/services/authApi";
 
 export default function AdminLayout({ children }: Props) {
     const [collapsed, setCollapsed] = useState(false);
     const { Header, Content, Footer, Sider } = Layout;
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const router = useRouter();
+    const [logout] = useLogoutMutation();
+    const processed = useRef(false);
+
 
     const siderStyle: React.CSSProperties = {
         overflow: 'auto',
@@ -42,8 +46,25 @@ export default function AdminLayout({ children }: Props) {
     } = theme.useToken();
 
     const handleLogout = async () => {
-        setIsModalOpen(false);
-        router.push('/public/login'); // Điều hướng về trang login
+        try {
+            setIsModalOpen(false);
+
+            const result = await logout(undefined).unwrap();
+
+            if (result?.code === 200 && !processed.current) {
+                processed.current = true;
+                await fetch('/api/logout', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+            }
+
+            router.push("/admin");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     };
 
     return (
@@ -156,7 +177,7 @@ export default function AdminLayout({ children }: Props) {
                 </Header>
                 <Content style={{
                     margin: '15px 10px 0px 10px',
-                    padding: 24,
+                    padding: 20,
                     minHeight: 280,
                     background: colorBgContainer,
                     borderRadius: borderRadiusLG,

@@ -4,6 +4,7 @@ import {postApi} from "@/redux/services/postApi";
 import {authApi} from "@/redux/services/authApi";
 import { userListApi } from "@/redux/services/userListApi";
 import { registerApi } from "@/redux/services/registerApi";
+import {parentApi} from "@/redux/services/User/parentApi";
 
 const apiMiddlewares = [
     pokemonApi.middleware,
@@ -11,6 +12,7 @@ const apiMiddlewares = [
     authApi.middleware,
     userListApi.middleware,
     registerApi.middleware,
+    parentApi.middleware,
 ];
 
 export default apiMiddlewares;

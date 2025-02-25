@@ -4,7 +4,10 @@ import {Indie_Flower, Nunito} from "next/font/google";
 import Link from "next/link";
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {SerializedError} from "@reduxjs/toolkit";
-import {ApiResponse} from "@/redux/services/config/baseQuery";
+import {ApiResponse, CustomFetchBaseQueryError} from "@/redux/services/config/baseQuery";
+import {useRouter} from "next/navigation";
+import {useDispatch} from "react-redux";
+import {setPreviousPage} from "@/redux/features/authSlice";
 import {LoginDTO, LoginVO} from "@/redux/services/authApi";
 import useAuthRedirect from "@/lib/useAuthRedirect";
 import { motion } from 'framer-motion';
@@ -32,6 +35,13 @@ type LoginFormProps = {
 
 const AdminLoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error}) => {
     const [messageApi, contextHolder] = message.useMessage();
+    const dispatch = useDispatch();
+
+    const handleForgotPassword = () => {
+        // Xác định trang hiện tại bằng pathname
+        const currentPath = window.location.pathname.includes('/admin') ? 'admin' : 'public';
+        dispatch(setPreviousPage(currentPath)); // Lưu trạng thái trang trước đó
+    };
 
     useAuthRedirect(data, error, messageApi, '/admin/management', false);
 
@@ -83,7 +93,7 @@ const AdminLoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error
                 </Form.Item>
 
                 <div className={"text-right underline text-blue-500 pb-5"}>
-                    <Link href={"/forgot-password"}>Forgot passwords</Link>
+                    <Link href={"/forgot-password"} onClick={handleForgotPassword}>Forgot passwords</Link>
                 </div>
 
                 <Form.Item label={null} wrapperCol={{span: 24}} className="text-center">

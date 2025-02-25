@@ -69,4 +69,21 @@ public class EmailServiceImpl implements EmailService {
             return "Error while sending email: " + e.getMessage();
         }
     }
+
+    @Override
+    public String sendUsernamePassword(String to, String name, String username, String password) {
+        try{
+            Map<String,Object> model = new HashMap<>();
+            model.put("name",name);
+            model.put("username", username);
+            model.put("password",password);
+
+            //gui mail
+            sendEmailWithTemplate(to, "Username Password", "create-user",model);
+            return "send username password successfully!";
+        }catch (MessagingException | IOException | TemplateException e) {
+
+            return "Error while sending email: " + e.getMessage();
+        }
+    }
 }

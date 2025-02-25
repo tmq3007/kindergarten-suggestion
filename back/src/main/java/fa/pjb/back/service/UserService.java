@@ -1,7 +1,7 @@
 package fa.pjb.back.service;
-
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
+import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.vo.UserVO;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -12,6 +12,7 @@ public interface UserService {
 
     String generateUsername(String fullName);
 
+    UserDTO createAdmin(UserDTO userDTO);
     UserDetailDTO getUserDetailById(int userId);
 
     UserDetailDTO updateUser(UserUpdateDTO dto);
