@@ -35,9 +35,10 @@ export default function RegisterForm({ onCancel }: RegisterFormProps) {
     }, [countries])
 
     useEffect(() => {
-        if (registerData?.code === 200) {
+        if (registerData?.code === 201) {
             messageApi.success("Register successfully! Redirecting to login page...");
             form.resetFields();
+            setFormValues({});
             setTimeout(() => {
                 router.push('public/login');
             }, 2000);

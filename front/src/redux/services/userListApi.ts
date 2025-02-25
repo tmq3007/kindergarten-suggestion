@@ -12,7 +12,7 @@ export const userListApi = createApi({
             number
             >({
             query: (page = 0) => ({
-                url: `/admin/user`,
+                url: `/user`,
                 method: "GET",
                 params: { page, size: 10 },
             }),

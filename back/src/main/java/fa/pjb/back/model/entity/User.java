@@ -49,11 +49,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private ERole role;
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-//    private Parent Parent;
-//
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-//    private SchoolOwner SchoolOwner;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Parent Parent;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private SchoolOwner SchoolOwner;
 
     @Column(name = "dob", nullable = false)
     private LocalDate dob;

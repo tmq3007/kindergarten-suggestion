@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 
 
 @SpringBootTest
@@ -23,8 +24,8 @@ class BackApplicationTests {
         try {
             if (dataSource.getConnection() != null) {
                 System.out.println("Kết nối cơ sở dữ liệu thành công!");
-                List<User> all = userRepository.findAll();
-                System.out.println(all.size());
+                Optional<User> all = userRepository.findById(1);
+                System.out.println(all);
             }
         } catch (Exception e) {
             System.out.println("Kết nối cơ sở dữ liệu thất bại: " + e.getCause());

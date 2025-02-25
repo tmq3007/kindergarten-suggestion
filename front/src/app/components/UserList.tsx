@@ -54,7 +54,7 @@ export default function UserList({ fetchPage, data, isLoading, error,isFetching 
         <div className="shadow-md sm:rounded-lg p-4">
             <Table className="over-flow-scroll" columns={columns} dataSource={users} pagination={false} loading={isFetching}/>
             <div className="flex justify-between items-center px-4 py-3">
-                <Pagination current={current} total={totalElements} onChange={handlePageChange} />
+                <Pagination current={current} total={totalElements} onChange={handlePageChange} showSizeChanger={false}/>
             </div>
         </div>
     );
