@@ -23,6 +23,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "User")
+@ToString
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

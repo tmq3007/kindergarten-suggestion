@@ -1,17 +1,77 @@
-"use client"
+"use client";
 
 import Link from "next/link";
 import { SearchOutlined } from "@ant-design/icons";
 import UserList from "@/app/components/UserList";
 import { useGetUserListQuery } from "@/redux/services/userListApi";
 import { useState } from "react";
+import { Input } from "antd";
+
+const { Search } = Input;
 
 export default function Page() {
     const [currentPage, setCurrentPage] = useState(0);
-    const { data, isLoading, error, isFetching } = useGetUserListQuery(currentPage);
+    const [searchCriteria, setSearchCriteria] = useState({
+        role: undefined as string | undefined,
+        email: undefined as string | undefined,
+        name: undefined as string | undefined,
+        phone: undefined as string | undefined,
+    });
+
+    const { data, isLoading, error, isFetching } = useGetUserListQuery({
+        page: currentPage,
+        ...searchCriteria, // Spread the search criteria (role, email, name, phone)
+    });
+
     const fetchPage = (page: number) => {
         setCurrentPage(page);
     };
+
+    const handleSearch = (value: string) => {
+        if (!value.trim()) {
+            // Nếu không có nội dung tìm kiếm, reset tất cả tiêu chí để hiển thị tất cả người dùng
+            setSearchCriteria({
+                role: undefined,
+                email: undefined,
+                name: undefined,
+                phone: undefined,
+            });
+        } else {
+            // Phân tích và gán giá trị tìm kiếm cho các trường phù hợp
+            const lowerValue = value.trim().toLowerCase();
+            setSearchCriteria({
+                role: normalizeRole(lowerValue) || undefined, // Xử lý vai trò một cách chi tiết
+                email: lowerValue.includes("@") ? lowerValue : undefined, // Giả định email chứa @
+                name: lowerValue && !lowerValue.includes("@") && !/^\d+$/.test(lowerValue) && !isRole(lowerValue) ? lowerValue : undefined, // Giả định tên không phải số, không phải email, không phải vai trò
+                phone: /^\d+$/.test(lowerValue) ? lowerValue : undefined, // Giả định số điện thoại chỉ chứa số
+            });
+        }
+        setCurrentPage(0); // Reset về trang đầu tiên khi tìm kiếm mới
+    };
+
+    // Hàm kiểm tra xem giá trị có phải là vai trò hợp lệ không
+    const isRole = (value: string): boolean => {
+        const roles = ["admin", "parent", "school owner"];
+        return roles.some((role) => role === value);
+    };
+
+    // Hàm chuẩn hóa vai trò thành định dạng backend yêu cầu (ROLE_ADMIN, ROLE_PARENT, ROLE_SCHOOL_OWNER)
+    const normalizeRole = (value: string): string | undefined => {
+        switch (value) {
+            case "admin":
+            case "role_admin":
+                return "ROLE_ADMIN";
+            case "parent":
+            case "role_parent":
+                return "ROLE_PARENT";
+            case "school owner":
+            case "role_school_owner":
+                return "ROLE_SCHOOL_OWNER";
+            default:
+                return undefined;
+        }
+    };
+
     return (
         <>
             <div>
@@ -22,27 +82,35 @@ export default function Page() {
                 </nav>
 
                 {/* Form Header */}
-                <div className="flex">
-                    <div className="w-full items-center flex">
-                        <h2 className="text-2xl font-semibold mb-6 ">User List</h2>
-                    </div>
-                    <div className="w-full justify-end items-end text-end">
-                        {/* Search bar */}
-                        <form className="w-auto">
-                            <div className="relative flex justify-end mb-5">
-                                <div className="relative w-6/12">
-                                    <input type="search" id="search-dropdown" className="block p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-lg rounded-gray-100 rounded-s-2 border border-s-2  border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search User" required />
-                                    <button type="submit" className="absolute top-0 end-0 p-2.5 h-full text-sm font-medium text-white bg-blue-700 rounded-e-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                        <SearchOutlined /></button>
-                                </div>
-                            </div>
-                        </form>
-                        {/* Add new user btn */}
-                        <Link href="create-user" className="inline-block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+                    <h2 className="text-2xl font-semibold mb-4 md:mb-0">User List</h2>
+
+                    <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
+                        <div className="w-full md:w-80 relative">
+                            <Search
+                                placeholder="Search user (e.g., name, email, phone, or role: admin/parent/school owner)"
+                                enterButton="Search"
+                                size="large"
+                                onSearch={handleSearch} // Kích hoạt tìm kiếm khi nhấn nút hoặc Enter
+                                loading={isFetching} // Hiển thị trạng thái loading trong quá trình fetch
+                                className="w-full"
+                                onChange={(e) => {
+                                    if (!e.target.value.trim()) {
+                                        handleSearch(""); // Gọi handleSearch với chuỗi rỗng để reset
+                                    }
+                                }} // Xử lý khi xóa nội dung tìm kiếm
+                            />
+                        </div>
+
+                        <Link
+                            href="create-user"
+                            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 text-center"
+                        >
                             Add user
                         </Link>
                     </div>
                 </div>
+
                 {/* User List */}
                 <div className="mt-4">
                     <UserList
@@ -50,7 +118,8 @@ export default function Page() {
                         data={data}
                         error={error}
                         isLoading={isLoading}
-                        isFetching={isFetching} />
+                        isFetching={isFetching}
+                    />
                 </div>
             </div>
         </>
