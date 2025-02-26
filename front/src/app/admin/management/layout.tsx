@@ -119,7 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             {
                                 key: '2',
                                 icon: <UserOutlined />,
-                                label: <Link href="/management/user/create-user">User Management</Link>,
+                                label: <Link href="/admin/management/user/user-list">User Management</Link>,
                             },
                             {
                                 key: '3',
