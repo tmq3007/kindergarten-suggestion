@@ -78,9 +78,9 @@ public class ParentServiceImpl implements ParentService {
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
-        if (!parentDTO.getPhone().matches("\\d{10}")) {
-            throw new InvalidPhoneNumberException();
-        }
+//        if (!parentDTO.getPhone().matches("\\d{10}")) {
+//            throw new InvalidPhoneNumberException();
+//        }
 
         // Kiểm tra ngày sinh phải là ngày trong quá khứ
         if (parentDTO.getDob() == null || !parentDTO.getDob().isBefore(LocalDate.now())) {
@@ -161,19 +161,16 @@ public class ParentServiceImpl implements ParentService {
     public ParentDTO editParent(Integer parentId, ParentDTO parentDTO) {
         Parent parent = parentRepository.findById(parentId)
                 .orElseThrow(() -> new RuntimeException("Parent not found"));
-// Kiểm tra số điện thoại có đúng 10 chữ số không
-        if (parentDTO.getPhone() == null || !parentDTO.getPhone().matches("\\d{10}")) {
-            throw new InvalidPhoneNumberException();
-        }
+//        // Kiểm tra số điện thoại có đúng 10 chữ số không
+//        if (parentDTO.getPhone() == null || !parentDTO.getPhone().matches("\\d{10}")) {
+//            throw new InvalidPhoneNumberException();
+//        }
         User user = parent.getUser();
 
         // Kiểm tra email đã tồn tại chưa (ngoại trừ email của chính User đó)
         Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
         if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
             throw new EmailExistException();
-        }
-        if (!parentDTO.getPhone().matches("\\d{10}")) {
-            throw new InvalidPhoneNumberException();
         }
 
         // Kiểm tra ngày sinh phải là ngày trong quá khứ

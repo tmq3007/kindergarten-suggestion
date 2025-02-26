@@ -69,12 +69,14 @@ public class UserServiceImpl implements UserService {
     public UserDTO createAdmin(UserDTO userDTO) {
         Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
 
+        //check email da ton tai hay chua
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
-        if (!userDTO.getPhone().matches("\\d{10}")) {
-            throw new InvalidPhoneNumberException();
-        }
+        // Kiểm tra số điện thoại có đúng 10 chữ số không
+//        if (userDTO.getPhone() == null || !userDTO.getPhone().matches("\\d{10}")) {
+//            throw new InvalidPhoneNumberException();
+//        }
         // Kiểm tra ngày sinh phải là ngày trong quá khứ
         if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");

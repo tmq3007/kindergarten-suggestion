@@ -42,7 +42,7 @@ const CreateUser: React.FC = () => {
 
     const onFinish = async (values: any) => {
         setSpinning(true);
-        let formattedPhone = values.phone ? String(values.phone) : "";
+        //let formattedPhone = values.phone ? String(values.phone) : "";
 
 // Đảm bảo `countriesWithTrunkPrefix` luôn là một mảng
         const countriesWithTrunkPrefix = countries
@@ -51,16 +51,21 @@ const CreateUser: React.FC = () => {
                 .map(country => country.cca2) // Lấy mã quốc gia (VN, US, JP, ...)
             : [];
 
-// Định dạng lại số điện thoại
-        if (
-            selectedCountry?.code && // Kiểm tra `selectedCountry` có tồn tại
-            countriesWithTrunkPrefix.includes(selectedCountry.code) &&
-            formattedPhone.startsWith("0")
-        ) {
-            formattedPhone = formattedPhone.substring(1);
-        }
 
+        const countriesKeepZero = [
+            "+39", "+44", "+27", "+353", "+370", "+90", "+240",
+            "+501", "+502", "+503", "+504", "+505", "+506", "+507",
+            "+595", "+598", "+672", "+679", "+685", "+686", "+689"
+        ];
 
+        const selectedCountryCode = selectedCountry?.dialCode || "+84"; // Mặc định là VN
+
+        const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
+
+        // Nếu quốc gia giữ số 0 -> Giữ nguyên, ngược lại loại bỏ số 0 đầu
+        const formattedPhone = shouldKeepZero
+            ? `${selectedCountryCode}${values.phone}`
+            : `${selectedCountryCode}${values.phone.replace(/^0+/, "")}`;
 
         let formattedValues = {
             ...values,
@@ -68,7 +73,7 @@ const CreateUser: React.FC = () => {
             gender: values.gender === "male", // Đúng kiểu Boolean
             status: values.status === "1", // Đúng kiểu Boolean
             role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
-            phone: selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone,
+            phone: formattedPhone,
 
         };
 
@@ -224,7 +229,7 @@ const CreateUser: React.FC = () => {
                             loading={isLoadingCountry}
                              onChange={handleCountryChange}
                             dropdownStyle={{width: 250}}
-                            style={{width: 120, borderRight: "1px solid #ccc"}}
+                            style={{width: 120, borderRight: "1px #ccc"}}
                             optionLabelProp="label2"
                             showSearch={false}
                             filterOption={(input, option) =>

@@ -71,16 +71,35 @@ const Profile = () => {
 
     const onFinish1 = async (values: any) => {
         try {
+            // Tìm name của province, district, ward từ danh sách
+            const selectedProvinceName = provinces?.find(p => p.code === values.province)?.name;
+            const selectedDistrictName = districts?.find(d => d.code === values.district)?.name;
+            const selectedWardName = wards?.find(w => w.code === values.ward)?.name;
+            const countriesKeepZero = [
+                "+39", "+44", "+27", "+353", "+370", "+90", "+240",
+                "+501", "+502", "+503", "+504", "+505", "+506", "+507",
+                "+595", "+598", "+672", "+679", "+685", "+686", "+689"
+            ];
+
+            const selectedCountryCode = selectedCountry?.dialCode || "+84"; // Mặc định là VN
+
+            const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
+
+            // Nếu quốc gia giữ số 0 -> Giữ nguyên, ngược lại loại bỏ số 0 đầu
+            const formattedPhone = shouldKeepZero
+                ? `${selectedCountryCode}${values.phone}`
+                : `${selectedCountryCode}${values.phone.replace(/^0+/, "")}`;
             await editParent({
                 parentId,
                 data: {
                     ...values,
                     username: username || data?.data?.username,
                     dob: values.dob ? values.dob.format("YYYY-MM-DD") : undefined,
-                    district: values.district || data?.data?.district,
-                    province: values.province || data?.data?.province,
+                    province: selectedProvinceName || data?.data?.province, // Lưu theo name
+                    district: selectedDistrictName || data?.data?.district, // Lưu theo name
+                    ward: selectedWardName || data?.data?.ward, // Lưu theo name
                     street: values.street || data?.data?.street,
-                    ward: values.ward || data?.data?.ward
+                    phone: formattedPhone || data?.data?.phone
                 }
             }).unwrap();
 
@@ -91,6 +110,7 @@ const Profile = () => {
             openNotificationWithIcon('error', 'Updated Fail!', 'Your information cannot be updated');
         }
     };
+
     const onFinish2 = async (values: any) => {
         if (values.newPassword !== values.confirmPassword) {
             openNotificationWithIcon('error', 'Failed!', 'New password and confirm password do not match.');
@@ -128,7 +148,11 @@ const Profile = () => {
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, "");
     };
-
+    const onProvinceChange = (provinceCode: number) => {
+        form.setFieldsValue({ district: undefined, ward: undefined }); // Reset district và ward
+        setSelectedProvince(provinceCode);
+        setSelectedDistrict(undefined); // Hoặc setSelectedDistrict(null);
+     };
     // Chon quoc gia mac dinh la VN
     useEffect(() => {
         if (countries && !selectedCountry) {
@@ -136,6 +160,32 @@ const Profile = () => {
             setSelectedCountry(defaultCountry);
         }
     }, [countries])
+    useEffect(() => {
+        if (data?.data) {
+            // Tách mã vùng từ số điện thoại
+            const phoneNumber = data.data.phone || "";
+            const country = countries?.find(c => phoneNumber.startsWith(c.dialCode));
+
+            form.setFieldsValue({
+                fullName: data.data.fullName,
+                username: data.data.username,
+                email: data.data.email,
+                phone: phoneNumber.replace(country?.dialCode || "+84", "").trim(), // Loại bỏ mã vùng
+                dob: data.data.dob ? dayjs(data.data.dob) : null,
+                province: data.data.province,
+                district: data.data.district,
+                ward: data.data.ward,
+                street: data.data.street,
+            });
+
+            // Cập nhật country đã chọn
+            if (country) {
+                setSelectedCountry(country);
+            }
+        }
+    }, [data, form, countries]);
+
+
     if (isLoading) return <Spin size="large" className="flex justify-center items-center h-screen"/>;
     if (errorParent) return <p className="text-red-500">Can not load data.</p>;
     interface Province {
@@ -143,10 +193,11 @@ const Profile = () => {
         name: string;
     }
     return (
-        <div className="h-[90%] flex flex-col p-10">
+        <div className="h-[60%] mt-0 flex flex-col p-9">
             {contextHolder} {/* Thêm phần này để hiển thị notification */}
 
             <Breadcrumb
+                className={'mt-[50px] mb-0'}
                 items={[
                     {title: <Link href="/">Home</Link>},
                     {title: "My Profile"},
@@ -155,7 +206,7 @@ const Profile = () => {
 
             <Title level={3} className="my-2">My Profile</Title>
 
-            <div className="flex-grow  items-center justify-center flex flex-col">
+            <div className="flex-grow mb-0 items-center justify-center flex flex-col">
                 <Tabs defaultActiveKey="1" type="card" size="small" centered
                       className="flex-grow max-w-[1000px]   flex flex-col">
                     <TabPane tab="My Information" key="1">
@@ -177,19 +228,16 @@ const Profile = () => {
                                                hasFeedback name="email" label="Email Address" className="mb-10">
                                         <Input/>
                                     </Form.Item>
-                                    <Form.Item name="province" label="Province" className="mb-10">
-                                        <Select
-                                            loading={isLoadingProvince}
-                                            placeholder="Select province"
-                                            onChange={(value) => setSelectedProvince(Number(value))}
-                                        >
-                                            {provinces?.map((province) => (
-                                                <Option key={province.code} value={province.code}>
+                                    <Form.Item name="province" label="Province">
+                                        <Select onChange={onProvinceChange} placeholder="Select a province">
+                                            {provinces?.map(province => (
+                                                <Select.Option key={province.code} value={province.code}>
                                                     {province.name}
-                                                </Option>
+                                                </Select.Option>
                                             ))}
                                         </Select>
                                     </Form.Item>
+
                                     <Form.Item name="district" label="District" className="mb-10">
                                         <Select
                                             loading={isLoadingDistrict}
@@ -224,12 +272,12 @@ const Profile = () => {
                                     <Form.Item name="phone"
                                                label="Phone Number" className={'mb-10'}
                                                rules={[
-                                                   { max: 10, message: 'Phone number cannot exceed 10 characters!' },
-                                                   { pattern: /^[0-9]+$/, message: 'Phone number must be numeric!' }
+                                                   {required: true, message: 'Phone number is required!'},
+                                                   {pattern: /^\d{10}$/, message: 'Phone number must be exactly 10 digits!'}
                                                ]}
                                     >
                                         <div
-                                            className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                                            className="flex items-center border h-[32px] border-gray-300 rounded-lg overflow-hidden">
                                             {/* Country Code Selector */}
                                             <Select
                                                 className={'w-2'}
@@ -237,7 +285,7 @@ const Profile = () => {
                                                 value={selectedCountry?.code || ''}
                                                 onChange={handleCountryChange}
                                                 dropdownStyle={{width: 250}}
-                                                style={{width: 120, borderRight: "1px solid #ccc"}}
+                                                style={{width: 120, borderRight: "1px  #ccc"}}
                                                 optionLabelProp="label2"
                                                 showSearch={false}
                                                 filterOption={(input, option) =>
@@ -253,7 +301,7 @@ const Profile = () => {
                                                             <span className="flex items-center">
                                             <Image src={country.flag}
                                                    alt={country.label}
-                                                   width={20} height={14}
+                                                   width={20} height={10}
                                                    className="mr-2 intrinsic" preview={false}/>
                                                                 {country.code} {country.dialCode}
                                         </span>
@@ -262,8 +310,8 @@ const Profile = () => {
                                                         <div className="flex items-center ">
                                                             <Image src={country.flag}
                                                                    alt={country.label}
-                                                                   width={20} height={14}
-                                                                   className="mr-2 intrinsic"/>
+                                                                   width={10} height={10}
+                                                                   className="mr-2 ml-3 intrinsic"/>
                                                             {country.dialCode} - {country.label}
                                                         </div>
                                                     </Select.Option>
@@ -276,6 +324,7 @@ const Profile = () => {
                                             >
                                                 {/* Phone Number Input */}
                                                 <Input
+                                                    //addonBefore={selectedCountry?.dialCode || "+84"}
                                                     placeholder="Enter your phone number"
                                                     onChange={handlePhoneNumberChange}
                                                     style={{flex: 1, border: "none", boxShadow: "none"}}
@@ -283,7 +332,7 @@ const Profile = () => {
                                             </Form.Item>
                                         </div>
                                     </Form.Item>
-                                    <Form.Item name="ward" label="Ward" className="mb-10">
+                                    <Form.Item name="ward" label="Ward" className="mb-6">
                                         <Select
                                             loading={isLoadingWard}
                                             placeholder="Select ward"
@@ -296,12 +345,12 @@ const Profile = () => {
                                             ))}
                                         </Select>
                                     </Form.Item>
-                                    <Form.Item name="street" label="Street" className="mb-10">
+                                    <Form.Item name="street" label="Street" className="mb-10 h-[33px]">
                                         <Input />
                                     </Form.Item>
                                 </div>
                             </div>
-                            <Form.Item className="mb-10 mt-3 justify-items-center">
+                            <Form.Item className="mb-7 mt-3 justify-items-center">
                                 <Button type="primary" htmlType="submit">Save</Button>
                                 <Button className="ml-2" htmlType="reset">Cancel</Button>
                             </Form.Item>
@@ -315,7 +364,7 @@ const Profile = () => {
                             form={passwordForm}
                             layout="vertical"
                             onFinish={onFinish2}
-                            className="h-full flex flex-col w-[400px]"
+                            className="h-full flex flex-col w-full"
                         >
                             <div className="flex-grow">
                                 <Form.Item
@@ -359,7 +408,7 @@ const Profile = () => {
                                     <Input.Password className="mb-10"/>
                                 </Form.Item>
                             </div>
-                            <Form.Item className="mt-auto">
+                            <Form.Item className=" mt-auto justify-items-center">
                                 <Button type="primary" htmlType="submit">Change Password</Button>
                             </Form.Item>
                         </Form>

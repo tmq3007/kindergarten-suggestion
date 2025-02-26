@@ -38,16 +38,18 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         Optional<User> existingUserEmail = userRepository.findByEmail(dto.getEmail());
         Optional<User> existingUserName = userRepository.findByUsername(dto.getUsername());
 
+        //check xem email da ton tai chua
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
+
         if (existingUserName.isPresent()) {
             throw new UsernameExistException();
         }
-        // Kiểm tra số điện thoại có đúng 10 chữ số không
-        if (dto.getPhone() == null || !dto.getPhone().matches("\\d{10}")) {
-            throw new InvalidPhoneNumberException();
-        }
+//        // Kiểm tra số điện thoại có đúng 10 chữ số không
+//        if (dto.getPhone() == null || !dto.getPhone().matches("\\d{10}")) {
+//            throw new InvalidPhoneNumberException();
+//        }
 
         // Kiểm tra ngày sinh phải là ngày trong quá khứ
         if (dto.getDob() == null || !dto.getDob().isBefore(LocalDate.now())) {

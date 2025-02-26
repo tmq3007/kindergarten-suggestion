@@ -12,6 +12,7 @@ public interface UserService {
     String generateUsername(String fullName);
 
     UserDTO createAdmin(UserDTO userDTO);
+
     UserDetailDTO getUserDetailById(int userId);
 
     UserDetailDTO updateUser(UserUpdateDTO dto);
