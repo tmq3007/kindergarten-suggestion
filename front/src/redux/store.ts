@@ -36,7 +36,7 @@ export const persistConfig = {
     key: 'kss',
     storage,
     // Những reducer được đăng ký trong whitelist sẽ được lưu trữ trong local storage
-    whitelist: ['user']
+    whitelist: ['user', 'auth']
 }
 
 // Cấu hình persist cho rootReducer để nó có thể lưu trữ dài hạn
