@@ -101,12 +101,12 @@ export default function HomeHeader() {
                 {
                     username ?
                         <UserDropdown username={username}/> :
-                        <Space className={'text-sm md:text-xl'}>
+                        <Space className={'text-sm md:text-lg'}>
                             <Link href=""
                                   onClick={() => setIsLoginModalOpen(true)}
                             >
                                 <Space>
-                                    <UserOutlined/>
+                                    <UserOutlined className={'text-sm md:text-xl'}/>
                                     Login
                                 </Space>
                             </Link>

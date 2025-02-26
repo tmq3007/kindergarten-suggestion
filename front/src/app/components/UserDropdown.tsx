@@ -47,6 +47,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
         } catch (error) {
             console.error("Logout failed:", error);
         }
+    }
     // Xử lý khi người dùng nhấn "Yes" trong Modal
     const handleOk = () => {
         dispatch(resetUser()); // Reset state user trong Redux
@@ -137,7 +138,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 open={isModalVisible}
                 onCancel={() => setIsModalVisible(false)}
                 footer={[
-                    <Button key="cancel" onClick={() => setIsModalOpen(false)}>Cancel</Button>,
+                    <Button key="cancel" onClick={() => setIsModalVisible(false)}>Cancel</Button>,
                     <Button key="logout" type="primary" danger onClick={handleLogout}>Yes</Button>
                 ]}
                 className="z-50" // Đảm bảo Modal hiển thị trên các phần tử khác

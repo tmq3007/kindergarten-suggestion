@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent) {
+    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkAdmin) {
         // Tạo 1 token gồm username & password dùng để xác thực
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
         // Xác thực token đó bằng AuthenticationManager
@@ -69,11 +69,11 @@ public class AuthServiceImpl implements AuthService {
         // Lấy ra UserDetails từ Authentication
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        // Nếu checkParent = true, kiểm tra quyền của người dùng và từ chối nếu là PARENT
-        if (checkParent) {
-            boolean isParent = authorities.stream()
-                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_PARENT.toString()));
-            if (isParent) {
+        // Nếu checkAdmin = true, kiểm tra quyền của người dùng và từ chối nếu không phải ADMIN
+        if (checkAdmin) {
+            boolean isAdmin = authorities.stream()
+                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_ADMIN.toString()));
+            if (!isAdmin) {
                 throw new AccessDeniedException("Access denied");
             }
         }
