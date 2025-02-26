@@ -1,34 +1,43 @@
-'use client'
-import React, {useEffect, useRef, useState} from 'react';
+'use client';
+import React, { useEffect, useRef, useState } from 'react';
 import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
-    HomeOutlined, LogoutOutlined,
+    HomeOutlined,
+    LogoutOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     UsergroupAddOutlined,
     UserOutlined,
     WindowsOutlined,
 } from '@ant-design/icons';
+import { Button, ConfigProvider, Layout, Menu, Modal, Space, theme } from 'antd';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useLogoutMutation } from '@/redux/services/authApi';
+import { forbidden, useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { ROLES } from '@/lib/constants';
+import { resetUser } from '@/redux/features/userSlice';
 
-import {Button, ConfigProvider, Layout, Menu, MenuProps, Modal, Space, theme} from 'antd';
-import Image from "next/image";
-
-
-const { Header, Sider, Content } = Layout;
-import StoreProvider, { Props } from "@/redux/StoreProvider";
-import Link from "next/link";
-import {useRouter} from "next/navigation";
-import {useLogoutMutation} from "@/redux/services/authApi";
-
-export default function AdminLayout({ children }: Props) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [collapsed, setCollapsed] = useState(false);
-    const { Header, Content, Footer, Sider } = Layout;
+    const { Header, Content, Sider } = Layout;
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const router = useRouter();
     const [logout] = useLogoutMutation();
     const processed = useRef(false);
+    const dispatch = useDispatch();
+    const user = useSelector((state: RootState) => state.user);
 
+    // Kiểm tra role, nhưng bỏ qua nếu đang logout
+    const isLoggingOut = useRef(false);
+    useEffect(() => {
+        if (user.role !== ROLES.ADMIN && !isLoggingOut.current) {
+            forbidden();
+        }
+    }, [user.role]);
 
     const siderStyle: React.CSSProperties = {
         overflow: 'auto',
@@ -48,6 +57,7 @@ export default function AdminLayout({ children }: Props) {
     const handleLogout = async () => {
         try {
             setIsModalOpen(false);
+            isLoggingOut.current = true; // Đánh dấu là đang logout
 
             const result = await logout(undefined).unwrap();
 
@@ -61,9 +71,12 @@ export default function AdminLayout({ children }: Props) {
                 });
             }
 
-            router.push("/admin");
+            // Chuyển hướng trước khi reset state
+            router.push('/admin');
+            dispatch(resetUser()); // Reset state sau khi đã chuyển hướng
         } catch (error) {
-            console.error("Logout failed:", error);
+            console.error('Logout failed:', error);
+            isLoggingOut.current = false; // Reset lại nếu có lỗi
         }
     };
 
@@ -75,8 +88,7 @@ export default function AdminLayout({ children }: Props) {
                         Layout: {},
                         Menu: {
                             iconSize: 20,
-                            // itemSelectedColor: 'red'
-                        }
+                        },
                     },
                 }}
             >
@@ -86,30 +98,30 @@ export default function AdminLayout({ children }: Props) {
                     <Menu
                         theme="dark"
                         mode="inline"
-                        defaultSelectedKeys={["1"]}
+                        defaultSelectedKeys={['1']}
                         items={[
                             {
-                                key: "1",
+                                key: '1',
                                 icon: <HomeOutlined />,
                                 label: <Link href="/school-management">School Management</Link>,
                             },
                             {
-                                key: "2",
+                                key: '2',
                                 icon: <UserOutlined />,
                                 label: <Link href="/management/user/create-user">User Management</Link>,
                             },
                             {
-                                key: "3",
+                                key: '3',
                                 icon: <BellOutlined />,
                                 label: <Link href="/reminder">Reminder</Link>,
                             },
                             {
-                                key: "4",
+                                key: '4',
                                 icon: <UsergroupAddOutlined />,
                                 label: <Link href="/parent-management">Parent Management</Link>,
                             },
                             {
-                                key: "5",
+                                key: '5',
                                 icon: <WindowsOutlined />,
                                 label: <Link href="/request-management">Request Management</Link>,
                             },
@@ -118,14 +130,16 @@ export default function AdminLayout({ children }: Props) {
                 </Sider>
             </ConfigProvider>
             <Layout>
-                <Header className={'flex justify-between items-center px-2'}
+                <Header
+                    className={'flex justify-between items-center px-2'}
                     style={{
                         position: 'sticky',
                         top: 0,
                         zIndex: 1,
                         width: '100%',
                         background: colorBgContainer,
-                    }} >
+                    }}
+                >
                     <Button
                         className={'hidden md:block'}
                         type="text"
@@ -153,9 +167,7 @@ export default function AdminLayout({ children }: Props) {
                         <Link href="/request-management">
                             <WindowsOutlined />
                         </Link>
-                        <Link href=""
-                              onClick={() => setIsModalOpen(true)}>
-
+                        <Link href="" onClick={() => setIsModalOpen(true)}>
                             <LogoutOutlined />
                         </Link>
                     </Space>
@@ -167,7 +179,7 @@ export default function AdminLayout({ children }: Props) {
                                 fontSize: '16px',
                                 width: 'auto',
                                 height: 64,
-                                color: 'red'
+                                color: 'red',
                             }}
                             onClick={() => setIsModalOpen(true)}
                         >
@@ -175,13 +187,15 @@ export default function AdminLayout({ children }: Props) {
                         </Button>
                     </Link>
                 </Header>
-                <Content style={{
-                    margin: '15px 10px 0px 10px',
-                    padding: 20,
-                    minHeight: 280,
-                    background: colorBgContainer,
-                    borderRadius: borderRadiusLG,
-                }}>
+                <Content
+                    style={{
+                        margin: '15px 10px 0px 10px',
+                        padding: 20,
+                        minHeight: 280,
+                        background: colorBgContainer,
+                        borderRadius: borderRadiusLG,
+                    }}
+                >
                     {children}
                 </Content>
             </Layout>
@@ -190,14 +204,16 @@ export default function AdminLayout({ children }: Props) {
                 open={isModalOpen}
                 onCancel={() => setIsModalOpen(false)}
                 footer={[
-                    <Button key="cancel" onClick={() => setIsModalOpen(false)}>Cancel</Button>,
-                    <Button key="logout" type="primary" danger onClick={handleLogout}>Yes</Button>
+                    <Button key="cancel" onClick={() => setIsModalOpen(false)}>
+                        Cancel
+                    </Button>,
+                    <Button key="logout" type="primary" danger onClick={handleLogout}>
+                        Yes
+                    </Button>,
                 ]}
             >
                 <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
             </Modal>
         </Layout>
-
-
     );
-};
+}

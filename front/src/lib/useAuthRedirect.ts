@@ -10,6 +10,7 @@ import {jwtDecode} from "jwt-decode";
 interface JwtPayload {
     sub: string;
     id: string;
+    role: string;
     exp: number;
     iat: number;
 }
@@ -39,7 +40,7 @@ const useAuthRedirect = (
                         const accessToken = data.data.accessToken;
                         try {
                             const decoded = jwtDecode<JwtPayload>(accessToken);
-                            dispatch(updateUser({username: decoded.sub, id: decoded.id}));
+                            dispatch(updateUser({username: decoded.sub, id: decoded.id, role: decoded.role}));
                         } catch (e) {
                             messageApi.error("Failed to decode token.", 1);
                         }

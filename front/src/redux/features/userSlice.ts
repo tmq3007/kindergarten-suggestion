@@ -3,25 +3,25 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 export interface UsersState {
     username: string,
     id: string,
+    role: string,
 }
 
 const initialState: UsersState = {
     username: '',
-    id: ''
+    id: '',
+    role: '',
 }
 
 export const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        updateUser: (state, action: PayloadAction<{ username: string, id: string }>) => {
+        updateUser: (state, action: PayloadAction<{ username: string, id: string, role: string }>) => {
             state.username = action.payload.username;
             state.id = action.payload.id;
+            state.role = action.payload.role;
         },
-        resetUser: (state) => {
-            state.username = initialState.username;
-            state.id = initialState.id;
-        },
+        resetUser: () => initialState,
     }
 })
 

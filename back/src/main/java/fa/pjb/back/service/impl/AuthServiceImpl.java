@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent) {
+    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkAdmin) {
         // Tạo 1 token gồm username & password dùng để xác thực
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
         // Xác thực token đó bằng AuthenticationManager
@@ -69,27 +69,29 @@ public class AuthServiceImpl implements AuthService {
         // Lấy ra UserDetails từ Authentication
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        // Nếu checkParent = true, kiểm tra quyền của người dùng và từ chối nếu là PARENT
-        if (checkParent) {
-            boolean isParent = authorities.stream()
-                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_PARENT.toString()));
-            if (isParent) {
+        // Nếu checkAdmin = true, kiểm tra quyền của người dùng và từ chối nếu không phải ADMIN
+        if (checkAdmin) {
+            boolean isAdmin = authorities.stream()
+                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_ADMIN.toString()));
+            if (!isAdmin) {
                 throw new AccessDeniedException("Access denied");
             }
         }
         // Lấy thông tin người dùng từ cơ sở dữ liệu
         User user = userRepository.findByEmail(loginDTO.email())
                 .orElseThrow(() -> new EmailNotFoundException(loginDTO.email()));
+        String userId = user.getId().toString();
+        String userRole = user.getRole().toString();
         // Tạo ra các Token ==========================================================
 
         // Access Token: Lưu vào Cookie với HttpOnly
-        String accessToken = jwtHelper.generateAccessToken(userDetails, user.getId().toString());
+        String accessToken = jwtHelper.generateAccessToken(userDetails, userId, userRole);
 
         // CSRF Token: Lưu vào Cookie không HttpOnly
         String csrfToken = jwtHelper.generateCsrfToken();
 
         // Refresh Token: Lưu vào Redis
-        String refreshToken = jwtHelper.generateRefreshToken(userDetails, user.getId().toString());
+        String refreshToken = jwtHelper.generateRefreshToken(userDetails, userId, userRole);
         tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
 
         return LoginVO.builder()
