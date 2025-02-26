@@ -8,6 +8,8 @@ import React, {useEffect} from "react";
 import {Button, Form, FormProps, Input, message, Space} from "antd";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
 
 
 type FieldType = {
@@ -33,13 +35,17 @@ type ForgotPasswordFormProp = {
 const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, isLoading, data, error}) => {
     const [messageApi, contextHolder] = message.useMessage();
     const router = useRouter();
+    const previous = useSelector((state: RootState) => state.auth.current_page);
 
+    const handleCancel = () => {
+        router.push(previous === 'admin' ? '/admin' : '/public');
+    }
 
     useEffect(() => {
 
         if (data?.data) {
                 messageApi.success("Please check your email").then(r => {
-                    router.push("/admin")
+                    router.push(previous === 'admin' ? '/admin' : '/public');
                 });
         }
 
@@ -114,6 +120,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
                             <Button
                                 className={'block w-80 md:w-36 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition'}
                                 type="primary"
+                                onClick={handleCancel}
                             >
                                 Cancel
                             </Button>

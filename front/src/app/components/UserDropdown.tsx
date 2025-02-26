@@ -1,4 +1,4 @@
-import {Button, Dropdown, MenuProps, Modal, Space} from "antd";
+import {Button, Dropdown, MenuProps, message, Modal, Space} from "antd";
 import {DownOutlined, UserOutlined} from "@ant-design/icons";
 import React, {useRef, useState} from "react";
 import {useDispatch} from "react-redux";
@@ -13,6 +13,7 @@ interface UserDropdownProps {
 }
 
 export default function UserDropdown({username}: UserDropdownProps) {
+    const [messageApi, contextHolder] = message.useMessage();
     const dispatch = useDispatch();
     const modalContainerRef = useRef<HTMLDivElement>(null); // Ref cho container của Modal
     const [isModalVisible, setIsModalVisible] = useState(false); // Trạng thái hiển thị Modal
@@ -27,25 +28,33 @@ export default function UserDropdown({username}: UserDropdownProps) {
         setIsDropdownVisible(false); // Đóng Dropdown khi Modal mở
     };
     const handleLogout = async () => {
+
         try {
+            messageApi.success("Logging out...")
+
             setIsModalVisible(false);
 
             const result = await logout(undefined).unwrap();
 
             if (result?.code === 200 && !processed.current) {
                 processed.current = true;
+
+                // Perform the fetch and wait for it to complete
                 await fetch('/api/logout', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
-            }
 
-            dispatch(resetUser());
-            router.push("/public");
+                dispatch(resetUser());
+
+            }
         } catch (error) {
             console.error("Logout failed:", error);
+            messageApi.error("Logout failed, back to login").then(() => {
+                dispatch(resetUser());
+            })
         }
     }
     // Xử lý khi người dùng nhấn "Yes" trong Modal
@@ -114,6 +123,8 @@ export default function UserDropdown({username}: UserDropdownProps) {
     };
 
     return (
+        <>
+            {contextHolder}
         <div ref={modalContainerRef}>
             {/* Dropdown hiển thị tên người dùng */}
             <Dropdown
@@ -147,5 +158,6 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
             </Modal>
         </div>
+        </>
     );
 }

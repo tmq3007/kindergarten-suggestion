@@ -5,6 +5,8 @@ import {BASE_URL, baseQuery, CustomFetchBaseQueryError} from '@/redux/services/c
 import {LoginDTO, useLoginByParentMutation} from "@/redux/services/authApi";
 import {useRouter} from "next/navigation";
 import useAuthRedirect from "@/lib/useAuthRedirect";
+import {useDispatch} from "react-redux";
+import {setPreviousPage} from "@/redux/features/authSlice";
 
 interface FieldType {
     email: string;
@@ -19,6 +21,13 @@ interface RegisterFormProps {
 export default function ParentLoginForm({onCancel, onSuccess}: RegisterFormProps) {
     const [login, {data, isLoading, error}] = useLoginByParentMutation();
     const [messageApi, contextHolder] = message.useMessage();
+    const dispatch = useDispatch();
+
+    const handleForgotPassword = () => {
+        // Xác định trang hiện tại bằng pathname
+        const currentPath = window.location.pathname.includes('/admin') ? 'admin' : 'public';
+        dispatch(setPreviousPage(currentPath)); // Lưu trạng thái trang trước đó
+    };
 
     useAuthRedirect(data, error, messageApi, '/public', true, onSuccess);
 
@@ -68,8 +77,8 @@ export default function ParentLoginForm({onCancel, onSuccess}: RegisterFormProps
                     <Input.Password/>
                 </Form.Item>
                 <Link href={'/forgot-password'}
-                      className={'block text-right text-blue-500 underline hover:underline mb-6'}>Forgot
-                    password?</Link>
+                      className={'block text-right text-blue-500 underline hover:underline mb-6'}
+                      onClick={handleForgotPassword}>Forgot password?</Link>
                 <Button className={'w-full border-blue-400'} type="primary" htmlType={"submit"} loading={isLoading}>
                     Login now
                 </Button>

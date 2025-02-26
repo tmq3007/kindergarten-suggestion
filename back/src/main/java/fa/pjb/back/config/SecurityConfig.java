@@ -48,6 +48,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/login/admin").permitAll()
                                 .requestMatchers("/api/auth/login/public").permitAll()
                                 .requestMatchers("/api/auth/refresh").permitAll()
+                                .requestMatchers("/api/auth/forgot-password").permitAll()
+                                .requestMatchers("/api/auth/reset-password").permitAll()
 //                                .anyRequest().permitAll()
                         .anyRequest().authenticated()
                 )
