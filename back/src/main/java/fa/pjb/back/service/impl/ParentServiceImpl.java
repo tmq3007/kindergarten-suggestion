@@ -13,6 +13,7 @@ import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.ParentService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class ParentServiceImpl implements ParentService {
     private final ParentRepository parentRepository;
     private final ParentMapper parentMapper;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
 
     @Transactional
@@ -118,8 +120,8 @@ public class ParentServiceImpl implements ParentService {
         // Lưu Parent vào database
         parentRepository.save(newParent);
 
-//        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
-//                usernameAutoGen,passwordautoGen);
+        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
+                usernameAutoGen,passwordautoGen);
         return parentMapper.toParentDTO(newParent);
     }
 
@@ -161,10 +163,7 @@ public class ParentServiceImpl implements ParentService {
     public ParentDTO editParent(Integer parentId, ParentDTO parentDTO) {
         Parent parent = parentRepository.findById(parentId)
                 .orElseThrow(() -> new RuntimeException("Parent not found"));
-//        // Kiểm tra số điện thoại có đúng 10 chữ số không
-//        if (parentDTO.getPhone() == null || !parentDTO.getPhone().matches("\\d{10}")) {
-//            throw new InvalidPhoneNumberException();
-//        }
+
         User user = parent.getUser();
 
         // Kiểm tra email đã tồn tại chưa (ngoại trừ email của chính User đó)
@@ -215,10 +214,8 @@ public class ParentServiceImpl implements ParentService {
     public void changePassword(Integer parentId, String oldPassword, String newPassword) {
         Parent parent = parentRepository.findById(parentId)
                 .orElseThrow(UserNotFoundException::new);
-        log.info("parent: {}", parent);
 
         User user = parent.getUser();
-        log.info("user: {}", user.getPassword());
 
         // Kiểm tra mật khẩu cũ có đúng không
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {

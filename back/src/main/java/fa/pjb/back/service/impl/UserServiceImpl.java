@@ -12,6 +12,7 @@ import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
     @Override
@@ -47,8 +49,6 @@ public class UserServiceImpl implements UserService {
         );
         return userMapper.toUserVOPage(userEntitiesPage);
     }
-
-    // ... (rest of the methods remain the same, including generateUsername, createAdmin, etc.)
 
     private ERole convertRole2(String role) {
         if (role == null || role.trim().isEmpty()) {
@@ -136,7 +136,8 @@ public class UserServiceImpl implements UserService {
         responseDTO.setDob(user.getDob());
         responseDTO.setFullName(user.getFullname());
 
-
+        emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
+                usernameAutoGen,passwordautoGen);
         return responseDTO;
     }
 
