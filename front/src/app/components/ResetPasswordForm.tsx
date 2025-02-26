@@ -11,6 +11,8 @@ import React, {useEffect, useState} from "react";
 import {jwtDecode} from "jwt-decode";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
 
 
 type FieldType = {
@@ -37,13 +39,18 @@ type ResetPasswordFormProp = {
 const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLoading, data, error}) => {
     const [messageApi, contextHolder] = message.useMessage();
     const router = useRouter();
+    const previous = useSelector((state: RootState) => state.auth.current_page);
+
+    const handleCancel = () => {
+        router.push(previous === 'admin' ? '/admin' : '/public');
+    }
 
     useEffect(() => {
 
         //Nếu reset password thành công thì thông báo thành công
         if (data?.code === 200) {
-            messageApi.success("Password has been reset").then(r => {
-                router.replace("/admin")
+            messageApi.success("Password has been reset").then(() => {
+                router.push(previous === 'admin' ? '/admin' : '/public');
             });
         }
 
@@ -90,9 +97,9 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
                 autoComplete="off"
             >
 
-                <p className={`${indie.className} text-center text-5xl font-bold pb-6`}>Reset Password</p>
+                <p className={`${indie.className} text-center text-4xl font-bold pb-6`}>Reset Password</p>
 
-                <p className={'text-gray-400 text-center text-xl mx-10 mb-10'}>
+                <p className={'text-gray-400 text-center mx-10 mb-5'}>
                     Please set your new password
                 </p>
 
@@ -101,7 +108,6 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
                 <Form.Item<FieldType>
                     name="password"
                     label="Password"
-                    className={'p-2'}
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                     rules={[
@@ -113,18 +119,16 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
                         }
                     ]}
                     hasFeedback
+                    extra="Use at least one uppercase, one lowercase, one number and five characters"
                 >
-                    <Input.Password className={'h-10'}/>
-                </Form.Item>
+                    <Input.Password/>
 
-                <p className={'text-gray-400 text-sm ml-3 -mt-5 mb-2'}>
-                    Use at least one uppercase, one lowercase, one number and five characters
-                </p>
+
+                </Form.Item>
 
                 <Form.Item<FieldType>
                     name="confirm"
                     label="Confirm Password"
-                    className={'p-2'}
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                     dependencies={['password']}
@@ -144,22 +148,22 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
                         }),
                     ]}
                 >
-                    <Input.Password className={'h-10'}/>
+                    <Input.Password/>
                 </Form.Item>
 
                 <Form.Item label={null} wrapperCol={{span: 24}} className="text-center">
-                    <Space className={'flex flex-col md:flex-row items-center justify-center'}>
-                        <Link href={"/admin"}>
-                            <Button
-                                className={'w-60 md:w-32 p-6 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition text-xl'}
-                                type="primary"
-                            >
-                                Cancel
-                            </Button>
-                        </Link>
+                    <Space className={'flex flex-col md:flex-row justify-center'}>
 
                         <Button
-                            className={'w-60 md:w-32 p-6 mx-4 font-bold bg-cyan-500 text-xl'}
+                            className={'block w-80 md:w-36 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition'}
+                            type="primary"
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </Button>
+
+                        <Button
+                            className={'block w-80 md:w-36 mx-4 font-bold bg-cyan-500 '}
                             type="primary"
                             htmlType="submit"
                             loading={isLoading} // Show loading when submitting

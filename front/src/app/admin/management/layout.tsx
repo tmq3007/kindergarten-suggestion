@@ -11,7 +11,7 @@ import {
     WindowsOutlined,
 } from '@ant-design/icons';
 
-import {Button, ConfigProvider, Layout, Menu, MenuProps, Modal, Space, theme} from 'antd';
+import {Button, ConfigProvider, Layout, Menu, MenuProps, message, Modal, Space, theme} from 'antd';
 import Image from "next/image";
 
 
@@ -20,12 +20,16 @@ import StoreProvider, { Props } from "@/redux/StoreProvider";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useLogoutMutation} from "@/redux/services/authApi";
+import {useDispatch} from "react-redux";
+import {resetUser} from "@/redux/features/userSlice";
 
 export default function AdminLayout({ children }: Props) {
+    const [messageApi, contextHolder] = message.useMessage();
     const [collapsed, setCollapsed] = useState(false);
     const { Header, Content, Footer, Sider } = Layout;
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const router = useRouter();
+    const dispatch = useDispatch();
     const [logout] = useLogoutMutation();
     const processed = useRef(false);
 
@@ -46,28 +50,41 @@ export default function AdminLayout({ children }: Props) {
     } = theme.useToken();
 
     const handleLogout = async () => {
+
+        messageApi.success("Logging out...")
+
         try {
             setIsModalOpen(false);
 
             const result = await logout(undefined).unwrap();
 
-            if (result?.code === 200 && !processed.current) {
+            if (result?.code == 200 && !processed.current) {
                 processed.current = true;
+
+                // Perform the fetch and wait for it to complete
                 await fetch('/api/logout', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
-            }
 
-            router.push("/admin");
+                   dispatch(resetUser());
+                   router.push("/admin");
+
+            }
         } catch (error) {
             console.error("Logout failed:", error);
+            messageApi.error("Logout failed. Redirect back to login").then(() => {
+                dispatch(resetUser());
+                router.push("/admin");
+            })
         }
     };
 
     return (
+        <>
+        {contextHolder}
         <Layout hasSider>
             <ConfigProvider
                 theme={{
@@ -197,7 +214,7 @@ export default function AdminLayout({ children }: Props) {
                 <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
             </Modal>
         </Layout>
-
+        </>
 
     );
 };

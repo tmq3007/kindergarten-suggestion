@@ -1,4 +1,4 @@
-import {Button, Dropdown, MenuProps, Modal, Space} from "antd";
+import {Button, Dropdown, MenuProps, message, Modal, Space} from "antd";
 import {DownOutlined, UserOutlined} from "@ant-design/icons";
 import React, {useRef, useState} from "react";
 import {useDispatch} from "react-redux";
@@ -12,6 +12,7 @@ interface UserDropdownProps {
 }
 
 export default function UserDropdown({username}: UserDropdownProps) {
+    const [messageApi, contextHolder] = message.useMessage();
     const dispatch = useDispatch();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const router = useRouter();
@@ -19,25 +20,33 @@ export default function UserDropdown({username}: UserDropdownProps) {
     const processed = useRef(false);
 
     const handleLogout = async () => {
+
         try {
+            messageApi.success("Logging out...")
+
             setIsModalOpen(false);
 
             const result = await logout(undefined).unwrap();
 
             if (result?.code === 200 && !processed.current) {
                 processed.current = true;
+
+                // Perform the fetch and wait for it to complete
                 await fetch('/api/logout', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
-            }
 
-            dispatch(resetUser());
-            router.push("/public");
+                dispatch(resetUser());
+
+            }
         } catch (error) {
             console.error("Logout failed:", error);
+            messageApi.error("Logout failed, back to login").then(() => {
+                dispatch(resetUser());
+            })
         }
     };
 
@@ -81,6 +90,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
 
     return (
         <>
+            {contextHolder}
             <Dropdown className={'text-blue-500'} menu={menuProps}>
                 <div>
                     <Space>
