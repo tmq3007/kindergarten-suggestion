@@ -13,6 +13,7 @@ import { userListApi } from "./services/userListApi";
 import {parentApi} from "@/redux/services/User/parentApi";
 import { registerApi } from "./services/registerApi";
 import {addressApi} from "@/redux/services/addressApi";
+import {userApi} from "@/redux/services/User/userApi";
 
 
 // Tạo rootReducer bao gồm reducers quản lý API và reducers quản lý state
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
     [userListApi.reducerPath]: userListApi.reducer,
     [registerApi.reducerPath]: registerApi.reducer,
     [addressApi.reducerPath]: addressApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
     // Reducers quản lý state
     counter: counterReducer,
     auth: authReducer,

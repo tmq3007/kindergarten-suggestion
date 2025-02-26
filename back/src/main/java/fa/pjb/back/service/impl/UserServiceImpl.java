@@ -232,10 +232,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
 
         if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
-            throw new RuntimeException("Email already exists!");
-        }
-        if (userRepository.existsByPhoneAndIdNot(dto.phone(), dto.id())) {
-            throw new RuntimeException("Phone number already exists!");
+            throw new EmailExistException();
         }
 
         user.setFullname(dto.fullname());
