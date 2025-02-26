@@ -29,9 +29,13 @@ public class UserController {
     @GetMapping()
     public ApiResponse<Page<UserVO>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone
     ) {
-        Page<UserVO> users = userService.getAllUsers(PageRequest.of(page, size));
+        Page<UserVO> users = userService.getAllUsers(PageRequest.of(page, size), role, email, name, phone);
         return ApiResponse.<Page<UserVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Users retrieved successfully")
