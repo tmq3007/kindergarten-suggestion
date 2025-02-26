@@ -316,7 +316,7 @@ export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCou
                         { required: true, message: 'Please input your password!' },
                         { min: 7, message: 'Password must be at least 7 characters!' },
                         {
-                            pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/,
+                            pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
                             message: 'Password must contain at least one letter, and one number!'
                         }
                     ]}

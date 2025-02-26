@@ -5,17 +5,15 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+
 @Data
- @NoArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
- @FieldDefaults(level = AccessLevel.PRIVATE)
- public class ParentDTO extends UserDTO {
-    Integer id;
-     String district;
-     String ward;
-     String province;
-     String street;
-
+public class ParentDTO extends UserDTO {
+   Integer id;
+   String district;
+   String ward;
+   String province;
+   String street;
 }
-

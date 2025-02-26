@@ -45,7 +45,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
             dispatch(resetUser());
             router.push("/public");
         } catch (error) {
-            console.error("Logout failed:", error);
+            console.log("Logout failed:", error);
         }
     }
     // Xử lý khi người dùng nhấn "Yes" trong Modal

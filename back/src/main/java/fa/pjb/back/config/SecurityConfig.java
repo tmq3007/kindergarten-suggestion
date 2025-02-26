@@ -50,6 +50,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/refresh").permitAll()
                                 .requestMatchers("/api/auth/check-email").permitAll()
                                 .requestMatchers("/api/parent/register").permitAll()
+//                                .requestMatchers("/api/auth/logout").permitAll()
 //                                .anyRequest().permitAll()
                         .anyRequest().authenticated()
                 )

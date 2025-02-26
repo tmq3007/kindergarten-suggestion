@@ -2,14 +2,15 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailExistException;
 import fa.pjb.back.common.exception.InvalidDateException;
-import fa.pjb.back.common.exception.InvalidPhoneNumberException;
 import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
+import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
+import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
@@ -20,18 +21,11 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import static fa.pjb.back.model.enums.ERole.*;
-  import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 @Service
@@ -40,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final EmailService emailService;
     private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -53,7 +48,7 @@ public class UserServiceImpl implements UserService {
         Page<User> userEntitiesPage = userRepository.findAllByCriteria(
                 roleEnum, email, name, phone, pageable
         );
-        return userMapper.toUserVOPage(userEntitiesPage);
+        return userEntitiesPage.map(this::convertToUserVO);
     }
 
     private ERole convertRole2(String role) {

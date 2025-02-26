@@ -14,7 +14,7 @@ public record RegisterDTO(
         String phone,
         @NotBlank(message = "Password cannot be empty")
         @Pattern(
-                regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{7,}$",
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d).{7,}$",
                 message = "Password must be at least 7 characters long, contain at least one letter, and one number"
         )
         String password

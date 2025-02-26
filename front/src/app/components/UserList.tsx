@@ -96,7 +96,7 @@ export default function UserList({ fetchPage, data, isLoading, error, isFetching
 
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content" }} />
+            <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content" }} />
             <div className="flex justify-between items-center px-4 py-3">
                 <Pagination current={current} total={totalElements} onChange={handlePageChange} showSizeChanger={false} />
             </div>
