@@ -1,12 +1,12 @@
 package fa.pjb.back.filter;
 
+import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
 import fa.pjb.back.common.exception.user.UserNotFoundException;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.impl.UserDetailsServiceImpl;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-    private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final UserDetailsServiceImpl userDetailsService;
     private final JwtHelper jwtHelper;
     private final HttpRequestHelper httpRequestHelper;
     private final UserRepository userRepository;
@@ -38,8 +38,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 //            "/",
             "/api/auth/login/admin",
             "/api/auth/login/public",
-            "/api/auth/refresh",
+            "/api/auth/refresh-token",
             "/api/auth/forgot-password",
+            "/api/auth/refresh",
             "/api/auth/check-email",
             "/api/parent/register",
             "/api/auth/reset-password"
@@ -63,30 +64,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String csrfTokenFromCookie = httpRequestHelper.extractJwtTokenFromCookie(request, "CSRF_TOKEN");
         String csrfTokenFromHeader = request.getHeader("X-CSRF-TOKEN");
         if (csrfTokenFromCookie == null || !csrfTokenFromCookie.equals(csrfTokenFromHeader)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid CSRF Token");
-            return;
+           throw new JwtUnauthorizedException("Invalid CSRF Token");
         }
 
         // Trích xuất JWT Access Token từ Cookie
         String jwt = httpRequestHelper.extractJwtTokenFromCookie(request, "ACCESS_TOKEN");
         if (jwt == null) {
-            throw new JwtException("Invalid Access Token");
+            throw new JwtUnauthorizedException("Invalid Access Token");
         }
         // Nếu có jwt thì trích xuất username từ jwt
         String username = jwtHelper.extractUsername(jwt);
 
         if (username == null) {
-
-            throw new JwtException("Invalid Access Token");
+            throw new JwtUnauthorizedException("Invalid Access Token");
         }
         // Nếu có username thì kiểm tra người dùng đã xác thực chưa
         // Bằng cách kiểm tra xem có tồn tại Authentication (người dùng đã xác thực) trong SecurityContext hay không
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             // Nếu người dùng chưa xác thực thì ta tiến hành xác thực thông qua UserDetailsService
-
             User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-
-            UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(user.getEmail());
+            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
             // Sau khi đã xác thực xong, ta tiếp tục kiểm tra tính hợp lệ của token
             // Nếu token hợp lệ, ta tiến hành tạo UsernamePasswordAuthenticationToken chứa thông tin và quyền hạn người dùng (không cần chứa password)
             if (jwtHelper.validateToken(jwt, userDetails)) {

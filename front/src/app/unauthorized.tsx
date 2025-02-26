@@ -1,4 +1,14 @@
-// Tại đây ta có thể tạo UI Login page
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function Error401() {
-    return <h1>401 - Unauthorized</h1>;
+    const router = useRouter();
+
+    useEffect(() => {
+        router.push('/public');
+    }, [router]);
+
+    return null; // Hoặc bạn có thể return một UI nếu muốn hiển thị thông báo trước khi điều hướng
 }

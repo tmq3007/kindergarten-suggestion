@@ -26,12 +26,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({message: 'Token has expired'}, {status: 400});
         }
         // Lưu ACCESS_TOKEN vào cookie với cờ HttpOnly
+        const cookieTtl = ttl + (24 * 60 * 60);
         cookie.set({
             name: 'ACCESS_TOKEN',
             value: accessToken,
             httpOnly: true,
             secure: false,
-            maxAge: ttl, // 1 tuần
+            maxAge: cookieTtl,
             path: '/',
             sameSite: 'strict',
         });
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
             value: csrfToken,
             httpOnly: false,
             secure: false,
-            maxAge: ttl, // 1 tuần
+            maxAge: cookieTtl,
             path: '/',
             sameSite: 'strict',
         });

@@ -1,5 +1,5 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQuery} from "@/redux/services/config/baseQuery";
+import {ApiResponse, baseQuery, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 
 export type LoginDTO = {
     email: string,
@@ -26,7 +26,7 @@ export type ResetPasswordDTO = {
 
 export const authApi = createApi({
     reducerPath: "authApi",
-    baseQuery: baseQuery,
+    baseQuery: baseQueryWithReauth,
     tagTypes: ['Auth'],
     endpoints: (build) => ({
         loginByAdmin: build.mutation<ApiResponse<LoginVO>, LoginDTO>({

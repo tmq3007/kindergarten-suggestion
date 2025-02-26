@@ -36,7 +36,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
 
             const result = await logout(undefined).unwrap();
 
-            if (result?.code === 200 && !processed.current) {
+            if (result?.code == 200 && !processed.current) {
                 processed.current = true;
 
                 // Perform the fetch and wait for it to complete

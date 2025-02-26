@@ -8,29 +8,42 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation} from '@/redux/services/User/parentApi';
 import dayjs from "dayjs";
-import {useGetCountriesQuery} from '@/redux/services/registerApi';
-import {Country} from "@/redux/services/types";
-const { Option } = Select;
+import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
+import {
+    useGetProvincesQuery,
+    useGetDistrictsQuery,
+    useGetWardsQuery,
+    Province,
+    District,
+    Ward
+} from '@/redux/services/addressApi';
+import {unauthorized, useRouter} from "next/navigation";
+
+const {Option} = Select;
 const {Title} = Typography;
 const {TabPane} = Tabs;
-import { useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery, Province, District, Ward } from '@/redux/services/addressApi';
 const Profile = () => {
+    const router = useRouter();
     const parentId = useSelector((state: RootState) => state.user?.id);
     const username = useSelector((state: RootState) => state.user?.username);
     const parentIdNumber = Number(parentId);
 
-  //  console.log("country", countries);
+    if (!username) {
+        unauthorized();
+    }
+
+    //  console.log("country", countries);
 
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
     const [selectedProvince, setSelectedProvince] = useState<number | undefined>();
     const [selectedDistrict, setSelectedDistrict] = useState<number | undefined>();
 
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
-    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
-    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
+    const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
+    const {data: provinces, isLoading: isLoadingProvince} = useGetProvincesQuery();
+    const {data: districts, isLoading: isLoadingDistrict} = useGetDistrictsQuery(selectedProvince!, {
         skip: !selectedProvince,
     });
-    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
+    const {data: wards, isLoading: isLoadingWard} = useGetWardsQuery(selectedDistrict!, {
         skip: !selectedDistrict,
     });
 
@@ -149,10 +162,10 @@ const Profile = () => {
         let value = e.target.value.replace(/\D/g, "");
     };
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({ district: undefined, ward: undefined }); // Reset district và ward
+        form.setFieldsValue({district: undefined, ward: undefined}); // Reset district và ward
         setSelectedProvince(provinceCode);
         setSelectedDistrict(undefined); // Hoặc setSelectedDistrict(null);
-     };
+    };
     // Chon quoc gia mac dinh la VN
     useEffect(() => {
         if (countries && !selectedCountry) {
@@ -187,11 +200,12 @@ const Profile = () => {
 
 
     if (isLoading) return <Spin size="large" className="flex justify-center items-center h-screen"/>;
-    if (errorParent) return <p className="text-red-500">Can not load data.</p>;
+
     interface Province {
         code: string;
         name: string;
     }
+
     return (
         <div className="h-[60%] mt-0 flex flex-col p-9">
             {contextHolder} {/* Thêm phần này để hiển thị notification */}
@@ -214,15 +228,21 @@ const Profile = () => {
                             <div className="grid grid-cols-2 gap-4 flex-grow">
                                 <div className="flex flex-col">
                                     <Form.Item rules={[
-                                        { required: true, message: 'Full name is required!' },
-                                        { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: 'Full name must contain at least two words!' }
+                                        {required: true, message: 'Full name is required!'},
+                                        {
+                                            pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/,
+                                            message: 'Full name must contain at least two words!'
+                                        }
                                     ]}
                                                hasFeedback name="fullName" label="Full Name" className="mb-10">
                                         <Input/>
                                     </Form.Item>
                                     <Form.Item rules={[
-                                        { required: true, message: 'Email is required!' },
-                                        {pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' },
+                                        {required: true, message: 'Email is required!'},
+                                        {
+                                            pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                            message: 'Enter a valid email address!'
+                                        },
                                         // { type: 'email', message: 'Enter a valid email address!' }
                                     ]}
                                                hasFeedback name="email" label="Email Address" className="mb-10">
@@ -256,7 +276,7 @@ const Profile = () => {
                                 </div>
                                 <div className="flex flex-col">
                                     <Form.Item rules={[
-                                        { required: true, message: 'Date of birth is required!' },
+                                        {required: true, message: 'Date of birth is required!'},
                                         {
                                             validator: (_, value) => {
                                                 if (!value) return Promise.reject('Date of birth is required!');
@@ -273,9 +293,8 @@ const Profile = () => {
                                                label="Phone Number" className={'mb-10'}
                                                rules={[
                                                    {required: true, message: 'Phone number is required!'},
-                                                   {pattern: /^\d{10}$/, message: 'Phone number must be exactly 10 digits!'}
-                                               ]}
-                                    >
+                                                   {pattern: /^\d{4,14}$/, message: 'Phone is wrong'}
+                                               ]}>
                                         <div
                                             className="flex items-center border h-[32px] border-gray-300 rounded-lg overflow-hidden">
                                             {/* Country Code Selector */}
@@ -312,14 +331,13 @@ const Profile = () => {
                                                                    alt={country.label}
                                                                    width={10} height={10}
                                                                    className="mr-2 ml-3 intrinsic"/>
-                                                            {country.dialCode} - {country.label}
+                                                            &nbsp; &nbsp; {country.dialCode} - {country.label}
                                                         </div>
                                                     </Select.Option>
                                                 ))}
                                             </Select>
                                             <Form.Item
                                                 name="phone"
-                                                rules={[{required: true, message: 'Please input your phone number!'}]}
                                                 noStyle
                                             >
                                                 {/* Phone Number Input */}
@@ -346,7 +364,7 @@ const Profile = () => {
                                         </Select>
                                     </Form.Item>
                                     <Form.Item name="street" label="Street" className="mb-10 h-[33px]">
-                                        <Input />
+                                        <Input/>
                                     </Form.Item>
                                 </div>
                             </div>

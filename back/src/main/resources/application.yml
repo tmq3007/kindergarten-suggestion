@@ -43,10 +43,10 @@ springdoc:
     path: /swagger-ui
 application-description: '@project.description@'
 application-version: '@project.version@'
-access-token-exp: 600000
+access-token-exp: 6000
 refresh-token-exp: 6000000
-csrf-token-exp: 600000
-forgotpass-token-exp: 300000
+csrf-token-exp: 6000
+forgot-password-token-exp: 300000
 
 
 

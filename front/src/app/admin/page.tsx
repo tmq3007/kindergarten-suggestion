@@ -20,7 +20,7 @@ export default function Page() {
             <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: [0, 1.4, 1] }} // Keyframes: 0 -> 1.2 -> 1
-                transition={{ duration: 0.5, ease: "easeInOut" }} // Thời gian và kiểu chuyển động
+                transition={{ duration: 0.8, ease: "easeInOut" }} // Thời gian và kiểu chuyển động
                 className="flex items-center justify-center min-h-screen w-100">
                 <AdminLoginForm
                     login={login}
