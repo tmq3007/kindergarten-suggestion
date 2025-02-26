@@ -7,8 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserService {
-    Page<UserVO> getAllUsers(Pageable of);
-
+    Page<UserVO> getAllUsers(Pageable pageable, String role, String email, String name, String phone);
     String generateUsername(String fullName);
 
     UserDTO createAdmin(UserDTO userDTO);

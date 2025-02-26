@@ -104,3 +104,8 @@ export type Country = {
     flag: string;
 }
 
+export enum UserRole {
+    ADMIN = 'ROLE_ADMIN',
+    SCHOOL_OWNER = 'ROLE_SCHOOL_OWNER',
+    PARENT = 'ROLE_PARENT',
+}

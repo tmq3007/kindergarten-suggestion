@@ -18,11 +18,14 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
+  import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 @Service
@@ -34,9 +37,35 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Page<UserVO> getAllUsers(Pageable of) {
-        Page<User> userEntitiesPage = userRepository.findAll(of);
+    public Page<UserVO> getAllUsers(Pageable pageable, String role, String email, String name, String phone) {
+        ERole roleEnum = null;
+        if (role != null && !role.isEmpty()) {
+            roleEnum = convertRole2(role); // Convert the String role to ERole
+        }
+        Page<User> userEntitiesPage = userRepository.findAllByCriteria(
+                roleEnum, email, name, phone, pageable
+        );
         return userMapper.toUserVOPage(userEntitiesPage);
+    }
+
+    // ... (rest of the methods remain the same, including generateUsername, createAdmin, etc.)
+
+    private ERole convertRole2(String role) {
+        if (role == null || role.trim().isEmpty()) {
+            return null;
+        }
+        return switch (role.toUpperCase()) {
+            case "ROLE_PARENT" -> ERole.ROLE_PARENT;
+            case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+            case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
+            case "PARENT", "SCHOOL OWNER", "ADMIN" -> { // Handle both formats for flexibility
+                if (role.equalsIgnoreCase("PARENT")) yield ERole.ROLE_PARENT;
+                if (role.equalsIgnoreCase("SCHOOL OWNER")) yield ERole.ROLE_SCHOOL_OWNER;
+                if (role.equalsIgnoreCase("ADMIN")) yield ERole.ROLE_ADMIN;
+                throw new IllegalArgumentException("Invalid role: " + role);
+            }
+            default -> throw new IllegalArgumentException("Invalid role: " + role);
+        };
     }
 
     //generate username từ fullname
