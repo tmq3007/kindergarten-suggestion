@@ -1,34 +1,40 @@
 package fa.pjb.back.service.impl;
 
-
+import fa.pjb.back.common.exception.EmailExistException;
+import fa.pjb.back.common.exception.InvalidPhoneNumberException;
+import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
+import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
+import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import java.time.LocalDate;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import static fa.pjb.back.model.enums.ERole.*;
 
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
-
-
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
-
 
     @Override
     public Page<UserVO> getAllUsers(Pageable of) {
@@ -36,7 +42,7 @@ public class UserServiceImpl implements UserService {
         return userEntitiesPage.map(this::convertToUserVO);
     }
 
-    //generate username từ fullname
+    // generate username từ fullname
     public String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
 
@@ -55,9 +61,10 @@ public class UserServiceImpl implements UserService {
 
         return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
     }
+
     // Hàm tạo mật khẩu ngẫu nhiên
     private String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8);
+        return RandomStringUtils.randomAlphanumeric(8) + "a";
     }
 
     @Override
@@ -97,24 +104,31 @@ public class UserServiceImpl implements UserService {
         responseDTO.setDob(user.getDob());
         responseDTO.setFullName(user.getFullname());
 
-
         return responseDTO;
     }
 
     private UserVO convertToUserVO(User user) {
 
-        if (user.getRole()== ROLE_PARENT ) {
-            Parent temp = parentRepository.getReferenceById(user.getId());
+        if (user.getRole() == ROLE_PARENT) {
+            Parent temp = parentRepository.findById(user.getId()).orElse(
+                    Parent.builder().street(" ").ward(" ").district(" ").province(" ").build());
+
+            //nếu address rỗng thì gán là N/A
+            String address = temp.getStreet() + " " + temp.getWard() + " " + temp.getDistrict() + " "
+                    + temp.getProvince();
+            if (address.trim().isEmpty()) {
+                address = "N/A";
+            }
             return UserVO.builder()
                     .id(user.getId())
                     .fullname(user.getFullname())
                     .email(user.getEmail())
                     .phone(user.getPhone())
-                    .address(temp.getStreet()+" "+temp.getWard()+" "+temp.getDistrict()+" "+temp.getProvince())
+                    .address(address)
                     .role("Parent")
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
-        } else if (user.getRole()== ROLE_SCHOOL_OWNER) {
+        } else if (user.getRole() == ROLE_SCHOOL_OWNER) {
             return UserVO.builder()
                     .id(user.getId())
                     .fullname(user.getFullname())
@@ -150,8 +164,7 @@ public class UserServiceImpl implements UserService {
                 user.getDob() != null ? user.getDob().toString() : null,
                 user.getPhone(),
                 formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive"
-        );
+                user.getStatus() ? "Active" : "Inactive");
 
     }
 
@@ -168,17 +181,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    //Chuyển role ra đúng format
+    // Chuyển role ra đúng format
     private ERole convertRole(String role) {
         return switch (role.toUpperCase()) {
-            case "PARENT" -> ERole.ROLE_PARENT;
+            case "PARENT" -> ROLE_PARENT;
             case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
             case "ADMIN" -> ERole.ROLE_ADMIN;
             default -> throw new IllegalArgumentException("Invalid role: " + role);
         };
     }
 
-    //Update UserDetail
+    // Update UserDetail
     @Override
     public UserDetailDTO updateUser(UserUpdateDTO dto) {
         User user = userRepository.findById(dto.id())
@@ -204,11 +217,10 @@ public class UserServiceImpl implements UserService {
         return new UserDetailDTO(
                 user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
                 user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive"
-        );
+                user.getStatus() ? "Active" : "Inactive");
     }
 
-    //Active hoặc Deactive
+    // Active hoặc Deactive
     @Override
     public UserDetailDTO toggleStatus(int userId) {
         User user = userRepository.findById(userId)
@@ -225,10 +237,7 @@ public class UserServiceImpl implements UserService {
                 user.getDob() != null ? user.getDob().toString() : null,
                 user.getPhone(),
                 formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive"
-        );
+                user.getStatus() ? "Active" : "Inactive");
     }
-
-
 
 }

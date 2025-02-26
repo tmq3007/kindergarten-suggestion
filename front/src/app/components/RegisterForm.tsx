@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Checkbox, Form, Image, Input, message, Select } from 'antd';
 import Link from "next/link";
-import { useGetCountriesQuery, useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
-import { useRouter } from 'next/navigation';
+import {useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
 import { Country } from '@/redux/services/types';
 
 interface FieldType {
@@ -22,7 +21,7 @@ interface RegisterFormProps {
 
 export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCountry }: RegisterFormProps) {
     const [form] = Form.useForm();
-    const router = useRouter();
+
     const [formValues, setFormValues] = useState<Partial<FieldType>>({ termAndCon: false });
     const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
@@ -44,7 +43,7 @@ export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCou
             setFormValues({});
             setTimeout(() => {
                 onSuccess();
-            }, 2000);
+            }, 2500);
         }
         if (registerError) {
             messageApi.error("Register failed!");
@@ -142,7 +141,7 @@ export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCou
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setEmailStatus("error");
-            setEmailHelp("Please enter a valid email address!");
+            setEmailHelp("Please enter a valid email address2!");
             return;
         }
 
@@ -244,7 +243,7 @@ export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCou
                     help={emailHelp}
                     rules={[
                         { required: true, message: "Please input your email!" },
-                        { type: "email", message: "Please enter a valid email address!" },
+                        { type: "email", message: "Please enter a valid email address1!" },
                         { max: 50, message: "Email cannot exceed 50 characters!" },
                     ]}
                 >

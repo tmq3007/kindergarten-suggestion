@@ -3,7 +3,6 @@ import { Button, Checkbox, Divider, Form, FormProps, Input, message } from 'antd
 import Link from "next/link";
 import { BASE_URL, baseQuery, CustomFetchBaseQueryError } from '@/redux/services/config/baseQuery';
 import { LoginDTO, useLoginByParentMutation } from "@/redux/services/authApi";
-import { useRouter } from "next/navigation";
 import useAuthRedirect from "@/lib/useAuthRedirect";
 
 interface FieldType {
@@ -57,7 +56,7 @@ export default function ParentLoginForm({ onCancel, onSuccess }: RegisterFormPro
                     label="Password"
                     rules={[
                         { required: true, message: 'Please input your password!' },
-                        { min: 7, message: 'Password must be at least 8 characters!' },
+                        { min: 7, message: 'Password must be at least 7 characters!' },
                         {
                             pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/,
                             message: 'Password must contain at least one letter, and one number!'

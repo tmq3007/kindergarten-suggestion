@@ -7,7 +7,6 @@ import fa.pjb.back.common.exception.user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
@@ -18,17 +17,12 @@ import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static fa.pjb.back.config.SecurityConfig.passwordEncoder;
 import static fa.pjb.back.model.enums.ERole.ROLE_PARENT;
 
 @RequiredArgsConstructor

@@ -48,10 +48,11 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ERole role;
-//
+
+//    @MapsId
 //    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 //    private Parent Parent;
-//
+
 //    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 //    private SchoolOwner SchoolOwner;
 
