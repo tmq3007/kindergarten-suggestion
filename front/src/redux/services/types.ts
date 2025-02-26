@@ -63,6 +63,13 @@ export type RegisterDTO = {
     password: string,
 }
 
+export type Country = {
+    code: string;
+    label: string;
+    dialCode: string;
+    flag: string;
+}
+
 export type SchoolDTO = {
     id: number;
     name: string;

@@ -40,7 +40,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/api/auth/login/public",
             "/api/auth/refresh",
             "/api/auth/forgot-password",
+            "/api/auth/check-email",
+            "/api/parent/register",
             "/api/auth/reset-password"
+
     );
 
     @Override

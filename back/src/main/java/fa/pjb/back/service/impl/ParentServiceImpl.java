@@ -54,21 +54,26 @@ public class ParentServiceImpl implements ParentService {
         if (authService.checkEmailExists(registerDTO.email())) {
             throw new UserNotCreatedException("Email already exists");
         }
-        String username = userService.generateUsername(registerDTO.fullname());
-        User user = User.builder()
-                .email(registerDTO.email())
-                .username(username)
-                .password(passwordEncoder.encode(registerDTO.password()))
-                .role(ROLE_PARENT)
-                .phone(registerDTO.phone())
-                .fullname(registerDTO.fullname())
-                .status(true)
-                .build();
-        Parent parent = Parent.builder()
-                .user(user)
-                .build();
-//        user.setParent(parent);
-        return parentMapper.toRegisterVO(parentRepository.save(parent));
+        try {
+            String username = userService.generateUsername(registerDTO.fullname());
+            User user = User.builder()
+                    .email(registerDTO.email())
+                    .username(username)
+                    .password(passwordEncoder.encode(registerDTO.password()))
+                    .role(ROLE_PARENT)
+                    .status(true)
+                    .fullname(registerDTO.fullname())
+                    .phone(registerDTO.phone())
+                    .build();
+            Parent parent = Parent.builder()
+                    .user(user)
+                    .build();
+//            user.setParent(parent);
+            return parentMapper.toRegisterVO(parentRepository.save(parent));
+        } catch (Exception e) {
+            throw new UserNotCreatedException("Registration failed!" + e);
+        }
+
     }
 
 
@@ -76,6 +81,7 @@ public class ParentServiceImpl implements ParentService {
     public ParentDTO createParent(ParentDTO parentDTO) {
         // Kiểm tra User đã tồn tại chưa
         Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
+        Optional<User> existingUserName = userRepository.findByUsername(parentDTO.getUsername());
 
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
