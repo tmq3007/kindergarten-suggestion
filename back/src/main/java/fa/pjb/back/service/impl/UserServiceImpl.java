@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailExistException;
+import fa.pjb.back.common.exception.InvalidDateException;
 import fa.pjb.back.common.exception.InvalidPhoneNumberException;
 import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
@@ -11,17 +12,21 @@ import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
+  import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 @Service
@@ -30,18 +35,45 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
     @Override
-    public Page<UserVO> getAllUsers(Pageable of) {
-        Page<User> userEntitiesPage = userRepository.findAll(of);
+    public Page<UserVO> getAllUsers(Pageable pageable, String role, String email, String name, String phone) {
+        ERole roleEnum = null;
+        if (role != null && !role.isEmpty()) {
+            roleEnum = convertRole2(role); // Convert the String role to ERole
+        }
+        Page<User> userEntitiesPage = userRepository.findAllByCriteria(
+                roleEnum, email, name, phone, pageable
+        );
         return userMapper.toUserVOPage(userEntitiesPage);
+    }
+
+    private ERole convertRole2(String role) {
+        if (role == null || role.trim().isEmpty()) {
+            return null;
+        }
+        return switch (role.toUpperCase()) {
+            case "ROLE_PARENT" -> ERole.ROLE_PARENT;
+            case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+            case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
+            case "PARENT", "SCHOOL OWNER", "ADMIN" -> { // Handle both formats for flexibility
+                if (role.equalsIgnoreCase("PARENT")) yield ERole.ROLE_PARENT;
+                if (role.equalsIgnoreCase("SCHOOL OWNER")) yield ERole.ROLE_SCHOOL_OWNER;
+                if (role.equalsIgnoreCase("ADMIN")) yield ERole.ROLE_ADMIN;
+                throw new IllegalArgumentException("Invalid role: " + role);
+            }
+            default -> throw new IllegalArgumentException("Invalid role: " + role);
+        };
     }
 
     //generate username từ fullname
     public String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
-
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Invalid Name");
+        }
         String firstName = parts[parts.length - 1];
         firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
 
@@ -65,13 +97,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO createAdmin(UserDTO userDTO) {
         Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
-        Optional<User> existingUserName = userRepository.findByUsername(userDTO.getUsername());
 
+        //check email da ton tai hay chua
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
-        if (!userDTO.getPhone().matches("\\d{10}")) {
-            throw new InvalidPhoneNumberException();
+        // Kiểm tra số điện thoại có đúng 10 chữ số không
+//        if (userDTO.getPhone() == null || !userDTO.getPhone().matches("\\d{10}")) {
+//            throw new InvalidPhoneNumberException();
+//        }
+        // Kiểm tra ngày sinh phải là ngày trong quá khứ
+        if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
+            throw new InvalidDateException("Dob must be in the past");
         }
         // Tạo mới Admin
         String usernameAutoGen = generateUsername(userDTO.getFullName());
@@ -99,7 +136,8 @@ public class UserServiceImpl implements UserService {
         responseDTO.setDob(user.getDob());
         responseDTO.setFullName(user.getFullname());
 
-
+        emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
+                usernameAutoGen,passwordautoGen);
         return responseDTO;
     }
 

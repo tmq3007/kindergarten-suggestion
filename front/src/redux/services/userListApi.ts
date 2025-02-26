@@ -2,6 +2,11 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { ApiResponse, baseQuery } from "./config/baseQuery";
 import { Pageable, UserVO } from "./types";
 
+export enum UserRole {
+    ADMIN = 'ROLE_ADMIN',
+    SCHOOL_OWNER = 'ROLE_SCHOOL_OWNER',
+    PARENT = 'ROLE_PARENT',
+}
 export const userListApi = createApi({
     reducerPath: "userListApi",
     baseQuery: baseQuery,
@@ -9,12 +14,19 @@ export const userListApi = createApi({
     endpoints: (build) => ({
         getUserList: build.query<
             ApiResponse<{ content: UserVO[]; pageable: Pageable }>,
-            number
-            >({
-            query: (page = 0) => ({
+            { page?: number; role?: string; email?: string; name?: string; phone?: string }
+        >({
+            query: ({ page = 0, role, email, name, phone }) => ({
                 url: `/user`,
                 method: "GET",
-                params: { page, size: 10 },
+                params: {
+                    page,
+                    size: 10,
+                    ...(role && { role: role }),
+                    ...(email && { email }),
+                    ...(name && { name }),
+                    ...(phone && { phone })
+                },
             }),
             transformResponse: (
                 response: ApiResponse<{ content: UserVO[]; pageable: Pageable; totalElements: number }>
