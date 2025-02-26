@@ -3,7 +3,6 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
-import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.dto.ResetPasswordDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
@@ -47,20 +46,19 @@ public class AuthController {
                 .build();
     }
 
-        @Operation(summary = "Forgot Password", description = "Forgot Password")
-        @PostMapping("forgot-password")
-        public ApiResponse<ForgotPasswordVO> forgotpassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO,
-                        HttpServletResponse response) {
-                return ApiResponse.<ForgotPasswordVO>builder()
-                                .code(HttpStatus.OK.value())
-                                .message("Link password reset sent successfully!")
-                                .data(authService.forgotPassword(forgotPasswordDTO, response))
-                                .build();
+    @Operation(summary = "Forgot Password", description = "Forgot Password")
+    @PostMapping("forgot-password")
+    public ApiResponse<ForgotPasswordVO> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
+        return ApiResponse.<ForgotPasswordVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Link password reset sent successfully!")
+                .data(authService.forgotPassword(forgotPasswordDTO, response))
+                .build();
         }
 
         @Operation(summary = "Reset Password", description = "Reset Password")
         @PostMapping("reset-password")
-        public ApiResponse<?> ressetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
+        public ApiResponse<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
                         HttpServletRequest request) {
                 authService.resetPassword(resetPasswordDTO, request);
                 return ApiResponse.builder()
@@ -70,7 +68,7 @@ public class AuthController {
         }
 
         @Operation(summary = "Logout" , description = "Logout")
-        @PostMapping("logout")
+        @PutMapping("logout")
         public ApiResponse<?> logout() {
                 authService.logout();
                 return ApiResponse.builder()
@@ -79,12 +77,12 @@ public class AuthController {
                         .build();
         }
 
-    @GetMapping("/check-email")
-    public ApiResponse<String> checkEmail(@RequestParam String email) {
-        return ApiResponse.<String>builder()
-                .code(HttpStatus.OK.value())
-                .message("Email available!")
-                .data(String.valueOf(authService.checkEmailExists(email)))
-                .build();
+        @GetMapping("/check-email")
+        public ApiResponse<String> checkEmail(@RequestParam String email) {
+                return ApiResponse.<String>builder()
+                        .code(HttpStatus.OK.value())
+                        .message("Email available!")
+                        .data(String.valueOf(authService.checkEmailExists(email)))
+                        .build();
     }
 }

@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
-    LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent);
+    LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkAdmin);
 
     LoginVO loginByAdmin(LoginDTO loginDTO);
 
