@@ -30,8 +30,11 @@ public class EmailServiceImpl implements EmailService {
 
     private final UserRepository userRepository;
 
-    public void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> model) throws MessagingException, IOException, TemplateException {
+    private void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> model) throws MessagingException, IOException, TemplateException {
 
+        if (to.length() > 254) { // RFC 5321 giới hạn email tối đa 254 ký tự
+            throw new MessagingException("Email address too long");
+        }
         // Load email template
         Template template = freemarkerConfig.getTemplate("email/" + templateName + ".html");
 
