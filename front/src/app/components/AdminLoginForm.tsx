@@ -38,9 +38,9 @@ const AdminLoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error
     const dispatch = useDispatch();
 
     const handleForgotPassword = () => {
-        // Xác định trang hiện tại bằng pathname
+        // Determine the current page using the pathname
         const currentPath = window.location.pathname.includes('/admin') ? 'admin' : 'public';
-        dispatch(setPreviousPage(currentPath)); // Lưu trạng thái trang trước đó
+        dispatch(setPreviousPage(currentPath)); // Save before state
     };
 
     useAuthRedirect(data, error, messageApi, '/admin/management', false);

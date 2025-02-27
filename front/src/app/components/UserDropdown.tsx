@@ -8,7 +8,6 @@ import {useLogoutMutation} from "@/redux/services/authApi";
 import Link from "next/link"; // Import action updateUsername
 
 
-// Định nghĩa kiểu cho props
 interface UserDropdownProps {
     username: string;
 }
@@ -54,19 +53,19 @@ export default function UserDropdown({username}: UserDropdownProps) {
             dispatch(resetUser());
         }
     }
-    // Xử lý khi người dùng nhấn "Yes" trong Modal
+    // Handle when user click "Yes" in Modal
     const handleOk = () => {
-        dispatch(resetUser()); // Reset state user trong Redux
-        setIsModalVisible(false); // Đóng Modal sau khi logout
+        dispatch(resetUser()); // Reset state user in Redux
+        setIsModalVisible(false); // Close Modal after logout
     };
 
-    // Xử lý khi người dùng nhấn "No" trong Modal
+    // Handle when user click "No" in Modal
     const handleCancel = () => {
-        setIsModalVisible(false); // Đóng Modal nếu người dùng hủy
+        setIsModalVisible(false); // Close Modal in user cancel
     };
 
 
-    // Định nghĩa các mục trong menu của Dropdown
+    // Define the items in the Dropdown menu
     const items: MenuProps["items"] = [
         {
             label: (
@@ -123,13 +122,13 @@ export default function UserDropdown({username}: UserDropdownProps) {
         <>
             {contextHolder}
             <div ref={modalContainerRef}>
-                {/* Dropdown hiển thị tên người dùng */}
+                {/* Dropdown show username */}
                 <Dropdown
                     className="text-blue-500 z-0"
                     menu={menuProps}
-                    trigger={["click"]} // Chỉ mở Dropdown khi click, tránh hover trên mobile
-                    open={isDropdownVisible} // Kiểm soát trạng thái hiển thị của Dropdown
-                    onOpenChange={(open) => setIsDropdownVisible(open)} // Cập nhật trạng thái khi Dropdown thay đổi
+                    trigger={["click"]}
+                    open={isDropdownVisible}
+                    onOpenChange={(open) => setIsDropdownVisible(open)}
                 >
                     <div onClick={() => setIsDropdownVisible(true)}>
                         <Space>
@@ -140,7 +139,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                     </div>
                 </Dropdown>
 
-                {/* Modal xác nhận Logout */}
+                {/* Modal to confirm Logout */}
                 <Modal
                     title="Are you leaving?"
                     open={isModalVisible}
@@ -149,8 +148,8 @@ export default function UserDropdown({username}: UserDropdownProps) {
                         <Button key="cancel" onClick={() => setIsModalVisible(false)}>Cancel</Button>,
                         <Button key="logout" type="primary" danger onClick={handleLogout}>Yes</Button>
                     ]}
-                    className="z-50" // Đảm bảo Modal hiển thị trên các phần tử khác
-                    getContainer={() => modalContainerRef.current || document.body} // Render Modal vào container hoặc body nếu ref null
+                    className="z-50"
+                    getContainer={() => modalContainerRef.current || document.body}
                 >
                     <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
                 </Modal>

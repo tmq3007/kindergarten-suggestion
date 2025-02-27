@@ -2,9 +2,9 @@
 import {authApi} from "@/redux/services/authApi";
 import {userListApi} from "@/redux/services/userListApi";
 import {registerApi} from "@/redux/services/registerApi";
-import {parentApi} from "@/redux/services/User/parentApi";
 import {addressApi} from "@/redux/services/addressApi";
-import {userApi} from "@/redux/services/User/userApi";
+import {parentApi} from "@/redux/services/parentApi";
+import {userApi} from "@/redux/services/userApi";
 
 const apiMiddlewares = [
     authApi.middleware,

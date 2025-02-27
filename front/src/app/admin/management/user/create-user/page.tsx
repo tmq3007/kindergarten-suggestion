@@ -9,12 +9,12 @@ import dayjs from "dayjs";
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '@/redux/store';
 import {setParent} from '@/redux/features/parentSlice';
-import {useCreateParentMutation} from '@/redux/services/User/parentApi';
 import {Spin} from 'antd';
 import {setSchoolOwner} from "@/redux/features/schoolOwnerSlice";
-import {useCreateSchoolOwnerMutation} from "@/redux/services/User/schoolOwnerApi";
-import {useCreateAdminMutation} from "@/redux/services/User/adminApi";
 import {Country, useGetCountriesQuery} from "@/redux/services/registerApi";
+import {useCreateParentMutation} from "@/redux/services/parentApi";
+import {useCreateSchoolOwnerMutation} from "@/redux/services/schoolOwnerApi";
+import {useCreateAdminMutation} from "@/redux/services/adminApi";
 
 const {Option} = Select;
 const {Title} = Typography;

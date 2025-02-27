@@ -1,5 +1,5 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQuery, baseQueryWithReauth} from "./config/baseQuery";
+import {ApiResponse, baseQueryWithReauth} from "./config/baseQuery";
 
 export type RegisterDTO = {
     fullname: string,

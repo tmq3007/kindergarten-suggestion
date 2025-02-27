@@ -22,9 +22,9 @@ export default function ParentLoginForm({onCancel, onSuccess}: RegisterFormProps
     const dispatch = useDispatch();
 
     const handleForgotPassword = () => {
-        // Xác định trang hiện tại bằng pathname
+        // Identify the current page using the pathname
         const currentPath = window.location.pathname.includes('/admin') ? 'admin' : 'public';
-        dispatch(setPreviousPage(currentPath)); // Lưu trạng thái trang trước đó
+        dispatch(setPreviousPage(currentPath)); // Save before state
     };
 
     useAuthRedirect(data, error, messageApi, '/public', true, onSuccess);

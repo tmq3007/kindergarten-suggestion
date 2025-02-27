@@ -1,24 +1,24 @@
 import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import type {Pokemon} from "@/redux/services/types";
 
-// Tạo service API hay API slice
+// Create API service or API slice.
 export const pokemonApi = createApi({
-    // Tên mà Redux sử dụng để  lưu trữ và truy xuất state của API này trong store
+    // The name that Redux uses to store and access the state of this API in the store.
     reducerPath: 'pokemonApi',
-    // fetchBaseQuery: phương thức cơ bản để gửi request đến API
+    // fetchBaseQuery: the basic method to send requests to the API.
     baseQuery: fetchBaseQuery({
         baseUrl: 'https://pokeapi.co/api/v2/'
     }),
     tagTypes: [],
-    // Các endpoints mà service sẽ gọi
+    // The endpoints that the service will call.
     endpoints: (build) => ({
-        // Pokemon là kiểu dữ liệu trả về, string là kiểu dữ liệu tham số truyền vào
+        // Pokemon is the return data type, string is the type of the input parameter.
         getPokemonByName: build.query<Pokemon, string>({
             query: (name) => `pokemon/${name}`,
         }),
     }),
 });
-// useGetPokemonByNameQuery là hook tự động mà RTK Query tạo từ endpoint
+// useGetPokemonByNameQuery is the auto-generated hook created by RTK Query from the endpoint.
 export const {
     useGetPokemonByNameQuery
 } = pokemonApi;

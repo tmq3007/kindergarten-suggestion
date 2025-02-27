@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class ApiPrefixConfig implements WebMvcConfigurer {
 
-    // Mặc định thêm tiền tố api/ trước các controller
+    // Add /api prefix for all controller as default
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
         configurer.addPathPrefix("api", c -> true);

@@ -61,16 +61,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkAdmin) {
-        // Tạo 1 token gồm username & password dùng để xác thực
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
-        // Xác thực token đó bằng AuthenticationManager
+        // Authenticate the token using AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        // Nếu xác thực thành công thì thêm authentication (người dùng đã xác thực) vào SecurityContext
+        // If authentication is successful, add the authentication (authenticated user) to the SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        // Lấy ra UserDetails từ Authentication
+        // Extract UserDetails from Authentication
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        // Nếu checkAdmin = true, kiểm tra quyền của người dùng và từ chối nếu không phải ADMIN
+        // If checkAdmin = true, check the user's role and deny access if they are not ADMIN
         if (checkAdmin) {
             boolean isAdmin = authorities.stream()
                     .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_ADMIN.toString()));
@@ -78,17 +77,17 @@ public class AuthServiceImpl implements AuthService {
                 throw new AccessDeniedException("Access denied");
             }
         }
-        // Lấy thông tin người dùng từ cơ sở dữ liệu
+        // Get user information from database
         User user = userRepository.findByEmail(loginDTO.email())
                 .orElseThrow(() -> new EmailNotFoundException(loginDTO.email()));
         String userId = user.getId().toString();
         String userRole = user.getRole().toString();
-        // Tạo ra các Token ==========================================================
+        // ======================== Create Token =======================
         // Access Token
         String accessToken = jwtHelper.generateAccessToken(userDetails, userId, userRole);
         // CSRF Token
         String csrfToken = jwtHelper.generateCsrfToken();
-        // Refresh Token: Lưu vào Redis
+        // Refresh Token: save to Redis
         String refreshToken = jwtHelper.generateRefreshToken(userDetails, userId, userRole);
         tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
 
@@ -139,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
         }
         String userId = user.getId().toString();
         String userRole = user.getRole().toString();
-        // Tạo ra các Token ==========================================================
+        // ======================== Create Token =======================
         // Access Token
         String newAccessToken = jwtHelper.generateAccessToken(userDetails, userId, userRole);
         // CSRF Token
@@ -175,7 +174,6 @@ public class AuthServiceImpl implements AuthService {
         if (user.isEmpty()) {
             throw new EmailNotFoundException(forgotPasswordDTO.email());
         }
-
         //fpToken: Lưu vào Redis
         String fpToken = jwtHelper.generateForgotPasswordToken(user.get().getUsername());
         tokenService.saveTokenInRedis("FORGOT_PASSWORD_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
