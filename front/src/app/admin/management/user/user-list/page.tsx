@@ -9,7 +9,8 @@ import { Input } from "antd";
 const { Search } = Input;
 
 export default function Page() {
-    const [currentPage, setCurrentPage] = useState(0); // State to manage the current pagination page
+    const [currentPage, setCurrentPage] = useState(1); // State to manage the current pagination page
+    const [curentPageSize, setcurentPageSize] = useState(10); // State to manage the number of items per page
     const [searchCriteria, setSearchCriteria] = useState({
         role: undefined as string | undefined, // Search criteria for role
         email: undefined as string | undefined, // Search criteria for email
@@ -20,12 +21,14 @@ export default function Page() {
     // Query data based on the current page and search criteria
     const { data, isLoading, error, isFetching } = useGetUserListQuery({
         page: currentPage,
+        size: curentPageSize, // Number of items per page
         ...searchCriteria, // Spread the search criteria (role, email, name, phone)
     });
 
     // Function to fetch data for the specified page
-    const fetchPage = (page: number) => {
+    const fetchPage = (page: number,size:number) => {
         setCurrentPage(page);
+        setcurentPageSize(size);
     };
 
     // Function to handle the search input

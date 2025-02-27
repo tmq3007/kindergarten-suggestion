@@ -31,8 +31,8 @@ public class UserController {
 
     @GetMapping()
     public ApiResponse<Page<UserVO>> getUsers(
-            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Invalid page number") int page,
-            @RequestParam(defaultValue = "10") @Max(value = 50, message = "Page size exceeds the maximum limit") int size,
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "10") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String name,

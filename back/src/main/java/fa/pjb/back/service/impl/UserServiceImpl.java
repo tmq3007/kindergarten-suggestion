@@ -8,11 +8,13 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
+
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -37,16 +39,31 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Page<UserVO> getAllUsers(int page,int size, String role, String email, String name, String phone) {
-        Pageable pageable =  PageRequest.of(page,size);
-        ERole roleEnum = null;
-        if (role != null && !role.isEmpty()) {
-            roleEnum = convertRole2(role); // Convert the String role to ERole
-        }
-        Page<User> userEntitiesPage = userRepository.findAllByCriteria(
-                roleEnum, email, name, phone, pageable
-        );
+    public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
+        Pageable pageable = PageRequest.of(page-1, size);
+        ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
+
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
         return userEntitiesPage.map(this::convertToUserVO);
+    }
+
+
+    private UserVO convertToUserVO(UserProjection user) {
+        String address = (user.getStreet() == null && user.getWard() == null &&
+                user.getDistrict() == null && user.getProvince() == null)
+                ? "N/A"
+                : (user.getStreet() + " " + user.getWard() + " " + user.getDistrict() + " " + user.getProvince()).trim();
+
+        return UserVO.builder()
+                .id(user.getId())
+                .fullname(user.getFullname())
+                .email(user.getEmail())
+                .phone(user.getPhone() != null ? user.getPhone() : "N/A")
+                .address(address.isEmpty() ? "N/A" : address)
+                .role(user.getRole().equals(ROLE_PARENT.toString()) ? "Parent" :
+                        user.getRole().equals(ROLE_SCHOOL_OWNER.toString()) ? "School Owner" : "Admin")
+                .status(user.getStatus() ? "Active" : "Inactive")
+                .build();
     }
 
     private ERole convertRole2(String role) {
@@ -135,65 +152,9 @@ public class UserServiceImpl implements UserService {
         responseDTO.setFullName(user.getFullname());
 
         emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
-                usernameAutoGen,passwordautoGen);
+                usernameAutoGen, passwordautoGen);
         return responseDTO;
     }
-
-    // Convert User entity to UserVO
-    private UserVO convertToUserVO(User user) {
-        // Check if the user role is PARENT
-        if (user.getRole() == ROLE_PARENT) {
-            Parent temp = parentRepository.findById(user.getId()).orElse(
-                    // Default Parent object with empty address fields
-                    Parent.builder().street(" ").ward(" ").district(" ").province(" ").build());
-
-            // Combine address fields into a single address string
-            String address = temp.getStreet() + " " + temp.getWard() + " " + temp.getDistrict() + " "
-                    + temp.getProvince();
-            // If the combined address is empty, set it to "N/A"
-            if (address.trim().isEmpty()) {
-                address = "N/A";
-            }
-
-            // Build and return UserVO object for a Parent
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address(address)
-                    .role("Parent")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        }
-        // Check if the user role is SCHOOL_OWNER
-        else if (user.getRole() == ROLE_SCHOOL_OWNER) {
-            // Build and return UserVO object for a School Owner
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address("N/A")
-                    .role("School Owner")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        }
-        // For other roles (e.g., ADMIN)
-        else {
-            // Build and return UserVO object for an Admin
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone("N/A")
-                    .address("N/A")
-                    .role("Admin")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        }
-    }
-
     @Override
     public UserDetailDTO getUserDetailById(int userId) {
         User user = userRepository.findById(userId)
