@@ -52,7 +52,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
         if (error && "data" in error) {
             const code = (error as CustomFetchBaseQueryError).data?.code;
 
-            if (code === 1001) {
+            if (code == 1100) {
                 messageApi.error("Email is not existed!").then(r => {
                     console.log(code)
                 });
@@ -83,7 +83,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
             {contextHolder}
             <Form
                 className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/3 sm:w-full shadow-xl`}
-                name="basic"
+                name="forgot-password-form"
                 labelCol={{span: 8}}
                 wrapperCol={{span: 16}}
                 style={{maxWidth: 600}}
@@ -98,7 +98,6 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
                     <p className={'text-gray-400 text-center mx-20 mb-5'}>
                         Please enter your email address and we'll send you a link to reset your password
                     </p>
-
 
 
                 <Form.Item<FieldType>

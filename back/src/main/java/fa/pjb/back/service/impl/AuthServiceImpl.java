@@ -3,6 +3,7 @@ package fa.pjb.back.service.impl;
 import fa.pjb.back.common.exception.auth.AccessDeniedException;
 import fa.pjb.back.common.exception.auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
+import fa.pjb.back.common.exception.auth.MissingDataException;
 import fa.pjb.back.common.exception.email.EmailNotFoundException;
 import fa.pjb.back.common.exception.user.UserNotFoundException;
 import fa.pjb.back.common.util.HttpRequestHelper;
@@ -57,6 +58,8 @@ public class AuthServiceImpl implements AuthService {
     private int CSRF_TOKEN_EXP;
     @Value("${forgot-password-token-exp}")
     private int FORGOT_TOKEN_EXP;
+    @Value("${reset-password-link-header}")
+    private String resetLinkHeader;
 
 
     @Override
@@ -152,35 +155,38 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout() {
+        // Get principal from SecurityContextHolder
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String username = "";
 
+        // Check if principal is an instance of User entity
         if (principal instanceof User user) {
             username = user.getUsername();
         } else {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
 
-        // Xóa token từ Redis
+        // Remove token from Redis
         tokenService.deleteTokenFromRedis("REFRESH_TOKEN", username);
 
     }
 
     @Override
     public ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
-        //Lấy user theo email
+        // Get user by email
         Optional<User> user = userRepository.findByEmail(forgotPasswordDTO.email());
-        //Kiểm tra nếu user tồn tại
+        // Check if user exists
         if (user.isEmpty()) {
             throw new EmailNotFoundException(forgotPasswordDTO.email());
         }
 
-        //fpToken: Lưu vào Redis
+        // fpToken: Store into Redis
         String fpToken = jwtHelper.generateForgotPasswordToken(user.get().getUsername());
         tokenService.saveTokenInRedis("FORGOT_PASSWORD_TOKEN", user.get().getUsername(), fpToken, FORGOT_TOKEN_EXP);
 
-        String resetLink = "http://localhost:3000/forgot-password/reset-password?username=" + user.get().getUsername() + "&token=" + fpToken;
+        // resetLink: Send resetLink in mail
+        String resetLink = resetLinkHeader + "?username=" + user.get().getUsername() + "&token=" + fpToken;
         emailService.sendLinkPasswordResetEmail(forgotPasswordDTO.email(), user.get().getUsername(), resetLink);
 
         return ForgotPasswordVO.builder()
@@ -192,23 +198,30 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletRequest request) {
 
+        // Get forgot_password_token from cookies
         String forgot_password_token = httpRequestHelper.extractJwtTokenFromCookie(request, "FORGOT_PASSWORD_TOKEN");
+        //Get username from cookies
         String username = httpRequestHelper.extractJwtTokenFromCookie(request, "FORGOT_PASSWORD_USERNAME");
 
-        //Lấy token từ Redis
+        // Check if forgot_password_token or username is missing
+        if(forgot_password_token == null || username == null) {
+            throw new MissingDataException("Forgot Password Token or Username has been missing through communication");
+        }
+
+        // Get token from Redis by username
         String tokenRedis = tokenService.getTokenFromRedis("FORGOT_PASSWORD_TOKEN", username);
 
-        //Kiểm tra nếu token không tồn tại hoặc không trùng với token gửi lên
+        // Check if token is not exists or not equals to saved one
         if (tokenRedis == null || !tokenRedis.equals(forgot_password_token)) {
             throw new JwtUnauthorizedException("Token is invalid");
         }
 
-        //Thay đổi password
+        // Change user's password
         User user = userRepository.findByUsername(username).get();
 
         user.setPassword(passwordEncoder.encode(resetPasswordDTO.password()));
 
-        //Xóa token từ Redis
+        // Remove token from Redis
         tokenService.deleteTokenFromRedis("FORGOT_PASSWORD_TOKEN", username);
     }
 
