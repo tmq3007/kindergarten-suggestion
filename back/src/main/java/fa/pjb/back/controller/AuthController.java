@@ -9,6 +9,7 @@ import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
+import fa.pjb.back.service.impl.AuthServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "This API provides user the capability to authentication")
 
 public class AuthController {
-    private static final Logger log = LogManager.getLogger(AuthController.class);
     private final AuthService authService;
     private final UserService userService;
 

@@ -1,5 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQuery } from "./config/baseQuery";
+import {ApiResponse, baseQuery, baseQueryWithReauth} from "./config/baseQuery";
 import { Pageable, UserVO } from "./types";
 
 export enum UserRole {
@@ -9,7 +9,7 @@ export enum UserRole {
 }
 export const userListApi = createApi({
     reducerPath: "userListApi",
-    baseQuery: baseQuery,
+    baseQuery: baseQueryWithReauth,
     tagTypes: ["User"],
     endpoints: (build) => ({
         getUserList: build.query<

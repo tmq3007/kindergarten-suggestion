@@ -4,7 +4,8 @@ import React, {useRef, useState} from "react";
 import {useDispatch} from "react-redux";
 import {resetUser} from "@/redux/features/userSlice"; // Import action updateUsername
 import {useRouter} from "next/navigation";
-import {useLogoutMutation} from "@/redux/services/authApi"; // Import action updateUsername
+import {useLogoutMutation} from "@/redux/services/authApi";
+import Link from "next/link"; // Import action updateUsername
 
 
 // Định nghĩa kiểu cho props
@@ -46,15 +47,11 @@ export default function UserDropdown({username}: UserDropdownProps) {
                         'Content-Type': 'application/json',
                     },
                 });
-
                 dispatch(resetUser());
-
             }
         } catch (error) {
             console.error("Logout failed:", error);
-            messageApi.error("Logout failed, back to login").then(() => {
-                dispatch(resetUser());
-            })
+            dispatch(resetUser());
         }
     }
     // Xử lý khi người dùng nhấn "Yes" trong Modal
@@ -67,7 +64,6 @@ export default function UserDropdown({username}: UserDropdownProps) {
     const handleCancel = () => {
         setIsModalVisible(false); // Đóng Modal nếu người dùng hủy
     };
-
 
 
     // Định nghĩa các mục trong menu của Dropdown
@@ -96,9 +92,10 @@ export default function UserDropdown({username}: UserDropdownProps) {
         },
         {
             label: (
-                <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
+                <Link href={'/public/view-account'}
+                      className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
                     My Profiles
-                </div>
+                </Link>
             ),
             key: "3",
         },
@@ -125,39 +122,39 @@ export default function UserDropdown({username}: UserDropdownProps) {
     return (
         <>
             {contextHolder}
-        <div ref={modalContainerRef}>
-            {/* Dropdown hiển thị tên người dùng */}
-            <Dropdown
-                className="text-blue-500 z-0"
-                menu={menuProps}
-                trigger={["click"]} // Chỉ mở Dropdown khi click, tránh hover trên mobile
-                open={isDropdownVisible} // Kiểm soát trạng thái hiển thị của Dropdown
-                onOpenChange={(open) => setIsDropdownVisible(open)} // Cập nhật trạng thái khi Dropdown thay đổi
-            >
-                <div onClick={() => setIsDropdownVisible(true)}>
-                    <Space>
-                        <UserOutlined className="text-black text-sm md:text-2xl" />
-                        <span className="text-sm hover:cursor-pointer">{`Welcome! ${username}`}</span>
-                        <DownOutlined />
-                    </Space>
-                </div>
-            </Dropdown>
+            <div ref={modalContainerRef}>
+                {/* Dropdown hiển thị tên người dùng */}
+                <Dropdown
+                    className="text-blue-500 z-0"
+                    menu={menuProps}
+                    trigger={["click"]} // Chỉ mở Dropdown khi click, tránh hover trên mobile
+                    open={isDropdownVisible} // Kiểm soát trạng thái hiển thị của Dropdown
+                    onOpenChange={(open) => setIsDropdownVisible(open)} // Cập nhật trạng thái khi Dropdown thay đổi
+                >
+                    <div onClick={() => setIsDropdownVisible(true)}>
+                        <Space>
+                            <UserOutlined className="text-black text-sm md:text-2xl"/>
+                            <span className="text-sm hover:cursor-pointer">{`Welcome! ${username}`}</span>
+                            <DownOutlined/>
+                        </Space>
+                    </div>
+                </Dropdown>
 
-            {/* Modal xác nhận Logout */}
-            <Modal
-                title="Are you leaving?"
-                open={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                footer={[
-                    <Button key="cancel" onClick={() => setIsModalVisible(false)}>Cancel</Button>,
-                    <Button key="logout" type="primary" danger onClick={handleLogout}>Yes</Button>
-                ]}
-                className="z-50" // Đảm bảo Modal hiển thị trên các phần tử khác
-                getContainer={() => modalContainerRef.current || document.body} // Render Modal vào container hoặc body nếu ref null
-            >
-                <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
-            </Modal>
-        </div>
+                {/* Modal xác nhận Logout */}
+                <Modal
+                    title="Are you leaving?"
+                    open={isModalVisible}
+                    onCancel={() => setIsModalVisible(false)}
+                    footer={[
+                        <Button key="cancel" onClick={() => setIsModalVisible(false)}>Cancel</Button>,
+                        <Button key="logout" type="primary" danger onClick={handleLogout}>Yes</Button>
+                    ]}
+                    className="z-50" // Đảm bảo Modal hiển thị trên các phần tử khác
+                    getContainer={() => modalContainerRef.current || document.body} // Render Modal vào container hoặc body nếu ref null
+                >
+                    <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
+                </Modal>
+            </div>
         </>
     );
 }

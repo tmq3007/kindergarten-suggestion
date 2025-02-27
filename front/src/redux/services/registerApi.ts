@@ -1,5 +1,5 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQuery} from "./config/baseQuery";
+import {ApiResponse, baseQuery, baseQueryWithReauth} from "./config/baseQuery";
 
 export type RegisterDTO = {
     fullname: string,
@@ -18,7 +18,7 @@ export type Country = {
 
 export const registerApi = createApi({
     reducerPath: "registerApi",
-    baseQuery: baseQuery,
+    baseQuery: baseQueryWithReauth,
     tagTypes: ["Register"],
     endpoints: (builder) => ({
         register: builder.mutation<ApiResponse<string>, RegisterDTO>({

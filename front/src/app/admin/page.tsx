@@ -3,11 +3,12 @@ import React from 'react';
 import {useLoginByAdminMutation} from "@/redux/services/authApi";
 import AdminLoginForm from "@/app/components/AdminLoginForm";
 import {motion} from 'framer-motion'
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
 
 
 export default function Page() {
     const [login, {data, isLoading, error}] = useLoginByAdminMutation();
-
     return (
         <div className="overflow-hidden relative min-h-screen bg-cyan-700 bg-opacity-50">
             {/* Chỉ thêm backdrop-blur khi loading là true */}

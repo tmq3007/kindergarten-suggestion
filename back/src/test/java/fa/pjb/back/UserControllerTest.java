@@ -1,6 +1,7 @@
-package fa.pjb.back.controller;
+package fa.pjb.back;
 
 import fa.pjb.back.common.response.ApiResponse;
+import fa.pjb.back.controller.UserController;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.service.UserService;
