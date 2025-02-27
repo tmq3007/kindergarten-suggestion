@@ -1,10 +1,24 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQuery } from "./config/baseQuery";
-import { Country, RegisterDTO } from "./types";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQuery, baseQueryWithReauth} from "./config/baseQuery";
+
+export type RegisterDTO = {
+    fullname: string,
+    email: string,
+    phone: string,
+    password: string,
+}
+export type Country = {
+    cca2?: any;
+    idd?: any;
+    code: string;
+    label: string;
+    dialCode: string;
+    flag: string;
+}
 
 export const registerApi = createApi({
     reducerPath: "registerApi",
-    baseQuery: baseQuery,
+    baseQuery: baseQueryWithReauth,
     tagTypes: ["Register"],
     endpoints: (builder) => ({
         register: builder.mutation<ApiResponse<string>, RegisterDTO>({
@@ -18,7 +32,7 @@ export const registerApi = createApi({
             query: (email) => ({
                 url: "/auth/check-email",
                 method: "GET",
-                params: { email: email },
+                params: {email: email},
             }),
             keepUnusedDataFor: 0,
         }),
@@ -26,7 +40,7 @@ export const registerApi = createApi({
             query: () => ({
                 url: "https://restcountries.com/v3.1/all",
             }),
-            transformResponse: (response: any[]) =>
+            transformResponse: (response: any[]): Country[] =>
                 response
                     .map((country) => ({
                         code: country.cca2,
@@ -40,4 +54,4 @@ export const registerApi = createApi({
         }),
     }),
 })
-export const { useRegisterMutation, useLazyCheckEmailQuery, useGetCountriesQuery } = registerApi;
+export const {useRegisterMutation, useLazyCheckEmailQuery, useGetCountriesQuery} = registerApi;

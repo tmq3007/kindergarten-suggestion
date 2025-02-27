@@ -1,10 +1,10 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQuery } from "@/redux/services/config/baseQuery";
-import { SchoolOwnerDTO } from "@/redux/services/types";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import {SchoolOwnerDTO} from "@/redux/services/types";
 
 export const schoolOwnerApi = createApi({
     reducerPath: "schoolOwnerApi",
-    baseQuery: baseQuery,
+    baseQuery: baseQueryWithReauth,
     tagTypes: ["SchoolOwner"],
     endpoints: (build) => ({
         createSchoolOwner: build.mutation<ApiResponse<SchoolOwnerDTO>, SchoolOwnerDTO>({

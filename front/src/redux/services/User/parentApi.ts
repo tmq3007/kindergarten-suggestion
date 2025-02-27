@@ -1,13 +1,14 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQuery } from "@/redux/services/config/baseQuery";
-import { ParentDTO } from "@/redux/services/types";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import {ParentDTO} from "@/redux/services/types";
+
 interface ChangePasswordDTO{
     oldPassword: string;
     newPassword: string
 }
 export const parentApi = createApi({
     reducerPath: "parentApi",
-    baseQuery: baseQuery,
+    baseQuery: baseQueryWithReauth,
     tagTypes: ["Parent"],
     endpoints: (build) => ({
         createParent: build.mutation<ApiResponse<ParentDTO>, ParentDTO>({

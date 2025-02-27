@@ -1,6 +1,5 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQuery } from "@/redux/services/config/baseQuery";
-import { ParentDTO } from "@/redux/services/types";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 
 interface AdminDTO{
     id: string,
@@ -14,7 +13,7 @@ interface AdminDTO{
 }
 export const adminApi = createApi({
     reducerPath: "adminApi",
-    baseQuery: baseQuery,
+    baseQuery: baseQueryWithReauth,
     tagTypes: ["Admin"],
     endpoints: (build) => ({
         createAdmin: build.mutation<ApiResponse<AdminDTO>, AdminDTO>({

@@ -112,9 +112,9 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
                     wrapperCol={{span: 24}}
                     rules={[
                         {required: true, message: 'Please input your password!'},
-                        {min: 8, message: 'Password must be at least 8 characters!'},
+                        {min: 7, message: 'Password must be at least 7 characters!'},
                         {
-                            pattern: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                            pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
                             message: 'Password must include uppercase, lowercase, and a number!'
                         }
                     ]}

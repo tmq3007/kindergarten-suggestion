@@ -1,9 +1,7 @@
 package fa.pjb.back.common.util;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -63,6 +61,22 @@ public class JwtHelper {
      */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractUsernameIgnoreExpiration(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getSubject();
+        } catch (ExpiredJwtException e) {
+            // Nếu token hết hạn, vẫn lấy được username từ claims trong ngoại lệ
+            return e.getClaims().getSubject();
+        } catch (JwtException e) {
+            // Nếu token không hợp lệ (sai chữ ký, định dạng sai), trả về null
+            return null;
+        }
     }
 
     // Phương thức dùng để trích xuất thời gian hết hạn của token

@@ -14,8 +14,7 @@ import {Spin} from 'antd';
 import {setSchoolOwner} from "@/redux/features/schoolOwnerSlice";
 import {useCreateSchoolOwnerMutation} from "@/redux/services/User/schoolOwnerApi";
 import {useCreateAdminMutation} from "@/redux/services/User/adminApi";
-import {useGetCountriesQuery} from "@/redux/services/registerApi";
-import {Country} from "@/redux/services/types";
+import {Country, useGetCountriesQuery} from "@/redux/services/registerApi";
 
 const {Option} = Select;
 const {Title} = Typography;
@@ -216,7 +215,7 @@ const CreateUser: React.FC = () => {
                     name="phone"
                     rules={[
                         {required: true, message: 'Phone number is required!'},
-                        {pattern: /^\d{10}$/, message: 'Phone number must be exactly 10 digits!'}
+                        {pattern: /^\d{4,14}$/,message: 'Phone number is wrong!'}
                     ]}
 
                 >
@@ -264,7 +263,6 @@ const CreateUser: React.FC = () => {
                         </Select>
                         <Form.Item
                             name="phone"
-                            rules={[{required: true, message: 'Please input your phone number!'}]}
                             noStyle
                             hasFeedback
                         >
@@ -283,7 +281,6 @@ const CreateUser: React.FC = () => {
                     label="DOB"
                     name="dob"
                     rules={[
-                        {required: true, message: 'Date of birth is required!'},
                         {
                             validator: (_, value) => {
                                 if (!value) return Promise.reject('Date of birth is required!');

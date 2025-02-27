@@ -15,14 +15,13 @@ public interface AuthService {
 
     LoginVO loginByParent(LoginDTO loginDTO);
 
-
-    LoginVO refresh(LoginDTO loginDTO, HttpServletResponse response);
+    LoginVO refresh(HttpServletRequest request);
 
     void logout();
 
     ForgotPasswordVO forgotPassword(ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response);
 
-    void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletRequest request) ;
+    void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletRequest request);
 
     boolean checkEmailExists(String email);
 }
