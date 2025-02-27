@@ -27,12 +27,12 @@ export default function HomeHeader() {
     const username = useSelector((state: RootState) => state.user?.username);
     return (
         <motion.nav
-            initial={{ y: -100, opacity: 0 }} // Header bắt đầu từ vị trí trên và mờ dần
-            animate={{ y: 0, opacity: 1 }} // Hiệu ứng cuộn từ trên xuống 0px
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{
-                duration: 1, // Thời gian tổng thể của hiệu ứng
-                ease: "easeInOut", // Kiểu chuyển động
-                opacity: { duration: 1.5, ease: "easeInOut" }, // Tùy chỉnh riêng cho opacity
+                duration: 1,
+                ease: "easeInOut",
+                opacity: { duration: 1.5, ease: "easeInOut" },
             }}
             className="fixed w-full top-0 bg-cyan-200 shadow-md z-10">
             <div className="flex items-center justify-between md:px-8 py-3">
@@ -100,7 +100,7 @@ export default function HomeHeader() {
                 </div>
 
 
-                {/* Login & Signup */}
+                 {/*Login & Signup*/}
                 {
                     username ?
                         <UserDropdown username={username}/> :

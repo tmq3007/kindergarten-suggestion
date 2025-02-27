@@ -9,19 +9,19 @@ import dayjs from "dayjs";
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '@/redux/store';
 import {setParent} from '@/redux/features/parentSlice';
-import {useCreateParentMutation} from '@/redux/services/User/parentApi';
 import {Spin} from 'antd';
 import {setSchoolOwner} from "@/redux/features/schoolOwnerSlice";
-import {useCreateSchoolOwnerMutation} from "@/redux/services/User/schoolOwnerApi";
-import {useCreateAdminMutation} from "@/redux/services/User/adminApi";
 import {Country, useGetCountriesQuery} from "@/redux/services/registerApi";
+import {useCreateParentMutation} from "@/redux/services/parentApi";
+import {useCreateSchoolOwnerMutation} from "@/redux/services/schoolOwnerApi";
+import {useCreateAdminMutation} from "@/redux/services/adminApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 
 const {Option} = Select;
 const {Title} = Typography;
 const formItemLayout = {
-    labelCol: {xs: {span: 24}, sm: {span: 8}}, // Adjust the label width
-    wrapperCol: {xs: {span: 24}, sm: {span: 16}}, // Adjust the input field
+    labelCol: {xs: {span: 24}, sm: {span: 8}}, // Điều chỉnh chiều rộng label
+    wrapperCol: {xs: {span: 24}, sm: {span: 16}}, // Điều chỉnh input field
 };
 
 

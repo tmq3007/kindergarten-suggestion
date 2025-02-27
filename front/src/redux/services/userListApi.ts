@@ -1,6 +1,6 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQuery, baseQueryWithReauth} from "./config/baseQuery";
-import { Pageable, UserVO } from "./types";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "./config/baseQuery";
+import {Pageable, UserVO} from "./types";
 
 export enum UserRole {
     ADMIN = 'ROLE_ADMIN',
