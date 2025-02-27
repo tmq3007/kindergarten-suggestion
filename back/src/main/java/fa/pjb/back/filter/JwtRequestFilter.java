@@ -33,7 +33,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final HttpRequestHelper httpRequestHelper;
     private final UserRepository userRepository;
 
-    // Danh sách URL không cần xác thực
+    // List of URLs that do not require authentication
     private static final List<String> PUBLIC_URLS = List.of(
 //            "/",
             "/api/auth/login/admin",
@@ -44,7 +44,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/api/auth/check-email",
             "/api/parent/register",
             "/api/auth/reset-password"
-
     );
 
     @Override
@@ -52,52 +51,50 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // Bỏ qua kiểm tra JWT nếu request thuộc danh sách PUBLIC_URLS
+        // Skip JWT verification if the request belongs to the PUBLIC_URLS list
         String requestURI = request.getRequestURI();
         if (PUBLIC_URLS.stream().anyMatch(requestURI::startsWith)) {
-
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Kiểm tra CSRF Token từ Cookie và Header
+        // Check CSRF Token from Cookie and Header
         String csrfTokenFromCookie = httpRequestHelper.extractJwtTokenFromCookie(request, "CSRF_TOKEN");
         String csrfTokenFromHeader = request.getHeader("X-CSRF-TOKEN");
         if (csrfTokenFromCookie == null || !csrfTokenFromCookie.equals(csrfTokenFromHeader)) {
-           throw new JwtUnauthorizedException("Invalid CSRF Token");
+            throw new JwtUnauthorizedException("Invalid CSRF Token");
         }
 
-        // Trích xuất JWT Access Token từ Cookie
+        // Extract JWT Access Token from Cookie
         String jwt = httpRequestHelper.extractJwtTokenFromCookie(request, "ACCESS_TOKEN");
         if (jwt == null) {
             throw new JwtUnauthorizedException("Invalid Access Token");
         }
-        // Nếu có jwt thì trích xuất username từ jwt
+        // If JWT exists, extract the username from the JWT
         String username = jwtHelper.extractUsername(jwt);
 
         if (username == null) {
             throw new JwtUnauthorizedException("Invalid Access Token");
         }
-        // Nếu có username thì kiểm tra người dùng đã xác thực chưa
-        // Bằng cách kiểm tra xem có tồn tại Authentication (người dùng đã xác thực) trong SecurityContext hay không
+        // If username exists, check if the user is authenticated
+        // by verifying if an Authentication (authenticated user) exists in the SecurityContext
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            // Nếu người dùng chưa xác thực thì ta tiến hành xác thực thông qua UserDetailsService
+            // If the user is not authenticated, proceed with authentication via UserDetailsService
             User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-            // Sau khi đã xác thực xong, ta tiếp tục kiểm tra tính hợp lệ của token
-            // Nếu token hợp lệ, ta tiến hành tạo UsernamePasswordAuthenticationToken chứa thông tin và quyền hạn người dùng (không cần chứa password)
+            // After authentication is complete, continue to check the validity of the token
+            // If the token is valid, create a UsernamePasswordAuthenticationToken
+            // containing the user's information and authorities (no need to include the password)
             if (jwtHelper.validateToken(jwt, userDetails)) {
-
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-
-                // Gán thông tin bổ sung về request (IP, Session ID, thông tin trình duyệt,...)
+                // Assign additional information about the request (IP, Session ID, browser information, etc.)
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetails(request));
-                // Đặt token vào SecurityContext
+                // Put authenticated token into SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }
-        // Tiếp tục chuyển request qua các filter khác
+        // Continue passing the request through other filters
         filterChain.doFilter(request, response);
     }
 }

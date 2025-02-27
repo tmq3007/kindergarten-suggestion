@@ -17,14 +17,14 @@ export default function StoreProvider({children}: Props) {
     const storeRef = useRef<AppStore>(undefined);
     const persistorRef = useRef<Persistor>({} as Persistor)
     if (!storeRef.current) {
-        // Khởi tạo store khi render lần đầu
+        // Initialize the store on the first render.
         storeRef.current = makeStore();
-        //xt- setupListeners để tự động xử lý trạng thái của query (loading, success, error)
+        // setupListeners to automatically handle the query state (loading, success, error).
         setupListeners(storeRef.current.dispatch);
-        // Khởi long Redux
+        // Start-up Redux
         persistorRef.current = persistStore(storeRef.current);
     }
-    // Trả về toàn bộ app được bọc trong Provider với store
+    // Return the entire app wrapped in a Provider with the store.
     return <Provider store={storeRef.current}>
         <PersistGate persistor={persistorRef.current} loading={null}>
             {children}

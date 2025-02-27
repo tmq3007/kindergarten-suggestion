@@ -5,32 +5,32 @@ import com.jcraft.jsch.Session;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Properties;
 
 @Slf4j
 public class SSHConnection {
-    // Biến giữ phiên SSH toàn cục, giúp quản lý trạng thái của SSH Tunnel trong suốt vòng đời ứng dụng
+    // Variable to hold the global SSH session,
+    // helps manage the state of the SSH Tunnel throughout the application's lifecycle
     private static Session session;
     private static final Dotenv dotenv = Dotenv.load();
 
     public static void setupSshTunnel(String sshHost, String sshUser, String sshKeyPath, int sshPort, String dbHost, int dbPort) throws Exception {
-        // Tạo kết nối SSH
+        // Create SSH connection
         JSch jsch = new JSch();
-        // Nạp SSH private key
+        // Import SSH private key
         jsch.addIdentity(sshKeyPath);
-        // Thiết lập phiên SSH với các thông tin cấu hình chính của máy chủ SSH
+        // Set up the SSH session with the main configuration details of the SSH server
         Session session = jsch.getSession(sshUser, sshHost, sshPort);
-        // Cấu hình SSH
+        // Config SSH
         Properties config = new Properties();
-        // Tắt kiểm tra SSH HostKey
+        // Turn-off SSH HostKey check
         config.put("StrictHostKeyChecking", "no");
         session.setConfig(config);
         session.connect();
 
-        // Chuyển tiếp kết nối từ localhost:xxx đến database-host:3306 qua SSH Tunnel
-        // >>> Ứng dụng sẽ kết nối MySQL bằng localhost:xxx nhưng thực chất dữ liệu được chuyển đến database từ xa thông qua SSH
+        // Forward the connection from localhost:xxx to database-host:3306 via SSH Tunnel
+        // The application will connect to MySQL using localhost:xxx,
+        // but the data is actually forwarded to the remote database through SSH
         int localPort = 3308;
         session.setPortForwardingL(localPort, dbHost, dbPort);
         log.info("SSH connection established on port {}", localPort);
