@@ -8,11 +8,9 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
-import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
 import java.time.LocalDate;
@@ -21,6 +19,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,16 +30,15 @@ import static fa.pjb.back.model.enums.ERole.*;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
-    private final AuthService authService;
     private final EmailService emailService;
     private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
 
 
     @Override
-    public Page<UserVO> getAllUsers(Pageable pageable, String role, String email, String name, String phone) {
+    public Page<UserVO> getAllUsers(int page,int size, String role, String email, String name, String phone) {
+        Pageable pageable =  PageRequest.of(page,size);
         ERole roleEnum = null;
         if (role != null && !role.isEmpty()) {
             roleEnum = convertRole2(role); // Convert the String role to ERole
@@ -69,7 +67,7 @@ public class UserServiceImpl implements UserService {
         };
     }
 
-    //generate username từ fullname
+    // Generate username from fullname
     public String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
 
@@ -83,7 +81,7 @@ public class UserServiceImpl implements UserService {
 
         String baseUsername = firstName + initials.toString().toUpperCase();
 
-        // đếm số lượng username đã tồn tại với prefix này
+        // Count the number of usernames already existing with this prefix
         long count = userRepository.countByUsernameStartingWith(baseUsername);
 
         return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
@@ -141,18 +139,23 @@ public class UserServiceImpl implements UserService {
         return responseDTO;
     }
 
+    // Convert User entity to UserVO
     private UserVO convertToUserVO(User user) {
-
+        // Check if the user role is PARENT
         if (user.getRole() == ROLE_PARENT) {
             Parent temp = parentRepository.findById(user.getId()).orElse(
+                    // Default Parent object with empty address fields
                     Parent.builder().street(" ").ward(" ").district(" ").province(" ").build());
 
-            //nếu address rỗng thì gán là N/A
+            // Combine address fields into a single address string
             String address = temp.getStreet() + " " + temp.getWard() + " " + temp.getDistrict() + " "
                     + temp.getProvince();
+            // If the combined address is empty, set it to "N/A"
             if (address.trim().isEmpty()) {
                 address = "N/A";
             }
+
+            // Build and return UserVO object for a Parent
             return UserVO.builder()
                     .id(user.getId())
                     .fullname(user.getFullname())
@@ -162,7 +165,10 @@ public class UserServiceImpl implements UserService {
                     .role("Parent")
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
-        } else if (user.getRole() == ROLE_SCHOOL_OWNER) {
+        }
+        // Check if the user role is SCHOOL_OWNER
+        else if (user.getRole() == ROLE_SCHOOL_OWNER) {
+            // Build and return UserVO object for a School Owner
             return UserVO.builder()
                     .id(user.getId())
                     .fullname(user.getFullname())
@@ -172,10 +178,13 @@ public class UserServiceImpl implements UserService {
                     .role("School Owner")
                     .status(user.getStatus() ? "Active" : "Inactive")
                     .build();
-        } else {
+        }
+        // For other roles (e.g., ADMIN)
+        else {
+            // Build and return UserVO object for an Admin
             return UserVO.builder()
                     .id(user.getId())
-                    .fullname(user.getUsername())
+                    .fullname(user.getFullname())
                     .email(user.getEmail())
                     .phone("N/A")
                     .address("N/A")
@@ -199,7 +208,6 @@ public class UserServiceImpl implements UserService {
                 user.getPhone(),
                 formatRole(user.getRole()),
                 user.getStatus() ? "Active" : "Inactive");
-
     }
 
     private String formatRole(ERole role) {

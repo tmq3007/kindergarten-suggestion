@@ -32,7 +32,7 @@ export const registerApi = createApi({
             query: (email) => ({
                 url: "/auth/check-email",
                 method: "GET",
-                params: {email: email},
+                params: { email: email },
             }),
             keepUnusedDataFor: 0,
         }),

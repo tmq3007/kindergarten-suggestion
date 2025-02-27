@@ -1,12 +1,20 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQuery, baseQueryWithReauth} from "./config/baseQuery";
-import { Pageable, UserVO } from "./types";
+import { UserVO } from "./types";
 
 export enum UserRole {
     ADMIN = 'ROLE_ADMIN',
     SCHOOL_OWNER = 'ROLE_SCHOOL_OWNER',
     PARENT = 'ROLE_PARENT',
 }
+
+export type Pageable = {
+    pageNumber: number,
+    pageSize: number,
+    totalElements: number,
+    totalPages: number,
+}
+
 export const userListApi = createApi({
     reducerPath: "userListApi",
     baseQuery: baseQueryWithReauth,
