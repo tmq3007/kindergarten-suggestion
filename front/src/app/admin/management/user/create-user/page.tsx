@@ -15,12 +15,13 @@ import {setSchoolOwner} from "@/redux/features/schoolOwnerSlice";
 import {useCreateSchoolOwnerMutation} from "@/redux/services/User/schoolOwnerApi";
 import {useCreateAdminMutation} from "@/redux/services/User/adminApi";
 import {Country, useGetCountriesQuery} from "@/redux/services/registerApi";
+import countriesKeepZero from "@/lib/countriesKeepZero";
 
 const {Option} = Select;
 const {Title} = Typography;
 const formItemLayout = {
-    labelCol: {xs: {span: 24}, sm: {span: 8}}, // Điều chỉnh chiều rộng label
-    wrapperCol: {xs: {span: 24}, sm: {span: 16}}, // Điều chỉnh input field
+    labelCol: {xs: {span: 24}, sm: {span: 8}}, // Adjust the label width
+    wrapperCol: {xs: {span: 24}, sm: {span: 16}}, // Adjust the input field
 };
 
 
@@ -35,27 +36,20 @@ const CreateUser: React.FC = () => {
     const [percent, setPercent] = React.useState(0);
     const {data: countries, isLoading: isLoadingCountry, error: errorCountries} = useGetCountriesQuery();
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(
-        countries?.find((c) => c.code === "VN") // Mặc định là Việt Nam
+        countries?.find((c) => c.code === "VN") // defaul: VN
     );
 
 
     const onFinish = async (values: any) => {
         setSpinning(true);
-        //let formattedPhone = values.phone ? String(values.phone) : "";
 
-// Đảm bảo `countriesWithTrunkPrefix` luôn là một mảng
+        // Ensure countriesWithTrunkPrefix is always an array
         const countriesWithTrunkPrefix = countries
             ? countries
-                .filter(country => country.idd?.root) // Lọc quốc gia có mã vùng điện thoại
-                .map(country => country.cca2) // Lấy mã quốc gia (VN, US, JP, ...)
+                .filter(country => country.idd?.root) // Filter countries with phone trunk codes
+                .map(country => country.cca2) // Get country code (VN, US, JP, ...)
             : [];
 
-
-        const countriesKeepZero = [
-            "+39", "+44", "+27", "+353", "+370", "+90", "+240",
-            "+501", "+502", "+503", "+504", "+505", "+506", "+507",
-            "+595", "+598", "+672", "+679", "+685", "+686", "+689"
-        ];
 
         const selectedCountryCode = selectedCountry?.dialCode || "+84"; // Mặc định là VN
 

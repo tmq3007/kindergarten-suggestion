@@ -2,6 +2,7 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailExistException;
 import fa.pjb.back.common.exception.InvalidDateException;
+import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
@@ -37,6 +38,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AutoGeneratorHelper autoGeneratorHelper;
 
 
     @Override
@@ -69,75 +71,49 @@ public class UserServiceImpl implements UserService {
         };
     }
 
-    //generate username từ fullname
-    public String generateUsername(String fullName) {
-        String[] parts = fullName.trim().split("\\s+");
-
-        String firstName = parts[parts.length - 1];
-        firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
-
-        StringBuilder initials = new StringBuilder();
-        for (int i = 0; i < parts.length - 1; i++) {
-            initials.append(parts[i].charAt(0));
-        }
-
-        String baseUsername = firstName + initials.toString().toUpperCase();
-
-        // đếm số lượng username đã tồn tại với prefix này
-        long count = userRepository.countByUsernameStartingWith(baseUsername);
-
-        return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
-    }
-
-    // Hàm tạo mật khẩu ngẫu nhiên
-    private String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8) + "a";
-    }
-
     @Override
     public UserDTO createAdmin(UserDTO userDTO) {
         Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
 
-        //check email da ton tai hay chua
+        //Check email exist
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
-        // Kiểm tra số điện thoại có đúng 10 chữ số không
-//        if (userDTO.getPhone() == null || !userDTO.getPhone().matches("\\d{10}")) {
-//            throw new InvalidPhoneNumberException();
-//        }
-        // Kiểm tra ngày sinh phải là ngày trong quá khứ
+
+        // Check if the date of birth is in the past
         if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
-        // Tạo mới Admin
-        String usernameAutoGen = generateUsername(userDTO.getFullName());
-        String passwordautoGen = generateRandomPassword();
-        User user = new User();
-        user.setUsername(usernameAutoGen);
-        user.setPassword(passwordEncoder.encode(passwordautoGen)); // Mật khẩu tự tạo
-        user.setEmail(userDTO.getEmail());
-        user.setRole(ERole.ROLE_ADMIN);
-        user.setStatus(userDTO.getStatus());
-        user.setPhone(userDTO.getPhone());
-        user.setDob(userDTO.getDob());
-        user.setFullname(userDTO.getFullName());
+        // Create Admin
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.getFullName());
+        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
+        User user =User.builder()
+                .username(usernameAutoGen)
+                .password(passwordAutoGen)
+                .role(ERole.ROLE_ADMIN)
+                .phone(userDTO.getPhone())
+                .fullname(userDTO.getFullName())
+                .status(userDTO.getStatus())
+                .dob(userDTO.getDob())
+                .email(userDTO.getEmail())
+                .build();
 
-        // Lưu User vào database
+        // Save User to database
         user = userRepository.save(user);
 
-        UserDTO responseDTO = new UserDTO();
-        responseDTO.setId(user.getId());
-        responseDTO.setUsername(user.getUsername());
-        responseDTO.setEmail(user.getEmail());
-        responseDTO.setRole(String.valueOf(ERole.ROLE_ADMIN));
-        responseDTO.setStatus(user.getStatus());
-        responseDTO.setPhone(user.getPhone());
-        responseDTO.setDob(user.getDob());
-        responseDTO.setFullName(user.getFullname());
+        UserDTO responseDTO = UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(String.valueOf(ERole.ROLE_ADMIN))
+                .status(user.getStatus())
+                .phone(user.getPhone())
+                .dob(user.getDob())
+                .fullName(user.getFullname())
+                .build();
 
         emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
-                usernameAutoGen,passwordautoGen);
+                usernameAutoGen,passwordAutoGen);
         return responseDTO;
     }
 

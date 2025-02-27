@@ -13,7 +13,7 @@ import {Country} from "@/redux/services/types";
 import {useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery} from '@/redux/services/addressApi';
 import {ROLES} from "@/lib/constants";
 import {unauthorized} from "next/navigation";
-
+import countriesKeepZero from "@/lib/countriesKeepZero";
 const {Option} = Select;
 const {Title} = Typography;
 const {TabPane} = Tabs;
@@ -58,11 +58,7 @@ const Profile = () => {
                 countries.find(c => c.code === "VN");
 
             if (country) {
-                const countriesKeepZero = [
-                    "+39", "+44", "+27", "+353", "+370", "+90", "+240",
-                    "+501", "+502", "+503", "+504", "+505", "+506", "+507",
-                    "+595", "+598", "+672", "+679", "+685", "+686", "+689"
-                ];
+
                 const shouldKeepZero = countriesKeepZero.includes(country.dialCode);
 
                 let phoneWithoutDialCode = phoneNumber.replace(country.dialCode, "").trim();

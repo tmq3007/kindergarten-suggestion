@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.*;
+import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.SchoolOwnerDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
@@ -12,6 +13,7 @@ import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolOwnerService;
+import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,15 +32,16 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
     private final SchoolRepository schoolRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    private final SOMapper soMapper;
+    private final AutoGeneratorHelper autoGeneratorHelper;
+
 
     public SchoolOwnerDTO createSchoolOwner(SchoolOwnerDTO dto) {
 
-        // Kiểm tra User có tồn tại không
+        // Check user exist
         Optional<User> existingUserEmail = userRepository.findByEmail(dto.getEmail());
         Optional<User> existingUserName = userRepository.findByUsername(dto.getUsername());
 
-        //check xem email da ton tai chua
+        //Check email exist
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
@@ -46,18 +49,14 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         if (existingUserName.isPresent()) {
             throw new UsernameExistException();
         }
-//        // Kiểm tra số điện thoại có đúng 10 chữ số không
-//        if (dto.getPhone() == null || !dto.getPhone().matches("\\d{10}")) {
-//            throw new InvalidPhoneNumberException();
-//        }
 
-        // Kiểm tra ngày sinh phải là ngày trong quá khứ
+        // Check if the date of birth is in the past
         if (dto.getDob() == null || !dto.getDob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
-        // Tạo User mới
-        String usernameAutoGen = generateUsername(dto.getFullName());
-        String passwordAutoGen = generateRandomPassword();
+        // Create
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(dto.getFullName());
+        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
 
         User user = User.builder()
                 .email(dto.getEmail())
@@ -71,57 +70,25 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
                 .build();
         userRepository.save(user);
 
-        // Kiểm tra nếu dto.getSchool() != null thì mới tìm trong database
+        // Check if dto.getSchool() is not null, then search in database
         School school = null;
         if (dto.getSchool() != null && dto.getSchool().getId() != null) {
             school = schoolRepository.findById(dto.getSchool().getId())
                     .orElseThrow(SchoolNotFoundException::new);
         }
 
-        // Tạo SchoolOwner
+        // Create SchoolOwner
         SchoolOwner schoolOwner = new SchoolOwner();
         schoolOwner.setUser(user);
-        schoolOwner.setSchool(school); // Chấp nhận null
+        schoolOwner.setSchool(school); //accept null
 
-        // Lưu SchoolOwner vào database
+        // Save SchoolOwner to database
         schoolOwner = schoolOwnerRepository.save(schoolOwner);
 
-        // Gửi email thông báo tài khoản
+        // send email with pwd and username
         emailService.sendUsernamePassword(dto.getEmail(), dto.getFullName(), usernameAutoGen, passwordAutoGen);
 
-        // Trả về DTO
-        return soMapper.toSchoolOwner(schoolOwner);
-    }
-
-
-    // Hàm tạo tên username từ Full Name
-    private String generateUsername(String fullName) {
-        String[] parts = fullName.trim().split("\\s+");
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Tên không hợp lệ");
-        }
-
-        String firstName = parts[parts.length - 1];
-        StringBuilder initials = new StringBuilder();
-        for (int i = 0; i < parts.length - 1; i++) {
-            initials.append(parts[i].charAt(0));
-        }
-        String baseUsername = firstName + initials.toString().toUpperCase();
-
-        // Kiểm tra xem username có bị trùng không
-        int count = 1;
-        String finalUsername = baseUsername + count;
-
-        while (userRepository.existsUserByUsername(finalUsername)) {
-            count++;
-            finalUsername = baseUsername + count;
-        }
-
-        return finalUsername;
-    }
-
-    // Hàm tạo mật khẩu ngẫu nhiên
-    private String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8);
+        // return DTO
+        return SOMapper.INSTANCE.toSchoolOwner(schoolOwner);
     }
 }
