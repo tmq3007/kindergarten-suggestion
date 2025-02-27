@@ -6,13 +6,13 @@ import Link from "next/link";
 import {Typography} from "antd";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
-import {useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation} from '@/redux/services/User/parentApi';
 import dayjs from "dayjs";
 import {useGetCountriesQuery} from '@/redux/services/registerApi';
 import {Country} from "@/redux/services/types";
 import {useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery} from '@/redux/services/addressApi';
 import {ROLES} from "@/lib/constants";
 import {unauthorized} from "next/navigation";
+import {useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery} from "@/redux/services/parentApi";
 
 const {Option} = Select;
 const {Title} = Typography;

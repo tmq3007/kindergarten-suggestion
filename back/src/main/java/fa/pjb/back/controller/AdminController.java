@@ -17,12 +17,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("admin")
 @Slf4j
 public class AdminController {
-    @Autowired
-    private ParentServiceImpl parentService;
-    @Autowired
-    private  SchoolOwnerServiceImpl schoolOwnerService;
-    @Autowired
-    private UserService userService;
+
+    private final ParentServiceImpl parentService;
+    private final  SchoolOwnerServiceImpl schoolOwnerService;
+    private final UserService userService;
 
     @PostMapping("/parents")
     public ApiResponse<ParentDTO> createParent(@RequestBody ParentDTO parentDTO) {

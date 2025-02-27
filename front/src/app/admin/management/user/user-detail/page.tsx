@@ -4,7 +4,7 @@ import { Spin, Button, DatePicker, Form, Input, Select, Space, Breadcrumb, notif
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import dayjs from 'dayjs';
-import { useGetUserDetailQuery, useToggleUserStatusMutation } from '@/redux/services/User/userApi'; // Import hooks từ userApi
+import {useGetUserDetailQuery, useToggleUserStatusMutation} from "@/redux/services/userApi";
 
 const formItemLayout = {
     labelCol: { sm: { span: 6 } },

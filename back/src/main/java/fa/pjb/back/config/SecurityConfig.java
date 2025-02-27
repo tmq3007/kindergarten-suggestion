@@ -33,8 +33,9 @@ public class SecurityConfig {
     };
     private final JwtRequestFilter jwtRequestFilter;
 
-    // Dùng AuthenticationConfiguration để lấy AuthenticationManager
-    // Spring Security sẽ tự động cấu hình AuthenticationManager dựa trên UserDetailsService và PasswordEncoder đã được khai báo
+    // Use AuthenticationConfiguration to get the AuthenticationManager
+    // Spring Security will automatically configure the AuthenticationManager
+    // based on the UserDetailsService and PasswordEncoder that have been declared
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -53,15 +54,12 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/check-email").permitAll()
                                 .requestMatchers("/api/parent/register").permitAll()
 //                                .anyRequest().permitAll()
-                        .anyRequest().authenticated()
+                                .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-//                .exceptionHandling(exception -> exception
-//                        .authenticationEntryPoint(null)
-//                )
                 .build();
     }
 
