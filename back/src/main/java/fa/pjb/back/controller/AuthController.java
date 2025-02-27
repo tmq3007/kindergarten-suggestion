@@ -1,5 +1,6 @@
 package fa.pjb.back.controller;
 
+import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
@@ -8,12 +9,15 @@ import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
+import fa.pjb.back.service.impl.AuthServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,35 +58,44 @@ public class AuthController {
                 .message("Link password reset sent successfully!")
                 .data(authService.forgotPassword(forgotPasswordDTO, response))
                 .build();
-        }
+    }
 
-        @Operation(summary = "Reset Password", description = "Reset Password")
-        @PostMapping("reset-password")
-        public ApiResponse<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
-                        HttpServletRequest request) {
-                authService.resetPassword(resetPasswordDTO, request);
-                return ApiResponse.builder()
-                        .code(HttpStatus.OK.value())
-                        .message("Password reset successfully!")
-                        .build();
-        }
+    @Operation(summary = "Reset Password", description = "Reset Password")
+    @PostMapping("reset-password")
+    public ApiResponse<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
+                                        HttpServletRequest request) {
+        authService.resetPassword(resetPasswordDTO, request);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Password reset successfully!")
+                .build();
+    }
 
-        @Operation(summary = "Logout" , description = "Logout")
-        @PutMapping("logout")
-        public ApiResponse<?> logout() {
-                authService.logout();
-                return ApiResponse.builder()
-                        .code(HttpStatus.OK.value())
-                        .message("Logout successfully!")
-                        .build();
-        }
+    @Operation(summary = "Logout", description = "Logout")
+    @PutMapping("logout")
+    public ApiResponse<?> logout() {
+        authService.logout();
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Logout successfully!")
+                .build();
+    }
 
-        @GetMapping("/check-email")
-        public ApiResponse<String> checkEmail(@RequestParam String email) {
-                return ApiResponse.<String>builder()
-                        .code(HttpStatus.OK.value())
-                        .message("Email available!")
-                        .data(String.valueOf(authService.checkEmailExists(email)))
-                        .build();
+    @GetMapping("check-email")
+    public ApiResponse<String> checkEmail(@RequestParam String email) {
+        return ApiResponse.<String>builder()
+                .code(HttpStatus.OK.value())
+                .message("Email available!")
+                .data(String.valueOf(authService.checkEmailExists(email)))
+                .build();
+    }
+
+    @PutMapping("refresh-token")
+    public ApiResponse<LoginVO> refreshToken(HttpServletRequest request) {
+        return ApiResponse.<LoginVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Login successfully!")
+                .data(authService.refresh(request))
+                .build();
     }
 }

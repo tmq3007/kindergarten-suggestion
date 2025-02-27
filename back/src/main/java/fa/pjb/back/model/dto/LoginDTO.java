@@ -13,7 +13,7 @@ public record LoginDTO(
         )
         String email,
 
-        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{7,}$",
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{7,}$",
                 message = "Password must have at least one letter, one number, and be at least seven characters long")
         String password
 ) {

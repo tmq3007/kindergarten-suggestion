@@ -47,9 +47,11 @@ public class SecurityConfig {
                                 .requestMatchers(ALLOWED_URLS).permitAll()
                                 .requestMatchers("/api/auth/login/admin").permitAll()
                                 .requestMatchers("/api/auth/login/public").permitAll()
-                                .requestMatchers("/api/auth/refresh").permitAll()
+                                .requestMatchers("/api/auth/refresh-token").permitAll()
                                 .requestMatchers("/api/auth/forgot-password").permitAll()
                                 .requestMatchers("/api/auth/reset-password").permitAll()
+                                .requestMatchers("/api/auth/check-email").permitAll()
+                                .requestMatchers("/api/parent/register").permitAll()
 //                                .anyRequest().permitAll()
                         .anyRequest().authenticated()
                 )
@@ -78,6 +80,6 @@ public class SecurityConfig {
 
     @Bean
     public static PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 }

@@ -4,6 +4,7 @@ import fa.pjb.back.common.exception.auth.AccessDeniedException;
 import fa.pjb.back.common.exception.auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
 import fa.pjb.back.common.exception.email.EmailNotFoundException;
+import fa.pjb.back.common.exception.user.UserNotFoundException;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
@@ -32,7 +33,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.rmi.server.LogStream;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -44,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private final HttpRequestHelper httpRequestHelper;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final UserDetailsServiceImpl userDetailsService;
     private final TokenService tokenService;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
@@ -54,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
     private int REFRESH_TOKEN_EXP;
     @Value("${csrf-token-exp}")
     private int CSRF_TOKEN_EXP;
-    @Value("${forgotpass-token-exp}")
+    @Value("${forgot-password-token-exp}")
     private int FORGOT_TOKEN_EXP;
 
 
@@ -83,13 +84,10 @@ public class AuthServiceImpl implements AuthService {
         String userId = user.getId().toString();
         String userRole = user.getRole().toString();
         // Tạo ra các Token ==========================================================
-
-        // Access Token: Lưu vào Cookie với HttpOnly
+        // Access Token
         String accessToken = jwtHelper.generateAccessToken(userDetails, userId, userRole);
-
-        // CSRF Token: Lưu vào Cookie không HttpOnly
+        // CSRF Token
         String csrfToken = jwtHelper.generateCsrfToken();
-
         // Refresh Token: Lưu vào Redis
         String refreshToken = jwtHelper.generateRefreshToken(userDetails, userId, userRole);
         tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
@@ -111,13 +109,50 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginVO refresh(LoginDTO loginDTO, HttpServletResponse response) {
-        return null;
+    public LoginVO refresh(HttpServletRequest request) throws JwtUnauthorizedException {
+        String csrfTokenFromCookie = httpRequestHelper.extractJwtTokenFromCookie(request, "CSRF_TOKEN");
+        String csrfTokenFromHeader = request.getHeader("X-CSRF-TOKEN");
+        if (csrfTokenFromCookie == null || !csrfTokenFromCookie.equals(csrfTokenFromHeader)) {
+            log.info("==================CSRF exception==================");
+            throw new JwtUnauthorizedException("Invalid CSRF Token");
+        }
+        String accessToken = httpRequestHelper.extractJwtTokenFromCookie(request, "ACCESS_TOKEN");
+        if (accessToken == null || accessToken.isEmpty()) {
+            log.info("==================access token err==================");
+            throw new JwtUnauthorizedException("Access token is empty");
+        }
+        log.info("==================access token pass==================");
+        String username = jwtHelper.extractUsernameIgnoreExpiration(accessToken);
+        if (username == null) {
+            throw new JwtUnauthorizedException("Invalid Access Token");
+        }
+        log.info("username: {}", username);
+        String refreshToken = tokenService.getTokenFromRedis("REFRESH_TOKEN", username);
+        log.info("refresh token: {}", refreshToken);
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new JwtUnauthorizedException("Refresh token is empty");
+        }
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        if (!jwtHelper.validateToken(refreshToken, userDetails)) {
+            throw new JwtUnauthorizedException("Invalid Refresh Token");
+        }
+        String userId = user.getId().toString();
+        String userRole = user.getRole().toString();
+        // Tạo ra các Token ==========================================================
+        // Access Token
+        String newAccessToken = jwtHelper.generateAccessToken(userDetails, userId, userRole);
+        // CSRF Token
+        String newCsrfToken = jwtHelper.generateCsrfToken();
+        return LoginVO.builder()
+                .accessToken(newAccessToken)
+                .csrfToken(newCsrfToken)
+                .build();
     }
 
     @Override
     public void logout() {
-        Object principal =  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String username = "";
 

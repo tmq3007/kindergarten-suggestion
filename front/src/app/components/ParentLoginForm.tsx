@@ -1,9 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Checkbox, Divider, Form, FormProps, Input, message} from 'antd';
+import React from 'react';
+import {Button, Divider, Form, FormProps, Input, message} from 'antd';
 import Link from "next/link";
-import {BASE_URL, baseQuery, CustomFetchBaseQueryError} from '@/redux/services/config/baseQuery';
 import {LoginDTO, useLoginByParentMutation} from "@/redux/services/authApi";
-import {useRouter} from "next/navigation";
 import useAuthRedirect from "@/lib/useAuthRedirect";
 import {useDispatch} from "react-redux";
 import {setPreviousPage} from "@/redux/features/authSlice";
@@ -66,9 +64,9 @@ export default function ParentLoginForm({onCancel, onSuccess}: RegisterFormProps
                     label="Password"
                     rules={[
                         {required: true, message: 'Please input your password!'},
-                        {min: 8, message: 'Password must be at least 8 characters!'},
+                        {min: 7, message: 'Password must be at least 7 characters!'},
                         {
-                            pattern: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                            pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
                             message: 'Password must include uppercase, lowercase, and a number!'
                         }
                     ]}

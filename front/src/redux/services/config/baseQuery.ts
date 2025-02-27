@@ -1,6 +1,9 @@
 import {BaseQueryApi, FetchArgs, fetchBaseQuery, FetchBaseQueryMeta} from "@reduxjs/toolkit/query/react";
-import Cookies from 'js-cookie'
+import Cookies from 'js-cookie';
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
+import {router} from "next/client";
+import {resetUser} from "@/redux/features/userSlice";
+
 // BASE_URL của server
 export const BASE_URL = 'http://localhost:8080/api';
 
@@ -27,36 +30,40 @@ export const baseQueryWithReauth = async (
     extraOptions: FetchBaseQueryMeta | any
 ) => {
     let result = await baseQuery(args, api, extraOptions);
-    // Nếu lỗi 401 Unauthorized thì gửi lại request bằng PUT method
-    if (result.error && result.error.status === 401) {
+    // Nếu lỗi 403 Unauthorized thì gửi lại request bằng PUT method
+    if (result.error && result.error.status === 403) {
         interface RefreshResponse {
-            accessToken: string;
-            refreshToken: string;
+            code: number;
+            data: {
+                accessToken: string;
+                csrfToken: string;
+            };
+            message: string;
         }
 
         const refreshResult = await baseQuery(
             {
                 // refresh token API
-                url: '/refreshToken',
+                url: '/auth/refresh-token',
                 method: 'PUT',
-                body: {
-                    // =========================================================================
-                    // Đính kèm Refresh Token được lưu trong local storage trong body của request
-                    // ** Để bảo mật thì không nên lưu token trong local  **
-                    // refreshToken: localStorage.getItem('refresh_token'),
-                    // =========================================================================
-                },
             },
             api,
             extraOptions,
         ) as { data: RefreshResponse };
 
         if (refreshResult.data) {
-            // Lưu token mới vào local storage
-            // localStorage.setItem('access_token', refreshResult.data.accessToken);
-            // localStorage.setItem('access_token', refreshResult.data.refreshToken);
-
-            // Cập nhật token mới vào Redux state nếu cần
+            const {accessToken, csrfToken} = refreshResult.data.data;
+            // Gọi API của Next.js để lưu token mới vào cookie
+            await fetch('/api/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    accessToken,
+                    csrfToken: csrfToken,
+                }),
+            });
 
             // Gửi lại request với Cookie đã được cập nhật token mới
             result = await baseQuery(
@@ -71,7 +78,16 @@ export const baseQueryWithReauth = async (
             );
         } else {
             // Nếu không thể refresh token thì đăng xuất người dùng
-
+            await fetch('/api/logout', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            localStorage.clear();
+            // Sử dụng api.dispatch thay vì useDispatch
+            api.dispatch(resetUser());  // Dùng api.dispatch thay vì useDispatch
+            await router.push("/public");
         }
     }
     return result;

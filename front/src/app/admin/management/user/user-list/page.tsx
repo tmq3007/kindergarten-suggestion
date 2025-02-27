@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { SearchOutlined } from "@ant-design/icons";
 import UserList from "@/app/components/UserList";
 import { useGetUserListQuery } from "@/redux/services/userListApi";
 import { useState } from "react";

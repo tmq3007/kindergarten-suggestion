@@ -56,11 +56,13 @@ export type Pageable = {
     totalElements: number,
     totalPages: number,
 }
-export type RegisterDTO = {
-    fullname: string,
-    email: string,
-    phone: string,
-    password: string,
+
+
+export type Country = {
+    code: string;
+    label: string;
+    dialCode: string;
+    flag: string;
 }
 
 export type SchoolDTO = {
@@ -95,14 +97,7 @@ export type SchoolOwnerDTO  = {
     school: SchoolDTO; // Chứa toàn bộ thông tin của School
 };
 
-export type Country = {
-    cca2: any;
-    idd: any;
-    code: string;
-    label: string;
-    dialCode: string;
-    flag: string;
-}
+
 
 export enum UserRole {
     ADMIN = 'ROLE_ADMIN',

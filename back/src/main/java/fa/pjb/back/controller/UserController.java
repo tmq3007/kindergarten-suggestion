@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,7 +54,7 @@ public class UserController {
             .build();
     }
 
-    @PutMapping("/update")
+    @PostMapping("/update")
     public ApiResponse<UserDetailDTO> updateUser(
         @Valid @RequestBody UserUpdateDTO userUpdateDTO
     ) {

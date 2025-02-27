@@ -50,13 +50,13 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private ERole role;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Parent Parent;
+//    @MapsId
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+//    private Parent Parent;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private SchoolOwner SchoolOwner;
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+//    private SchoolOwner SchoolOwner;
 
-    @NotNull
     @Column(name = "dob", nullable = false)
     private LocalDate dob;
 
