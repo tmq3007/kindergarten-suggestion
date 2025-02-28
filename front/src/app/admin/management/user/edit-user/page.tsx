@@ -18,7 +18,7 @@ const UserDetail: React.FC = () => {
     const searchParams = useSearchParams();
     const userId = searchParams.get('userId');
 
-    // Sử dụng RTK Query để lấy dữ liệu user
+    //take user detail information to userData
     const { data: userData, isLoading, isError } = useGetUserDetailQuery(Number(userId), {
         skip: !userId,
     });
@@ -48,7 +48,8 @@ const UserDetail: React.FC = () => {
         }
     }, [userData, form]);
 
-    const onSave = async (values: any) => {
+    //handle when click save button
+    const saveUser = async (values: any) => {
         if (!userId) return;
 
         try {
@@ -79,6 +80,7 @@ const UserDetail: React.FC = () => {
         }
     };
 
+    //Handle loading animation
     if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -87,6 +89,7 @@ const UserDetail: React.FC = () => {
         );
     }
 
+    //Handle notification error
     if (isError || !userData) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'red' }}>
@@ -112,7 +115,7 @@ const UserDetail: React.FC = () => {
                 labelWrap
                 style={{ maxWidth: 600 }}
                 className="w-full mx-auto mt-5"
-                onFinish={onSave}
+                onFinish={saveUser}
             >
                 <Form.Item
                     label={<span>User Name</span>}
