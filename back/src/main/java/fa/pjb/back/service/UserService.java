@@ -19,4 +19,6 @@ public interface UserService {
 
     UserDetailDTO toggleStatus(int userId);
 
+    UserDTO createUser(UserDTO userDTO);
+
 }

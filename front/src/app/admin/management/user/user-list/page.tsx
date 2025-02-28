@@ -51,7 +51,7 @@ export default function Page() {
                 phone: /^\d+$/.test(lowerValue) ? lowerValue : undefined, // Assume phone contains only numbers
             });
         }
-        setCurrentPage(0); // Reset to the first page on a new search
+        setCurrentPage(1); // Reset to the first page on a new search
     };
 
     // Function to check if the value is a valid role

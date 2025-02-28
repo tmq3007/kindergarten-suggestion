@@ -8,16 +8,13 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '@/redux/store';
-import {setParent} from '@/redux/features/parentSlice';
+import {setUser} from '@/redux/features/userCreateSlice';
 import {Spin} from 'antd';
-import {setSchoolOwner} from "@/redux/features/schoolOwnerSlice";
 import {Country, useGetCountriesQuery} from "@/redux/services/registerApi";
-import {useCreateParentMutation} from "@/redux/services/parentApi";
-import {useCreateSchoolOwnerMutation} from "@/redux/services/schoolOwnerApi";
-import {useCreateAdminMutation} from "@/redux/services/adminApi";
+import {useCreateUserMutation} from "@/redux/services/adminApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 
- const {Title} = Typography;
+const {Title} = Typography;
 const formItemLayout = {
     labelCol: {xs: {span: 24}, sm: {span: 8}}, // Adjust the width of the label
     wrapperCol: {xs: {span: 24}, sm: {span: 16}}, // Adjust the width of the input
@@ -28,16 +25,13 @@ const CreateUser: React.FC = () => {
     const [form] = Form.useForm();
     const [api, contextHolder] = notification.useNotification();
     const dispatch = useDispatch<AppDispatch>();
-    const [createParent] = useCreateParentMutation();
-    const [createSchoolOwner] = useCreateSchoolOwnerMutation()
-    const [createAdmin] = useCreateAdminMutation()
+    const [createUser] = useCreateUserMutation()
     const [spinning, setSpinning] = React.useState(false);
     const [percent, setPercent] = React.useState(0);
     const {data: countries, isLoading: isLoadingCountry, error: errorCountries} = useGetCountriesQuery();
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(
         countries?.find((c) => c.code === "VN") // default: VN
     );
-
 
     const onFinish = async (values: any) => {
         setSpinning(true);
@@ -63,63 +57,23 @@ const CreateUser: React.FC = () => {
             ...values,
             dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
             fullname: values.fullname,
-            gender: values.gender === "male", // Đúng kiểu Boolean
-            status: values.status === "1", // Đúng kiểu Boolean
             role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
             phone: formattedPhone,
-
         };
-
-        if (formattedValues.role === "ROLE_PARENT") {
-            formattedValues = {
-                ...formattedValues,
-                ward: values.ward || "",
-                province: values.province || "",
-                street: values.street || "",
-                district: values.district || "",
-            };
-        }
-
-        if (formattedValues.role === "ROLE_SCHOOL_OWNER") {
-            formattedValues = {
-                ...formattedValues,
-                school: values.school || {}, // SchoolDTO
-            };
-        }
 
         console.log("formattedValues:", formattedValues)
 
         try {
 
-            if (formattedValues.role === "ROLE_PARENT") {
-                const response = await createParent(formattedValues).unwrap();
+                const response = await createUser(formattedValues).unwrap();
                 console.log("response", response)
                 if (response.data) {
-                    dispatch(setParent(formattedValues));
+                    dispatch(setUser(formattedValues));
                     openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                     form.resetFields();
                 } else {
                     openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
                 }
-            } else if (formattedValues.role === "ROLE_SCHOOL_OWNER") {
-                const response = await createSchoolOwner(formattedValues).unwrap();
-                if (response.data) {
-                    dispatch(setSchoolOwner(formattedValues));
-                    openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
-                    form.resetFields();
-                } else {
-                    openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
-                }
-            } else {
-                const response = await createAdmin(formattedValues).unwrap();
-                if (response.data) {
-                    openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
-                    form.resetFields();
-                } else {
-                    openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
-                }
-            }
-
 
         } catch (error: any) {
             openNotificationWithIcon('error', 'User creation failed!', error?.data?.message || 'An error occurred while creating the user.');
@@ -222,7 +176,7 @@ const CreateUser: React.FC = () => {
                             value={selectedCountry?.code || "VN"}
                             className={'w-2'}
                             loading={isLoadingCountry}
-                             onChange={handleCountryChange}
+                            onChange={handleCountryChange}
                             dropdownStyle={{width: 250}}
                             style={{width: 120, borderRight: "1px #ccc"}}
                             optionLabelProp="label2"

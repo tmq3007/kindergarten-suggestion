@@ -22,6 +22,17 @@ public class AdminController {
     private final  SchoolOwnerServiceImpl schoolOwnerService;
     private final UserService userService;
 
+    @PostMapping("/user")
+    public ApiResponse<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+        UserDTO createdUser = userService.createUser(userDTO);
+        log.info("Received UserDTO: {}", userDTO);
+        return ApiResponse.<UserDTO>builder()
+                .code(200)
+                .message("User created successfully")
+                .data(createdUser)
+                .build();
+    }
+
     @PostMapping("/parents")
     public ApiResponse<ParentDTO> createParent(@RequestBody ParentDTO parentDTO) {
         ParentDTO createdParent = parentService.createParent(parentDTO);
