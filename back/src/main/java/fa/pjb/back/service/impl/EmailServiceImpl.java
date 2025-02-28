@@ -30,23 +30,28 @@ public class EmailServiceImpl implements EmailService {
 
     private final UserRepository userRepository;
 
-    public void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> model) throws MessagingException, IOException, TemplateException {
+    private void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> model) throws MessagingException, IOException, TemplateException {
 
+        // RFC 5321 limit max length of an email
+        if (to.length() > 254) {
+            throw new MessagingException("Email address too long");
+        }
         // Load email template
         Template template = freemarkerConfig.getTemplate("email/" + templateName + ".html");
 
-        // Process template với dữ liệu model
+        // Process template with model data
         String htmlBody = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
 
-        // Tạo MimeMessage
+        // Create MimeMessage
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+        // Transmit data into mail body
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlBody, true);
 
-        // Gửi email
+        // Send mail
         mailSender.send(message);
     }
 
@@ -54,16 +59,17 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public String sendLinkPasswordResetEmail(String to, String name, String resetLink) {
         try {
-            // Truyền dữ liệu vào template Freemarker
+            // Transmit data into template Freemarker
             Map<String, Object> model = new HashMap<>();
             model.put("name", name);
             model.put("resetLink", resetLink);
 
-            // Gửi email
+            // Send mail
             sendEmailWithTemplate(to, "Password Reset", "password-reset", model);
             return "Link password reset sent successfully!";
 
 
+        // Catch error
         } catch (MessagingException | IOException | TemplateException e) {
 
             return "Error while sending email: " + e.getMessage();

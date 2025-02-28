@@ -48,7 +48,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
     useEffect(() => {
 
         //Nếu reset password thành công thì thông báo thành công
-        if (data?.code === 200) {
+        if (data?.code == 200) {
             messageApi.success("Password has been reset").then(() => {
                 router.push(previous === 'admin' ? '/admin' : '/public');
             });
@@ -57,9 +57,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
         if (error && "data" in error) {
             const code = (error as CustomFetchBaseQueryError).data?.code;
 
-            if (code === 1001) {
-                messageApi.error("Token is invalid!").then(r => {
+            if (code == 1200) {
+                messageApi.error("This link has been used!!").then(r => {
                     console.log(code)
+                    router.push(previous === 'admin' ? '/admin' : '/public');
                 });
             } else {
                 messageApi.error("Something went wrong. Try again later!").then(r => {
@@ -87,7 +88,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
             {contextHolder}
             <Form
                 className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/3 sm:w-full shadow-xl`}
-                name="basic"
+                name="reset-password-form"
                 labelCol={{span: 8}}
                 wrapperCol={{span: 16}}
                 style={{maxWidth: 600}}
