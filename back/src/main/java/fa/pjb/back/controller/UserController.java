@@ -58,13 +58,20 @@ public class UserController {
     public ApiResponse<UserDetailDTO> updateUser(
         @Valid @RequestBody UserUpdateDTO userUpdateDTO
     ) {
-        UserDetailDTO updatedUser = userService.updateUser(userUpdateDTO);
-
-        return ApiResponse.<UserDetailDTO>builder()
-            .code(HttpStatus.OK.value())
-            .message("User updated successfully")
-            .data(updatedUser)
-            .build();
+        try {
+            UserDetailDTO updatedUser = userService.updateUser(userUpdateDTO);
+            return ApiResponse.<UserDetailDTO>builder()
+                .code(HttpStatus.OK.value())
+                .message("User updated successfully")
+                .data(updatedUser)
+                .build();
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.<UserDetailDTO>builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message(e.getMessage())
+                .data(null)
+                .build();
+        }
     }
 
     @PutMapping("/toggle")
