@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, Form, Image, Input, message, Select } from 'antd';
-import Link from "next/link";
-import {useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
-import { Country } from '@/redux/services/types';
+import React, {useEffect, useState} from 'react';
+import {Form, Image, Input, message, Select} from 'antd';
+import {useLazyCheckEmailQuery, useRegisterMutation} from '@/redux/services/registerApi';
+import {Country} from '@/redux/services/types';
 
 interface FieldType {
     fullname: string;

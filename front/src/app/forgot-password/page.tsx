@@ -8,10 +8,10 @@ import {motion} from 'framer-motion'
 
 export default function Page() {
 
-    const [forgotpassword, {data, isLoading, error}] = useForgotPasswordMutation();
+    const [forgotPassword, {data, isLoading, error}] = useForgotPasswordMutation();
 
     return (
-        <div className="overflow-hidden relative min-h-screen bg-cyan-700 bg-opacity-50">
+        <div className="overflow-hidden relative min-h-screen bg-teal-700 bg-opacity-50">
             {/* Chỉ thêm backdrop-blur khi loading là true */}
             <div className={`${isLoading ?
                 'fixed inset-0 bg-opacity-0 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-700 ease-in-out'
@@ -24,7 +24,7 @@ export default function Page() {
                 animate={{ opacity: 1, scale: [0, 1.4, 1] }} // Keyframes: 0 -> 1.2 -> 1
                 transition={{ duration: 0.8, ease: "easeInOut" }} // Thời gian và kiểu chuyển độn
                 className="flex items-center justify-center min-h-screen w-100">
-                <ForgotPasswordForm forgotpassword={forgotpassword} data={data} isLoading={isLoading} error={error}/>
+                <ForgotPasswordForm forgotPassword={forgotPassword} data={data} isLoading={isLoading} error={error}/>
             </motion.div>
         </div>
     );
