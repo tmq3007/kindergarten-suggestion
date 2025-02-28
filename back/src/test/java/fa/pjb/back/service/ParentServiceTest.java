@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import fa.pjb.back.common.exception.email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception.user.UserNotCreatedException;
+import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
@@ -42,6 +43,8 @@ class ParentServiceTest {
     private ParentMapper parentMapper;
     @InjectMocks
     private ParentServiceImpl parentService;
+    @Mock
+    private AutoGeneratorHelper autoGeneratorHelper;
 
     private RegisterDTO validRegisterDTO;
     private Parent validReturnParent;
@@ -70,7 +73,7 @@ class ParentServiceTest {
     void shouldSaveNewParentSuccessfully() throws UserNotCreatedException {
         Mockito.when(authService.checkEmailExists("test@example.com")).thenReturn(false);
         Mockito.when(parentRepository.save(Mockito.any())).thenReturn(validReturnParent);
-        Mockito.when(userService.generateUsername(Mockito.any())).thenReturn("DoeJ1");
+        Mockito.when(autoGeneratorHelper.generateUsername(Mockito.any())).thenReturn("DoeJ1");
         Mockito.when(passwordEncoder.encode(Mockito.any())).thenReturn("password123");
         Mockito.when(parentMapper.toRegisterVO(Mockito.any())).thenReturn(validRegisterVO);
         RegisterVO result = parentService.saveNewParent(validRegisterDTO);

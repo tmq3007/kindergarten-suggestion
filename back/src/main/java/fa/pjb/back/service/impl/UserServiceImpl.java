@@ -2,16 +2,19 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.EmailExistException;
 import fa.pjb.back.common.exception.InvalidDateException;
+import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
+import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
 
@@ -19,6 +22,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,15 +31,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import static fa.pjb.back.model.enums.ERole.*;
-
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final AuthService authService;
     private final EmailService emailService;
     private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AutoGeneratorHelper autoGeneratorHelper;
 
 
     @Override
@@ -84,81 +91,105 @@ public class UserServiceImpl implements UserService {
         };
     }
 
-    // Generate username from fullname
-    public String generateUsername(String fullName) {
-        String[] parts = fullName.trim().split("\\s+");
+    @Override
+    public UserDTO createAdmin(UserDTO userDTO) {
+        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.email());
+        log.info("user: {}", userDTO);
+        log.info("fullname: {}", userDTO.fullname());
+        log.info("email: {}", userDTO.email());
 
-        String firstName = parts[parts.length - 1];
-        firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
 
-        StringBuilder initials = new StringBuilder();
-        for (int i = 0; i < parts.length - 1; i++) {
-            initials.append(parts[i].charAt(0));
+        //Check email exist
+        if (existingUserEmail.isPresent()) {
+            throw new EmailExistException();
         }
 
-        String baseUsername = firstName + initials.toString().toUpperCase();
+        // Check if the date of birth is in the past
+        if (userDTO.dob() == null || !userDTO.dob().isBefore(LocalDate.now())) {
+            throw new InvalidDateException("Dob must be in the past");
+        }
+        // Create Admin
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.fullname());
+        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
+        User user =User.builder()
+                .username(usernameAutoGen)
+                .password(passwordAutoGen)
+                .role(ERole.ROLE_ADMIN)
+                .phone(userDTO.phone())
+                .fullname(userDTO.fullname())
+                .status(Boolean.valueOf(userDTO.status()))
+                .dob(userDTO.dob())
+                .email(userDTO.email())
+                .build();
 
-        // Count the number of usernames already existing with this prefix
-        long count = userRepository.countByUsernameStartingWith(baseUsername);
+        // Save User to database
+        user = userRepository.save(user);
 
-        return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
+        UserDTO responseDTO = UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(String.valueOf(ERole.ROLE_ADMIN))
+                .status(String.valueOf(user.getStatus()))
+                .phone(user.getPhone())
+                .dob(user.getDob())
+                .fullname(user.getFullname())
+                .build();
+
+        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
+                usernameAutoGen,passwordAutoGen);
+        return responseDTO;
     }
 
-  // Hàm tạo mật khẩu ngẫu nhiên
-  private String generateRandomPassword() {
-    return RandomStringUtils.randomAlphanumeric(8) + "a";
-  }
+    private UserVO convertToUserVO(User user) {
 
-  @Override
-  public UserDTO createAdmin(UserDTO userDTO) {
-    Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
+        if (user.getRole() == ROLE_PARENT) {
+            Parent temp = parentRepository.findById(user.getId()).orElse(
+                    Parent.builder().street(" ").ward(" ").district(" ").province(" ").build());
 
-    //check email da ton tai hay chua
-    if (existingUserEmail.isPresent()) {
-      throw new EmailExistException();
+            //nếu address rỗng thì gán là N/A
+            String address = temp.getStreet() + " " + temp.getWard() + " " + temp.getDistrict() + " "
+                    + temp.getProvince();
+            if (address.trim().isEmpty()) {
+                address = "N/A";
+            }
+            return UserVO.builder()
+                    .id(user.getId())
+                    .fullname(user.getFullname())
+                    .email(user.getEmail())
+                    .phone(user.getPhone())
+                    .address(address)
+                    .role("Parent")
+                    .status(user.getStatus() ? "Active" : "Inactive")
+                    .build();
+        } else if (user.getRole() == ROLE_SCHOOL_OWNER) {
+            return UserVO.builder()
+                    .id(user.getId())
+                    .fullname(user.getFullname())
+                    .email(user.getEmail())
+                    .phone(user.getPhone())
+                    .address("N/A")
+                    .role("School Owner")
+                    .status(user.getStatus() ? "Active" : "Inactive")
+                    .build();
+        } else {
+            return UserVO.builder()
+                    .id(user.getId())
+                    .fullname(user.getUsername())
+                    .email(user.getEmail())
+                    .phone("N/A")
+                    .address("N/A")
+                    .role("Admin")
+                    .status(user.getStatus() ? "Active" : "Inactive")
+                    .build();
+        }
     }
-    // Kiểm tra số điện thoại có đúng 10 chữ số không
-//        if (userDTO.getPhone() == null || !userDTO.getPhone().matches("\\d{10}")) {
-//            throw new InvalidPhoneNumberException();
-//        }
-    // Kiểm tra ngày sinh phải là ngày trong quá khứ
-    if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
-      throw new InvalidDateException("Dob must be in the past");
-    }
-    // Tạo mới Admin
-    String usernameAutoGen = generateUsername(userDTO.getFullName());
-    String passwordautoGen = generateRandomPassword();
-    User user = new User();
-    user.setUsername(usernameAutoGen);
-    user.setPassword(passwordEncoder.encode(passwordautoGen)); // Mật khẩu tự tạo
-    user.setEmail(userDTO.getEmail());
-    user.setRole(ERole.ROLE_ADMIN);
-    user.setStatus(userDTO.getStatus());
-    user.setPhone(userDTO.getPhone());
-    user.setDob(userDTO.getDob());
-    user.setFullname(userDTO.getFullName());
 
-    // Lưu User vào database
-    user = userRepository.save(user);
-
-    UserDTO responseDTO = new UserDTO();
-    responseDTO.setId(user.getId());
-    responseDTO.setUsername(user.getUsername());
-    responseDTO.setEmail(user.getEmail());
-    responseDTO.setRole(String.valueOf(ERole.ROLE_ADMIN));
-    responseDTO.setStatus(user.getStatus());
-    responseDTO.setPhone(user.getPhone());
-    responseDTO.setDob(user.getDob());
-    responseDTO.setFullName(user.getFullname());
-
-      emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
-              usernameAutoGen,passwordautoGen);
-      return responseDTO;
-  }
     @Override
     public UserDetailDTO getUserDetailById(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
         return new UserDetailDTO(
                 user.getId(),
                 user.getUsername(),

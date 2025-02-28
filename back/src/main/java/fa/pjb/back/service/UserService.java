@@ -11,8 +11,6 @@ import org.springframework.data.domain.Pageable;
 public interface UserService {
     Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone);
 
-    String generateUsername(String fullName);
-
     UserDTO createAdmin(UserDTO userDTO);
 
     UserDetailDTO getUserDetailById(int userId);
