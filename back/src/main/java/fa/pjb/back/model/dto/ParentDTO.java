@@ -1,16 +1,59 @@
 package fa.pjb.back.model.dto;
 
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
+import org.hibernate.validator.constraints.Length;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder
-public class ParentDTO extends UserDTO {
-   Integer id;
-   String district;
-   String ward;
-   String province;
-   String street;
+import java.time.LocalDate;
+
+@Builder
+public record ParentDTO(
+
+        Integer id,
+
+        @Nullable
+        String username,
+
+        @NotBlank(message = "Fullname cannot be empty")
+        @Length(min = 1, max = 255, message = "Fullname must be between 1 and 50 characters")
+        String fullname,
+
+        @Length(min = 7,max = 100, message = "Password must be at least 7 characters long")
+        @Pattern(
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d).{7,}$",
+                message = "Password must be at least 7 characters long, contain at least one letter, and one number"
+        )
+        String password,
+        @NotNull
+         @Length(min = 1, max = 255, message = "Email must be between 1 and 50 characters")
+        @Pattern(regexp = ".+@.+\\..+", message = "Invalid email format")
+        String email,
+
+        @NotNull
+        String role,
+
+        Boolean status,
+
+        @NotBlank(message = "Phone cannot be empty")
+        @Pattern(regexp = "^\\+\\d{1,4}[-\\s]?\\d{4,14}$", message = "Invalid phone format")
+        String phone,
+
+        @NotNull(message = "Date of birth cannot be null")
+        LocalDate dob,
+
+        @Nullable
+        String district,
+
+        @Nullable
+        String ward,
+
+        @Nullable
+        String province,
+
+        @Nullable
+        String street
+) {
 }

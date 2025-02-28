@@ -1,38 +1,39 @@
 package fa.pjb.back.model.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder
- @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserDTO {
-    Integer id;
+@Builder
+public record UserDTO(
+        Integer id,
 
-    String username;
+        @NotBlank(message = "Username cannot be empty")
+        String username,
 
-    String fullName;
+        @NotBlank(message = "Full name cannot be empty")
+        String fullName,
 
-    String password;
+        @NotBlank(message = "Password cannot be empty")
+        String password,
 
-    String email;
+        @NotBlank(message = "Email cannot be empty")
+        String email,
 
-    String role;
+        @NotBlank(message = "Role cannot be null or empty")
+        String role,
 
-    Boolean status;
+        @NotBlank(message = "Status cannot be null or empty")
+        String status,
 
-    String phone;
+        @Size(max = 20, message = "Phone number cannot exceed 20 characters")
+        @NotBlank(message = "Phone cannot be empty")
+        String phone,
 
-    LocalDate dob;
-
+        @NotNull(message = "Date of birth cannot be null")
+        LocalDate dob
+) {
 }

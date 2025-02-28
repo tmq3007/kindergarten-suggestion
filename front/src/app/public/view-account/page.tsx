@@ -15,6 +15,7 @@ import {unauthorized} from "next/navigation";
 import {useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery} from "@/redux/services/parentApi";
 
 import countriesKeepZero from "@/lib/countriesKeepZero";
+import {status} from "@tinyhttp/send";
 const {Option} = Select;
 const {Title} = Typography;
 const {TabPane} = Tabs;
@@ -44,7 +45,7 @@ const Profile = () => {
         skip: !selectedDistrict,
     });
 
-    const {data, isLoading, error: errorParent} = useGetParentByIdQuery(parentIdNumber);
+    const {data: parentData, isLoading, error: errorParent} = useGetParentByIdQuery(parentIdNumber);
 
     const [editParent, {isLoading: isEditLoading}] = useEditParentMutation();
     const [form] = Form.useForm();
@@ -53,8 +54,8 @@ const Profile = () => {
     const [api, contextHolder] = notification.useNotification();
 
     useEffect(() => {
-        if (data?.data && countries) {
-            const phoneNumber = data.data.phone || "";
+        if (parentData?.data && countries) {
+            const phoneNumber = parentData.data.phone || "";
             const country = countries?.find(c => phoneNumber.startsWith(c.dialCode)) ||
                 countries.find(c => c.code === "VN");
 
@@ -68,22 +69,22 @@ const Profile = () => {
                 }
 
                 form.setFieldsValue({
-                    fullName: data.data.fullName,
-                    username: data.data.username,
-                    email: data.data.email,
+                    fullname: parentData.data.fullname,
+                    username: parentData.data.username,
+                    email: parentData.data.email,
                     phone: phoneWithoutDialCode,
-                    dob: data.data.dob ? dayjs(data.data.dob) : null,
-                    province: data.data.province,
-                    district: data.data.district,
-                    ward: data.data.ward,
-                    street: data.data.street,
+                    dob: parentData.data.dob ? dayjs(parentData.data.dob) : null,
+                    province: parentData.data.province,
+                    district: parentData.data.district,
+                    ward: parentData.data.ward,
+                    street: parentData.data.street,
                 });
 
                 setSelectedCountry(country);
-                setSelectedWard(data.data.ward); // Cập nhật ward đã chọn từ dữ liệu ban đầu
+                setSelectedWard(parentData.data.ward); // Update selected ward from initial data
             }
         }
-    }, [data, form, countries]);
+    }, [parentData, form, countries]);
 
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
         setTimeout(() => {
@@ -94,16 +95,11 @@ const Profile = () => {
         }, 0);
     };
 
-    const onFinish1 = async (values: any) => {
+    const changeInformation = async (values: any) => {
         try {
             const selectedProvinceName = provinces?.find(p => p.code === values.province)?.name;
             const selectedDistrictName = districts?.find(d => d.code === values.district)?.name;
             const selectedWardName = wards?.find(w => w.code === values.ward)?.name;
-            const countriesKeepZero = [
-                "+39", "+44", "+27", "+353", "+370", "+90", "+240",
-                "+501", "+502", "+503", "+504", "+505", "+506", "+507",
-                "+595", "+598", "+672", "+679", "+685", "+686", "+689"
-            ];
 
             const selectedCountryCode = selectedCountry?.dialCode || "+84";
             const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
@@ -115,24 +111,26 @@ const Profile = () => {
                 parentId,
                 data: {
                     ...values,
-                    username: username || data?.data?.username,
+                    username: username || parentData?.data?.username,
+                    role: parentData?.data?.role,
+                    status: parentData?.data?.status,
                     dob: values.dob ? values.dob.format("YYYY-MM-DD") : undefined,
-                    province: selectedProvinceName || data?.data?.province,
-                    district: selectedDistrictName || data?.data?.district,
-                    ward: selectedWardName || data?.data?.ward,
-                    street: values.street || data?.data?.street,
-                    phone: formattedPhone || data?.data?.phone
+                    province: selectedProvinceName || parentData?.data?.province,
+                    district: selectedDistrictName || parentData?.data?.district,
+                    ward: selectedWardName || parentData?.data?.ward,
+                    street: values.street || parentData?.data?.street,
+                    phone: formattedPhone || parentData?.data?.phone,
+                    email: values.email || parentData?.data?.phone,
                 }
             }).unwrap();
-
+            console.log("valuesEM",values.email)
             openNotificationWithIcon('success', 'Updated successfully!', 'Your information has been updated');
         } catch (error) {
-            console.error("Lỗi cập nhật:", error);
             openNotificationWithIcon('error', 'Updated Fail!', 'Your information cannot be updated');
         }
     };
 
-    const onFinish2 = async (values: any) => {
+    const changePwd = async (values: any) => {
         if (values.newPassword !== values.confirmPassword) {
             openNotificationWithIcon('error', 'Failed!', 'New password and confirm password do not match.');
             return;
@@ -150,7 +148,6 @@ const Profile = () => {
             openNotificationWithIcon('success', 'Success!', 'Password changed successfully');
             passwordForm.resetFields();
         } catch (error) {
-            console.error("Lỗi đổi mật khẩu:", error);
             openNotificationWithIcon('error', 'Failed!', 'Current password is incorrect or request failed.');
         }
     };
@@ -170,20 +167,20 @@ const Profile = () => {
     };
 
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({district: undefined, ward: undefined, street: undefined}); // Reset các trường phụ thuộc
+        form.setFieldsValue({district: undefined, ward: undefined, street: undefined});// Reset dependent fields
         setSelectedProvince(provinceCode);
         setSelectedDistrict(undefined);
-        setSelectedWard(undefined); // Reset ward khi tỉnh thay đổi
+        setSelectedWard(undefined); // Reset ward when change province
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ward: undefined, street: undefined}); // Reset ward và street khi quận thay đổi
+        form.setFieldsValue({ward: undefined, street: undefined}); // Reset ward and street when change district
         setSelectedDistrict(districtCode);
-        setSelectedWard(undefined); // Reset ward khi quận thay đổi
+        setSelectedWard(undefined); // Reset ward when district change
     };
 
     const onWardChange = (wardCode: string) => {
-        setSelectedWard(wardCode); // Cập nhật ward khi người dùng chọn
+        setSelectedWard(wardCode); // Update ward when user selects
     };
 
     useEffect(() => {
@@ -211,7 +208,7 @@ const Profile = () => {
                 <Tabs defaultActiveKey="1" type="card" size="small" centered
                       className="flex-grow max-w-[1000px] flex flex-col">
                     <TabPane tab="My Information" key="1">
-                        <Form form={form} layout="vertical" onFinish={onFinish1} className="h-full flex flex-col">
+                        <Form form={form} layout="vertical" onFinish={changeInformation} className="h-full flex flex-col">
                             <div className="grid grid-cols-2 gap-4 flex-grow">
                                 <div className="flex flex-col">
                                     <Form.Item
@@ -223,7 +220,7 @@ const Profile = () => {
                                             }
                                         ]}
                                         hasFeedback
-                                        name="fullName"
+                                        name="fullname"
                                         label="Full Name"
                                         className="mb-10"
                                     >
@@ -402,7 +399,7 @@ const Profile = () => {
                         <Form
                             form={passwordForm}
                             layout="vertical"
-                            onFinish={onFinish2}
+                            onFinish={changePwd}
                             className="h-full flex flex-col w-full"
                         >
                             <div className="flex-grow">

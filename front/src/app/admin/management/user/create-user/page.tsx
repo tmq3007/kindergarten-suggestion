@@ -17,11 +17,10 @@ import {useCreateSchoolOwnerMutation} from "@/redux/services/schoolOwnerApi";
 import {useCreateAdminMutation} from "@/redux/services/adminApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 
-const {Option} = Select;
-const {Title} = Typography;
+ const {Title} = Typography;
 const formItemLayout = {
-    labelCol: {xs: {span: 24}, sm: {span: 8}}, // Điều chỉnh chiều rộng label
-    wrapperCol: {xs: {span: 24}, sm: {span: 16}}, // Điều chỉnh input field
+    labelCol: {xs: {span: 24}, sm: {span: 8}}, // Adjust the width of the label
+    wrapperCol: {xs: {span: 24}, sm: {span: 16}}, // Adjust the width of the input
 };
 
 
@@ -36,7 +35,7 @@ const CreateUser: React.FC = () => {
     const [percent, setPercent] = React.useState(0);
     const {data: countries, isLoading: isLoadingCountry, error: errorCountries} = useGetCountriesQuery();
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(
-        countries?.find((c) => c.code === "VN") // defaul: VN
+        countries?.find((c) => c.code === "VN") // default: VN
     );
 
 
@@ -55,7 +54,7 @@ const CreateUser: React.FC = () => {
 
         const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
 
-        // Nếu quốc gia giữ số 0 -> Giữ nguyên, ngược lại loại bỏ số 0 đầu
+        // If the country keeps the number 0 -> Keep it, otherwise remove the leading 0
         const formattedPhone = shouldKeepZero
             ? `${selectedCountryCode}${values.phone}`
             : `${selectedCountryCode}${values.phone.replace(/^0+/, "")}`;
@@ -63,6 +62,7 @@ const CreateUser: React.FC = () => {
         let formattedValues = {
             ...values,
             dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
+            fullname: values.fullname,
             gender: values.gender === "male", // Đúng kiểu Boolean
             status: values.status === "1", // Đúng kiểu Boolean
             role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
@@ -134,6 +134,7 @@ const CreateUser: React.FC = () => {
             description,
         });
     };
+    //handle country change
     const handleCountryChange = (value: string) => {
         if (countries) {
             const country = countries.find((c) => c.code === value);
@@ -143,7 +144,7 @@ const CreateUser: React.FC = () => {
         }
     };
 
-    // Xu ly thay doi so dien thoai
+    // // Handle changing phone number
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, "");
     };
@@ -169,24 +170,25 @@ const CreateUser: React.FC = () => {
                 style={{maxWidth: 600}}
                 className="w-full mx-auto mt-3 "
             >
-                <Form.Item label="User Name" name="username">
+                <Form.Item label="  User Name" name="username">
                     <Input placeholder="System Auto Generate" disabled/>
                 </Form.Item>
 
                 {/* Full Name */}
                 <Form.Item
                     label="Full Name"
-                    name="fullName"
+                    name="fullname"
                     rules={[
-                        {required: true, message: 'Full name is required!'},
+                        { required: true, message: 'Full name is required!' },
                         {
                             pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/,
                             message: 'Full name must contain at least two words!'
-                        }
+                        },
+                        { max: 50, message: 'Full name must not exceed 50 characters!' } // Thêm giới hạn độ dài
                     ]}
                     hasFeedback
                 >
-                    <Input/>
+                    <Input />
                 </Form.Item>
 
                 {/* Email */}

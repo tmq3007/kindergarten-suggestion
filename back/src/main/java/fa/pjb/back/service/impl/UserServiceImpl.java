@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO createAdmin(UserDTO userDTO) {
-        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
+        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.email());
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
@@ -81,21 +81,21 @@ public class UserServiceImpl implements UserService {
         }
 
         // Check if the date of birth is in the past
-        if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
+        if (userDTO.dob() == null || !userDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
         // Create Admin
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.getFullName());
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.username());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
         User user =User.builder()
                 .username(usernameAutoGen)
                 .password(passwordAutoGen)
                 .role(ERole.ROLE_ADMIN)
-                .phone(userDTO.getPhone())
-                .fullname(userDTO.getFullName())
-                .status(userDTO.getStatus())
-                .dob(userDTO.getDob())
-                .email(userDTO.getEmail())
+                .phone(userDTO.phone())
+                .fullname(userDTO.fullName())
+                .status(Boolean.valueOf(userDTO.status()))
+                .dob(userDTO.dob())
+                .email(userDTO.email())
                 .build();
 
         // Save User to database
@@ -106,13 +106,13 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(String.valueOf(ERole.ROLE_ADMIN))
-                .status(user.getStatus())
+                .status(String.valueOf(user.getStatus()))
                 .phone(user.getPhone())
                 .dob(user.getDob())
                 .fullName(user.getFullname())
                 .build();
 
-        emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
+        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullName(),
                 usernameAutoGen,passwordAutoGen);
         return responseDTO;
     }

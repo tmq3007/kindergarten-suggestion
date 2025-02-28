@@ -10,7 +10,7 @@ export interface AdminState {
     role: "ROLE_ADMIN" | null;
 }
 
-// Giá trị mặc định ban đầu
+// Default value
 const initialState: AdminState = {
     id: null,
     fullName: null,

@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import storage from "@/redux/ssr-safe-storage";
 
-// Định nghĩa kiểu dữ liệu dựa trên ParentDTO
+// Define data type based on ParentDTO
 export interface ParentState {
     id: number | null;
-    fullName: string | null;
-    email?:string ;
+    fullname: string | null;
+    email:string | null;
     status?:boolean;
     username?:string;
     phone: string | null;
@@ -15,20 +15,20 @@ export interface ParentState {
     province: string | null;
     street: string | null;
     role: "ROLE_PARENT" | null;
-
 }
 
-// Giá trị mặc định ban đầu
+// Default value
 const initialState: ParentState = {
     id: null,
-    fullName: null,
+    fullname: null,
+    email: "",
     phone: null,
     dob: null,
     district: null,
     ward: null,
     province: null,
     street: null,
-    role: null,
+    role: "ROLE_PARENT",
 };
 
 export const parentSlice = createSlice({

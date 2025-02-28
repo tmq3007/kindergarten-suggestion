@@ -23,20 +23,6 @@ export type LoginVO = {
     csrfToken: string,
 }
 
-export type ParentDTO = {
-    id: number;
-    username?: string;
-    email?: string;
-    status?: boolean;
-    fullName: string;
-    phone: string;
-    dob: string; // Vì TypeScript không có LocalDate, dùng string để nhận dạng ISO date
-    district: string;
-    ward: string;
-    province: string;
-    street: string;
-    role: "ROLE_PARENT"; // Định nghĩa cố định giá trị của role
-};
 
 
 export type UserVO = {
@@ -99,8 +85,3 @@ export type SchoolOwnerDTO  = {
 
 
 
-export enum UserRole {
-    ADMIN = 'ROLE_ADMIN',
-    SCHOOL_OWNER = 'ROLE_SCHOOL_OWNER',
-    PARENT = 'ROLE_PARENT',
-}

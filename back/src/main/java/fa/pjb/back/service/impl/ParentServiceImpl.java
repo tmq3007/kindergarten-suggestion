@@ -49,7 +49,6 @@ public class ParentServiceImpl implements ParentService {
     private final EmailService emailService;
     private final AutoGeneratorHelper autoGeneratorHelper;
 
-
     @Transactional
     @Override
     public RegisterVO saveNewParent(RegisterDTO registerDTO) throws UserNotCreatedException {
@@ -82,56 +81,55 @@ public class ParentServiceImpl implements ParentService {
     @Transactional
     public ParentDTO createParent(ParentDTO parentDTO) {
         // Check if the User already exists
-        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
-        Optional<User> existingUserName = userRepository.findByUsername(parentDTO.getUsername());
+        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.email());
 
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
         // Check if email is null or empty first
-        if (parentDTO.getEmail() == null || parentDTO.getEmail().trim().isEmpty()) {
+        if (parentDTO.email() == null || parentDTO.email().trim().isEmpty()) {
             throw new IllegalArgumentException("Email cannot be null or empty");
         }
 
         // Check if the date of birth is in the past
-        if (parentDTO.getDob() == null || !parentDTO.getDob().isBefore(LocalDate.now())) {
+        if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
 
         // Create new User
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(parentDTO.getFullName());
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(parentDTO.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
 
 
         User newUser = User.builder()
-                .email(parentDTO.getEmail())
+                .email(parentDTO.email())
                 .username(usernameAutoGen)
                 .password(passwordEncoder.encode(passwordAutoGen))
                 .role(ROLE_PARENT)
-                .phone(parentDTO.getPhone())
-                .fullname(parentDTO.getFullName())
-                .status(parentDTO.getStatus())
-                .dob(parentDTO.getDob())
+                .phone(parentDTO.phone())
+                .fullname(parentDTO.fullname())
+                .status(parentDTO.status())
+                .dob(parentDTO.dob())
                 .build();
 
         // Save User to database
-         userRepository.save(newUser);
+        userRepository.save(newUser);
 
         // Create new Parent
         Parent newParent = Parent.builder()
                 .user(newUser)
-               // .id(newUser.getId())
-                .district(parentDTO.getDistrict() != null ? parentDTO.getDistrict() : "")
-                .ward(parentDTO.getWard() != null ? parentDTO.getWard() : "")
-                .province(parentDTO.getProvince() != null ? parentDTO.getProvince() : "")
-                .street(parentDTO.getStreet() != null ? parentDTO.getStreet() : "")
+                // .id(newUser.getId())
+                .district(parentDTO.district() != null ? parentDTO.district() : "")
+                .ward(parentDTO.ward() != null ? parentDTO.ward() : "")
+                .province(parentDTO.province() != null ? parentDTO.province() : "")
+                .street(parentDTO.street() != null ? parentDTO.street() : "")
                 .build();
 
         // Save Parent to database
         parentRepository.save(newParent);
 
-        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
-                usernameAutoGen,passwordAutoGen);
+        emailService.sendUsernamePassword(parentDTO.email(), parentDTO.fullname(),
+                usernameAutoGen, passwordAutoGen);
         return parentMapper.toParentDTO(newParent);
     }
 
@@ -142,33 +140,48 @@ public class ParentServiceImpl implements ParentService {
 
         User user = parent.getUser();
 
-        // Check if the email already exists (excluding the User's own email)
-        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
-        if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
-            throw new EmailExistException();
+        String newEmail = parentDTO.email() != null ? parentDTO.email() : user.getEmail();
+        if (!newEmail.equals(user.getEmail())) {
+            Optional<User> existingUserEmail = userRepository.findByEmail(newEmail);
+            if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
+                throw new EmailExistException();
+            }
+            log.info("email: {}", newEmail);
         }
-
+        user.setEmail(newEmail);
         // Check if the date of birth is in the past
-        if (parentDTO.getDob() == null || !parentDTO.getDob().isBefore(LocalDate.now())) {
+        if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
 
         // Update User
-        user.setEmail(parentDTO.getEmail());
-        user.setUsername(parentDTO.getUsername());  // Update username if changed
-        user.setPhone(parentDTO.getPhone());
-        user.setDob(parentDTO.getDob());
+        user = User.builder()
+                .id(user.getId())
+                .username(parentDTO.username())
+                .phone(parentDTO.phone())
+                .fullname(parentDTO.fullname())
+                .status(parentDTO.status())
+                .dob(parentDTO.dob())
+                .role(ROLE_PARENT)
+                .password(user.getPassword())
+                .email(newEmail)
+                .build();
 
-        user.setFullname(parentDTO.getFullName());
         // Update Parent
-        parent.setDistrict(parentDTO.getDistrict());
-        parent.setWard(parentDTO.getWard());
-        parent.setProvince(parentDTO.getProvince());
-        parent.setStreet(parentDTO.getStreet());
-
+        parent = Parent.builder()
+                .id(parentId)
+                .district(parentDTO.district())
+                .ward(parentDTO.ward())
+                .province(parentDTO.province())
+                .street(parentDTO.street())
+                .user(user)
+                .build();
+        log.info("parent: {}", parent);
         // save change
-        userRepository.save(user);
+//        userRepository.save(user);
+
         parentRepository.save(parent);
+        log.info("save parent success");
 
         // Return ParentDTO
 

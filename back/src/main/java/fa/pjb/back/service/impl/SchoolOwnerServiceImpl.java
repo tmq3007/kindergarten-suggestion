@@ -38,8 +38,8 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
     public SchoolOwnerDTO createSchoolOwner(SchoolOwnerDTO dto) {
 
         // Check user exist
-        Optional<User> existingUserEmail = userRepository.findByEmail(dto.getEmail());
-        Optional<User> existingUserName = userRepository.findByUsername(dto.getUsername());
+        Optional<User> existingUserEmail = userRepository.findByEmail(dto.email());
+        Optional<User> existingUserName = userRepository.findByUsername(dto.username());
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
@@ -51,29 +51,29 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         }
 
         // Check if the date of birth is in the past
-        if (dto.getDob() == null || !dto.getDob().isBefore(LocalDate.now())) {
+        if (dto.dob() == null || !dto.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
         // Create
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(dto.getFullName());
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(dto.fullName());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
 
         User user = User.builder()
-                .email(dto.getEmail())
+                .email(dto.email())
                 .username(passwordEncoder.encode(usernameAutoGen))
                 .password(passwordAutoGen)
                 .role(ERole.ROLE_SCHOOL_OWNER)
-                .phone(dto.getPhone())
-                .fullname(dto.getFullName())
-                .status(dto.getStatus())
-                .dob(dto.getDob())
+                .phone(dto.phone())
+                .fullname(dto.fullName())
+                .status(Boolean.valueOf(dto.status()))
+                .dob(dto.dob())
                 .build();
         userRepository.save(user);
 
         // Check if dto.getSchool() is not null, then search in database
         School school = null;
-        if (dto.getSchool() != null && dto.getSchool().getId() != null) {
-            school = schoolRepository.findById(dto.getSchool().getId())
+        if (dto.school() != null && dto.school().id() != null) {
+            school = schoolRepository.findById(dto.school().id())
                     .orElseThrow(SchoolNotFoundException::new);
         }
 
@@ -86,7 +86,7 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         schoolOwner = schoolOwnerRepository.save(schoolOwner);
 
         // send email with pwd and username
-        emailService.sendUsernamePassword(dto.getEmail(), dto.getFullName(), usernameAutoGen, passwordAutoGen);
+        emailService.sendUsernamePassword(dto.email(), dto.fullName(), usernameAutoGen, passwordAutoGen);
 
         // return DTO
         return SOMapper.INSTANCE.toSchoolOwner(schoolOwner);

@@ -1,11 +1,24 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
-import {ParentDTO} from "@/redux/services/types";
 
 interface ChangePasswordDTO{
     oldPassword: string;
     newPassword: string
 }
+export type ParentDTO = {
+    id: number;
+    username?: string;
+    email: string;
+    status?: Boolean;
+    fullname: string;
+    phone: string;
+    dob: string; // Because TypeScript does not have LocalDate, use string to represent ISO date
+    district: string;
+    ward: string;
+    province: string;
+    street: string;
+    role: "ROLE_PARENT"; // Define fixed value of role
+};
 export const parentApi = createApi({
     reducerPath: "parentApi",
     baseQuery: baseQueryWithReauth,
@@ -15,17 +28,17 @@ export const parentApi = createApi({
             query: (parentData) => ({
                 url: "admin/parents",
                 method: "POST",
-                body: parentData, // Dữ liệu gửi lên API
+                body: parentData, // Data sent to API
             }),
-            invalidatesTags: ["Parent"], // Xóa cache khi tạo mới thành công
+            invalidatesTags: ["Parent"], // Clear cache when creation is successful
         }),
         getParentById: build.query<ApiResponse<ParentDTO>, number>({
             query: (parentId) => ({
                 url:`parent/${parentId}`,
                 method:"GET",
-            }) , // Endpoint API để lấy Parent theo ID
+            }) , // API endpoint to get Parent by ID
             transformErrorResponse: (response: { status: string | number }, meta, arg) => response.status,
-            providesTags: ["Parent"], // Cập nhật dữ liệu cache khi có thay đổi
+            providesTags: ["Parent"], // Update cache data when there are changes
         }),
         editParent: build.mutation<ApiResponse<ParentDTO>, { parentId: string; data: ParentDTO }>({
             query: ({ parentId, data }) => ({
@@ -47,5 +60,4 @@ export const parentApi = createApi({
     }),
 });
 
-// Export hook để sử dụng trong component
 export const { useCreateParentMutation, useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation } = parentApi;
