@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
@@ -15,7 +16,7 @@ public record UserDTO(
         String username,
 
         @NotBlank(message = "Full name cannot be empty")
-        String fullName,
+        String fullname,
 
         @NotBlank(message = "Password cannot be empty")
         String password,

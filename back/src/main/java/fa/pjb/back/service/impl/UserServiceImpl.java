@@ -9,6 +9,7 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
@@ -21,14 +22,16 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import static fa.pjb.back.model.enums.ERole.*;
-
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
@@ -91,6 +94,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO createAdmin(UserDTO userDTO) {
         Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.email());
+        log.info("user: {}", userDTO);
+        log.info("fullname: {}", userDTO.fullname());
+        log.info("email: {}", userDTO.email());
+
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
@@ -102,14 +109,14 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
         // Create Admin
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.username());
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
         User user =User.builder()
                 .username(usernameAutoGen)
                 .password(passwordAutoGen)
                 .role(ERole.ROLE_ADMIN)
                 .phone(userDTO.phone())
-                .fullname(userDTO.fullName())
+                .fullname(userDTO.fullname())
                 .status(Boolean.valueOf(userDTO.status()))
                 .dob(userDTO.dob())
                 .email(userDTO.email())
@@ -126,10 +133,10 @@ public class UserServiceImpl implements UserService {
                 .status(String.valueOf(user.getStatus()))
                 .phone(user.getPhone())
                 .dob(user.getDob())
-                .fullName(user.getFullname())
+                .fullname(user.getFullname())
                 .build();
 
-        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullName(),
+        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
                 usernameAutoGen,passwordAutoGen);
         return responseDTO;
     }

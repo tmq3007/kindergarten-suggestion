@@ -16,7 +16,7 @@ public record SchoolOwnerDTO(
         String username,
 
         @NotBlank(message = "Full name cannot be empty")
-        String fullName,
+        String fullname,
 
         @NotBlank(message = "Password cannot be empty")
         String password,

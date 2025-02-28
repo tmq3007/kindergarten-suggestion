@@ -15,6 +15,7 @@ import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolOwnerService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SchoolOwnerServiceImpl implements SchoolOwnerService {
@@ -33,7 +35,7 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
-
+    private final SOMapper soMapper;
 
     public SchoolOwnerDTO createSchoolOwner(SchoolOwnerDTO dto) {
 
@@ -55,20 +57,23 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
             throw new InvalidDateException("Dob must be in the past");
         }
         // Create
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(dto.fullName());
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(dto.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
 
         User user = User.builder()
+                .id(dto.id())
                 .email(dto.email())
-                .username(passwordEncoder.encode(usernameAutoGen))
+                .username(usernameAutoGen)
                 .password(passwordAutoGen)
                 .role(ERole.ROLE_SCHOOL_OWNER)
                 .phone(dto.phone())
-                .fullname(dto.fullName())
+                .fullname(dto.fullname())
                 .status(Boolean.valueOf(dto.status()))
                 .dob(dto.dob())
                 .build();
+        log.info("User created: {}", user);
         userRepository.save(user);
+
 
         // Check if dto.getSchool() is not null, then search in database
         School school = null;
@@ -78,17 +83,19 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         }
 
         // Create SchoolOwner
-        SchoolOwner schoolOwner = new SchoolOwner();
-        schoolOwner.setUser(user);
-        schoolOwner.setSchool(school); //accept null
+        SchoolOwner schoolOwner = SchoolOwner.builder()
+                .id(dto.id())
+                .user(user)
+                .school(school)
+                .build();
 
         // Save SchoolOwner to database
         schoolOwner = schoolOwnerRepository.save(schoolOwner);
 
         // send email with pwd and username
-        emailService.sendUsernamePassword(dto.email(), dto.fullName(), usernameAutoGen, passwordAutoGen);
+        emailService.sendUsernamePassword(dto.email(), dto.fullname(), usernameAutoGen, passwordAutoGen);
 
         // return DTO
-        return SOMapper.INSTANCE.toSchoolOwner(schoolOwner);
+        return soMapper.toSchoolOwner(schoolOwner);
     }
 }

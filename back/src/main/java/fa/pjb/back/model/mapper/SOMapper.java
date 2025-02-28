@@ -12,7 +12,7 @@ public interface SOMapper
 {
 
     @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "fullName", source = "user.fullname")
+    @Mapping(target = "fullname", source = "user.fullname")
     //@Mapping(target = "password", source = "user.password")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "role", source = "user.role")
