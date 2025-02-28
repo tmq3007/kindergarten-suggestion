@@ -64,7 +64,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
             width: 100,
             render: (_: any, record: UserVO) => (
                 <Space size="middle" className="flex justify-center">
-                    <Link href={`edit-user?userId=${record.id}`}>
+                    <Link href={`user-detail?userId=${record.id}`}>
                         <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
                     </Link>
                     <Popconfirm
