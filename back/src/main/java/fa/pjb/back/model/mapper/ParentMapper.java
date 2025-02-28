@@ -10,7 +10,6 @@ import org.mapstruct.factory.Mappers;
 @Mapper(componentModel = "spring")
 public interface ParentMapper {
 
-    ParentMapper INSTANCE = Mappers.getMapper(ParentMapper.class);
 
     @Mapping(target = "email", expression = "java(parent.getUser().getEmail())")
     @Mapping(target = "registrationDate", expression = "java(java.time.LocalDateTime.now())")

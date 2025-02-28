@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.*;
+import fa.pjb.back.common.exception.email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception.user.UserNotFoundException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentDTO;
@@ -35,7 +36,6 @@ import static fa.pjb.back.config.SecurityConfig.passwordEncoder;
 import static fa.pjb.back.model.enums.ERole.ROLE_PARENT;
 
 @RequiredArgsConstructor
-
 @Slf4j
 @Service
 public class ParentServiceImpl implements ParentService {
@@ -53,7 +53,7 @@ public class ParentServiceImpl implements ParentService {
     @Override
     public RegisterVO saveNewParent(RegisterDTO registerDTO) throws UserNotCreatedException {
         if (authService.checkEmailExists(registerDTO.email())) {
-            throw new UserNotCreatedException("Email already exists");
+            throw new EmailAlreadyExistedException("Email already exists");
         }
         try {
             String username = autoGeneratorHelper.generateUsername(registerDTO.fullname());

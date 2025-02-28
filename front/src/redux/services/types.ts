@@ -25,25 +25,6 @@ export type LoginVO = {
 
 
 
-export type UserVO = {
-    id: string,
-    fullname: string,
-    email: string,
-    phoneNo: string,
-    dob: string,
-    address: string,
-    role: string,
-    status: string,
-}
-
-export type Pageable = {
-    pageNumber: number,
-    pageSize: number,
-    totalElements: number,
-    totalPages: number,
-}
-
-
 export type Country = {
     code: string;
     label: string;

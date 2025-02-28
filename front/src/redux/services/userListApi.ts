@@ -1,12 +1,30 @@
-import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth} from "./config/baseQuery";
-import {Pageable, UserVO} from "./types";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQuery, baseQueryWithReauth} from "./config/baseQuery";
 
 export enum UserRole {
     ADMIN = 'ROLE_ADMIN',
     SCHOOL_OWNER = 'ROLE_SCHOOL_OWNER',
     PARENT = 'ROLE_PARENT',
 }
+
+export type UserVO = {
+    id: string,
+    fullname: string,
+    email: string,
+    phoneNo: string,
+    dob: string,
+    address: string,
+    role: string,
+    status: string,
+}
+
+export type Pageable = {
+    pageNumber: number,
+    pageSize: number,
+    totalElements: number,
+    totalPages: number,
+}
+
 export const userListApi = createApi({
     reducerPath: "userListApi",
     baseQuery: baseQueryWithReauth,
@@ -14,14 +32,14 @@ export const userListApi = createApi({
     endpoints: (build) => ({
         getUserList: build.query<
             ApiResponse<{ content: UserVO[]; pageable: Pageable }>,
-            { page?: number; role?: string; email?: string; name?: string; phone?: string }
+            { page?: number,size?:number; role?: string; email?: string; name?: string; phone?: string }
         >({
-            query: ({ page = 0, role, email, name, phone }) => ({
+            query: ({ page = 1,size, role, email, name, phone }) => ({
                 url: `/user`,
                 method: "GET",
                 params: {
                     page,
-                    size: 10,
+                    size,
                     ...(role && { role: role }),
                     ...(email && { email }),
                     ...(name && { name }),

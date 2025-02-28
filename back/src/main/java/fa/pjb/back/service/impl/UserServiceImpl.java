@@ -9,13 +9,14 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
-import fa.pjb.back.model.mapper.UserMapper;
+import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
+
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -42,15 +43,31 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Page<UserVO> getAllUsers(Pageable pageable, String role, String email, String name, String phone) {
-        ERole roleEnum = null;
-        if (role != null && !role.isEmpty()) {
-            roleEnum = convertRole2(role); // Convert the String role to ERole
-        }
-        Page<User> userEntitiesPage = userRepository.findAllByCriteria(
-                roleEnum, email, name, phone, pageable
-        );
+    public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
+        Pageable pageable = PageRequest.of(page-1, size);
+        ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
+
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
         return userEntitiesPage.map(this::convertToUserVO);
+    }
+
+
+    private UserVO convertToUserVO(UserProjection user) {
+        String address = (user.getStreet() == null && user.getWard() == null &&
+                user.getDistrict() == null && user.getProvince() == null)
+                ? "N/A"
+                : (user.getStreet() + " " + user.getWard() + " " + user.getDistrict() + " " + user.getProvince()).trim();
+
+        return UserVO.builder()
+                .id(user.getId())
+                .fullname(user.getFullname())
+                .email(user.getEmail())
+                .phone(user.getPhone() != null ? user.getPhone() : "N/A")
+                .address(address.isEmpty() ? "N/A" : address)
+                .role(user.getRole().equals(ROLE_PARENT.toString()) ? "Parent" :
+                        user.getRole().equals(ROLE_SCHOOL_OWNER.toString()) ? "School Owner" : "Admin")
+                .status(user.getStatus() ? "Active" : "Inactive")
+                .build();
     }
 
     private ERole convertRole2(String role) {
@@ -174,77 +191,72 @@ public class UserServiceImpl implements UserService {
                 user.getDob() != null ? user.getDob().toString() : null,
                 user.getPhone(),
                 formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive");
+                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+    }
+  //Covert ERole to String
+  private String formatRole(ERole role) {
+    return switch (role) {
+      case ROLE_PARENT -> "Parent";
+      case ROLE_SCHOOL_OWNER -> "School Owner";
+      case ROLE_ADMIN -> "Admin";
+      default -> "Unknown Role";
+    };
+  }
 
+  //Covert String Role => ERole
+  private ERole convertRole(String role) {
+    return switch (role.toUpperCase()) {
+      case "PARENT" -> ROLE_PARENT;
+      case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+      case "ADMIN" -> ERole.ROLE_ADMIN;
+      default -> throw new IllegalArgumentException("Invalid role: " + role);
+    };
+  }
+
+  // Update User Detail
+  @Override
+  public UserDetailDTO updateUser(UserUpdateDTO dto) {
+    User user = userRepository.findById(dto.id())
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+
+    if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
+      throw new EmailExistException();
     }
 
-    private String formatRole(ERole role) {
-        switch (role) {
-            case ROLE_PARENT:
-                return "Parent";
-            case ROLE_SCHOOL_OWNER:
-                return "School Owner";
-            case ROLE_ADMIN:
-                return "Admin";
-            default:
-                return "Unknown Role";
-        }
-    }
+    user.setFullname(dto.fullname());
+    user.setUsername(dto.username());
+    user.setEmail(dto.email());
+    user.setDob(LocalDate.parse(dto.dob()));
+    user.setPhone(dto.phone());
+    user.setRole(convertRole(dto.role()));
+    user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
 
-    // Chuyển role ra đúng format
-    private ERole convertRole(String role) {
-        return switch (role.toUpperCase()) {
-            case "PARENT" -> ROLE_PARENT;
-            case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-            case "ADMIN" -> ERole.ROLE_ADMIN;
-            default -> throw new IllegalArgumentException("Invalid role: " + role);
-        };
-    }
+    userRepository.save(user);
 
-    // Update UserDetail
-    @Override
-    public UserDetailDTO updateUser(UserUpdateDTO dto) {
-        User user = userRepository.findById(dto.id())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+    return new UserDetailDTO(
+        user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
+        user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
+        Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+  }
 
-        if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
-            throw new EmailExistException();
-        }
+  // Active or Deactivate user status
+  @Override
+  public UserDetailDTO toggleStatus(int userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        user.setFullname(dto.fullname());
-        user.setUsername(dto.username());
-        user.setEmail(dto.email());
-        user.setDob(LocalDate.parse(dto.dob()));
-        user.setPhone(dto.phone());
-        user.setRole(convertRole(dto.role()));
-        user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
+    user.setStatus(!user.getStatus());
+    userRepository.save(user);
 
-        userRepository.save(user);
-
-        return new UserDetailDTO(
-                user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
-                user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive");
-    }
-
-    // Active hoặc Deactive
-    @Override
-    public UserDetailDTO toggleStatus(int userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-
-        user.setStatus(!user.getStatus());
-        userRepository.save(user);
-
-        return new UserDetailDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getFullname(),
-                user.getEmail(),
-                user.getDob() != null ? user.getDob().toString() : null,
-                user.getPhone(),
-                formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive");
-    }
+    return new UserDetailDTO(
+        user.getId(),
+        user.getUsername(),
+        user.getFullname(),
+        user.getEmail(),
+        user.getDob() != null ? user.getDob().toString() : null,
+        user.getPhone(),
+        formatRole(user.getRole()),
+        Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+  }
 
 }
