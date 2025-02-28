@@ -1,5 +1,5 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQuery, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 
 export type UserDetailDTO = {
     id: number;

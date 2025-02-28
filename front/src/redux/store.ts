@@ -8,36 +8,34 @@ import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/e
 import apiMiddlewares from "@/redux/middleware/apiMiddleware";
 import {authApi} from "@/redux/services/authApi";
 import { userListApi } from "./services/userListApi";
-import {parentApi} from "@/redux/services/User/parentApi";
 import { registerApi } from "./services/registerApi";
 import {addressApi} from "@/redux/services/addressApi";
-import {userApi} from "@/redux/services/User/userApi";
+import {parentApi} from "@/redux/services/parentApi";
+import {userApi} from "@/redux/services/userApi";
 
-
-// Tạo rootReducer bao gồm reducers quản lý API và reducers quản lý state
+// Create a rootReducer that includes reducers for managing the API and state management.
 const rootReducer = combineReducers({
-    // Reducer quản lý api
+    // Reducer managing api
     [authApi.reducerPath]: authApi.reducer,
     [parentApi.reducerPath]: parentApi.reducer,
     [userListApi.reducerPath]: userListApi.reducer,
     [registerApi.reducerPath]: registerApi.reducer,
     [addressApi.reducerPath]: addressApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
-    // Reducers quản lý state
+    // Reducers managing state
     counter: counterReducer,
     auth: authReducer,
     user: userReducer,
 })
 
-// Cấu hình Redux Persist
+// Config Redux Persist
 export const persistConfig = {
     key: 'kss',
     storage,
     // Những reducer được đăng ký trong whitelist sẽ được lưu trữ trong local storage
     whitelist: ['user', 'auth']
 }
-
-// Cấu hình persist cho rootReducer để nó có thể lưu trữ dài hạn
+// Configure persist for rootReducer to enable long-term storage.
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const makeStore = () => {
@@ -49,11 +47,11 @@ export const makeStore = () => {
                 serializableCheck: {
                     ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
                 },
-            }).concat(...apiMiddlewares) // middlewares giúp cập nhật trạng thái khi dữ liệu trả
+            }).concat(...apiMiddlewares) // Middlewares help update the state when data is returned.
     });
 };
 
-// Xuất kiểu dữ liệu của AppStore, RootState và AppDispatch để sử dụng trong các module khác
+// Export the data types of AppStore, RootState, and AppDispatch for use in other modules.
 export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore['getState']>;
 export type AppDispatch = AppStore['dispatch'];

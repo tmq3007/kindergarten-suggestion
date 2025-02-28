@@ -7,25 +7,25 @@ export async function POST(req: NextRequest) {
         const data = await req.json();
         const accessToken = data.accessToken;
         const csrfToken = data.csrfToken;
-        // Nếu thiếu 1 trong 2 token thì ném lỗi
+        // If either of the two tokens is missing, throw an error
         if (!accessToken || !csrfToken) {
             return NextResponse.json({message: 'Missing token'}, {status: 400});
         }
-        // Tạo đối tượng Cookie để lưu token
+        // Create Cookie object to save token
         const cookie = await cookies();
-        // Giải mã token để lấy ra expiration time (exp)
+        // Decode token to extract expiration time (exp)
         const decodedToken = jwtDecode(accessToken);
         const exp = decodedToken.exp;
-        // Nếu không có exp thì ném lỗi
+        // If there is no exp, throw an error
         if (exp === undefined) {
             return NextResponse.json({message: 'Invalid token: Missing exp property'}, {status: 400});
         }
         const ttl = exp - Math.floor(Date.now() / 1000);
-        // // Nếu token hết hạn thì ném lỗi
+        // If token expire, throw an error
         if (ttl <= 0) {
             return NextResponse.json({message: 'Token has expired'}, {status: 400});
         }
-        // Lưu ACCESS_TOKEN vào cookie với cờ HttpOnly
+        // Save ACCESS_TOKEN in cookie with HttpOnly
         const cookieTtl = ttl + (24 * 60 * 60);
         cookie.set({
             name: 'ACCESS_TOKEN',
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
             path: '/',
             sameSite: 'strict',
         });
-        // Lưu CSRF_TOKEN vào cookie
+        // Save CSRF_TOKEN in cookie
         cookie.set({
             name: 'CSRF_TOKEN',
             value: csrfToken,
