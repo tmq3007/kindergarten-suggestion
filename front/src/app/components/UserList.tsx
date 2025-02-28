@@ -8,7 +8,7 @@ import { Typography } from "antd";
 import { useRouter } from "next/navigation";
 const { Paragraph, Text } = Typography;
 import { message } from "antd";
-import { useToggleUserStatusMutation } from "@/redux/services/User/userApi";
+import { useToggleUserStatusMutation } from "@/redux/services/userApi";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; pageable: Pageable }> | undefined;
