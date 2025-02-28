@@ -7,6 +7,8 @@ import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,15 +30,15 @@ public class UserController {
 
 
     @GetMapping()
-    public ApiResponse<Page<UserVO>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+    public ApiResponse<Page<UserVO>> getUsers(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "10") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phone
     ) {
-        Page<UserVO> users = userService.getAllUsers(PageRequest.of(page, size), role, email, name, phone);
+        Page<UserVO> users = userService.getAllUsers(page, size, role, email, name, phone);
         return ApiResponse.<Page<UserVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Users retrieved successfully")
@@ -48,15 +50,15 @@ public class UserController {
     public ApiResponse<UserDetailDTO> getUserDetail(@RequestParam int userId) {
         UserDetailDTO userDetail = userService.getUserDetailById(userId);
         return ApiResponse.<UserDetailDTO>builder()
-            .code(HttpStatus.OK.value())
-            .message("User detail retrieved successfully")
-            .data(userDetail)
-            .build();
+                .code(HttpStatus.OK.value())
+                .message("User detail retrieved successfully")
+                .data(userDetail)
+                .build();
     }
 
     @PostMapping("/update")
     public ApiResponse<UserDetailDTO> updateUser(
-        @Valid @RequestBody UserUpdateDTO userUpdateDTO
+            @Valid @RequestBody UserUpdateDTO userUpdateDTO
     ) {
         try {
             UserDetailDTO updatedUser = userService.updateUser(userUpdateDTO);
@@ -78,10 +80,10 @@ public class UserController {
     public ApiResponse<UserDetailDTO> toggleUserStatus(@RequestParam int userId) {
         UserDetailDTO updatedUser = userService.toggleStatus(userId);
         return ApiResponse.<UserDetailDTO>builder()
-            .code(HttpStatus.OK.value())
-            .message("User status toggled successfully")
-            .data(updatedUser)
-            .build();
+                .code(HttpStatus.OK.value())
+                .message("User status toggled successfully")
+                .data(updatedUser)
+                .build();
     }
 
 

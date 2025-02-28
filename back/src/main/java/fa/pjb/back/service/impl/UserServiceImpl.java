@@ -8,19 +8,20 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
-import fa.pjb.back.model.mapper.UserMapper;
+import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
+
 import java.time.LocalDate;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,63 +32,77 @@ import static fa.pjb.back.model.enums.ERole.*;
 @Service
 public class UserServiceImpl implements UserService {
 
-  private final UserMapper userMapper;
-  private final UserRepository userRepository;
-  private final AuthService authService;
-  private final EmailService emailService;
-  private final ParentRepository parentRepository;
-  private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
+    private final ParentRepository parentRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
-  @Override
-  public Page<UserVO> getAllUsers(Pageable pageable, String role, String email, String name, String phone) {
-    ERole roleEnum = null;
-    if (role != null && !role.isEmpty()) {
-      roleEnum = convertRole2(role); // Convert the String role to ERole
-    }
-    Page<User> userEntitiesPage = userRepository.findAllByCriteria(
-        roleEnum, email, name, phone, pageable
-    );
-    return userEntitiesPage.map(this::convertToUserVO);
-  }
+    @Override
+    public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
+        Pageable pageable = PageRequest.of(page-1, size);
+        ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
 
-  private ERole convertRole2(String role) {
-    if (role == null || role.trim().isEmpty()) {
-      return null;
-    }
-    return switch (role.toUpperCase()) {
-      case "ROLE_PARENT" -> ERole.ROLE_PARENT;
-      case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-      case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
-      case "PARENT", "SCHOOL OWNER", "ADMIN" -> { // Handle both formats for flexibility
-        if (role.equalsIgnoreCase("PARENT")) yield ERole.ROLE_PARENT;
-        if (role.equalsIgnoreCase("SCHOOL OWNER")) yield ERole.ROLE_SCHOOL_OWNER;
-        if (role.equalsIgnoreCase("ADMIN")) yield ERole.ROLE_ADMIN;
-        throw new IllegalArgumentException("Invalid role: " + role);
-      }
-      default -> throw new IllegalArgumentException("Invalid role: " + role);
-    };
-  }
-
-  //generate username từ fullname
-  public String generateUsername(String fullName) {
-    String[] parts = fullName.trim().split("\\s+");
-
-    String firstName = parts[parts.length - 1];
-    firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
-
-    StringBuilder initials = new StringBuilder();
-    for (int i = 0; i < parts.length - 1; i++) {
-      initials.append(parts[i].charAt(0));
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
+        return userEntitiesPage.map(this::convertToUserVO);
     }
 
-    String baseUsername = firstName + initials.toString().toUpperCase();
 
-    // đếm số lượng username đã tồn tại với prefix này
-    long count = userRepository.countByUsernameStartingWith(baseUsername);
+    private UserVO convertToUserVO(UserProjection user) {
+        String address = (user.getStreet() == null && user.getWard() == null &&
+                user.getDistrict() == null && user.getProvince() == null)
+                ? "N/A"
+                : (user.getStreet() + " " + user.getWard() + " " + user.getDistrict() + " " + user.getProvince()).trim();
 
-    return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
-  }
+        return UserVO.builder()
+                .id(user.getId())
+                .fullname(user.getFullname())
+                .email(user.getEmail())
+                .phone(user.getPhone() != null ? user.getPhone() : "N/A")
+                .address(address.isEmpty() ? "N/A" : address)
+                .role(user.getRole().equals(ROLE_PARENT.toString()) ? "Parent" :
+                        user.getRole().equals(ROLE_SCHOOL_OWNER.toString()) ? "School Owner" : "Admin")
+                .status(user.getStatus() ? "Active" : "Inactive")
+                .build();
+    }
+
+    private ERole convertRole2(String role) {
+        if (role == null || role.trim().isEmpty()) {
+            return null;
+        }
+        return switch (role.toUpperCase()) {
+            case "ROLE_PARENT" -> ERole.ROLE_PARENT;
+            case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+            case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
+            case "PARENT", "SCHOOL OWNER", "ADMIN" -> { // Handle both formats for flexibility
+                if (role.equalsIgnoreCase("PARENT")) yield ERole.ROLE_PARENT;
+                if (role.equalsIgnoreCase("SCHOOL OWNER")) yield ERole.ROLE_SCHOOL_OWNER;
+                if (role.equalsIgnoreCase("ADMIN")) yield ERole.ROLE_ADMIN;
+                throw new IllegalArgumentException("Invalid role: " + role);
+            }
+            default -> throw new IllegalArgumentException("Invalid role: " + role);
+        };
+    }
+
+    // Generate username from fullname
+    public String generateUsername(String fullName) {
+        String[] parts = fullName.trim().split("\\s+");
+
+        String firstName = parts[parts.length - 1];
+        firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1).toLowerCase();
+
+        StringBuilder initials = new StringBuilder();
+        for (int i = 0; i < parts.length - 1; i++) {
+            initials.append(parts[i].charAt(0));
+        }
+
+        String baseUsername = firstName + initials.toString().toUpperCase();
+
+        // Count the number of usernames already existing with this prefix
+        long count = userRepository.countByUsernameStartingWith(baseUsername);
+
+        return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
+    }
 
   // Hàm tạo mật khẩu ngẫu nhiên
   private String generateRandomPassword() {
@@ -136,70 +151,24 @@ public class UserServiceImpl implements UserService {
     responseDTO.setDob(user.getDob());
     responseDTO.setFullName(user.getFullname());
 
-    emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
-        usernameAutoGen,passwordautoGen);
-    return responseDTO;
+      emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
+              usernameAutoGen,passwordautoGen);
+      return responseDTO;
   }
-
-  private UserVO convertToUserVO(User user) {
-
-    if (user.getRole() == ROLE_PARENT) {
-      Parent temp = parentRepository.findById(user.getId()).orElse(
-          Parent.builder().street(" ").ward(" ").district(" ").province(" ").build());
-
-      //nếu address rỗng thì gán là N/A
-      String address = temp.getStreet() + " " + temp.getWard() + " " + temp.getDistrict() + " "
-          + temp.getProvince();
-      if (address.trim().isEmpty()) {
-        address = "N/A";
-      }
-      return UserVO.builder()
-          .id(user.getId())
-          .fullname(user.getFullname())
-          .email(user.getEmail())
-          .phone(user.getPhone())
-          .address(address)
-          .role("Parent")
-          .status(Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive")
-          .build();
-    } else if (user.getRole() == ROLE_SCHOOL_OWNER) {
-      return UserVO.builder()
-          .id(user.getId())
-          .fullname(user.getFullname())
-          .email(user.getEmail())
-          .phone(user.getPhone())
-          .address("N/A")
-          .role("School Owner")
-          .status(Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive")
-          .build();
-    } else {
-      return UserVO.builder()
-          .id(user.getId())
-          .fullname(user.getUsername())
-          .email(user.getEmail())
-          .phone("N/A")
-          .address("N/A")
-          .role("Admin")
-          .status(Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive")
-          .build();
+    @Override
+    public UserDetailDTO getUserDetailById(int userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        return new UserDetailDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getFullname(),
+                user.getEmail(),
+                user.getDob() != null ? user.getDob().toString() : null,
+                user.getPhone(),
+                formatRole(user.getRole()),
+                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
     }
-  }
-
-  @Override
-  public UserDetailDTO getUserDetailById(int userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-    return new UserDetailDTO(
-        user.getId(),
-        user.getUsername(),
-        user.getFullname(),
-        user.getEmail(),
-        user.getDob() != null ? user.getDob().toString() : null,
-        user.getPhone(),
-        formatRole(user.getRole()),
-        Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
-  }
-
   //Covert ERole to String
   private String formatRole(ERole role) {
     return switch (role) {

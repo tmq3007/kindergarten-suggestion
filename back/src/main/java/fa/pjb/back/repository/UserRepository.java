@@ -2,6 +2,8 @@ package fa.pjb.back.repository;
 
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.UserProjection;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,11 +25,18 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmailAndIdNot(String email, int id);
 
     boolean existsByPhoneAndIdNot(String phone, int id);
-
-    @Query("SELECT u FROM User u WHERE " +
-            "(:role IS NULL OR u.role = :role) AND " +
-            "(:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
-            "(:name IS NULL OR LOWER(u.fullname) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
-            "(:phone IS NULL OR u.phone LIKE CONCAT('%', :phone, '%'))")
-    Page<User> findAllByCriteria(ERole role, String email, String name, String phone, Pageable pageable);
+    @Query("SELECT u.id AS id, u.fullname AS fullname, u.email AS email, u.phone AS phone, "
+            + "u.role AS role, u.status AS status, "
+            + "p.street AS street, p.ward AS ward, p.district AS district, p.province AS province "
+            + "FROM User u LEFT JOIN Parent p ON u.id = p.id "
+            + "WHERE (:role IS NULL OR u.role = :role) "
+            + "AND (:email IS NULL OR u.email LIKE %:email%) "
+            + "AND (:name IS NULL OR u.fullname LIKE %:name%) "
+            + "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
+    Page<UserProjection> findAllByCriteria(
+            @Param("role") ERole role,
+            @Param("email") String email,
+            @Param("name") String name,
+            @Param("phone") String phone,
+            Pageable pageable);
 }

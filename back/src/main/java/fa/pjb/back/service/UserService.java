@@ -1,4 +1,5 @@
 package fa.pjb.back.service;
+
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.dto.UserDTO;
@@ -8,7 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserService {
-    Page<UserVO> getAllUsers(Pageable pageable, String role, String email, String name, String phone);
+    Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone);
+
     String generateUsername(String fullName);
 
     UserDTO createAdmin(UserDTO userDTO);
