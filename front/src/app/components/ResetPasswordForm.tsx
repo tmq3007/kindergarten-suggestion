@@ -57,9 +57,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
         if (error && "data" in error) {
             const code = (error as CustomFetchBaseQueryError).data?.code;
 
-            if (code == 1201) {
-                messageApi.error("Token is invalid!").then(r => {
+            if (code == 1200) {
+                messageApi.error("This link has been used!!").then(r => {
                     console.log(code)
+                    router.push(previous === 'admin' ? '/admin' : '/public');
                 });
             } else {
                 messageApi.error("Something went wrong. Try again later!").then(r => {

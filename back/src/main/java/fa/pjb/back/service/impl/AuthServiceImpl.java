@@ -219,6 +219,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsername(username).get();
 
         user.setPassword(passwordEncoder.encode(resetPasswordDTO.password()));
+        userRepository.save(user);
 
         // Remove token from Redis
         tokenService.deleteTokenFromRedis("FORGOT_PASSWORD_TOKEN", username);
