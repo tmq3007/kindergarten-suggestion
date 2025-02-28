@@ -10,10 +10,9 @@ import org.mapstruct.factory.Mappers;
 public interface SOMapper
 
 {
-    SOMapper INSTANCE = Mappers.getMapper(SOMapper.class);
 
     @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "fullName", source = "user.fullname")
+    @Mapping(target = "fullname", source = "user.fullname")
     //@Mapping(target = "password", source = "user.password")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "role", source = "user.role")

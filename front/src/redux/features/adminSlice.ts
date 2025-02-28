@@ -1,19 +1,18 @@
-// Định nghĩa kiểu dữ liệu dựa trên AdminDTO
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {ParentState} from "@/redux/features/parentSlice";
 
 export interface AdminState {
     id: number | null;
-    fullName: string | null;
+    fullname: string | null;
     phone: string | null;
     dob: string | null;
     role: "ROLE_ADMIN" | null;
 }
 
-// Giá trị mặc định ban đầu
+// Default value
 const initialState: AdminState = {
     id: null,
-    fullName: null,
+    fullname: null,
     phone: null,
     dob: null,
     role: null,

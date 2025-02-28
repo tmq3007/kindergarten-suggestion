@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.*;
+import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.SchoolOwnerDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
@@ -12,7 +13,9 @@ import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolOwnerService;
+import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SchoolOwnerServiceImpl implements SchoolOwnerService {
@@ -30,15 +34,16 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
     private final SchoolRepository schoolRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final AutoGeneratorHelper autoGeneratorHelper;
     private final SOMapper soMapper;
 
     public SchoolOwnerDTO createSchoolOwner(SchoolOwnerDTO dto) {
 
-        // Kiểm tra User có tồn tại không
-        Optional<User> existingUserEmail = userRepository.findByEmail(dto.getEmail());
-        Optional<User> existingUserName = userRepository.findByUsername(dto.getUsername());
+        // Check user exist
+        Optional<User> existingUserEmail = userRepository.findByEmail(dto.email());
+        Optional<User> existingUserName = userRepository.findByUsername(dto.username());
 
-        //check xem email da ton tai chua
+        //Check email exist
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
@@ -46,82 +51,51 @@ public class SchoolOwnerServiceImpl implements SchoolOwnerService {
         if (existingUserName.isPresent()) {
             throw new UsernameExistException();
         }
-//        // Kiểm tra số điện thoại có đúng 10 chữ số không
-//        if (dto.getPhone() == null || !dto.getPhone().matches("\\d{10}")) {
-//            throw new InvalidPhoneNumberException();
-//        }
 
-        // Kiểm tra ngày sinh phải là ngày trong quá khứ
-        if (dto.getDob() == null || !dto.getDob().isBefore(LocalDate.now())) {
+        // Check if the date of birth is in the past
+        if (dto.dob() == null || !dto.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
-        // Tạo User mới
-        String usernameAutoGen = generateUsername(dto.getFullName());
-        String passwordAutoGen = generateRandomPassword();
+        // Create
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(dto.fullname());
+        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
 
         User user = User.builder()
-                .email(dto.getEmail())
-                .username(passwordEncoder.encode(usernameAutoGen))
+                .id(dto.id())
+                .email(dto.email())
+                .username(usernameAutoGen)
                 .password(passwordAutoGen)
                 .role(ERole.ROLE_SCHOOL_OWNER)
-                .phone(dto.getPhone())
-                .fullname(dto.getFullName())
-                .status(dto.getStatus())
-                .dob(dto.getDob())
+                .phone(dto.phone())
+                .fullname(dto.fullname())
+                .status(Boolean.valueOf(dto.status()))
+                .dob(dto.dob())
                 .build();
+        log.info("User created: {}", user);
         userRepository.save(user);
 
-        // Kiểm tra nếu dto.getSchool() != null thì mới tìm trong database
+
+        // Check if dto.getSchool() is not null, then search in database
         School school = null;
-        if (dto.getSchool() != null && dto.getSchool().getId() != null) {
-            school = schoolRepository.findById(dto.getSchool().getId())
+        if (dto.school() != null && dto.school().id() != null) {
+            school = schoolRepository.findById(dto.school().id())
                     .orElseThrow(SchoolNotFoundException::new);
         }
 
-        // Tạo SchoolOwner
-        SchoolOwner schoolOwner = new SchoolOwner();
-        schoolOwner.setUser(user);
-        schoolOwner.setSchool(school); // Chấp nhận null
+        // Create SchoolOwner
+        SchoolOwner schoolOwner = SchoolOwner.builder()
+                .id(dto.id())
+                .user(user)
+                .school(school)
+                .build();
 
-        // Lưu SchoolOwner vào database
+        // Save SchoolOwner to database
         schoolOwner = schoolOwnerRepository.save(schoolOwner);
 
-        // Gửi email thông báo tài khoản
-        emailService.sendUsernamePassword(dto.getEmail(), dto.getFullName(), usernameAutoGen, passwordAutoGen);
+        // send email with pwd and username
+        emailService.sendUsernamePassword(dto.email(), dto.fullname(), usernameAutoGen, passwordAutoGen);
 
-        // Trả về DTO
+        // return DTO
         return soMapper.toSchoolOwner(schoolOwner);
-    }
-
-
-    // Hàm tạo tên username từ Full Name
-    private String generateUsername(String fullName) {
-        String[] parts = fullName.trim().split("\\s+");
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Tên không hợp lệ");
-        }
-
-        String firstName = parts[parts.length - 1];
-        StringBuilder initials = new StringBuilder();
-        for (int i = 0; i < parts.length - 1; i++) {
-            initials.append(parts[i].charAt(0));
-        }
-        String baseUsername = firstName + initials.toString().toUpperCase();
-
-        // Kiểm tra xem username có bị trùng không
-        int count = 1;
-        String finalUsername = baseUsername + count;
-
-        while (userRepository.existsUserByUsername(finalUsername)) {
-            count++;
-            finalUsername = baseUsername + count;
-        }
-
-        return finalUsername;
-    }
-
-    // Hàm tạo mật khẩu ngẫu nhiên
-    private String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8);
     }
 }

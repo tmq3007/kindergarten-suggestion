@@ -43,20 +43,6 @@ public class AdminController {
                 .build();
     }
 
-//    // API lấy thông tin Parent theo ID
-//    @GetMapping("/parents/{parentId}")
-//    public ApiResponse<ParentDTO> getParentById(@PathVariable Integer parentId) {
-//        ParentDTO parent = parentService.getParentById(parentId);
-//        return ApiResponse.<ParentDTO>builder()
-//                .code(200)
-//                .message("Parent retrieved successfully")
-//                .data(parent)
-//                .build();
-//    }
-
-
-
-    //APT tao SO
     @PostMapping("/school-owners/create")
     public ApiResponse<SchoolOwnerDTO> createSchoolOwner(@RequestBody SchoolOwnerDTO dto) {
         SchoolOwnerDTO response = schoolOwnerService.createSchoolOwner(dto);
@@ -67,7 +53,6 @@ public class AdminController {
                 .build();
     }
 
-    //API tao moi ADMIN
     @PostMapping("/create")
     public ApiResponse<UserDTO> createAdmin(@RequestBody UserDTO dto) {
         UserDTO response = userService.createAdmin(dto);

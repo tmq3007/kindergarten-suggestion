@@ -10,7 +10,6 @@ import org.mapstruct.factory.Mappers;
 @Mapper(componentModel = "spring")
 public interface ParentMapper {
 
-    ParentMapper INSTANCE = Mappers.getMapper(ParentMapper.class);
 
     @Mapping(target = "email", expression = "java(parent.getUser().getEmail())")
     @Mapping(target = "registrationDate", expression = "java(java.time.LocalDateTime.now())")
@@ -18,7 +17,7 @@ public interface ParentMapper {
 
 
     @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "fullName", source = "user.fullname")
+    @Mapping(target = "fullname", source = "user.fullname")
    // @Mapping(target = "password", source = "user.password")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "role", source = "user.role")
