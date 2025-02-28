@@ -10,7 +10,6 @@ import org.mapstruct.factory.Mappers;
 public interface SOMapper
 
 {
-    SOMapper INSTANCE = Mappers.getMapper(SOMapper.class);
 
     @Mapping(target = "username", source = "user.username")
     @Mapping(target = "fullName", source = "user.fullname")

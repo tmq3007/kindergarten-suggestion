@@ -24,7 +24,6 @@ const columns = [
     { title: "Phone No.", dataIndex: "phone", key: "phone", width: 100 },
     { title: "Address", dataIndex: "address", key: "address", width: 400 },
     { title: "Role", dataIndex: "role", key: "role", width: 100 },
-    { title: "Role", dataIndex: "id", key: "id", width: 100 },
     {
         title: "Status",
         dataIndex: "status",
@@ -43,7 +42,7 @@ const columns = [
         render: (_: any, record: UserVO) => (
             <Space size="middle" className="flex justify-center">
                 <Link href={`user-detail?userId=${record.id}`}>
-                    <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
+                    <EditOutlined style={{ fontSize: "12px", color: "#1890ff" }} />
                 </Link>
                 <Popconfirm
                     title="Are you sure you want to delete this user?"
@@ -79,7 +78,7 @@ export default function UserList({ fetchPage, data, isLoading, error, isFetching
     }
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content" }} />
+            <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content",y:600}} />
             <div className="flex justify-between items-center px-4 py-3">
                 <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} />
             </div>
