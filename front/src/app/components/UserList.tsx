@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import ErrorComponent from "./ErrorComponent";
 const { Paragraph, Text } = Typography;
 import { message } from "antd";
-import { useToggleUserStatusMutation } from "@/redux/services/userApi";
+import { useToggleUserStatusMutation } from "@/redux/services/User/userApi";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; pageable: Pageable }> | undefined;
@@ -24,13 +24,15 @@ interface UserListProps {
 
 export default function UserList({ fetchPage, data, error, isFetching }: UserListProps) {
     const [current, setCurrent] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [toggleUserStatus] = useToggleUserStatusMutation();
     const router = useRouter();
     const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
     const totalElements = data?.data.pageable.totalElements || 0;
-    const handlePageChange = (page: number) => {
+    const handlePageChange = (page: number, size: number) => {
+        setPageSize(size);
         setCurrent(page);
-        fetchPage(page - 1);
+        fetchPage(page, size);
     };
     const handleToggleStatus = async (userId: number) => {
         try {
@@ -40,31 +42,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
             message.error("Failed to update user status!");
         }
     };
-    if (error) return (
-        <Result
-            status={error.status || "500"}
-            title={error.status}
-            subTitle="Sorry, something went wrong."
 
-            extra={<Button type="primary" icon={<ReloadOutlined />} onClick={() => router.refresh()}>Reload</Button>}
-        >
-            <div className="desc">
-                <Paragraph>
-                    <Text
-                        strong
-                        style={{
-                            fontSize: 16,
-                        }}
-                    >
-                        The content you submitted has the following error:
-                    </Text>
-                </Paragraph>
-                <Paragraph>
-                    <CloseCircleOutlined className="site-result-demo-error-icon" /> {error?.data?.message ? "Error: " + error.data.message : "Unknown error"}
-                </Paragraph>
-            </div>
-        </Result>
-    );
     //table layout
     const columns = [
         { title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120, fixed: true },
@@ -98,24 +76,12 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
                         okText="Yes"
                         cancelText="No"
                     >
-                            <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
+                        <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
                     </Popconfirm>
                 </Space>
             ),
         },
     ];
-
-
-export default function UserList({ fetchPage, data, isLoading, error, isFetching }: UserListProps) {
-    const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
-    const totalElements = data?.data.pageable.totalElements || 0;
-    const handlePageChange = (page: number, size: number) => {
-        setPageSize(size);
-        setCurrent(page);
-        fetchPage(page, size);
-    };
     if (error) {
         return (
             <>
@@ -125,7 +91,7 @@ export default function UserList({ fetchPage, data, isLoading, error, isFetching
     }
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content",y:600}} />
+            <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content", y: 600 }} />
             <div className="flex justify-between items-center px-4 py-3">
                 <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} />
             </div>
