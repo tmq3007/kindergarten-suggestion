@@ -148,7 +148,6 @@ public class ParentServiceImpl implements ParentService {
             }
             log.info("email: {}", newEmail);
         }
-        user.setEmail(newEmail);
         // Check if the date of birth is in the past
         if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
@@ -178,13 +177,12 @@ public class ParentServiceImpl implements ParentService {
                 .build();
         log.info("parent: {}", parent);
         // save change
-//        userRepository.save(user);
+       userRepository.save(user);
 
         parentRepository.save(parent);
         log.info("save parent success");
 
         // Return ParentDTO
-
         // Return updated information
         return parentMapper.toParentDTO(parent);
     }
