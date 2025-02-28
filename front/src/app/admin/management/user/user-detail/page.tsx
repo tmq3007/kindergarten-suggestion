@@ -18,12 +18,10 @@ const UserDetail: React.FC = () => {
     const searchParams = useSearchParams();
     const userId = searchParams.get('userId'); // Lấy userId từ URL
 
-    // Sử dụng RTK Query để lấy dữ liệu user
+    // take user data to userData
     const { data: userData, isLoading, isError } = useGetUserDetailQuery(Number(userId), {
         skip: !userId,
     });
-
-    // Sử dụng mutation để toggle status
     const [toggleUserStatus, { isLoading: isToggling }] = useToggleUserStatusMutation();
 
     useEffect(() => {
@@ -41,12 +39,14 @@ const UserDetail: React.FC = () => {
         }
     }, [userData, form]);
 
+    //edit user link
     const handleEdit = () => {
         if (userId) {
             router.push(`/admin/management/user/edit-user?userId=${userId}`);
         }
     };
 
+    //notification form from antd
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
         api[type]({
             message,
@@ -55,6 +55,7 @@ const UserDetail: React.FC = () => {
         });
     };
 
+    //handle active or deactivate button
     const handleToggleStatus = async () => {
         if (!userId) return;
 
@@ -81,6 +82,7 @@ const UserDetail: React.FC = () => {
         );
     }
 
+    //handle error blur
     if (isError || !userData) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'red' }}>

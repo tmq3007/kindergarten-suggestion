@@ -104,62 +104,61 @@ public class UserServiceImpl implements UserService {
         return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
     }
 
-    // Hàm tạo mật khẩu ngẫu nhiên
-    private String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8) + "a";
+  // Hàm tạo mật khẩu ngẫu nhiên
+  private String generateRandomPassword() {
+    return RandomStringUtils.randomAlphanumeric(8) + "a";
+  }
+
+  @Override
+  public UserDTO createAdmin(UserDTO userDTO) {
+    Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
+
+    //check email da ton tai hay chua
+    if (existingUserEmail.isPresent()) {
+      throw new EmailExistException();
     }
-
-    @Override
-    public UserDTO createAdmin(UserDTO userDTO) {
-        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.getEmail());
-
-        //check email da ton tai hay chua
-        if (existingUserEmail.isPresent()) {
-            throw new EmailExistException();
-        }
-        // Kiểm tra số điện thoại có đúng 10 chữ số không
+    // Kiểm tra số điện thoại có đúng 10 chữ số không
 //        if (userDTO.getPhone() == null || !userDTO.getPhone().matches("\\d{10}")) {
 //            throw new InvalidPhoneNumberException();
 //        }
-        // Kiểm tra ngày sinh phải là ngày trong quá khứ
-        if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
-            throw new InvalidDateException("Dob must be in the past");
-        }
-        // Tạo mới Admin
-        String usernameAutoGen = generateUsername(userDTO.getFullName());
-        String passwordautoGen = generateRandomPassword();
-        User user = new User();
-        user.setUsername(usernameAutoGen);
-        user.setPassword(passwordEncoder.encode(passwordautoGen)); // Mật khẩu tự tạo
-        user.setEmail(userDTO.getEmail());
-        user.setRole(ERole.ROLE_ADMIN);
-        user.setStatus(userDTO.getStatus());
-        user.setPhone(userDTO.getPhone());
-        user.setDob(userDTO.getDob());
-        user.setFullname(userDTO.getFullName());
-
-        // Lưu User vào database
-        user = userRepository.save(user);
-
-        UserDTO responseDTO = new UserDTO();
-        responseDTO.setId(user.getId());
-        responseDTO.setUsername(user.getUsername());
-        responseDTO.setEmail(user.getEmail());
-        responseDTO.setRole(String.valueOf(ERole.ROLE_ADMIN));
-        responseDTO.setStatus(user.getStatus());
-        responseDTO.setPhone(user.getPhone());
-        responseDTO.setDob(user.getDob());
-        responseDTO.setFullName(user.getFullname());
-
-        emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
-                usernameAutoGen, passwordautoGen);
-        return responseDTO;
+    // Kiểm tra ngày sinh phải là ngày trong quá khứ
+    if (userDTO.getDob() == null || !userDTO.getDob().isBefore(LocalDate.now())) {
+      throw new InvalidDateException("Dob must be in the past");
     }
+    // Tạo mới Admin
+    String usernameAutoGen = generateUsername(userDTO.getFullName());
+    String passwordautoGen = generateRandomPassword();
+    User user = new User();
+    user.setUsername(usernameAutoGen);
+    user.setPassword(passwordEncoder.encode(passwordautoGen)); // Mật khẩu tự tạo
+    user.setEmail(userDTO.getEmail());
+    user.setRole(ERole.ROLE_ADMIN);
+    user.setStatus(userDTO.getStatus());
+    user.setPhone(userDTO.getPhone());
+    user.setDob(userDTO.getDob());
+    user.setFullname(userDTO.getFullName());
+
+    // Lưu User vào database
+    user = userRepository.save(user);
+
+    UserDTO responseDTO = new UserDTO();
+    responseDTO.setId(user.getId());
+    responseDTO.setUsername(user.getUsername());
+    responseDTO.setEmail(user.getEmail());
+    responseDTO.setRole(String.valueOf(ERole.ROLE_ADMIN));
+    responseDTO.setStatus(user.getStatus());
+    responseDTO.setPhone(user.getPhone());
+    responseDTO.setDob(user.getDob());
+    responseDTO.setFullName(user.getFullname());
+
+      emailService.sendUsernamePassword(userDTO.getEmail(), userDTO.getFullName(),
+              usernameAutoGen,passwordautoGen);
+      return responseDTO;
+  }
     @Override
     public UserDetailDTO getUserDetailById(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-
         return new UserDetailDTO(
                 user.getId(),
                 user.getUsername(),
@@ -168,76 +167,72 @@ public class UserServiceImpl implements UserService {
                 user.getDob() != null ? user.getDob().toString() : null,
                 user.getPhone(),
                 formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive");
+                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+    }
+  //Covert ERole to String
+  private String formatRole(ERole role) {
+    return switch (role) {
+      case ROLE_PARENT -> "Parent";
+      case ROLE_SCHOOL_OWNER -> "School Owner";
+      case ROLE_ADMIN -> "Admin";
+      default -> "Unknown Role";
+    };
+  }
+
+  //Covert String Role => ERole
+  private ERole convertRole(String role) {
+    return switch (role.toUpperCase()) {
+      case "PARENT" -> ROLE_PARENT;
+      case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+      case "ADMIN" -> ERole.ROLE_ADMIN;
+      default -> throw new IllegalArgumentException("Invalid role: " + role);
+    };
+  }
+
+  // Update User Detail
+  @Override
+  public UserDetailDTO updateUser(UserUpdateDTO dto) {
+    User user = userRepository.findById(dto.id())
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+
+    if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
+      throw new EmailExistException();
     }
 
-    private String formatRole(ERole role) {
-        switch (role) {
-            case ROLE_PARENT:
-                return "Parent";
-            case ROLE_SCHOOL_OWNER:
-                return "School Owner";
-            case ROLE_ADMIN:
-                return "Admin";
-            default:
-                return "Unknown Role";
-        }
-    }
+    user.setFullname(dto.fullname());
+    user.setUsername(dto.username());
+    user.setEmail(dto.email());
+    user.setDob(LocalDate.parse(dto.dob()));
+    user.setPhone(dto.phone());
+    user.setRole(convertRole(dto.role()));
+    user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
 
-    // Chuyển role ra đúng format
-    private ERole convertRole(String role) {
-        return switch (role.toUpperCase()) {
-            case "PARENT" -> ROLE_PARENT;
-            case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-            case "ADMIN" -> ERole.ROLE_ADMIN;
-            default -> throw new IllegalArgumentException("Invalid role: " + role);
-        };
-    }
+    userRepository.save(user);
 
-    // Update UserDetail
-    @Override
-    public UserDetailDTO updateUser(UserUpdateDTO dto) {
-        User user = userRepository.findById(dto.id())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+    return new UserDetailDTO(
+        user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
+        user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
+        Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+  }
 
-        if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
-            throw new EmailExistException();
-        }
+  // Active or Deactivate user status
+  @Override
+  public UserDetailDTO toggleStatus(int userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        user.setFullname(dto.fullname());
-        user.setUsername(dto.username());
-        user.setEmail(dto.email());
-        user.setDob(LocalDate.parse(dto.dob()));
-        user.setPhone(dto.phone());
-        user.setRole(convertRole(dto.role()));
-        user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
+    user.setStatus(!user.getStatus());
+    userRepository.save(user);
 
-        userRepository.save(user);
-
-        return new UserDetailDTO(
-                user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
-                user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive");
-    }
-
-    // Active hoặc Deactive
-    @Override
-    public UserDetailDTO toggleStatus(int userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-
-        user.setStatus(!user.getStatus());
-        userRepository.save(user);
-
-        return new UserDetailDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getFullname(),
-                user.getEmail(),
-                user.getDob() != null ? user.getDob().toString() : null,
-                user.getPhone(),
-                formatRole(user.getRole()),
-                user.getStatus() ? "Active" : "Inactive");
-    }
+    return new UserDetailDTO(
+        user.getId(),
+        user.getUsername(),
+        user.getFullname(),
+        user.getEmail(),
+        user.getDob() != null ? user.getDob().toString() : null,
+        user.getPhone(),
+        formatRole(user.getRole()),
+        Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+  }
 
 }
