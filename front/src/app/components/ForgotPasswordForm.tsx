@@ -1,5 +1,3 @@
-
-import {Indie_Flower, Nunito} from "next/font/google";
 import {ForgotPasswordDTO, ForgotPasswordVO} from "@/redux/services/authApi";
 import {ApiResponse, CustomFetchBaseQueryError} from "@/redux/services/config/baseQuery";
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
@@ -7,32 +5,23 @@ import {SerializedError} from "@reduxjs/toolkit";
 import React, {useEffect} from "react";
 import {Button, Form, FormProps, Input, message, Space} from "antd";
 import {useRouter} from "next/navigation";
-import Link from "next/link";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
+import {indie, nunito} from "@/lib/fonts";
 
 
 type FieldType = {
     email?: string;
 };
 
-const indie = Indie_Flower({
-    subsets: ['latin'],
-    weight: '400',
-});
-
-const nunito = Nunito({
-    subsets: ['latin'],
-});
-
 type ForgotPasswordFormProp = {
-    forgotpassword: (values: ForgotPasswordDTO) => any;
+    forgotPassword: (values: ForgotPasswordDTO) => any;
     data: ApiResponse<ForgotPasswordVO> | undefined
     isLoading: boolean;
     error: FetchBaseQueryError | SerializedError | undefined;
 };
 
-const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, isLoading, data, error}) => {
+const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotPassword, isLoading, data, error}) => {
     const [messageApi, contextHolder] = message.useMessage();
     const router = useRouter();
     const previous = useSelector((state: RootState) => state.auth.current_page);
@@ -52,7 +41,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
         if (error && "data" in error) {
             const code = (error as CustomFetchBaseQueryError).data?.code;
 
-            if (code === 1001) {
+            if (code == 1100) {
                 messageApi.error("Email is not existed!").then(r => {
                     console.log(code)
                 });
@@ -67,11 +56,11 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
     }, [data, error]);
 
     const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
-        const forgotpasswordDTO: ForgotPasswordDTO = {
+        const forgotPasswordDTO: ForgotPasswordDTO = {
             email: values.email || '',
 
         };
-        forgotpassword(forgotpasswordDTO);
+        forgotPassword(forgotPasswordDTO);
     };
 
     const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
@@ -83,7 +72,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
             {contextHolder}
             <Form
                 className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/3 sm:w-full shadow-xl`}
-                name="basic"
+                name="forgot-password-form"
                 labelCol={{span: 8}}
                 wrapperCol={{span: 16}}
                 style={{maxWidth: 600}}
@@ -98,7 +87,6 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotpassword, i
                     <p className={'text-gray-400 text-center mx-20 mb-5'}>
                         Please enter your email address and we'll send you a link to reset your password
                     </p>
-
 
 
                 <Form.Item<FieldType>

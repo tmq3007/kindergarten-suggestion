@@ -1,30 +1,19 @@
 import React from 'react';
 import {Button, Form, FormProps, Input, message} from 'antd';
-import {Indie_Flower, Nunito} from "next/font/google";
 import Link from "next/link";
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {SerializedError} from "@reduxjs/toolkit";
-import {ApiResponse, CustomFetchBaseQueryError} from "@/redux/services/config/baseQuery";
-import {useRouter} from "next/navigation";
+import {ApiResponse} from "@/redux/services/config/baseQuery";
 import {useDispatch} from "react-redux";
 import {setPreviousPage} from "@/redux/features/authSlice";
 import {LoginDTO, LoginVO} from "@/redux/services/authApi";
 import useAuthRedirect from "@/lib/useAuthRedirect";
-import { motion } from 'framer-motion';
+import {indie, nunito} from "@/lib/fonts";
 
 type FieldType = {
     email: string;
     password: string;
 };
-
-const indie = Indie_Flower({
-    subsets: ['latin'],
-    weight: '400',
-});
-
-const nunito = Nunito({
-    subsets: ['latin'],
-});
 
 type LoginFormProps = {
     login: (values: LoginDTO) => any;

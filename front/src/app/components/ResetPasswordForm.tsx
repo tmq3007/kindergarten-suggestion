@@ -1,18 +1,15 @@
 'use client'
 
-import {Indie_Flower, Nunito} from "next/font/google";
-import {ForgotPasswordDTO, ResetPasswordDTO} from "@/redux/services/authApi";
+import {ResetPasswordDTO} from "@/redux/services/authApi";
 import {ApiResponse, CustomFetchBaseQueryError} from "@/redux/services/config/baseQuery";
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {SerializedError} from "@reduxjs/toolkit";
 import {Button, Form, FormProps, Input, message, Space} from "antd";
-import {useRouter, useSearchParams} from "next/navigation";
-import React, {useEffect, useState} from "react";
-import {jwtDecode} from "jwt-decode";
-import Cookies from "js-cookie";
-import Link from "next/link";
+import {useRouter} from "next/navigation";
+import React, {useEffect} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
+import {indie, nunito} from "@/lib/fonts";
 
 
 type FieldType = {
@@ -20,23 +17,14 @@ type FieldType = {
     confirm: string;
 };
 
-const indie = Indie_Flower({
-    subsets: ['latin'],
-    weight: '400',
-});
-
-const nunito = Nunito({
-    subsets: ['latin'],
-});
-
 type ResetPasswordFormProp = {
-    resetpassword: (values: ResetPasswordDTO) => any;
+    resetPassword: (values: ResetPasswordDTO) => any;
     data: ApiResponse<null> | undefined
     isLoading: boolean;
     error: FetchBaseQueryError | SerializedError | undefined;
 };
 
-const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLoading, data, error}) => {
+const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetPassword, isLoading, data, error}) => {
     const [messageApi, contextHolder] = message.useMessage();
     const router = useRouter();
     const previous = useSelector((state: RootState) => state.auth.current_page);
@@ -48,7 +36,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
     useEffect(() => {
 
         //Nếu reset password thành công thì thông báo thành công
-        if (data?.code === 200) {
+        if (data?.code == 200) {
             messageApi.success("Password has been reset").then(() => {
                 router.push(previous === 'admin' ? '/admin' : '/public');
             });
@@ -57,9 +45,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
         if (error && "data" in error) {
             const code = (error as CustomFetchBaseQueryError).data?.code;
 
-            if (code === 1001) {
-                messageApi.error("Token is invalid!").then(r => {
+            if (code == 1200) {
+                messageApi.error("This link has been used!!").then(r => {
                     console.log(code)
+                    router.push(previous === 'admin' ? '/admin' : '/public');
                 });
             } else {
                 messageApi.error("Something went wrong. Try again later!").then(r => {
@@ -72,10 +61,10 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
     }, [data, error]);
 
     const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
-        const resetpasswordDTO: ResetPasswordDTO = {
+        const resetPasswordDTO: ResetPasswordDTO = {
             password: values.password || '',
         };
-        resetpassword(resetpasswordDTO);
+        resetPassword(resetPasswordDTO);
     };
 
     const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
@@ -87,7 +76,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetpassword, isLo
             {contextHolder}
             <Form
                 className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/3 sm:w-full shadow-xl`}
-                name="basic"
+                name="reset-password-form"
                 labelCol={{span: 8}}
                 wrapperCol={{span: 16}}
                 style={{maxWidth: 600}}

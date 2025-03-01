@@ -12,7 +12,7 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import UserDropdown from "@/app/components/UserDropdown";
 import {motion} from 'framer-motion'
-import { useGetCountriesQuery } from '@/redux/services/registerApi';
+import {useGetCountriesQuery} from '@/redux/services/registerApi';
 
 
 export default function HomeHeader() {
@@ -32,9 +32,9 @@ export default function HomeHeader() {
             transition={{
                 duration: 1,
                 ease: "easeInOut",
-                opacity: { duration: 1.5, ease: "easeInOut" },
+                opacity: { duration: 2, ease: "easeInOut" },
             }}
-            className="fixed w-full top-0 bg-cyan-200 shadow-md z-10">
+            className="fixed w-full top-0 bg-teal-100 shadow-md z-10">
             <div className="flex items-center justify-between md:px-8 py-3">
                 {/* Logo */}
                 <div className="flex items-center">
