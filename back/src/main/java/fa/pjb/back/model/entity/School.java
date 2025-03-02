@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.Set;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -91,5 +93,17 @@ public class School {
     @NotNull
     @Column(name = "street", nullable = false)
     private String street;
+
+    @ManyToMany
+    @JoinTable(name = "School_Facilities",
+            joinColumns = @JoinColumn(name = "school_id"),
+            inverseJoinColumns = @JoinColumn(name = "fid"))
+    private Set<Facility> facilities;
+
+    @ManyToMany
+    @JoinTable(name = "School_Utilities",
+            joinColumns = @JoinColumn(name = "school_id"),
+            inverseJoinColumns = @JoinColumn(name = "uid"))
+    private Set<Utility> utilities;
 
 }

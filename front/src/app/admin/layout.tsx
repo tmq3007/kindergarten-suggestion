@@ -1,7 +1,5 @@
 import type {Metadata} from "next";
 import {Props} from "@/redux/StoreProvider";
-import Header from "@/app/components/Header";
-import Information from "@/app/components/Information";
 import Footer from "@/app/components/Footer";
 
 
@@ -13,7 +11,6 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: Props) {
     return (
         <>
-            <Header/>
             {children}
             <Footer/>
         </>
