@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
-        Pageable pageable = PageRequest.of(page-1, size);
+        Pageable pageable = PageRequest.of(page<=1?1:page-1, size);
         ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
 
         Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
