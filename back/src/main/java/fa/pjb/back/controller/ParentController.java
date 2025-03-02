@@ -32,11 +32,10 @@ public class ParentController {
                 .build();
     }
 
-    // API đổi mật khẩu Parent
     @PutMapping("/{parentId}/change-password")
-    @PreAuthorize("hasRole('ROLE_PARENT')") // Chỉ parent mới được đổi mật khẩu
+    @PreAuthorize("hasRole('ROLE_PARENT')") // Just parent can change pwd
     public ApiResponse<Void> changePassword(@PathVariable Integer parentId, @RequestBody ChangePasswordDTO request) {
-        parentService.changePassword(parentId, request.getOldPassword(), request.getNewPassword());
+        parentService.changePassword(parentId, request.oldPassword(), request.newPassword());
         return ApiResponse.<Void>builder()
                 .code(200)
                 .message("Password changed successfully")

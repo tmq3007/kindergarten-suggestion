@@ -3,6 +3,7 @@ package fa.pjb.back.service.impl;
 import fa.pjb.back.common.exception.*;
 import fa.pjb.back.common.exception.email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception.user.UserNotFoundException;
+import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentDTO;
 import fa.pjb.back.common.exception.user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
@@ -46,7 +47,7 @@ public class ParentServiceImpl implements ParentService {
     private final ParentMapper parentMapper;
     private final UserRepository userRepository;
     private final EmailService emailService;
-
+    private final AutoGeneratorHelper autoGeneratorHelper;
 
     @Transactional
     @Override
@@ -55,7 +56,7 @@ public class ParentServiceImpl implements ParentService {
             throw new EmailAlreadyExistedException("Email already exists");
         }
         try {
-            String username = userService.generateUsername(registerDTO.fullname());
+            String username = autoGeneratorHelper.generateUsername(registerDTO.fullname());
             User user = User.builder()
                     .email(registerDTO.email())
                     .username(username)
@@ -79,92 +80,58 @@ public class ParentServiceImpl implements ParentService {
 
     @Transactional
     public ParentDTO createParent(ParentDTO parentDTO) {
-        // Kiểm tra User đã tồn tại chưa
-        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
-        Optional<User> existingUserName = userRepository.findByUsername(parentDTO.getUsername());
+        // Check if the User already exists
+        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.email());
 
         if (existingUserEmail.isPresent()) {
             throw new EmailExistException();
         }
-//        if (!parentDTO.getPhone().matches("\\d{10}")) {
-//            throw new InvalidPhoneNumberException();
-//        }
+        // Check if email is null or empty first
+        if (parentDTO.email() == null || parentDTO.email().trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
 
-        // Kiểm tra ngày sinh phải là ngày trong quá khứ
-        if (parentDTO.getDob() == null || !parentDTO.getDob().isBefore(LocalDate.now())) {
+        // Check if the date of birth is in the past
+        if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        // Tạo mới User
-        String usernameAutoGen =  generateUsername(parentDTO.getFullName());
-        String passwordautoGen = generateRandomPassword();
+        // Create new User
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(parentDTO.fullname());
+        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
+
 
         User newUser = User.builder()
-                .email(parentDTO.getEmail())
+                .email(parentDTO.email())
                 .username(usernameAutoGen)
-                .password(passwordEncoder.encode(passwordautoGen))
+                .password(passwordEncoder.encode(passwordAutoGen))
                 .role(ROLE_PARENT)
-                .phone(parentDTO.getPhone())
-                .fullname(parentDTO.getFullName())
-                .status(parentDTO.getStatus())
-                .dob(parentDTO.getDob())
+                .phone(parentDTO.phone())
+                .fullname(parentDTO.fullname())
+                .status(parentDTO.status())
+                .dob(parentDTO.dob())
                 .build();
 
-        // Lưu User vào database
-         userRepository.save(newUser);
+        // Save User to database
+        userRepository.save(newUser);
 
-        // Tạo Parent mới
+        // Create new Parent
         Parent newParent = Parent.builder()
                 .user(newUser)
-               // .id(newUser.getId())
-                .district(parentDTO.getDistrict() != null ? parentDTO.getDistrict() : "")
-                .ward(parentDTO.getWard() != null ? parentDTO.getWard() : "")
-                .province(parentDTO.getProvince() != null ? parentDTO.getProvince() : "")
-                .street(parentDTO.getStreet() != null ? parentDTO.getStreet() : "")
+                // .id(newUser.getId())
+                .district(parentDTO.district() != null ? parentDTO.district() : "")
+                .ward(parentDTO.ward() != null ? parentDTO.ward() : "")
+                .province(parentDTO.province() != null ? parentDTO.province() : "")
+                .street(parentDTO.street() != null ? parentDTO.street() : "")
                 .build();
 
-        // Lưu Parent vào database
+        // Save Parent to database
         parentRepository.save(newParent);
 
-        emailService.sendUsernamePassword(parentDTO.getEmail(), parentDTO.getFullName(),
-                usernameAutoGen,passwordautoGen);
+        emailService.sendUsernamePassword(parentDTO.email(), parentDTO.fullname(),
+                usernameAutoGen, passwordAutoGen);
         return parentMapper.toParentDTO(newParent);
     }
-
-
-    // Hàm tạo tên username từ Full Name
-    private String generateUsername(String fullName) {
-        String[] parts = fullName.trim().split("\\s+");
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Invalid Name");
-        }
-
-        String firstName = parts[parts.length - 1];
-        StringBuilder initials = new StringBuilder();
-        for (int i = 0; i < parts.length - 1; i++) {
-            initials.append(parts[i].charAt(0));
-        }
-        String baseUsername = firstName + initials.toString().toUpperCase();
-
-        // Kiểm tra xem username có bị trùng không
-        int count = 1;
-        String finalUsername = baseUsername + count;
-
-        while (userRepository.existsUserByUsername(finalUsername)) {
-            count++;
-            finalUsername = baseUsername + count;
-        }
-        //khong duoc loop
-
-        return finalUsername;
-    }
-
-
-    // Hàm tạo mật khẩu ngẫu nhiên
-    private String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8);
-    }
-
 
     @Transactional
     public ParentDTO editParent(Integer parentId, ParentDTO parentDTO) {
@@ -173,37 +140,50 @@ public class ParentServiceImpl implements ParentService {
 
         User user = parent.getUser();
 
-        // Kiểm tra email đã tồn tại chưa (ngoại trừ email của chính User đó)
-        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.getEmail());
-        if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
-            throw new EmailExistException();
+        String newEmail = parentDTO.email() != null ? parentDTO.email() : user.getEmail();
+        if (!newEmail.equals(user.getEmail())) {
+            Optional<User> existingUserEmail = userRepository.findByEmail(newEmail);
+            if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
+                throw new EmailExistException();
+            }
+            log.info("email: {}", newEmail);
         }
-
-        // Kiểm tra ngày sinh phải là ngày trong quá khứ
-        if (parentDTO.getDob() == null || !parentDTO.getDob().isBefore(LocalDate.now())) {
+        // Check if the date of birth is in the past
+        if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        // Cập nhật thông tin User
-        user.setEmail(parentDTO.getEmail());
-        user.setUsername(parentDTO.getUsername());  // Cập nhật username nếu có thay đổi
-        user.setPhone(parentDTO.getPhone());
-        user.setDob(parentDTO.getDob());
+        // Update User
+        user = User.builder()
+                .id(user.getId())
+                .username(parentDTO.username())
+                .phone(parentDTO.phone())
+                .fullname(parentDTO.fullname())
+                .status(parentDTO.status())
+                .dob(parentDTO.dob())
+                .role(ROLE_PARENT)
+                .password(user.getPassword())
+                .email(newEmail)
+                .build();
 
-        user.setFullname(parentDTO.getFullName());
-        // Cập nhật thông tin Parent
-        parent.setDistrict(parentDTO.getDistrict());
-        parent.setWard(parentDTO.getWard());
-        parent.setProvince(parentDTO.getProvince());
-        parent.setStreet(parentDTO.getStreet());
+        // Update Parent
+        parent = Parent.builder()
+                .id(parentId)
+                .district(parentDTO.district())
+                .ward(parentDTO.ward())
+                .province(parentDTO.province())
+                .street(parentDTO.street())
+                .user(user)
+                .build();
+        log.info("parent: {}", parent);
+        // save change
+       userRepository.save(user);
 
-        // Lưu thay đổi
-        userRepository.save(user);
         parentRepository.save(parent);
+        log.info("save parent success");
 
-        // Trả về ParentDTO
-
-        // Trả về thông tin đã cập nhật
+        // Return ParentDTO
+        // Return updated information
         return parentMapper.toParentDTO(parent);
     }
 
@@ -224,12 +204,12 @@ public class ParentServiceImpl implements ParentService {
 
         User user = parent.getUser();
 
-        // Kiểm tra mật khẩu cũ có đúng không
+        // Check if the old password is correct
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new IncorrectPasswordException();
         }
 
-        // Cập nhật mật khẩu mới
+        // Update new password
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }

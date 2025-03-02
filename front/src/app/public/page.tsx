@@ -1,22 +1,34 @@
 'use client'
-import Image from "next/image";
-import { motion } from "framer-motion";
-import background from "@public/background.jpg";
+import {motion} from "framer-motion";
+import background from "@public/background2.jpg";
+import SchoolSearchForm from "@/app/components/SchoolSearchForm";
+import Testimonial from "@/app/components/Testimonial";
 
 export default function Page() {
     return (
         <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.8, ease: "easeInOut" }} // 1.5s fade-in
-            className="w-full"
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            transition={{duration: 1.8, ease: "easeInOut"}}
+            className="w-full min-h-[800px] relative"
         >
-            <Image
-                src={background}
-                alt="background"
-                className="block w-full h-auto"
-                priority
-            />
+
+            <div
+                style={{
+                    backgroundImage: `url(${background.src})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                }}
+                className=" inset-0 flex items-center justify-center pt-60 pb-52">
+                <div className="bg-teal-100 bg-opacity-60 p-8 md:p-20 rounded-2xl w-full max-w-2xl shadow-2xl">
+                    <SchoolSearchForm/>
+                </div>
+            </div>
+
+            <div className={'bg-gray-50 pb-20'}>
+                <Testimonial/>
+            </div>
+
         </motion.div>
     );
 }

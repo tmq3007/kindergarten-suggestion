@@ -3,7 +3,7 @@ import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuer
 
 interface AdminDTO{
     id: string,
-    fullName: string,
+    fullname: string,
     email: string,
     phone: string,
     dob: string,

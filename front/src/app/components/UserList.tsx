@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import ErrorComponent from "./ErrorComponent";
 const { Paragraph, Text } = Typography;
 import { message } from "antd";
-import { useToggleUserStatusMutation } from "@/redux/services/userApi";
+import { useToggleUserStatusMutation } from "@/redux/services/User/userApi";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; pageable: Pageable }> | undefined;
@@ -20,9 +20,7 @@ interface UserListProps {
 }
 
 
-
-
-export default function UserList({ fetchPage, data, error, isFetching }: UserListProps) {
+export default function UserList({fetchPage, data, error, isFetching}: UserListProps) {
     const [current, setCurrent] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [toggleUserStatus] = useToggleUserStatusMutation();
@@ -67,7 +65,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
             width: 100,
             render: (_: any, record: UserVO) => (
                 <Space size="middle" className="flex justify-center">
-                    <Link href={`edit-user?userId=${record.id}`}>
+                    <Link href={`user-detail?userId=${record.id}`}>
                         <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
                     </Link>
                     <Popconfirm
@@ -76,7 +74,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
                         okText="Yes"
                         cancelText="No"
                     >
-                        <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
+                        <DeleteOutlined style={{fontSize: "18px", color: "red"}}/>
                     </Popconfirm>
                 </Space>
             ),
@@ -85,15 +83,16 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
     if (error) {
         return (
             <>
-                <ErrorComponent error={error} />
+                <ErrorComponent error={error}/>
             </>
         );
     }
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content", y: 600 }} />
+            <Table className="over-flow-scroll" columns={columns} locale={{emptyText: "No results found"}}
+                   dataSource={users} pagination={false} loading={isFetching} scroll={{x: "max-content", y: 600}}/>
             <div className="flex justify-between items-center px-4 py-3">
-                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} />
+                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange}/>
             </div>
         </div>
     );
