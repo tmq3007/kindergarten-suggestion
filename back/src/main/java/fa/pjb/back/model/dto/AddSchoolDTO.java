@@ -5,15 +5,13 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.*;
-import org.apache.tika.Tika;
-import org.hibernate.validator.constraints.Length;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Arrays;
 import java.util.List;
+
 
 @ValidFeeRange
 public record AddSchoolDTO(
@@ -89,9 +87,9 @@ public record AddSchoolDTO(
     Class<? extends Payload>[] payload() default {};
 }
 
-class FeeRangeValidator implements ConstraintValidator<ValidFeeRange, SchoolDTO> {
+class FeeRangeValidator implements ConstraintValidator<ValidFeeRange, AddSchoolDTO> {
     @Override
-    public boolean isValid(SchoolDTO school, ConstraintValidatorContext context) {
+    public boolean isValid(AddSchoolDTO school, ConstraintValidatorContext context) {
         if (school.feeFrom() != null && school.feeTo() != null) {
             return school.feeFrom() < school.feeTo();
         }

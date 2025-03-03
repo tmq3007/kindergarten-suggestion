@@ -1,6 +1,7 @@
 package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
+import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.vo.SchoolVO;
 import fa.pjb.back.service.SchoolService;
@@ -32,7 +33,7 @@ public class SchoolController {
 
     @PostMapping(value = "/add",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolVO> addSchool(
-            @RequestPart(value = "data" ) @Valid SchoolDTO schoolDTO,
+            @RequestPart(value = "data" ) @Valid AddSchoolDTO schoolDTO,
             @RequestPart(value = "image", required = false) List<MultipartFile> image) {
         return ApiResponse.<SchoolVO>builder()
                 .code(HttpStatus.CREATED.value())
