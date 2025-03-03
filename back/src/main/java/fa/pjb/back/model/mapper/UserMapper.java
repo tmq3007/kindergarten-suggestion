@@ -1,5 +1,6 @@
 package fa.pjb.back.model.mapper;
 
+import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.UserVO;
 import org.mapstruct.Mapper;
@@ -14,4 +15,5 @@ public interface UserMapper {
         return page.map(this::toUserVO);
     }
 
+    UserDTO toUserDTO(User user);
 }

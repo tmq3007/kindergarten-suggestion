@@ -97,56 +97,6 @@ public class UserServiceImpl implements UserService {
         };
     }
 
-    @Override
-    public UserDTO createAdmin(UserDTO userDTO) {
-        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.email());
-        log.info("user: {}", userDTO);
-        log.info("fullname: {}", userDTO.fullname());
-        log.info("email: {}", userDTO.email());
-
-
-        //Check email exist
-        if (existingUserEmail.isPresent()) {
-            throw new EmailExistException();
-        }
-
-        // Check if the date of birth is in the past
-        if (userDTO.dob() == null || !userDTO.dob().isBefore(LocalDate.now())) {
-            throw new InvalidDateException("Dob must be in the past");
-        }
-        // Create Admin
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.fullname());
-        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
-        User user =User.builder()
-                .username(usernameAutoGen)
-                .password(passwordAutoGen)
-                .role(ERole.ROLE_ADMIN)
-                .phone(userDTO.phone())
-                .fullname(userDTO.fullname())
-                .status(Boolean.valueOf(userDTO.status()))
-                .dob(userDTO.dob())
-                .email(userDTO.email())
-                .build();
-
-        // Save User to database
-        user = userRepository.save(user);
-
-        UserDTO responseDTO = UserDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(String.valueOf(ERole.ROLE_ADMIN))
-                .status(String.valueOf(user.getStatus()))
-                .phone(user.getPhone())
-                .dob(user.getDob())
-                .fullname(user.getFullname())
-                .build();
-
-        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
-                usernameAutoGen,passwordAutoGen);
-        return responseDTO;
-    }
-
     private UserVO convertToUserVO(User user) {
 
         if (user.getRole() == ROLE_PARENT) {
@@ -291,7 +241,6 @@ public class UserServiceImpl implements UserService {
         User user =User.builder()
                 .username(usernameAutoGen)
                 .password(passwordAutoGen)
-               // .role(ERole.ROLE_ADMIN)
                 .phone(userDTO.phone())
                 .fullname(userDTO.fullname())
                 .status(Boolean.valueOf(userDTO.status()))
@@ -330,16 +279,18 @@ public class UserServiceImpl implements UserService {
         // Save User to database
         userRepository.save(user);
 
-        UserDTO responseDTO = UserDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(String.valueOf(userDTO.role()))
-                .status(String.valueOf(user.getStatus()))
-                .phone(user.getPhone())
-                .dob(user.getDob())
-                .fullname(user.getFullname())
-                .build();
+//        UserDTO responseDTO = UserDTO.builder()
+//                .id(user.getId())
+//                .username(user.getUsername())
+//                .email(user.getEmail())
+//                .role(String.valueOf(userDTO.role()))
+//                .status(String.valueOf(user.getStatus()))
+//                .phone(user.getPhone())
+//                .dob(user.getDob())
+//                .fullname(user.getFullname())
+//                .build();
+
+        UserDTO responseDTO = userMapper.toUserDTO(user);
 
         emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
                 usernameAutoGen,passwordAutoGen);
