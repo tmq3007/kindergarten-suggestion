@@ -16,12 +16,13 @@ interface UserListProps {
     isFetching: boolean;
 }
 
-export default function UserList({ fetchPage, data, error, isFetching }: UserListProps) {
+
+export default function UserList({fetchPage, data, error, isFetching}: UserListProps) {
     const [current, setCurrent] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [toggleUserStatus] = useToggleUserStatusMutation();
     const router = useRouter();
-    const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
+    const users = data?.data.content.map((user) => ({...user, key: user.id})) || [];
     const totalElements = data?.data.pageable.totalElements || 0;
     const handlePageChange = (page: number, size: number) => {
         setPageSize(size);
@@ -39,11 +40,11 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
 
     //table layout
     const columns = [
-        { title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120, fixed: true },
-        { title: "Email", dataIndex: "email", key: "email", width: 200 },
-        { title: "Phone No.", dataIndex: "phone", key: "phone", width: 100 },
-        { title: "Address", dataIndex: "address", key: "address", width: 400 },
-        { title: "Role", dataIndex: "role", key: "role", width: 100 },
+        {title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120, fixed: true},
+        {title: "Email", dataIndex: "email", key: "email", width: 200},
+        {title: "Phone No.", dataIndex: "phone", key: "phone", width: 100},
+        {title: "Address", dataIndex: "address", key: "address", width: 400},
+        {title: "Role", dataIndex: "role", key: "role", width: 100},
         {
             title: "Status",
             dataIndex: "status",
@@ -61,7 +62,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
             width: 100,
             render: (_: any, record: UserVO) => (
                 <Space size="middle" className="flex justify-center">
-                    <Link href={`user-detail?userId=${record.id}`}>
+                    <Link href={`edit-user?userId=${record.id}`}>
                         <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
                     </Link>
                     <Popconfirm
@@ -70,7 +71,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
                         okText="Yes"
                         cancelText="No"
                     >
-                        <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
+                        <DeleteOutlined style={{fontSize: "18px", color: "red"}}/>
                     </Popconfirm>
                 </Space>
             ),
@@ -79,15 +80,16 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
     if (error) {
         return (
             <>
-                <ErrorComponent error={error} />
+                <ErrorComponent error={error}/>
             </>
         );
     }
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} dataSource={users} pagination={false} loading={isFetching} scroll={{ x: "max-content", y: 600 }} />
+            <Table className="over-flow-scroll" columns={columns} locale={{emptyText: "No results found"}}
+                   dataSource={users} pagination={false} loading={isFetching} scroll={{x: "max-content", y: 600}}/>
             <div className="flex justify-between items-center px-4 py-3">
-                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} />
+                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange}/>
             </div>
         </div>
     );

@@ -6,7 +6,7 @@ import ResetPasswordForm from "@/app/components/ResetPasswordForm";
 
 export default function Page() {
 
-    const [resetpassword, {data, isLoading, error}] = useResetPasswordMutation();
+    const [resetPassword, {data, isLoading, error}] = useResetPasswordMutation();
 
     return (
         <div className="relative min-h-screen bg-cyan-700 bg-opacity-50">
@@ -18,7 +18,7 @@ export default function Page() {
             </div>
 
             <div className="flex items-center justify-center min-h-screen w-100">
-                <ResetPasswordForm resetpassword={resetpassword} data={data} isLoading={isLoading} error={error}/>
+                <ResetPasswordForm resetPassword={resetPassword} data={data} isLoading={isLoading} error={error}/>
             </div>
         </div>
     );

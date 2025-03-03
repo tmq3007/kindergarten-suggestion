@@ -9,16 +9,16 @@ export async function middleware(req: NextRequest) {
     if (url.pathname === "/forgot-password/reset-password") {
         // Lấy giá trị username và token từ query parameters
         const username = url.searchParams.get("username");
-        const forgotpasswordToken = url.searchParams.get("token");
+        const forgotPasswordToken = url.searchParams.get("token");
         // Xóa query parameters khỏi URL
         const newUrl = new URL(url.origin + url.pathname); // Giữ nguyên pathname, bỏ query params
 
         // Nếu có username và token thì lưu vào cookie
-        if (username && forgotpasswordToken) {
+        if (username && forgotPasswordToken) {
             // Tạo đối tượng Cookie để lưu token
             const cookie = await cookies();
             // Giải mã token để lấy ra expiration time (exp)
-            const decodedToken = jwtDecode(forgotpasswordToken);
+            const decodedToken = jwtDecode(forgotPasswordToken);
             const exp = decodedToken.exp;
             // Nếu không có exp thì ném lỗi
             if (exp === undefined) {
@@ -32,7 +32,7 @@ export async function middleware(req: NextRequest) {
             // Lưu ACCESS_TOKEN vào cookie
             cookie.set({
                 name: 'FORGOT_PASSWORD_TOKEN',
-                value: forgotpasswordToken,
+                value: forgotPasswordToken,
                 httpOnly: true,
                 secure: false,
                 maxAge: ttl, // 1 tuần

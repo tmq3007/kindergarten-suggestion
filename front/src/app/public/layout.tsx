@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import {Props} from "@/redux/StoreProvider";
 import HomeHeader from "@/app/components/HomeHeader";
+import HomeFooter from "@/app/components/HomeFooter";
 
 
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export default function RootLayout({children}: Props) {
         <>
             <HomeHeader/>
             {children}
+            <HomeFooter/>
         </>
     );
 };

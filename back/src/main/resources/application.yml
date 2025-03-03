@@ -47,6 +47,7 @@ access-token-exp: 6000
 refresh-token-exp: 6000000
 csrf-token-exp: 6000
 forgot-password-token-exp: 300000
+reset-password-link-header: 'http://localhost:3000/forgot-password/reset-password'
 
 
 
