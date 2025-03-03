@@ -15,6 +15,7 @@ import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
+import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final SchoolOwnerRepository schoolOwnerRepository;
     private final AuthService authService;
     private final EmailService emailService;
     private final ParentRepository parentRepository;
@@ -55,7 +57,7 @@ public class UserServiceImpl implements UserService {
 
         Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
         log.info("page: {}", userEntitiesPage);
-        return userEntitiesPage.map(UserMapper.INSTANCE::toUserVOFromProjection);
+        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
 
     private ERole convertRole2(String role) {

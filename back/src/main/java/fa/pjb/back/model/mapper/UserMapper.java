@@ -1,5 +1,6 @@
 package fa.pjb.back.model.mapper;
 
+import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.UserVO;
 import org.mapstruct.Mapper;
@@ -13,9 +14,9 @@ import static fa.pjb.back.model.enums.ERole.*;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
     UserVO toUserVO(User user);
+    UserDTO toUserDTO(User user);
 
     // Ánh xạ Page bằng cách ánh xạ danh sách trước
     default Page<UserVO> toUserVOPage(Page<User> page) {
