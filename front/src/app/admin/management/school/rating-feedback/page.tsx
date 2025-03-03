@@ -48,29 +48,48 @@ const RatingsDashboardPage: React.FC<RatingsDashboardPageProps> = ({ schoolId = 
 
     // Memoized calculations
     const metrics = useMemo(() => {
+        if (!reviews || reviews.length === 0) {
+            return {
+                totalReviews: 0,
+                totalAverage: 0,
+                totalLearningProgram: 0,
+                totalFacilitiesAndUtilities: 0,
+                totalExtracurricularActivities: 0,
+                totalTeacherAndStaff: 0,
+                totalHygieneAndNutrition: 0,
+            };
+        }
+
+        let totalLearningProgram = 0;
+        let totalFacilitiesAndUtilities = 0;
+        let totalExtracurricularActivities = 0;
+        let totalTeacherAndStaff = 0;
+        let totalHygieneAndNutrition = 0;
+
+        reviews.forEach(review => {
+            totalLearningProgram += review.learningProgram || 0;
+            totalFacilitiesAndUtilities += review.facilitiesAndUtilities || 0;
+            totalExtracurricularActivities += review.extracurricularActivities || 0;
+            totalTeacherAndStaff += review.teacherAndStaff || 0;
+            totalHygieneAndNutrition += review.hygieneAndNutrition || 0;
+        });
+
         const totalReviews = reviews.length;
+        const totalAverage = Number((
+            (totalLearningProgram + totalFacilitiesAndUtilities + totalExtracurricularActivities + totalTeacherAndStaff + totalHygieneAndNutrition) / (totalReviews * 5)
+        ).toFixed(2));
+
         return {
-            totalReviews: totalReviews,
-            totalAverage: totalReviews > 0
-                ? Number((reviews.reduce((sum, review) => sum + (review.average || 0), 0) / totalReviews).toFixed(2))
-                : 0,
-            totalLearningProgram: totalReviews > 0
-                ? Number((reviews.reduce((sum, review) => sum + (review.learningProgram || 0), 0) / totalReviews).toFixed(2))
-                : 0,
-            totalFacilitiesAndUtilities: totalReviews > 0
-                ? Number((reviews.reduce((sum, review) => sum + (review.facilitiesAndUtilities || 0), 0) / totalReviews).toFixed(2))
-                : 0,
-            totalExtracurricularActivities: totalReviews > 0
-                ? Number((reviews.reduce((sum, review) => sum + (review.extracurricularActivities || 0), 0) / totalReviews).toFixed(2))
-                : 0,
-            totalTeacherAndStaff: totalReviews > 0
-                ? Number((reviews.reduce((sum, review) => sum + (review.teacherAndStaff || 0), 0) / totalReviews).toFixed(2))
-                : 0,
-            totalHygieneAndNutrition: totalReviews > 0
-                ? Number((reviews.reduce((sum, review) => sum + (review.hygieneAndNutrition || 0), 0) / totalReviews).toFixed(2))
-                : 0,
+            totalReviews,
+            totalAverage,
+            totalLearningProgram: Number((totalLearningProgram / totalReviews).toFixed(2)),
+            totalFacilitiesAndUtilities: Number((totalFacilitiesAndUtilities / totalReviews).toFixed(2)),
+            totalExtracurricularActivities: Number((totalExtracurricularActivities / totalReviews).toFixed(2)),
+            totalTeacherAndStaff: Number((totalTeacherAndStaff / totalReviews).toFixed(2)),
+            totalHygieneAndNutrition: Number((totalHygieneAndNutrition / totalReviews).toFixed(2)),
         };
     }, [reviews]);
+
 
     // Chart data
     const pieData = useMemo(() => [
