@@ -1,7 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {Form, Image, Input, message, Select} from 'antd';
-import {useLazyCheckEmailQuery, useRegisterMutation} from '@/redux/services/registerApi';
-import {Country} from '@/redux/services/types';
+import React, { useEffect, useState } from 'react';
+import { Button, Checkbox, Form, Image, Input, message, Select } from 'antd';
+import { useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
+import { Country } from '@/redux/services/types';
+import countriesKeepZero from '@/lib/countriesKeepZero';
+import Link from 'next/link';
 
 interface FieldType {
     fullname: string;
@@ -18,7 +20,7 @@ interface RegisterFormProps {
     isLoadingCountry: boolean
 }
 
-export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCountry }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, onCancel, countries, isLoadingCountry }: RegisterFormProps) {
     const [form] = Form.useForm();
 
     const [formValues, setFormValues] = useState<Partial<FieldType>>({ termAndCon: false });
@@ -69,11 +71,10 @@ export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCou
 
     // Handle form submission
     const onFinish = (values: FieldType) => {
-        const countriesWithTrunkPrefix = ["VN", "GB", "IN", "JP", "ID", "DE", "IT", "AU", "ZA"];
         let formattedPhone = values.phone || "";
 
         // Format phone number if the country uses a trunk prefix and phone starts with "0"
-        if (selectedCountry && countriesWithTrunkPrefix.includes(selectedCountry.code) && formattedPhone.startsWith("0")) {
+        if (selectedCountry && !countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith("0")) {
             formattedPhone = formattedPhone.substring(1);
         }
 
@@ -229,8 +230,8 @@ export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCou
                                             <Image src={country.flag}
                                                 alt={country.label}
                                                 width={20} height={14}
-                                                className="mr-2 intrinsic" preview={false}/>
-                                             {country.code} {country.dialCode}
+                                                className="mr-2 intrinsic" preview={false} />
+                                            {country.code} {country.dialCode}
                                         </span>
                                     }
                                 >
@@ -258,6 +259,68 @@ export default function RegisterForm({onSuccess, onCancel,countries,isLoadingCou
                         </Form.Item>
                     </div>
                 </Form.Item>
+                <Form.Item
+                    name="password"
+                    label="Password"
+                    rules={[
+                        { required: true, message: 'Please input your password!' },
+                        { min: 7, message: 'Password must be at least 7 characters!' },
+                        {
+                            pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
+                            message: 'Password must contain at least one letter, and one number!'
+                        }
+                    ]}
+                    hasFeedback
+                >
+                    <Input.Password placeholder='Enter password' />
+                </Form.Item>
+
+                <Form.Item
+                    name="confirm"
+                    label="Confirm Password"
+                    dependencies={['password']}
+                    hasFeedback
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please confirm your password!',
+                        },
+                        ({ getFieldValue }) => ({
+                            validator(_, value) {
+                                if (!value || getFieldValue('password') === value) {
+                                    return Promise.resolve();
+                                }
+                                return Promise.reject(new Error('The new password that you entered do not match!'));
+                            },
+                        }),
+                    ]}
+                >
+                    <Input.Password placeholder='Enter confirm password' />
+                </Form.Item>
+
+                <Form.Item
+                    name="termAndCon"
+                    valuePropName="checked"
+                    className='justify-center flex'
+                    rules={[{
+                        validator: (_, value) =>
+                            value ? Promise.resolve() : Promise.reject(new Error('Please agree to our terms and conditions!'))
+                    }]}
+                    shouldUpdate
+                >
+                    <Checkbox>
+                        I agree to the <Link className="text-blue-500" href=""> Terms and Conditions</Link>
+                    </Checkbox>
+                </Form.Item>
+
+                <div className={'flex justify-between'}>
+                    <Button onClick={onCancel} className={'w-2/5 border-blue-400'} type="default">
+                        Cancel
+                    </Button>
+                    <Button className={'w-2/5'} type="primary" htmlType="submit" loading={isRegistering}>
+                        Sign Up
+                    </Button>
+                </div>
             </Form>
         </>
     );

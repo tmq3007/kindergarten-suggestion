@@ -1,21 +1,64 @@
-import React, { useState } from 'react';
-import { Form, Input, Select, Checkbox, Button, Upload, InputNumber } from 'antd';
-import { InfoCircleOutlined, UploadOutlined, InboxOutlined } from '@ant-design/icons';
-import TextArea from 'antd/es/input/TextArea';
-import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
-import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
-
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Select, Checkbox, Button, Upload, InputNumber, Image, UploadFile } from 'antd';
 const { Option } = Select;
+import { InfoCircleOutlined, InboxOutlined } from '@ant-design/icons';
+import TextArea from 'antd/es/input/TextArea';
+import { Country, useGetCountriesQuery, useLazyCheckEmailQuery } from '@/redux/services/registerApi';
+import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
+import countriesKeepZero from '@/lib/countriesKeepZero';
+import { CHILD_RECEIVING_AGES_OPTIONS, EDUCATION_METHODS_OPTIONS, FACILITIES_OPTIONS, SCHOOL_TYPES_OPTIONS, UTILITIES_OPTIONS, } from '@/lib/constants';
+
+
+interface FieldType {
+    schoolName: string;
+    schoolType: number;
+
+    // Address Fields
+    province: string;
+    district: string;
+    ward: string;
+    street?: string;
+
+    email: string;
+    phone: string;
+    countryCode: string;
+
+    childAge: number;
+    educationMethod: number;
+
+    // Fee Range
+    feeFrom: number;
+    feeTo: number;
+
+    // Facilities and Utilities (Checkbox Groups)
+    facilities?: number[];
+    utilities?: number[];
+
+    description?: string; // School introduction
+
+    // File Upload
+    schoolImage?: File;
+}
+
 
 const SchoolForm: React.FC = () => {
     const [form] = Form.useForm();
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
+    //Address states
     const [selectedProvince, setSelectedProvince] = useState<number | undefined>();
     const [selectedDistrict, setSelectedDistrict] = useState<number | undefined>();
-    const [selectedWard, setSelectedWard] = useState<string | undefined>(undefined); // Thêm trạng thái theo dõi Ward
+    const [selectedWard, setSelectedWard] = useState<string | undefined>(undefined);
+    //Email states
+    const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
+    const [emailHelp, setEmailHelp] = useState<string | null>(null);
+    const [email, setEmail] = useState("");
 
+
+    //Hooks
+    //TODO: Change to School email validate
+    const [triggerCheckEmail, { isFetching }] = useLazyCheckEmailQuery();
     const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
     const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
     const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
@@ -25,8 +68,48 @@ const SchoolForm: React.FC = () => {
         skip: !selectedDistrict,
     });
 
-    const onFinish = (values: any) => {
-        console.log('Form values:', values);
+
+
+    //Event handlers
+    // Set default country to VN 
+    useEffect(() => {
+        if (countries && !selectedCountry) {
+            const defaultCountry = countries.find((c) => c.code === "VN");
+            setSelectedCountry(defaultCountry);
+        }
+    }, [countries])
+
+    // Handle country selection change
+    const handleCountryChange = (value: string) => {
+        if (countries) {
+            const country = countries.find((c) => c.code === value);
+            if (country) {
+                setSelectedCountry(country);
+            }
+        }
+    };
+    // Handle phone number input change (remove non-numeric characters)
+    const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value.replace(/\D/g, "");
+        e.target.value = value;  // Add sanitized value back to input
+    };
+
+    const onFinish = (values: FieldType) => {
+        let formattedPhone = values.phone || "";
+
+        // Format phone number if the country uses a trunk prefix and phone starts with "0"
+        if (selectedCountry && !countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith("0")) {
+            formattedPhone = formattedPhone.substring(1);
+        }
+
+        // Combine dial code with the formatted phone number
+        const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
+
+        const finalValues = {
+            ...values,
+            phone: fullPhoneNumber
+        };
+        console.log('Form values:', finalValues);
     };
 
     const handleFacilityChange = (checkedValues: string[]) => {
@@ -37,48 +120,87 @@ const SchoolForm: React.FC = () => {
         setUtilities(checkedValues);
     };
 
+    // Address event handler
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({ district: undefined, ward: undefined, street: undefined }); // Reset các trường phụ thuộc
+        form.setFieldsValue({ district: undefined, ward: undefined, street: undefined }); // Reset dependent fields
         setSelectedProvince(provinceCode);
         setSelectedDistrict(undefined);
-        setSelectedWard(undefined); // Reset ward khi tỉnh thay đổi
+        setSelectedWard(undefined); // Reset ward when province changes
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ ward: undefined, street: undefined }); // Reset ward và street khi quận thay đổi
+        form.setFieldsValue({ ward: undefined, street: undefined }); // Reset ward and street when district changes
         setSelectedDistrict(districtCode);
-        setSelectedWard(undefined); // Reset ward khi quận thay đổi
+        setSelectedWard(undefined); // Reset ward when district changes
     };
 
     const onWardChange = (wardCode: string) => {
-        setSelectedWard(wardCode); // Cập nhật ward khi người dùng chọn
+        setSelectedWard(wardCode); // Update ward when user selects
     };
 
-    const facilityOptions = [
-        'Outdoor playground',
-        'Art room',
-        'Musical room',
-        'Swimming pool',
-        'Cafeteria',
-        'Library',
-        'Montessori room',
-        'Cameras',
-    ];
+    // Email event handler
+    // Check if the email exists in the system
+    const checkEmailExists = async () => {
+        setEmailStatus("validating");
+        setEmailHelp("Checking email availability...");
 
-    const utilityOptions = [
-        'School bus',
-        'Breakfast',
-        'Afterschool care',
-        'Health check',
-        'Picnic activities',
-        'E-Contact book',
-        'Saturday class',
-    ];
+        try {
+            const response = await triggerCheckEmail(email).unwrap();
+            if (response.data === "true") {
+                setEmailStatus("error");
+                setEmailHelp("This email is already registered!");
+            } else {
+                setEmailStatus("success");
+                setEmailHelp(null);
+            }
+        } catch (error) {
+            setEmailStatus("error");
+            setEmailHelp("Failed to validate email.");
+        }
+    };
+
+    // Reset email status while typing
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+        setEmailStatus(""); // Clear email status
+        setEmailHelp(null);  // Clear email help text
+    };
+
+    // Validate email on blur
+    const handleEmailBlur = async () => {
+        if (!email) {
+            setEmailStatus("error");
+            setEmailHelp("Please input your email!");
+            return;
+        }
+        if (email.length > 50) {
+            setEmailStatus("error");
+            setEmailHelp("Email cannot exceed 50 characters!");
+            return;
+        }
+
+        // Check if the entered email matches a valid email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setEmailStatus("error");
+            setEmailHelp("Please enter a valid email address!");
+            return;
+        }
+
+        // Check email availability
+        await checkEmailExists();
+    };
+
+    // Function to normalize the file list
+    const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => {
+        console.log("Upload event:", e);
+        return e?.fileList ?? []; // Ensure an array is returned
+    };
 
     return (
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
             <h2 className="text-2xl font-bold mb-6">Add new school</h2>
-            <Form
+            <Form<FieldType>
                 form={form}
                 onFinish={onFinish}
                 labelCol={{ span: 6, className: 'font-bold' }}
@@ -87,7 +209,7 @@ const SchoolForm: React.FC = () => {
                 layout="horizontal"
                 className="space-y-6 "
             >
-                <div className='grid grid-cols-1 lg:grid-cols-2 gap-16'>
+                <div className='grid grid-cols-1  lg:grid-cols-2 lg:gap-16 '>
                     <div>
                         {/* School Name */}
                         <Form.Item
@@ -106,10 +228,7 @@ const SchoolForm: React.FC = () => {
                             label="School Type"
                             rules={[{ required: true, message: 'Please select school type' }]}
                         >
-                            <Select placeholder="Select a category...">
-                                <Option value="public">Public</Option>
-                                <Option value="private">Private</Option>
-                                <Option value="charter">Charter</Option>
+                            <Select placeholder="Select a type..." options={SCHOOL_TYPES_OPTIONS}>
                             </Select>
                         </Form.Item>
 
@@ -128,7 +247,7 @@ const SchoolForm: React.FC = () => {
                                     loading={isLoadingProvince}
                                 >
                                     {provinces?.map(province => (
-                                        <Select.Option key={province.code} value={province.code}>
+                                        <Select.Option key={province.code} value={province.name}>
                                             {province.name}
                                         </Select.Option>
                                     ))}
@@ -147,7 +266,7 @@ const SchoolForm: React.FC = () => {
                                     disabled={!selectedProvince}
                                 >
                                     {districts?.map((district) => (
-                                        <Option key={district.code} value={district.code}>
+                                        <Option key={district.code} value={district.name}>
                                             {district.name}
                                         </Option>
                                     ))}
@@ -166,7 +285,7 @@ const SchoolForm: React.FC = () => {
                                     disabled={!selectedDistrict}
                                 >
                                     {wards?.map((ward) => (
-                                        <Option key={ward.code} value={ward.code}>
+                                        <Option key={ward.code} value={ward.name}>
                                             {ward.name}
                                         </Option>
                                     ))}
@@ -183,18 +302,76 @@ const SchoolForm: React.FC = () => {
                         <Form.Item
                             tooltip="This is a required field"
                             name="email"
-                            label="Email"
-                            rules={[{ required: true, message: 'Please enter email' }]}
+                            label="Email Address"
+                            hasFeedback
+                            validateTrigger="onFinish"
+                            validateStatus={emailStatus}
+                            help={emailHelp}
                         >
-                            <Input placeholder="Enter School Email here..." type="email" />
+                            <Input
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={handleEmailChange}
+                                onBlur={handleEmailBlur}
+                            />
                         </Form.Item>
-                        <Form.Item
+                        {/* Phone Number */}
+                        <Form.Item label="Phone Number"
                             tooltip="This is a required field"
-                            name="phone"
-                            label="Phone No."
-                            rules={[{ required: true, message: 'Please enter phone number' }]}
+                            required
                         >
-                            <Input placeholder="Enter Phone Number here..." type="tel" />
+                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                                {/* Country Code Selector */}
+                                <Select
+                                    loading={isLoadingCountry}
+                                    value={selectedCountry?.code || ''}
+                                    onChange={handleCountryChange}
+                                    dropdownStyle={{ width: 250 }}
+                                    style={{ width: 120, borderRight: "1px solid #ccc" }}
+                                    optionLabelProp="label2"
+                                    showSearch
+                                    filterOption={(input, option) =>
+                                        String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+                                    {countries?.map((country) => (
+                                        <Select.Option
+                                            key={country.code}
+                                            value={country.code}
+                                            label={country.label}
+                                            label2={
+                                                <span className="flex items-center">
+                                                    <Image src={country.flag}
+                                                        alt={country.label}
+                                                        width={20} height={14}
+                                                        className="mr-2 intrinsic" preview={false} />
+                                                    {country.code} {country.dialCode}
+                                                </span>
+                                            }
+                                        >
+                                            <div className="flex items-center">
+                                                <Image src={country.flag}
+                                                    alt={country.label}
+                                                    width={20} height={14}
+                                                    className="mr-2 intrinsic" />
+                                                {country.dialCode} - {country.label}
+                                            </div>
+                                        </Select.Option>
+                                    ))}
+                                </Select>
+                                <Form.Item
+                                    name="phone"
+                                    rules={[{ required: true, message: 'Please input your phone number!' }]}
+                                    noStyle
+                                >
+                                    {/* Phone Input */}
+                                    <Input
+                                        placeholder="Enter your phone number"
+                                        onChange={handlePhoneNumberChange}
+                                        style={{ flex: 1, border: "none", boxShadow: "none" }}
+                                    />
+                                </Form.Item>
+                            </div>
                         </Form.Item>
 
                         {/* Child Receiving Age */}
@@ -204,10 +381,7 @@ const SchoolForm: React.FC = () => {
                             label="Child receiving age"
                             rules={[{ required: true, message: 'Please select age range' }]}
                         >
-                            <Select placeholder="Select a category...">
-                                <Option value="3-5">3-5 years</Option>
-                                <Option value="6-10">6-10 years</Option>
-                                <Option value="11-14">11-14 years</Option>
+                            <Select placeholder="Select a category..." options={CHILD_RECEIVING_AGES_OPTIONS}>
                             </Select>
                         </Form.Item>
 
@@ -218,17 +392,13 @@ const SchoolForm: React.FC = () => {
                             label="Education method"
                             rules={[{ required: true, message: 'Please select education method' }]}
                         >
-                            <Select placeholder="Select a category...">
-                                <Option value="traditional">Traditional</Option>
-                                <Option value="montessori">Montessori</Option>
-                                <Option value="online">Online</Option>
+                            <Select placeholder="Select a category..." options={EDUCATION_METHODS_OPTIONS}>
                             </Select>
                         </Form.Item>
 
                         {/* Fee Month (From/To) */}
                         <div>
                             <Form.Item
-                                name="fee/month"
                                 tooltip="This is a required field"
                                 label="Fee/Month (VND)"
                                 required
@@ -287,43 +457,56 @@ const SchoolForm: React.FC = () => {
                         </div>
                     </div>
                     <div>
-                        {/* Facilities */}
-                        <Form.Item label="Facilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
-                            <Checkbox.Group
-                                options={facilityOptions}
-                                onChange={handleFacilityChange}
-                                value={facilities}
-                            />
-                        </Form.Item>
+                        <div>
+                            {/* Facilities */}
+                            <Form.Item label="Facilities" name="facilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
+                                <Checkbox.Group
+                                    options={FACILITIES_OPTIONS}
+                                    onChange={handleFacilityChange}
+                                    value={facilities}
+                                    className="grid grid-cols-3 gap-2 custom-add-school-select"
+                                />
+                            </Form.Item>
 
-                        {/* Utilities */}
-                        <Form.Item label="Utilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
-                            <Checkbox.Group
-                                options={utilityOptions}
-                                onChange={handleUtilityChange}
-                                value={utilities}
-                            />
-                        </Form.Item>
-
+                            {/* Utilities */}
+                            <Form.Item label="Utilities" name="utilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
+                                <Checkbox.Group
+                                    options={UTILITIES_OPTIONS}
+                                    onChange={handleUtilityChange}
+                                    value={utilities}
+                                    className="grid grid-cols-3 gap-2 custom-add-school-select"
+                                />
+                            </Form.Item>
+                            <style>{`
+                                .custom-add-school-select .ant-checkbox-inner {
+                                    width: 24px !important;
+                                    height: 24px !important;
+                                }
+                                .custom-add-school-select .ant-checkbox-input {
+                                    transform: scale(2);
+                                }
+                            `}</style>
+                        </div>
                         {/* School Introduction */}
-                        <Form.Item
-                            tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
-                            name="schoolIntroduction"
-                            label="School introduction"
-                        >
-                            <TextArea rows={4} placeholder="Enter text here..." />
-                        </Form.Item>
-
+                        <div >
+                            <Form.Item
+                                tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
+                                name="description"
+                                label="School introduction"
+                            >
+                                <TextArea rows={4} placeholder="Enter text here..." className='h-32' allowClear />
+                            </Form.Item>
+                        </div>
                         {/* School Image */}
                         <Form.Item
                             tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
-                            name="schoolImage"
                             label="School image"
                         >
-                            <Form.Item name="dragger" valuePropName="fileList" noStyle>
+                            <Form.Item name="image" valuePropName="file" noStyle>
                                 <Upload.Dragger name="schoolImage"
                                     listType="picture"
                                     beforeUpload={() => false} // Prevent automatic upload
+                                    maxCount={1}
                                     accept="image/*">
                                     <p className="ant-upload-drag-icon">
                                         <InboxOutlined />
@@ -348,7 +531,7 @@ const SchoolForm: React.FC = () => {
                     <Button htmlType="button">
                         Save draft
                     </Button>
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" >
                         Submit
                     </Button>
                 </div>

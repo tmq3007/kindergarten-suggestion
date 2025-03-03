@@ -60,7 +60,7 @@ const ErrorComponent: React.FC<{ error: ApiError }> = ({ error }) => {
             extra={
                 error.status === 403 ? (
                     role === "ROLE_ADMIN" ? (
-                        <Button type="primary" onClick={() => router.push("/admin/login")}>
+                        <Button type="primary" onClick={() => router.push("/admin")}>
                             Go to Login
                         </Button>
                     ) : (

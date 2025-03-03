@@ -10,7 +10,7 @@ const { Search } = Input;
 
 export default function Page() {
     const [currentPage, setCurrentPage] = useState(1); // State to manage the current pagination page
-    const [curentPageSize, setcurentPageSize] = useState(10); // State to manage the number of items per page
+    const [curentPageSize, setcurentPageSize] = useState(15); // State to manage the number of items per page
     const [searchCriteria, setSearchCriteria] = useState({
         role: undefined as string | undefined, // Search criteria for role
         email: undefined as string | undefined, // Search criteria for email

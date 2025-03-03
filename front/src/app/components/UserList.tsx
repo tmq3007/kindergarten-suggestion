@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import ErrorComponent from "./ErrorComponent";
 const { Paragraph, Text } = Typography;
 import { message } from "antd";
-import { useToggleUserStatusMutation } from "@/redux/services/User/userApi";
+import { useToggleUserStatusMutation } from "@/redux/services/userApi";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; pageable: Pageable }> | undefined;
@@ -22,7 +22,7 @@ interface UserListProps {
 
 export default function UserList({fetchPage, data, error, isFetching}: UserListProps) {
     const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(15);
     const [toggleUserStatus] = useToggleUserStatusMutation();
     const router = useRouter();
     const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
@@ -35,6 +35,7 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
     const handleToggleStatus = async (userId: number) => {
         try {
             await toggleUserStatus(userId).unwrap();
+            handlePageChange(current, pageSize);
             message.success("User status updated successfully!");
         } catch (error) {
             message.error("Failed to update user status!");
@@ -89,10 +90,10 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
     }
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} locale={{emptyText: "No results found"}}
-                   dataSource={users} pagination={false} loading={isFetching} scroll={{x: "max-content", y: 600}}/>
+            <Table className="over-flow-scroll" columns={columns} locale={{emptyText: "No results found"} } size="small"
+                   dataSource={users} pagination={false} loading={isFetching} scroll={{x: "max-content", y: 600}} />
             <div className="flex justify-between items-center px-4 py-3">
-                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange}/>
+                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} pageSizeOptions={[15, 30, 50, 100]}/>
             </div>
         </div>
     );

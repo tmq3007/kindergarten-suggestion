@@ -35,8 +35,6 @@ import static fa.pjb.back.model.enums.ERole.*;
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
-
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final AuthService authService;
     private final EmailService emailService;
@@ -53,26 +51,7 @@ public class UserServiceImpl implements UserService {
 
         Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
         log.info("page: {}", userEntitiesPage);
-        return userEntitiesPage.map(this::convertToUserVO);
-    }
-
-
-    private UserVO convertToUserVO(UserProjection user) {
-        String address = (user.getStreet() == null && user.getWard() == null &&
-                user.getDistrict() == null && user.getProvince() == null)
-                ? "N/A"
-                : (user.getStreet() + " " + user.getWard() + " " + user.getDistrict() + " " + user.getProvince()).trim();
-
-        return UserVO.builder()
-                .id(user.getId())
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .phone(user.getPhone() != null ? user.getPhone() : "N/A")
-                .address(address.isEmpty() ? "N/A" : address)
-                .role(user.getRole().equals(ROLE_PARENT.toString()) ? "Parent" :
-                        user.getRole().equals(ROLE_SCHOOL_OWNER.toString()) ? "School Owner" : "Admin")
-                .status(user.getStatus() ? "Active" : "Inactive")
-                .build();
+        return userEntitiesPage.map(UserMapper.INSTANCE::toUserVOFromProjection);
     }
 
     private ERole convertRole2(String role) {
@@ -141,50 +120,6 @@ public class UserServiceImpl implements UserService {
         emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
                 usernameAutoGen,passwordAutoGen);
         return responseDTO;
-    }
-
-    private UserVO convertToUserVO(User user) {
-
-        if (user.getRole() == ROLE_PARENT) {
-            Parent temp = parentRepository.findById(user.getId()).orElse(
-                    Parent.builder().street(" ").ward(" ").district(" ").province(" ").build());
-
-            //nếu address rỗng thì gán là N/A
-            String address = temp.getStreet() + " " + temp.getWard() + " " + temp.getDistrict() + " "
-                    + temp.getProvince();
-            if (address.trim().isEmpty()) {
-                address = "N/A";
-            }
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address(address)
-                    .role("Parent")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else if (user.getRole() == ROLE_SCHOOL_OWNER) {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address("N/A")
-                    .role("School Owner")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getUsername())
-                    .email(user.getEmail())
-                    .phone("N/A")
-                    .address("N/A")
-                    .role("Admin")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        }
     }
 
     @Override
