@@ -1,7 +1,7 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.EmailExistException;
-import fa.pjb.back.common.exception.InvalidDateException;
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
@@ -26,7 +26,6 @@ import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -183,7 +182,7 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
 
     if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
-      throw new EmailExistException();
+      throw new EmailAlreadyExistedException("Email already exists.");
     }
 
     user.setFullname(dto.fullname());
@@ -228,7 +227,7 @@ public class UserServiceImpl implements UserService {
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
-            throw new EmailExistException();
+            throw new EmailAlreadyExistedException("Email already exists.");
         }
 
         // Check if the date of birth is in the past

@@ -1,13 +1,11 @@
 package fa.pjb.back.service;
 
-import fa.pjb.back.common.exception.email.EmailNotFoundException;
+import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.TokenService;
 import fa.pjb.back.service.impl.AuthServiceImpl;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;

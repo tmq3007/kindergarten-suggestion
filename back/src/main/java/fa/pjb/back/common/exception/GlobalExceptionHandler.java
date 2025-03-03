@@ -1,6 +1,7 @@
 package fa.pjb.back.common.exception;
 
-import fa.pjb.back.common.exception.user.UserNotFoundException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;

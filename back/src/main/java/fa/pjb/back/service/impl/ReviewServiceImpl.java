@@ -1,6 +1,6 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.SchoolNotFoundException;
+import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.mapper.ReviewMapper;
 import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.vo.ReviewVO;

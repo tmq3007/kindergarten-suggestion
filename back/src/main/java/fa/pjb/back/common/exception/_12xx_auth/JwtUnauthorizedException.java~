@@ -1,4 +1,4 @@
-package fa.pjb.back.common.exception.auth;
+package fa.pjb.back.common.exception._12xx_auth;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
 import org.springframework.http.HttpStatus;

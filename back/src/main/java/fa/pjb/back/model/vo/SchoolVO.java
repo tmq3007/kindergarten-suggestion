@@ -1,8 +1,9 @@
 package fa.pjb.back.model.vo;
 
 public record SchoolVO(
+        Byte status,
         String name,
-        String schoolType,
+        Byte schoolType,
         String district,
         String ward,
         String province,
@@ -12,5 +13,5 @@ public record SchoolVO(
         Byte receivingAge,
         Byte educationMethod,
         Integer feeFrom,
-        Integer feeTo) {
-}
+        Integer feeTo,
+        String description) { }

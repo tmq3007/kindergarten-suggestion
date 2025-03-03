@@ -1,18 +1,49 @@
 'use client'
-import {useSearchParams} from "next/navigation";
+import {useParams} from "next/navigation";
 import {nunito} from "@/lib/fonts";
 import {Badge, Button, Checkbox, Col, Form, Input, InputNumber, Row, Select} from "antd";
 import {FACILITIES, UTILITIES} from "@/lib/constants";
 import MyEditor from "@/app/components/MyEditor";
 import MyUpload from "@/app/components/MyUpload";
+import {useGetSchoolQuery} from "@/redux/services/schoolApi";
+import {useEffect} from "react";
+import EditSchoolSkeleton from "@/app/components/EditSchoolSkeleton";
 
 const {Option} = Select;
 
 export default function EditSchool() {
-    const searchParams = useSearchParams();
-    const schoolId = searchParams.get('schoolId');
+    const params = useParams();
+    const schoolId = params.id;
+    const {data, isError, isLoading} = useGetSchoolQuery(Number(schoolId));
+    const school = data?.data;
     const [form] = Form.useForm();
-
+    useEffect(() => {
+        if (school) {
+            form.setFieldsValue({
+                schoolName: school.name || '',
+                schoolType: school.schoolType || 'International school',
+                address: {
+                    street: school.street || '',
+                    ward: school.ward || '',
+                    district: school.district || '',
+                    province: school.province || '',
+                },
+                email: school.email || '',
+                phoneNo: school.phone || '',
+                childReceivingAge: school.receivingAge || 'lucy',
+                educationMethod: school.educationMethod || 'Bi-lingual: VIE - ENG',
+                feeRange: {
+                    feeFrom: school.feeFrom || 0,
+                    feeTo: school.feeTo || 0,
+                },
+                facilities: school.facilities || [],
+                utilities: school.utilities || [],
+                schoolIntroduction: school.description || '',
+            });
+        }
+    }, [school, form]);
+    console.log("school")
+    console.log(data)
     const theme = {
         paragraph: "text-base",
         text: "text-gray-900"
@@ -32,6 +63,12 @@ export default function EditSchool() {
         console.log('Received values of form: ', values);
     };
 
+    if (isLoading) {
+        return (
+            <EditSchoolSkeleton/>
+        )
+    }
+
     return (
         <>
             <nav className="text-sm mb-6 ">
@@ -48,11 +85,6 @@ export default function EditSchool() {
                 name="school_form"
                 onFinish={onFinish}
                 layout="horizontal"
-                initialValues={{
-                    schoolType: 'International school',
-                    educationMethod: 'Bi-lingual: VIE - ENG',
-                    childReceivingAge: 'lucy',
-                }}
                 labelAlign={'left'}
                 requiredMark={false}
                 className={'w-full lg:w-[50%] m-auto'}
@@ -71,7 +103,7 @@ export default function EditSchool() {
                         lg: {span: 18},
                     }}
                 >
-                    <Input placeholder="Luong The Vinh Kinder Garten"/>
+                    <Input/>
                 </Form.Item>
 
                 <Form.Item
@@ -109,10 +141,30 @@ export default function EditSchool() {
                     }}
                 >
                     <div className={'flex flex-col gap-2'}>
-                        <Input placeholder="No.10 Luong The Vinh St., Thanh Xuan, Ha Dong, Ha Noi"/>
-                        <Input placeholder="No.10 Luong The Vinh St., Thanh Xuan, Ha Dong, Ha Noi"/>
-                        <Input placeholder="No.10 Luong The Vinh St., Thanh Xuan, Ha Dong, Ha Noi"/>
-                        <Input placeholder="No.10 Luong The Vinh St., Thanh Xuan, Ha Dong, Ha Noi"/>
+                        <Form.Item
+                            name={['address', 'street']} // Truy cập trường con street
+                            rules={[{required: true, message: 'Please input the street!'}]}
+                        >
+                            <Input/>
+                        </Form.Item>
+                        <Form.Item
+                            name={['address', 'ward']} // Truy cập trường con ward
+                            rules={[{required: true, message: 'Please input the ward!'}]}
+                        >
+                            <Input/>
+                        </Form.Item>
+                        <Form.Item
+                            name={['address', 'district']} // Truy cập trường con district
+                            rules={[{required: true, message: 'Please input the district!'}]}
+                        >
+                            <Input/>
+                        </Form.Item>
+                        <Form.Item
+                            name={['address', 'province']} // Truy cập trường con province
+                            rules={[{required: true, message: 'Please input the province!'}]}
+                        >
+                            <Input/>
+                        </Form.Item>
                     </div>
                 </Form.Item>
 
@@ -130,7 +182,7 @@ export default function EditSchool() {
                         lg: {span: 18},
                     }}
                 >
-                    <Input placeholder="luongthevinh@gmail.com"/>
+                    <Input/>
                 </Form.Item>
 
                 <Form.Item
@@ -147,7 +199,7 @@ export default function EditSchool() {
                         lg: {span: 18},
                     }}
                 >
-                    <Input placeholder="0123656769"/>
+                    <Input/>
                 </Form.Item>
 
                 <Form.Item
@@ -196,7 +248,7 @@ export default function EditSchool() {
                     name="feeRange"
                     label="Fee/month (VND)"
                     rules={[{required: true, message: 'Please input the fee range!'}]}
-                     labelCol={{
+                    labelCol={{
                         span: 24,
                         lg: {span: 6},
                         className: 'font-bold'
@@ -210,13 +262,13 @@ export default function EditSchool() {
                         <Col span={12}>
                             <Form.Item name="feeFrom" noStyle>
                                 <span className={'font-bold mr-4'}>From</span>
-                                <InputNumber min={0} className={'w-[80%]'}/>
+                                <InputNumber min={0} className={'w-[60%]'}/>
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item name="feeTo" noStyle>
                                 <span className={'font-bold mr-4'}>To</span>
-                                <InputNumber min={0} className={'w-[80%]'}/>
+                                <InputNumber min={0} className={'w-[60%]'}/>
                             </Form.Item>
                         </Col>
                     </Row>
@@ -225,7 +277,7 @@ export default function EditSchool() {
                 <Form.Item
                     name="facilities"
                     label="Facilities"
-                     labelCol={{
+                    labelCol={{
                         span: 24,
                         lg: {span: 6},
                         className: 'font-bold'
@@ -278,7 +330,7 @@ export default function EditSchool() {
                 <Form.Item
                     name="utilities"
                     label="Utilities"
-                     labelCol={{
+                    labelCol={{
                         span: 24,
                         lg: {span: 6},
                         className: 'font-bold'
@@ -320,7 +372,7 @@ export default function EditSchool() {
                 <Form.Item
                     name="schoolIntroduction"
                     label="School Introduction"
-                     labelCol={{
+                    labelCol={{
                         span: 24,
                         lg: {span: 6},
                         className: 'font-bold'
@@ -330,13 +382,13 @@ export default function EditSchool() {
                         lg: {span: 18},
                     }}
                 >
-                    <MyEditor/>
+                    <MyEditor description={form.getFieldValue('schoolIntroduction')}/>
                 </Form.Item>
 
                 <Form.Item
                     name="schoolImage"
                     label="School Image"
-                     labelCol={{
+                    labelCol={{
                         span: 24,
                         lg: {span: 6},
                         className: 'font-bold'
