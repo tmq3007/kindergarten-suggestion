@@ -207,7 +207,7 @@ const SchoolForm: React.FC = () => {
                 labelAlign='left'
                 labelWrap
                 layout="horizontal"
-                className="space-y-6 "
+                className="space-y-6 h-auto"
             >
                 <div className='grid grid-cols-1  lg:grid-cols-2 lg:gap-16 '>
                     <div>

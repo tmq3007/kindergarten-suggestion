@@ -1,5 +1,6 @@
 'use client';
 import React, {useEffect, useRef, useState} from 'react';
+import background from "@public/background2.jpg";
 import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
@@ -198,10 +199,9 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                     </Header>
                     <Content
                         style={{
-                            margin: '15px 10px 0px 10px',
                             padding: 20,
                             minHeight: 280,
-                            background: colorBgContainer,
+                            backgroundImage: `url(${background.src})`,
                             borderRadius: borderRadiusLG,
                         }}
                     >
