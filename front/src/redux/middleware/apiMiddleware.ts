@@ -5,6 +5,7 @@ import {registerApi} from "@/redux/services/registerApi";
 import {addressApi} from "@/redux/services/addressApi";
 import {parentApi} from "@/redux/services/parentApi";
 import {userApi} from "@/redux/services/userApi";
+import {reviewApi} from "@/redux/services/reviewApi";
 
 const apiMiddlewares = [
     authApi.middleware,
@@ -12,7 +13,8 @@ const apiMiddlewares = [
     registerApi.middleware,
     parentApi.middleware,
     addressApi.middleware,
-    userApi.middleware
+    userApi.middleware,
+    reviewApi.middleware
 ];
 
 export default apiMiddlewares;

@@ -77,62 +77,6 @@ public class ParentServiceImpl implements ParentService {
 
     }
 
-
-    @Transactional
-    public ParentDTO createParent(ParentDTO parentDTO) {
-        // Check if the User already exists
-        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.email());
-
-        if (existingUserEmail.isPresent()) {
-            throw new EmailExistException();
-        }
-        // Check if email is null or empty first
-        if (parentDTO.email() == null || parentDTO.email().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
-        }
-
-        // Check if the date of birth is in the past
-        if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
-            throw new InvalidDateException("Dob must be in the past");
-        }
-
-        // Create new User
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(parentDTO.fullname());
-        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
-
-
-        User newUser = User.builder()
-                .email(parentDTO.email())
-                .username(usernameAutoGen)
-                .password(passwordEncoder.encode(passwordAutoGen))
-                .role(ROLE_PARENT)
-                .phone(parentDTO.phone())
-                .fullname(parentDTO.fullname())
-                .status(parentDTO.status())
-                .dob(parentDTO.dob())
-                .build();
-
-        // Save User to database
-        userRepository.save(newUser);
-
-        // Create new Parent
-        Parent newParent = Parent.builder()
-                .user(newUser)
-                // .id(newUser.getId())
-                .district(parentDTO.district() != null ? parentDTO.district() : "")
-                .ward(parentDTO.ward() != null ? parentDTO.ward() : "")
-                .province(parentDTO.province() != null ? parentDTO.province() : "")
-                .street(parentDTO.street() != null ? parentDTO.street() : "")
-                .build();
-
-        // Save Parent to database
-        parentRepository.save(newParent);
-
-        emailService.sendUsernamePassword(parentDTO.email(), parentDTO.fullname(),
-                usernameAutoGen, passwordAutoGen);
-        return parentMapper.toParentDTO(newParent);
-    }
-
     @Transactional
     public ParentDTO editParent(Integer parentId, ParentDTO parentDTO) {
         Parent parent = parentRepository.findById(parentId)
