@@ -11,21 +11,32 @@ interface AdminDTO{
     role: string,
     status: string,
 }
+
+export type UserDTO = {
+    id: number;
+    username?: string;
+    email: string;
+    status?: Boolean;
+    fullname: string;
+    phone: string;
+    dob: string; // Because TypeScript does not have LocalDate, use string to represent ISO date
+    role: string
+}
 export const adminApi = createApi({
     reducerPath: "adminApi",
     baseQuery: baseQueryWithReauth,
     tagTypes: ["Admin"],
     endpoints: (build) => ({
-        createAdmin: build.mutation<ApiResponse<AdminDTO>, AdminDTO>({
+        createUser: build.mutation<ApiResponse<UserDTO>, UserDTO>({
             query: (adminData) => ({
-                url: "admin/create",
+                url: "admin/user",
                 method: "POST",
-                body: adminData, // Dữ liệu gửi lên API
+                body: adminData, // Load data to API
             }),
-            invalidatesTags: ["Admin"], // Xóa cache khi tạo mới thành công
+            invalidatesTags: ["Admin"], // delete cache when creation is successful
         }),
     }),
 });
 
 // Export hook để sử dụng trong component
-export const { useCreateAdminMutation } = adminApi;
+export const { useCreateUserMutation } = adminApi;

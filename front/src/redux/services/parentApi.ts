@@ -24,14 +24,14 @@ export const parentApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["Parent"],
     endpoints: (build) => ({
-        createParent: build.mutation<ApiResponse<ParentDTO>, ParentDTO>({
-            query: (parentData) => ({
-                url: "admin/parents",
-                method: "POST",
-                body: parentData, // Data sent to API
-            }),
-            invalidatesTags: ["Parent"], // Clear cache when creation is successful
-        }),
+        // createParent: build.mutation<ApiResponse<ParentDTO>, ParentDTO>({
+        //     query: (parentData) => ({
+        //         url: "admin/parents",
+        //         method: "POST",
+        //         body: parentData, // Data sent to API
+        //     }),
+        //     invalidatesTags: ["Parent"], // Clear cache when creation is successful
+        // }),
         getParentById: build.query<ApiResponse<ParentDTO>, number>({
             query: (parentId) => ({
                 url:`parent/${parentId}`,
@@ -60,4 +60,4 @@ export const parentApi = createApi({
     }),
 });
 
-export const { useCreateParentMutation, useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation } = parentApi;
+export const {  useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation } = parentApi;

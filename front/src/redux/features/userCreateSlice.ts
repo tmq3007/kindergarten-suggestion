@@ -10,11 +10,7 @@ export interface ParentState {
     username?:string;
     phone: string | null;
     dob: string | null;
-    district: string | null;
-    ward: string | null;
-    province: string | null;
-    street: string | null;
-    role: "ROLE_PARENT" | null;
+    role: string | null;
 }
 
 // Default value
@@ -24,18 +20,14 @@ const initialState: ParentState = {
     email: "",
     phone: null,
     dob: null,
-    district: null,
-    ward: null,
-    province: null,
-    street: null,
-    role: "ROLE_PARENT",
+    role: null,
 };
 
-export const parentSlice = createSlice({
+export const userCreateSlice = createSlice({
     name: 'parent',
     initialState,
     reducers: {
-        setParent: (state, action: PayloadAction<ParentState>) => {
+        setUser: (state, action: PayloadAction<ParentState>) => {
             return { ...state, ...action.payload };
         },
 
@@ -43,7 +35,7 @@ export const parentSlice = createSlice({
 });
 
 // Export actions
-export const { setParent    } = parentSlice.actions;
+export const { setUser    } = userCreateSlice.actions;
 
 // Export reducer
-export default parentSlice.reducer;
+export default userCreateSlice.reducer;

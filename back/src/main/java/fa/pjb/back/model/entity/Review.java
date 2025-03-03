@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -50,5 +52,9 @@ public class Review {
     @Lob
     @Column(name = "feedback")
     private String feedback;
+
+    @NotNull
+    @Column(name = "receive_date", nullable = false)
+    private LocalDate receiveDate;
 
 }
