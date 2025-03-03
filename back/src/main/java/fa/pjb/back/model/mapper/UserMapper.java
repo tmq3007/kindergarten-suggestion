@@ -23,7 +23,6 @@ public interface UserMapper {
         return page.map(this::toUserVO);
     }
 
-
     @Mappings({
             @Mapping(target = "id", expression = "java(user.getId())"),
             @Mapping(target = "fullname", expression = "java(user.getFullname())"),

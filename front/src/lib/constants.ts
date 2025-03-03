@@ -60,9 +60,6 @@ export const CHILD_RECEIVING_AGES_OPTIONS = [
     { label: "3-6y", value: "2" }
 ];
 
-
-} as const;
-
 export const FACILITIES = {
     OUTDOOR_PLAYGROUND: { code: 1, name: 'Outdoor playground' },
     CAFETERIA: { code: 2, name: 'Cafeteria' },

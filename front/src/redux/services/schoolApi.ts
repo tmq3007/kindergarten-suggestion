@@ -1,6 +1,6 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
-import {SchoolOwnerDTO} from "@/redux/services/types";
+import { SchoolDTO } from "./types";
 
 export type SchoolVO = {
     status: number;
@@ -34,7 +34,14 @@ export const schoolApi = createApi({
             }),
             providesTags: ["School"],
         }),
+        addSchool: build.mutation<ApiResponse<SchoolVO>,SchoolDTO>({
+            query: (schoolDTO)=>({
+                url:"/school/add",
+                method: "POST",
+                body: schoolDTO
+            }),
+        }),
     }),
 });
 
-export const { useGetSchoolQuery } = schoolApi;
+export const { useGetSchoolQuery, useAddSchoolMutation } = schoolApi;

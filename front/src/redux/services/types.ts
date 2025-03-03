@@ -33,8 +33,9 @@ export type Country = {
 }
 
 export type SchoolDTO = {
-    schoolName: string;
-    schoolType: string;
+    name: string;
+    schoolType: number;
+    website?:string;
     
     // Address Fields
     province: string;
@@ -44,23 +45,22 @@ export type SchoolDTO = {
     
     email: string;
     phone: string;
-    countryCode: string;
     
-    childAge: string;
-    educationMethod: string;
+    receivingAge: number;
+    educationMethod: number;
     
     // Fee Range
     feeFrom: number;
     feeTo: number;
     
     // Facilities and Utilities (Checkbox Groups)
-    facilities?: string[];
-    utilities?: string[];
+    facilities?: number[];
+    utilities?: number[];
     
     description?: string; // School introduction
     
     // File Upload
-    schoolImage?: File;
+    image?: File[];
 }
 
 

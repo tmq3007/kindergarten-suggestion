@@ -10,8 +10,9 @@ import { CHILD_RECEIVING_AGES_OPTIONS, EDUCATION_METHODS_OPTIONS, FACILITIES_OPT
 
 
 interface FieldType {
-    schoolName: string;
+    name: string;
     schoolType: number;
+    website?: string;
 
     // Address Fields
     province: string;
@@ -21,9 +22,8 @@ interface FieldType {
 
     email: string;
     phone: string;
-    countryCode: string;
 
-    childAge: number;
+    receivingAge: number;
     educationMethod: number;
 
     // Fee Range
@@ -37,7 +37,7 @@ interface FieldType {
     description?: string; // School introduction
 
     // File Upload
-    schoolImage?: File;
+    image?: File[];
 }
 
 
@@ -110,14 +110,6 @@ const SchoolForm: React.FC = () => {
             phone: fullPhoneNumber
         };
         console.log('Form values:', finalValues);
-    };
-
-    const handleFacilityChange = (checkedValues: string[]) => {
-        setFacilities(checkedValues);
-    };
-
-    const handleUtilityChange = (checkedValues: string[]) => {
-        setUtilities(checkedValues);
     };
 
     // Address event handler
@@ -193,7 +185,6 @@ const SchoolForm: React.FC = () => {
 
     // Function to normalize the file list
     const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => {
-        console.log("Upload event:", e);
         return e?.fileList ?? []; // Ensure an array is returned
     };
 
@@ -214,7 +205,7 @@ const SchoolForm: React.FC = () => {
                         {/* School Name */}
                         <Form.Item
                             tooltip="This is a required field"
-                            name="schoolName"
+                            name="name"
                             label="School Name"
                             rules={[{ required: true, message: 'Please enter school name' }]}
                         >
@@ -377,7 +368,7 @@ const SchoolForm: React.FC = () => {
                         {/* Child Receiving Age */}
                         <Form.Item
                             tooltip="This is a required field"
-                            name="childAge"
+                            name="receivingAge"
                             label="Child receiving age"
                             rules={[{ required: true, message: 'Please select age range' }]}
                         >
@@ -452,17 +443,23 @@ const SchoolForm: React.FC = () => {
                                         />
                                     </Form.Item>
                                 </div>
-
                             </Form.Item>
                         </div>
                     </div>
                     <div>
+                        {/* Website */}
+                        <Form.Item
+                            tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
+                            name="website"
+                            label="School Website"
+                        >
+                            <Input placeholder="Enter School Website here..." />
+                        </Form.Item>
                         <div>
                             {/* Facilities */}
                             <Form.Item label="Facilities" name="facilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
                                 <Checkbox.Group
                                     options={FACILITIES_OPTIONS}
-                                    onChange={handleFacilityChange}
                                     value={facilities}
                                     className="grid grid-cols-3 gap-2 custom-add-school-select"
                                 />
@@ -472,7 +469,6 @@ const SchoolForm: React.FC = () => {
                             <Form.Item label="Utilities" name="utilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
                                 <Checkbox.Group
                                     options={UTILITIES_OPTIONS}
-                                    onChange={handleUtilityChange}
                                     value={utilities}
                                     className="grid grid-cols-3 gap-2 custom-add-school-select"
                                 />
@@ -502,11 +498,11 @@ const SchoolForm: React.FC = () => {
                             tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
                             label="School image"
                         >
-                            <Form.Item name="image" valuePropName="file" noStyle>
+                            <Form.Item name="image" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
                                 <Upload.Dragger name="schoolImage"
                                     listType="picture"
                                     beforeUpload={() => false} // Prevent automatic upload
-                                    maxCount={1}
+                                    maxCount={10}
                                     accept="image/*">
                                     <p className="ant-upload-drag-icon">
                                         <InboxOutlined />
