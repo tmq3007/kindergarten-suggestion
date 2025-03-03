@@ -5,8 +5,17 @@ const nextConfig: NextConfig = {
         authInterrupts: true, // Bật tính năng thử nghiệm unauthorized
     },
     images: {
-        domains: ["flagcdn.com","upload.wikimedia.org"], // Allow external flag images
-      },
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "flagcdn.com",
+            },
+            {
+                protocol: "https",
+                hostname: "upload.wikimedia.org",
+            },
+        ],
+    },
 };
 
 export default nextConfig;

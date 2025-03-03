@@ -2,7 +2,7 @@
 //
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import fa.pjb.back.common.exception.EmailExistException;
-//import fa.pjb.back.common.exception.InvalidPhoneNumberException;
+//import fa.pjb.back.common.exception._14xx_data.InvalidPhoneNumberException;
 //import fa.pjb.back.common.exception.email.EmailAlreadyExistedException;
 //import fa.pjb.back.common.exception.user.UserNotFoundException;
 //import fa.pjb.back.common.response.ApiResponse;

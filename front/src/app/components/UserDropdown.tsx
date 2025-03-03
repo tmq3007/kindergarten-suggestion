@@ -129,7 +129,7 @@ export default function UserDropdown({ username }: UserDropdownProps) {
                         <Space>
                             <UserOutlined className="text-black text-sm md:text-2xl" />
                             <motion.span
-                                className="text-sm hover:cursor-pointer"
+                                className="text-sm md:text-lg hover:cursor-pointer font-bold"
                                 style={{
                                     backgroundClip: "text",
                                     WebkitBackgroundClip: "text",

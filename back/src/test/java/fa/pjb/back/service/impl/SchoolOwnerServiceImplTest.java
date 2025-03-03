@@ -1,9 +1,9 @@
 //package fa.pjb.back.service.impl;
 //
 //import fa.pjb.back.common.exception.EmailExistException;
-//import fa.pjb.back.common.exception.InvalidDateException;
-//import fa.pjb.back.common.exception.SchoolNotFoundException;
-//import fa.pjb.back.common.exception.UsernameExistException;
+//import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
+//import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+//import fa.pjb.back.common.exception._10xx_user.UsernameExistException;
 //import fa.pjb.back.model.dto.SchoolDTO;
 //import fa.pjb.back.model.dto.SchoolOwnerDTO;
 //import fa.pjb.back.model.entity.School;

@@ -1,7 +1,6 @@
 package fa.pjb.back.controller.auth_controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
+import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
 import fa.pjb.back.controller.AuthController;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;

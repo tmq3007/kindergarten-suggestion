@@ -1,6 +1,6 @@
 package fa.pjb.back.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fa.pjb.back.common.exception.email.EmailNotFoundException;
+import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.service.AuthService;
