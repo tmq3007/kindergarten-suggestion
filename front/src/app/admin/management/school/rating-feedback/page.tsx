@@ -198,6 +198,11 @@ const RatingsDashboardPage: React.FC<RatingsDashboardPageProps> = ({ schoolId = 
             </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <motion.div
+                     initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                >
                 <Card title="Rating Distribution">
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
@@ -215,7 +220,12 @@ const RatingsDashboardPage: React.FC<RatingsDashboardPageProps> = ({ schoolId = 
                         </PieChart>
                     </ResponsiveContainer>
                 </Card>
-
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                >
                 <Card title="Monthly Reviews">
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={barData}>
@@ -227,6 +237,7 @@ const RatingsDashboardPage: React.FC<RatingsDashboardPageProps> = ({ schoolId = 
                         </BarChart>
                     </ResponsiveContainer>
                 </Card>
+                </motion.div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -277,6 +288,11 @@ const RatingsDashboardPage: React.FC<RatingsDashboardPageProps> = ({ schoolId = 
                 <List
                     dataSource={filteredReviews.slice(0, 5)}
                     renderItem={(item) => (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ scale: 1.01 }}
+                        >
                         <List.Item>
 
                             <List.Item.Meta
@@ -303,6 +319,7 @@ const RatingsDashboardPage: React.FC<RatingsDashboardPageProps> = ({ schoolId = 
                             />
 
                         </List.Item>
+                        </motion.div>
                     )}
                 />
                 {filteredReviews.length > 5 && (
