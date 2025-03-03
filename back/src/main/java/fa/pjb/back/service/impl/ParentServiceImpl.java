@@ -1,15 +1,16 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception.*;
-import fa.pjb.back.common.exception.email.EmailAlreadyExistedException;
-import fa.pjb.back.common.exception.user.UserNotFoundException;
+import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentDTO;
-import fa.pjb.back.common.exception.user.UserNotCreatedException;
+import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
@@ -20,19 +21,13 @@ import fa.pjb.back.service.ParentService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static fa.pjb.back.config.SecurityConfig.passwordEncoder;
 import static fa.pjb.back.model.enums.ERole.ROLE_PARENT;
 
 @RequiredArgsConstructor
@@ -77,62 +72,6 @@ public class ParentServiceImpl implements ParentService {
 
     }
 
-
-    @Transactional
-    public ParentDTO createParent(ParentDTO parentDTO) {
-        // Check if the User already exists
-        Optional<User> existingUserEmail = userRepository.findByEmail(parentDTO.email());
-
-        if (existingUserEmail.isPresent()) {
-            throw new EmailExistException();
-        }
-        // Check if email is null or empty first
-        if (parentDTO.email() == null || parentDTO.email().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
-        }
-
-        // Check if the date of birth is in the past
-        if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
-            throw new InvalidDateException("Dob must be in the past");
-        }
-
-        // Create new User
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(parentDTO.fullname());
-        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
-
-
-        User newUser = User.builder()
-                .email(parentDTO.email())
-                .username(usernameAutoGen)
-                .password(passwordEncoder.encode(passwordAutoGen))
-                .role(ROLE_PARENT)
-                .phone(parentDTO.phone())
-                .fullname(parentDTO.fullname())
-                .status(parentDTO.status())
-                .dob(parentDTO.dob())
-                .build();
-
-        // Save User to database
-        userRepository.save(newUser);
-
-        // Create new Parent
-        Parent newParent = Parent.builder()
-                .user(newUser)
-                // .id(newUser.getId())
-                .district(parentDTO.district() != null ? parentDTO.district() : "")
-                .ward(parentDTO.ward() != null ? parentDTO.ward() : "")
-                .province(parentDTO.province() != null ? parentDTO.province() : "")
-                .street(parentDTO.street() != null ? parentDTO.street() : "")
-                .build();
-
-        // Save Parent to database
-        parentRepository.save(newParent);
-
-        emailService.sendUsernamePassword(parentDTO.email(), parentDTO.fullname(),
-                usernameAutoGen, passwordAutoGen);
-        return parentMapper.toParentDTO(newParent);
-    }
-
     @Transactional
     public ParentDTO editParent(Integer parentId, ParentDTO parentDTO) {
         Parent parent = parentRepository.findById(parentId)
@@ -144,7 +83,7 @@ public class ParentServiceImpl implements ParentService {
         if (!newEmail.equals(user.getEmail())) {
             Optional<User> existingUserEmail = userRepository.findByEmail(newEmail);
             if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
-                throw new EmailExistException();
+                throw new EmailAlreadyExistedException("Email already exists.");
             }
             log.info("email: {}", newEmail);
         }
@@ -213,7 +152,6 @@ public class ParentServiceImpl implements ParentService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
-
 
 }
 

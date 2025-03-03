@@ -1,29 +1,31 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.EmailExistException;
-import fa.pjb.back.common.exception.InvalidDateException;
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
+import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
+import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +45,7 @@ public class UserServiceImpl implements UserService {
     private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
+    private final SchoolOwnerRepository schoolOwnerRepository;
 
 
     @Override
@@ -91,56 +94,6 @@ public class UserServiceImpl implements UserService {
             }
             default -> throw new IllegalArgumentException("Invalid role: " + role);
         };
-    }
-
-    @Override
-    public UserDTO createAdmin(UserDTO userDTO) {
-        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.email());
-        log.info("user: {}", userDTO);
-        log.info("fullname: {}", userDTO.fullname());
-        log.info("email: {}", userDTO.email());
-
-
-        //Check email exist
-        if (existingUserEmail.isPresent()) {
-            throw new EmailExistException();
-        }
-
-        // Check if the date of birth is in the past
-        if (userDTO.dob() == null || !userDTO.dob().isBefore(LocalDate.now())) {
-            throw new InvalidDateException("Dob must be in the past");
-        }
-        // Create Admin
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.fullname());
-        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
-        User user =User.builder()
-                .username(usernameAutoGen)
-                .password(passwordAutoGen)
-                .role(ERole.ROLE_ADMIN)
-                .phone(userDTO.phone())
-                .fullname(userDTO.fullname())
-                .status(Boolean.valueOf(userDTO.status()))
-                .dob(userDTO.dob())
-                .email(userDTO.email())
-                .build();
-
-        // Save User to database
-        user = userRepository.save(user);
-
-        UserDTO responseDTO = UserDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(String.valueOf(ERole.ROLE_ADMIN))
-                .status(String.valueOf(user.getStatus()))
-                .phone(user.getPhone())
-                .dob(user.getDob())
-                .fullname(user.getFullname())
-                .build();
-
-        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
-                usernameAutoGen,passwordAutoGen);
-        return responseDTO;
     }
 
     private UserVO convertToUserVO(User user) {
@@ -229,7 +182,7 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
 
     if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
-      throw new EmailExistException();
+      throw new EmailAlreadyExistedException("Email already exists.");
     }
 
     user.setFullname(dto.fullname());
@@ -267,5 +220,80 @@ public class UserServiceImpl implements UserService {
         formatRole(user.getRole()),
         Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
   }
+
+    @Override
+    public UserDTO createUser(UserDTO userDTO) {
+        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.email());
+
+        //Check email exist
+        if (existingUserEmail.isPresent()) {
+            throw new EmailAlreadyExistedException("Email already exists.");
+        }
+
+        // Check if the date of birth is in the past
+        if (userDTO.dob() == null || !userDTO.dob().isBefore(LocalDate.now())) {
+            throw new InvalidDateException("Dob must be in the past");
+        }
+        // Create User
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.fullname());
+        String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
+        User user =User.builder()
+                .username(usernameAutoGen)
+                .password(passwordAutoGen)
+                .phone(userDTO.phone())
+                .fullname(userDTO.fullname())
+                .status(Boolean.valueOf(userDTO.status()))
+                .dob(userDTO.dob())
+                .email(userDTO.email())
+                .build();
+        if(Objects.equals(userDTO.role(), "ROLE_PARENT")) {
+            user.setRole(ERole.ROLE_PARENT);
+
+            // Create new Parent
+            Parent newParent = Parent.builder()
+                    .user(user)
+                    .district("")
+                    .ward("")
+                    .province("")
+                    .street("")
+                    .build();
+
+            // Save Parent to database
+            parentRepository.save(newParent);
+        } else if(Objects.equals(userDTO.role(), "ROLE_SCHOOL_OWNER")) {
+            user.setRole(ERole.ROLE_SCHOOL_OWNER);
+
+            // Create SchoolOwner
+            SchoolOwner schoolOwner = SchoolOwner.builder()
+                    .user(user)
+                    .school(null)
+                    .build();
+
+            // Save SchoolOwner to database
+            schoolOwnerRepository.save(schoolOwner);
+        } else if(Objects.equals(userDTO.role(), "ROLE_ADMIN")) {
+            user.setRole(ERole.ROLE_ADMIN);
+        }
+
+        // Save User to database
+        userRepository.save(user);
+
+//        UserDTO responseDTO = UserDTO.builder()
+//                .id(user.getId())
+//                .username(user.getUsername())
+//                .email(user.getEmail())
+//                .role(String.valueOf(userDTO.role()))
+//                .status(String.valueOf(user.getStatus()))
+//                .phone(user.getPhone())
+//                .dob(user.getDob())
+//                .fullname(user.getFullname())
+//                .build();
+
+        UserDTO responseDTO = userMapper.toUserDTO(user);
+
+        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
+                usernameAutoGen,passwordAutoGen);
+        return responseDTO;
+    }
 
 }

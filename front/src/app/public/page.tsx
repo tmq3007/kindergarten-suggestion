@@ -3,6 +3,7 @@ import {motion} from "framer-motion";
 import background from "@public/background2.jpg";
 import SchoolSearchForm from "@/app/components/SchoolSearchForm";
 import Testimonial from "@/app/components/Testimonial";
+import Information from "@/app/components/Information";
 
 export default function Page() {
     return (
@@ -28,7 +29,7 @@ export default function Page() {
             <div className={'bg-gray-50 pb-20'}>
                 <Testimonial/>
             </div>
-
+            <Information/>
         </motion.div>
     );
 }

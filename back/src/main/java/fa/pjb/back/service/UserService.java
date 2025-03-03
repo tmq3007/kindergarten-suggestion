@@ -11,12 +11,12 @@ import org.springframework.data.domain.Pageable;
 public interface UserService {
     Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone);
 
-    UserDTO createAdmin(UserDTO userDTO);
-
     UserDetailDTO getUserDetailById(int userId);
 
     UserDetailDTO updateUser(UserUpdateDTO dto);
 
     UserDetailDTO toggleStatus(int userId);
+
+    UserDTO createUser(UserDTO userDTO);
 
 }

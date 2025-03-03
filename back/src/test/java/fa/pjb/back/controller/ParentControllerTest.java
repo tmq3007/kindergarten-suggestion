@@ -1,7 +1,7 @@
 //package fa.pjb.back.controller;
 //
 //import com.fasterxml.jackson.databind.ObjectMapper;
-//import fa.pjb.back.common.exception.IncorrectPasswordException;
+//import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
 //import fa.pjb.back.common.exception.user.UserNotFoundException;
 //import fa.pjb.back.common.response.ApiResponse;
 //import fa.pjb.back.model.dto.ChangePasswordDTO;

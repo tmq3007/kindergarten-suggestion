@@ -2,8 +2,8 @@ package fa.pjb.back.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fa.pjb.back.common.exception.email.EmailAlreadyExistedException;
-import fa.pjb.back.common.exception.user.UserNotCreatedException;
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
@@ -19,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.crypto.password.PasswordEncoder;

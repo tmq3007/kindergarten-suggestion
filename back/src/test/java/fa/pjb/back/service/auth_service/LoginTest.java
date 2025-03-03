@@ -1,8 +1,8 @@
 package fa.pjb.back.service.auth_service;
 
-import fa.pjb.back.common.exception.auth.AccessDeniedException;
-import fa.pjb.back.common.exception.auth.AuthenticationFailedException;
-import fa.pjb.back.common.exception.email.EmailNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.AccessDeniedException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
+import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.entity.User;

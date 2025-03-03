@@ -31,7 +31,7 @@ export const userApi = createApi({
         getUserDetail: build.query<ApiResponse<UserDetailDTO>, number>({
             query: (userId) => ({
                 url: `/user/detail?userId=${userId}`,
-                method: 'GET', // Thêm method GET
+                method: 'GET',
             }),
             providesTags: ['UserDetail'],
         }),

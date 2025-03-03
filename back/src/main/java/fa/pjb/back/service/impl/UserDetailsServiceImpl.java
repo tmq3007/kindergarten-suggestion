@@ -1,6 +1,6 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.user.UserNotFoundException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

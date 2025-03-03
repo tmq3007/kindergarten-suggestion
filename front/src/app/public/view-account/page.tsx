@@ -1,24 +1,24 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
-import {Breadcrumb, Tabs, Form, Input, DatePicker, Image, Button, Spin, notification, Select, Skeleton} from "antd";
+import React, {useEffect, useState} from "react";
+import {Breadcrumb, Tabs, Form, Input, DatePicker, Image, Button, Spin, notification, Select} from "antd";
 import Link from "next/link";
-import { Typography } from "antd";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import {Typography} from "antd";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
 import dayjs from "dayjs";
-import { useGetCountriesQuery } from '@/redux/services/registerApi';
-import { Country } from "@/redux/services/types";
-import { useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery } from '@/redux/services/addressApi';
-import { ROLES } from "@/lib/constants";
-import { unauthorized } from "next/navigation";
-import { useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery } from "@/redux/services/parentApi";
+import {useGetCountriesQuery} from '@/redux/services/registerApi';
+import {Country} from "@/redux/services/types";
+import {useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery} from '@/redux/services/addressApi';
+import {ROLES} from "@/lib/constants";
+import {unauthorized} from "next/navigation";
+import {useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery} from "@/redux/services/parentApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 import FormSkeleton from "@/app/components/FormSkeleton";
 
-const { Option } = Select;
-const { Title } = Typography;
-const { TabPane } = Tabs;
+const {Option} = Select;
+const {Title} = Typography;
+const {TabPane} = Tabs;
 
 const Profile = () => {
     const parentId = useSelector((state: RootState) => state.user?.id);
@@ -32,22 +32,22 @@ const Profile = () => {
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
     const [selectedProvince, setSelectedProvince] = useState<number | undefined>();
     const [selectedDistrict, setSelectedDistrict] = useState<number | undefined>();
-    const [selectedWard, setSelectedWard] = useState<string | undefined>(undefined);
+    const [selectedWard, setSelectedWard] = useState<string | undefined>();
 
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
-    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
-    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
+    const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
+    const {data: provinces, isLoading: isLoadingProvince} = useGetProvincesQuery();
+    const {data: districts, isLoading: isLoadingDistrict} = useGetDistrictsQuery(selectedProvince!, {
         skip: !selectedProvince,
     });
-    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
+    const {data: wards, isLoading: isLoadingWard} = useGetWardsQuery(selectedDistrict!, {
         skip: !selectedDistrict,
     });
 
-    const { data: parentData, isLoading, error: errorParent } = useGetParentByIdQuery(parentIdNumber);
+        const {data: parentData, isLoading, error: errorParent} = useGetParentByIdQuery(parentIdNumber);
 
-    const [editParent, { isLoading: isEditLoading }] = useEditParentMutation();
+    const [editParent, {isLoading: isEditLoading}] = useEditParentMutation();
     const [form] = Form.useForm();
-    const [changePassword, { isLoading: isChangePwdLoading }] = useChangePasswordMutation();
+    const [changePassword, {isLoading: isChangePwdLoading}] = useChangePasswordMutation();
     const [passwordForm] = Form.useForm();
     const [api, contextHolder] = notification.useNotification();
 
@@ -163,18 +163,18 @@ const Profile = () => {
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, "");
-        form.setFieldsValue({ phone: value });
+        form.setFieldsValue({phone: value});
     };
 
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({ district: undefined, ward: undefined, street: undefined });
+        form.setFieldsValue({district: undefined, ward: undefined, street: undefined});
         setSelectedProvince(provinceCode);
         setSelectedDistrict(undefined);
         setSelectedWard(undefined);
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ ward: undefined, street: undefined });
+        form.setFieldsValue({ward: undefined, street: undefined});
         setSelectedDistrict(districtCode);
         setSelectedWard(undefined);
     };
@@ -190,45 +190,64 @@ const Profile = () => {
         }
     }, [countries]);
 
-    // if (isLoading) return <Spin size="large" className="flex justify-center items-center h-screen" />;
-   if (isLoading) return <FormSkeleton/>;
+    if (isLoading) return <FormSkeleton/>;
     if (errorParent) return <p className="text-red-500">Can not load data.</p>;
 
+    const backgroundStyle = {
+        backgroundImage: `url('/bg3.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+    };
+
+    const transparentTabStyle = {
+        backgroundColor: 'transparent',
+        border: 'none !important',
+    };
+
     return (
-        <div className="relative min-h-screen flex flex-col p-7">
+        <div className="relative flex flex-col p-10" style={backgroundStyle}>
             {contextHolder}
             <Breadcrumb
-                className="mt-[50px] mb-0"
+                className="mt-[50px] ml-2.5 mb-0 text-white"
                 items={[
-                    { title: <Link href="/">Home</Link> },
-                    { title: "My Profile" },
+                    {title: <Link href="/public">Home</Link>},
+                    {title: "My Profile"},
                 ]}
             />
-            <Title level={3} className="my-2">My Profile</Title>
+            <Title level={3} className="my-2 ml-2.5 text-white">My Profile</Title>
             <div className="flex-grow flex items-center justify-center">
                 <Tabs
                     defaultActiveKey="1"
                     type="card"
                     size="small"
                     centered
-                    className="w-[1000px] h-[600px] flex flex-col" // Fixed width and height
+                    className="w-[1000px] h-[600px] flex flex-col"
                     tabBarStyle={{
                         marginBottom: 0,
-
+                        backgroundColor: 'transparent',
+                        color: 'white',
                     }}
+                    style={transparentTabStyle}
                 >
-                    <TabPane tab="My Information" key="1" className="h-full">
+                    <TabPane
+                        tab="My Information"
+                        key="1"
+                        className="h-full"
+                        style={transparentTabStyle}
+                    >
                         <Form
                             form={form}
                             layout="vertical"
                             onFinish={changeInformation}
-                            className="h-full flex flex-col p-4 overflow-auto" // Add padding and scroll if needed
+                            className="h-full flex flex-col p-4 overflow-auto"
                         >
                             <div className="grid grid-cols-2 gap-4 flex-grow">
                                 <div className="flex flex-col">
                                     <Form.Item
                                         rules={[
-                                            { required: true, message: 'Full name is required!' },
+                                            {required: true, message: 'Full name is required!'},
                                             {
                                                 pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/,
                                                 message: 'Full name must contain at least two words!'
@@ -236,14 +255,14 @@ const Profile = () => {
                                         ]}
                                         hasFeedback
                                         name="fullname"
-                                        label="Full Name"
+                                        label={<span style={{color: 'black'}}>Full Name</span>}
                                         className="mb-10"
                                     >
-                                        <Input />
+                                        <Input/>
                                     </Form.Item>
                                     <Form.Item
                                         rules={[
-                                            { required: true, message: 'Email is required!' },
+                                            {required: true, message: 'Email is required!'},
                                             {
                                                 pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                                                 message: 'Enter a valid email address!'
@@ -251,12 +270,16 @@ const Profile = () => {
                                         ]}
                                         hasFeedback
                                         name="email"
-                                        label="Email Address"
+                                        label={<span style={{color: 'black'}}>Email Address</span>}
                                         className="mb-10"
                                     >
-                                        <Input />
+                                        <Input/>
                                     </Form.Item>
-                                    <Form.Item name="province" label="Province" className="mb-10">
+                                    <Form.Item
+                                        name="province"
+                                        label={<span style={{color: 'black'}}>Province</span>}
+                                        className="mb-10"
+                                    >
                                         <Select
                                             onChange={onProvinceChange}
                                             placeholder="Select a province"
@@ -269,7 +292,11 @@ const Profile = () => {
                                             ))}
                                         </Select>
                                     </Form.Item>
-                                    <Form.Item name="district" label="District" className="mb-10">
+                                    <Form.Item
+                                        name="district"
+                                        label={<span style={{color: 'black'}}>District</span>}
+                                        className="mb-10"
+                                    >
                                         <Select
                                             loading={isLoadingDistrict}
                                             placeholder="Select district"
@@ -287,7 +314,7 @@ const Profile = () => {
                                 <div className="flex flex-col">
                                     <Form.Item
                                         rules={[
-                                            { required: true, message: 'Date of birth is required!' },
+                                            {required: true, message: 'Date of birth is required!'},
                                             {
                                                 validator: (_, value) => {
                                                     if (!value) return Promise.reject('Date of birth is required!');
@@ -299,31 +326,32 @@ const Profile = () => {
                                             }
                                         ]}
                                         name="dob"
-                                        label="Date of Birth"
+                                        label={<span style={{color: 'black'}}>Date of Birth</span>}
                                         className="mb-10"
                                     >
-                                        <DatePicker style={{ width: "100%" }} />
+                                        <DatePicker style={{width: "100%"}}/>
                                     </Form.Item>
                                     <Form.Item
                                         name="phone"
-                                        label="Phone Number"
+                                        label={<span style={{color: 'black'}}>Phone Number</span>}
                                         className="mb-10"
                                         rules={[
-                                            { required: true, message: 'Phone number is required!' },
+                                            {required: true, message: 'Phone number is required!'},
                                             {
                                                 pattern: /^\d{4,14}$/,
                                                 message: 'Phone number must be between 4 and 14 digits!'
                                             }
                                         ]}
                                     >
-                                        <div className="flex items-center border h-[32px] border-gray-300 rounded-lg overflow-hidden">
+                                        <div
+                                            className="flex items-center border h-[32px] border-gray-300 rounded-lg overflow-hidden">
                                             <Select
                                                 className="w-2"
                                                 loading={isLoadingCountry}
                                                 value={selectedCountry?.code || ''}
                                                 onChange={handleCountryChange}
-                                                dropdownStyle={{ width: 250 }}
-                                                style={{ width: 120, borderRight: "1px #ccc" }}
+                                                dropdownStyle={{width: 250}}
+                                                style={{width: 120, borderRight: "1px #ccc"}}
                                                 optionLabelProp="label2"
                                                 showSearch={false}
                                                 filterOption={(input, option) =>
@@ -339,14 +367,14 @@ const Profile = () => {
                                                             <span className="flex items-center">
                                                                 <Image src={country.flag} alt={country.label} width={20}
                                                                        height={10} className="mr-3 intrinsic"
-                                                                       preview={false} />
+                                                                       preview={false}/>
                                                                 {country.code} {country.dialCode}
                                                             </span>
                                                         }
                                                     >
                                                         <div className="flex items-center">
                                                             <Image src={country.flag} alt={country.label} width={20}
-                                                                   height={10} className="mr-2 ml-3 intrinsic" />
+                                                                   height={10} className="mr-2 ml-3 intrinsic"/>
                                                             {country.dialCode} - {country.label}
                                                         </div>
                                                     </Select.Option>
@@ -356,12 +384,16 @@ const Profile = () => {
                                                 <Input
                                                     placeholder="Enter your phone number"
                                                     onChange={handlePhoneNumberChange}
-                                                    style={{ flex: 1, border: "none", boxShadow: "none" }}
+                                                    style={{flex: 1, border: "none", boxShadow: "none"}}
                                                 />
                                             </Form.Item>
                                         </div>
                                     </Form.Item>
-                                    <Form.Item name="ward" label="Ward" className="mb-10">
+                                    <Form.Item
+                                        name="ward"
+                                        label={<span style={{color: 'black'}}>Ward</span>}
+                                        className="mb-10"
+                                    >
                                         <Select
                                             loading={isLoadingWard}
                                             placeholder="Select ward"
@@ -375,10 +407,23 @@ const Profile = () => {
                                             ))}
                                         </Select>
                                     </Form.Item>
-                                    <Form.Item name="street" label="Street" className="mb-10 h-[33px]" dependencies={['ward']}>
+                                    <Form.Item
+                                        name="street"
+                                        label={<span style={{color: 'black'}}>Street</span>}
+                                        className="mb-10 h-[33px]"
+                                        dependencies={['province', 'district', 'ward']}
+                                    >
                                         <Input
-                                            disabled={!selectedWard}
-                                            placeholder={selectedWard ? "Enter street" : "Select ward first"}
+                                            disabled={!selectedProvince || !selectedDistrict || !selectedWard}
+                                            placeholder={
+                                                !selectedProvince
+                                                    ? "Select province first"
+                                                    : !selectedDistrict
+                                                        ? "Select district first"
+                                                        : !selectedWard
+                                                            ? "Select ward first"
+                                                            : "Enter street"
+                                            }
                                         />
                                     </Form.Item>
                                 </div>
@@ -389,27 +434,32 @@ const Profile = () => {
                             </Form.Item>
                         </Form>
                     </TabPane>
-                    <TabPane tab="Change Password" key="2" className="h-full">
+                    <TabPane
+                        tab="Change Password"
+                        key="2"
+                        className="h-full flex justify-center items-center" // Căn giữa nội dung trong TabPane
+                        style={transparentTabStyle}
+                    >
                         <Form
                             form={passwordForm}
                             layout="vertical"
                             onFinish={changePwd}
-                            className="h-full flex flex-col p-4 w-full overflow-auto" // Add padding and scroll if needed
+                            className="flex flex-col p-4 w-full max-w-md" // Giới hạn chiều rộng tối đa và căn giữa
                         >
-                            <div className="flex-grow">
+                            <div className="flex-grow flex flex-col items-center"> {/* Căn giữa các input */}
                                 <Form.Item
                                     name="oldPassword"
-                                    label="Current Password"
-                                    rules={[{ required: true, message: 'Please enter your current password' }]}
+                                    label={<span style={{color: 'black'}}>Current Password</span>}
+                                    rules={[{required: true, message: 'Please enter your current password'}]}
                                 >
-                                    <Input.Password className="mb-2" />
+                                    <Input.Password style={{width: '300px'}} className="mb-2"/>
                                 </Form.Item>
                                 <Form.Item
                                     name="newPassword"
-                                    label="New Password"
+                                    label={<span style={{color: 'black'}}>New Password</span>}
                                     rules={[
-                                        { required: true, message: 'Please input your password!' },
-                                        { min: 7, message: 'Password must be at least 7 characters!' },
+                                        {required: true, message: 'Please input your password!'},
+                                        {min: 7, message: 'Password must be at least 7 characters!'},
                                         {
                                             pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
                                             message: 'Password must include uppercase, lowercase, and a number!'
@@ -417,15 +467,15 @@ const Profile = () => {
                                     ]}
                                     hasFeedback
                                 >
-                                    <Input.Password className="mb-2" />
+                                    <Input.Password style={{width: '300px'}} className="mb-2"/>
                                 </Form.Item>
                                 <Form.Item
                                     name="confirmPassword"
-                                    label="Confirm New Password"
+                                    label={<span style={{color: 'black'}}>Confirm New Password</span>}
                                     dependencies={['newPassword']}
                                     rules={[
-                                        { required: true, message: 'Please confirm your new password' },
-                                        ({ getFieldValue }) => ({
+                                        {required: true, message: 'Please confirm your new password'},
+                                        ({getFieldValue}) => ({
                                             validator(_, value) {
                                                 if (!value || getFieldValue('newPassword') === value) {
                                                     return Promise.resolve();
@@ -436,11 +486,12 @@ const Profile = () => {
                                     ]}
                                     hasFeedback
                                 >
-                                    <Input.Password className="mb-2" />
+                                    <Input.Password style={{width: '300px'}} className="mb-2"/>
                                 </Form.Item>
                             </div>
                             <Form.Item className="mt-auto flex justify-center">
-                                <Button loading={isChangePwdLoading} type="primary" htmlType="submit">Change Password</Button>
+                                <Button loading={isChangePwdLoading} type="primary" htmlType="submit">Change
+                                    Password</Button>
                             </Form.Item>
                         </Form>
                     </TabPane>

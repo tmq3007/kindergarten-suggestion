@@ -40,7 +40,7 @@ const UserDetail: React.FC = () => {
                 username: user.username,
                 fullname: user.fullname,
                 email: user.email,
-                phonenumber: user.phone,
+                phoneNumber: user.phone,
                 DOB: user.dob ? dayjs(user.dob) : null,
                 role: user.role,
                 status: user.status,
@@ -59,7 +59,7 @@ const UserDetail: React.FC = () => {
                 fullname: values.fullname,
                 email: values.email,
                 dob: values.DOB ? values.DOB.format('YYYY-MM-DD') : null,
-                phone: values.phonenumber,
+                phone: values.phoneNumber,
                 role: values.role,
                 status: values.status,
             };
@@ -146,7 +146,7 @@ const UserDetail: React.FC = () => {
 
                 <Form.Item
                     label={<span>Phone No</span>}
-                    name="phonenumber"
+                    name="phoneNumber"
                     rules={[
                         { required: true, message: 'Phone number is required!' },
                         { pattern: /^0\d{9}$/, message: 'Phone number must be 10 digits and start with 0!' },
