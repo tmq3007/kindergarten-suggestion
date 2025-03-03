@@ -1,11 +1,11 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.auth.AccessDeniedException;
-import fa.pjb.back.common.exception.auth.AuthenticationFailedException;
-import fa.pjb.back.common.exception.auth.JwtUnauthorizedException;
-import fa.pjb.back.common.exception.auth.MissingDataException;
-import fa.pjb.back.common.exception.email.EmailNotFoundException;
-import fa.pjb.back.common.exception.user.UserNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.AccessDeniedException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
+import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
+import fa.pjb.back.common.exception._14xx_data.MissingDataException;
+import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;

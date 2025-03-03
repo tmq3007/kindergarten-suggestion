@@ -1,7 +1,8 @@
 import type {Metadata} from "next";
 import {Props} from "@/redux/StoreProvider";
-import HomeHeader from "@/app/components/HomeHeader";
-import HomeFooter from "@/app/components/HomeFooter";
+import Header from "@/app/components/Header";
+import Information from "@/app/components/Information";
+import Footer from "@/app/components/Footer";
 
 
 export const metadata: Metadata = {
@@ -12,9 +13,9 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: Props) {
     return (
         <>
-            <HomeHeader/>
+            <Header/>
             {children}
-            <HomeFooter/>
+            <Footer/>
         </>
     );
 };

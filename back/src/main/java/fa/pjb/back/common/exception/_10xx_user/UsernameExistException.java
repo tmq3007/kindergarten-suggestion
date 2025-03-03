@@ -1,4 +1,4 @@
-package fa.pjb.back.common.exception;
+package fa.pjb.back.common.exception._10xx_user;
 
 import io.github.wimdeblauwe.errorhandlingspringbootstarter.ResponseErrorCode;
 import lombok.Getter;
