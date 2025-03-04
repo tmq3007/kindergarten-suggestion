@@ -1,18 +1,22 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
-import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.SchoolVO;
 import fa.pjb.back.repository.SchoolRepository;
+import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -29,7 +33,11 @@ public class SchoolServiceImpl implements SchoolService {
 
     private final SchoolRepository schoolRepository;
     private final SchoolMapper schoolMapper;
+    private final EmailService emailService;
     private static final Tika tika = new Tika();
+    @Value("${school-detailed-link}")
+    private String schoolDetailedLink;
+
 
     @Override
     public SchoolVO getSchoolInfo(Integer schoolId) {
@@ -61,5 +69,71 @@ public class SchoolServiceImpl implements SchoolService {
             }
         }
         return schoolMapper.toSchoolVO(school);
+    }
+
+    /**
+     * Updates the status of a school based on the provided status code.
+     **/
+    @Override
+    @Transactional
+    public void updateSchoolStatus(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+        // Retrieve the school entity by ID, or throw an exception if not found
+        School school = schoolRepository.findById(schoolID)
+                .orElseThrow(SchoolNotFoundException::new);
+
+        switch (changeSchoolStatusDTO.status()) {
+            case 1 -> {
+                // Transition to status 1 is allowed from statuses 0, 2, 4, 5
+                if (school.getStatus() == 0 || school.getStatus() == 2 || school.getStatus() == 4 || school.getStatus() == 5) {
+                    school.setStatus(changeSchoolStatusDTO.status());
+                } else {
+                    throw new InappropriateSchoolStatusException();
+                }
+            }
+
+            case 2 -> {
+                // Transition to status 2 is allowed from status 1
+                if (school.getStatus() == 1) {
+                    school.setStatus(changeSchoolStatusDTO.status());
+                    emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink + schoolID);
+                } else {
+                    throw new InappropriateSchoolStatusException();
+                }
+            }
+
+            case 3 -> {
+                // Transition to status 3 is allowed from status 1
+                if (school.getStatus() == 1) {
+                    school.setStatus(changeSchoolStatusDTO.status());
+                    emailService.sendSchoolRejectedEmail(school.getEmail(), school.getName());
+                } else {
+                    throw new InappropriateSchoolStatusException();
+                }
+            }
+
+            case 4 -> {
+                // Transition to status 4 is allowed from statuses 2, 5
+                if (school.getStatus() == 2 || school.getStatus() == 5) {
+                    school.setStatus(changeSchoolStatusDTO.status());
+                    emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), changeSchoolStatusDTO.username(), schoolDetailedLink + schoolID);
+                } else {
+                    throw new InappropriateSchoolStatusException();
+                }
+            }
+
+            case 5 -> {
+                // Transition to status 5 is allowed from status 4
+                if (school.getStatus() == 4) {
+                    school.setStatus(changeSchoolStatusDTO.status());
+                } else {
+                    throw new InappropriateSchoolStatusException();
+                }
+            }
+
+            case 6 -> {
+                // Directly set status to 6 without any checks
+                school.setStatus(changeSchoolStatusDTO.status());
+            }
+        }
     }
 }

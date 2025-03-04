@@ -2,6 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.vo.SchoolVO;
 import fa.pjb.back.service.SchoolService;
@@ -41,4 +42,17 @@ public class SchoolController {
                 .data(schoolService.addSchool(schoolDTO,image))
                 .build();
     }
+
+    @PutMapping("/change-status/{schoolId}")
+    public ApiResponse<?> updateSchoolStatus(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+
+        schoolService.updateSchoolStatus(schoolId, changeSchoolStatusDTO);
+
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Update school status successfully.")
+                .build();
+    }
+
+
 }
