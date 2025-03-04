@@ -15,7 +15,9 @@ import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,6 +40,16 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolVO(school);
     }
 
+    private List<File>  convertMultiPartFileToFile(List<MultipartFile> list) throws IOException {
+        List<File> res  = new ArrayList<>();
+        for (MultipartFile multipartFile : list) {
+            File tempFile = File.createTempFile("temp", null);
+            multipartFile.transferTo(tempFile);
+            res.add(tempFile);
+        }
+        return res;
+    }
+
     @Override
     public SchoolVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
         School school = schoolMapper.toSchoolEntityFromAddSchoolDTO(schoolDTO);
@@ -48,7 +60,6 @@ public class SchoolServiceImpl implements SchoolService {
                 if (file.getSize() > MAX_FILE_SIZE) {
                     throw new InvalidFileFormatException("File cannot exceed 5MB");
                 }
-
                 // Check file type
                 try {
                     String mimeType = tika.detect(file.getBytes()); // Detect MIME type
@@ -60,6 +71,12 @@ public class SchoolServiceImpl implements SchoolService {
                 }
             }
         }
+        try {
+            convertMultiPartFileToFile(image);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         return schoolMapper.toSchoolVO(school);
     }
 }
