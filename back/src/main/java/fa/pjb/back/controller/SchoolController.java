@@ -43,7 +43,6 @@ public class SchoolController {
     public ApiResponse<SchoolVO> addSchool(
             @RequestPart(value = "data") @Valid AddSchoolDTO schoolDTO,
             @RequestPart(value = "image", required = false) List<MultipartFile> image) throws IOException {
-
         return ApiResponse.<SchoolVO>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("School Created!")

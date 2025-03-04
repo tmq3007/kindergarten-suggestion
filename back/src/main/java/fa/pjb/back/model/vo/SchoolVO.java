@@ -15,4 +15,6 @@ public record SchoolVO(
         Integer feeFrom,
         Integer feeTo,
         String image,
-        String description) { }
+        String description,
+        String[] imageList) {
+}

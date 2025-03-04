@@ -13,10 +13,10 @@ import com.google.auth.oauth2.GoogleCredentials;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.model.vo.ImageVO;
 import io.github.cdimascio.dotenv.Dotenv;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -34,8 +34,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 @Service
+@Slf4j
 public class GGDriveImageServiceImpl implements GGDriveImageService {
-    private static final Logger logger = LoggerFactory.getLogger(GGDriveImageServiceImpl.class);
     private static final Dotenv dotenv = Dotenv.load();
     private static final String SERVICE_ACCOUNT_KEY_PATH = dotenv.get("GOOGLE_APPLICATION_CREDENTIALS");
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
@@ -66,9 +66,9 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
 
         try (OutputStream os = new FileOutputStream(resizedFile)) {
             Thumbnails.of(originalImage)
-                    .size(800, 800)  // Resize to max 800px width/height
+                    .size(600, 600)  // Resize to max 600px width/height
                     .outputFormat("jpg") // Ensure output format is JPG
-                    .outputQuality(0.8) // Maintain quality while reducing file size
+                    .outputQuality(0.9) // Maintain quality while reducing file size
                     .toOutputStream(os);
         }
         return resizedFile;
@@ -98,17 +98,15 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             String fileId = uploadFile.getId();
             String imageUrl = "https://drive.google.com/uc?export=view&id=" + fileId;
 
-            logger.info("Image uploaded successfully: {}", imageUrl);
-
             return new ImageVO(200, "Upload successful", (int) resizedFile.length(), uniqueFileName, imageUrl);
         } catch (IOException | GeneralSecurityException e) {
-            logger.error("Failed to upload image: {}", e.getMessage());
+            log.error("Failed to upload image: {}", e.getMessage());
             return new ImageVO(500, "Failed to connect to Google Drive", 0, "Failed", e.getMessage());
         } finally {
             boolean deleted = file.delete() && resizedFile.delete();
 
             if (!deleted) {
-                logger.warn("Original file deletion failed: {}", file.getName());
+                log.warn("Original file deletion failed: {}", file.getName());
             }
         }
     }
@@ -128,7 +126,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             try {
                 uploadResults.add(future.get());
             } catch (Exception e) {
-                logger.error("Error in bulk upload: {}", e.getMessage());
+                log.error("Error in bulk upload: {}", e.getMessage());
             }
         }
 
@@ -141,12 +139,23 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
         try {
             Drive drive = getDriveService();
             drive.files().delete(fileId).execute();
-            logger.info("File deleted successfully: {}", fileId);
+            log.info("File deleted successfully: {}", fileId);
             return new ImageVO(200, "File deleted successfully", 0, "Deleted", "File deleted successfully.");
         } catch (IOException | GeneralSecurityException e) {
-            logger.error("Failed to delete file: {}", e.getMessage());
+            log.error("Failed to delete file: {}", e.getMessage());
             return new ImageVO(500, "Failed to delete file", 0, "Failed", e.getMessage());
         }
+    }
+
+    public List<java.io.File>  convertMultiPartFileToFile(List<MultipartFile> list) throws IOException {
+        List<java.io.File> res  = new ArrayList<>();
+        assert list != null;
+        for (MultipartFile multipartFile : list) {
+            java.io.File tempFile = java.io.File.createTempFile("temp", null);
+            multipartFile.transferTo(tempFile);
+            res.add(tempFile);
+        }
+        return res;
     }
 
 }

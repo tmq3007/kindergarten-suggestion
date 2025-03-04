@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface SchoolMapper {
+
     SchoolVO toSchoolVO(School school);
 
     SchoolDTO toSchoolDTO(School school);
