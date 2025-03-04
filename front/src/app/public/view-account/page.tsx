@@ -197,7 +197,7 @@ const Profile = () => {
         }
     }, [countries]);
 
-    if (isLoading) return <FormSkeleton />;
+    if (isLoading) return <UserFormSkeleton/>;
     if (errorParent) return <p className="text-red-500">Can not load data.</p>;
 
     const transparentTabStyle = {

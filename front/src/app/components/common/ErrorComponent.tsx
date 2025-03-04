@@ -3,6 +3,7 @@ import { ReloadOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import React from "react";
 
 
 const { Paragraph, Text } = Typography;
@@ -60,7 +61,7 @@ const ErrorComponent: React.FC<{ error: ApiError }> = ({ error }) => {
             extra={
                 error.status === 403 ? (
                     role === "ROLE_ADMIN" ? (
-                        <Button type="primary" onClick={() => router.push("/admin/login")}>
+                        <Button type="primary" onClick={() => router.push("/admin")}>
                             Go to Login
                         </Button>
                     ) : (

@@ -32,6 +32,11 @@ spring:
     template-loader-path: classpath:/templates/
     suffix: .html
     charset: UTF-8
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 55MB
 error:
   handling:
     search-super-class-hierarchy: true
@@ -48,6 +53,7 @@ refresh-token-exp: 60000000
 csrf-token-exp: 600000
 forgot-password-token-exp: 300000
 reset-password-link-header: 'http://localhost:3000/forgot-password/reset-password'
+
 
 
 

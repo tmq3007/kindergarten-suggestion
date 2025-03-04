@@ -25,6 +25,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmailAndIdNot(String email, int id);
 
     boolean existsByPhoneAndIdNot(String phone, int id);
+
     @Query("SELECT u.id AS id, u.fullname AS fullname, u.email AS email, u.phone AS phone, "
             + "u.role AS role, u.status AS status, "
             + "p.street AS street, p.ward AS ward, p.district AS district, p.province AS province "

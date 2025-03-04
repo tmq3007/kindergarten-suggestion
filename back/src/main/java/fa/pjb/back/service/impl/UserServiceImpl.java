@@ -15,6 +15,7 @@ import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
+import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
@@ -40,12 +41,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final SchoolOwnerRepository schoolOwnerRepository;
     private final AuthService authService;
     private final EmailService emailService;
     private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
-    private final SchoolOwnerRepository schoolOwnerRepository;
 
 
     @Override
@@ -56,26 +57,7 @@ public class UserServiceImpl implements UserService {
 
         Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
         log.info("page: {}", userEntitiesPage);
-        return userEntitiesPage.map(this::convertToUserVO);
-    }
-
-
-    private UserVO convertToUserVO(UserProjection user) {
-        String address = (user.getStreet() == null && user.getWard() == null &&
-                user.getDistrict() == null && user.getProvince() == null)
-                ? "N/A"
-                : (user.getStreet() + " " + user.getWard() + " " + user.getDistrict() + " " + user.getProvince()).trim();
-
-        return UserVO.builder()
-                .id(user.getId())
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .phone(user.getPhone() != null ? user.getPhone() : "N/A")
-                .address(address.isEmpty() ? "N/A" : address)
-                .role(user.getRole().equals(ROLE_PARENT.toString()) ? "Parent" :
-                        user.getRole().equals(ROLE_SCHOOL_OWNER.toString()) ? "School Owner" : "Admin")
-                .status(user.getStatus() ? "Active" : "Inactive")
-                .build();
+        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
 
     private ERole convertRole2(String role) {
@@ -94,50 +76,6 @@ public class UserServiceImpl implements UserService {
             }
             default -> throw new IllegalArgumentException("Invalid role: " + role);
         };
-    }
-
-    private UserVO convertToUserVO(User user) {
-
-        if (user.getRole() == ROLE_PARENT) {
-            Parent temp = parentRepository.findById(user.getId()).orElse(
-                    Parent.builder().street(" ").ward(" ").district(" ").province(" ").build());
-
-            //nếu address rỗng thì gán là N/A
-            String address = temp.getStreet() + " " + temp.getWard() + " " + temp.getDistrict() + " "
-                    + temp.getProvince();
-            if (address.trim().isEmpty()) {
-                address = "N/A";
-            }
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address(address)
-                    .role("Parent")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else if (user.getRole() == ROLE_SCHOOL_OWNER) {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getFullname())
-                    .email(user.getEmail())
-                    .phone(user.getPhone())
-                    .address("N/A")
-                    .role("School Owner")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        } else {
-            return UserVO.builder()
-                    .id(user.getId())
-                    .fullname(user.getUsername())
-                    .email(user.getEmail())
-                    .phone("N/A")
-                    .address("N/A")
-                    .role("Admin")
-                    .status(user.getStatus() ? "Active" : "Inactive")
-                    .build();
-        }
     }
 
     @Override

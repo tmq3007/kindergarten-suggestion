@@ -33,24 +33,36 @@ export type Country = {
 }
 
 export type SchoolDTO = {
-    id: number;
     name: string;
-    phone: string;
+    schoolType: number;
+    website?:string;
+    
+    // Address Fields
+    province: string;
+    district: string;
+    ward: string;
+    street?: string;
+    
     email: string;
-    receivingAge: number | null;
-    educationMethod: string | null;
-    schoolType: string | null;
-    status: boolean | null;
-    website: string | null;
-    description: string | null;
-    feeFrom: number | null;
-    feeTo: number | null;
-    image: string | null;
-    district: string | null;
-    ward: string | null;
-    province: string | null;
-    street: string | null;
-};
+    phone: string;
+    
+    receivingAge: number;
+    educationMethod: number;
+    
+    // Fee Range
+    feeFrom: number;
+    feeTo: number;
+    
+    // Facilities and Utilities (Checkbox Groups)
+    facilities?: number[];
+    utilities?: number[];
+    
+    description?: string; // School introduction
+    
+    // File Upload
+    image?: File[];
+}
+
 
 export type SchoolOwnerDTO  = {
     id: number;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import UserList from "@/app/components/UserList";
+import UserList from "@/app/components/user/UserList";
 import { useGetUserListQuery } from "@/redux/services/userListApi";
 import { useState } from "react";
 import { Input } from "antd";

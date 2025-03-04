@@ -75,4 +75,4 @@ const ProfileSkeleton = () => {
     );
 };
 
-export default ProfileSkeleton;
+export default UserFormSkeleton;

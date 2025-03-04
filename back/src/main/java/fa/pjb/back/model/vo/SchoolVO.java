@@ -14,4 +14,5 @@ public record SchoolVO(
         Byte educationMethod,
         Integer feeFrom,
         Integer feeTo,
+        String image,
         String description) { }
