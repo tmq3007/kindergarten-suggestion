@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Typography } from "antd";
 import { useRouter } from "next/navigation";
-import ErrorComponent from "./ErrorComponent";
+import ErrorComponent from "../common/ErrorComponent";
 const { Paragraph, Text } = Typography;
 import { message } from "antd";
 import { useToggleUserStatusMutation } from "@/redux/services/userApi";
