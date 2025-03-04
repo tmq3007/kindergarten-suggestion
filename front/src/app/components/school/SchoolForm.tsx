@@ -1,13 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Checkbox, Button, Upload, InputNumber, Image, UploadFile } from 'antd';
-const { Option } = Select;
-import { InfoCircleOutlined, InboxOutlined } from '@ant-design/icons';
-import TextArea from 'antd/es/input/TextArea';
-import { Country, useGetCountriesQuery, useLazyCheckEmailQuery } from '@/redux/services/registerApi';
-import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
+import React, {useEffect, useState} from 'react';
+import {Checkbox, Form, Image, Input, InputNumber, Select, Upload, UploadFile} from 'antd';
+import {InboxOutlined} from '@ant-design/icons';
+import {Country, useGetCountriesQuery, useLazyCheckEmailQuery} from '@/redux/services/registerApi';
+import {useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery} from '@/redux/services/addressApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
-import { CHILD_RECEIVING_AGES_OPTIONS, EDUCATION_METHODS_OPTIONS, FACILITIES_OPTIONS, SCHOOL_TYPES_OPTIONS, UTILITIES_OPTIONS, } from '@/lib/constants';
-import SchoolFromButton from './SchoolFromButton';
+import {
+    CHILD_RECEIVING_AGES_OPTIONS,
+    EDUCATION_METHODS_OPTIONS,
+    FACILITIES_OPTIONS,
+    SCHOOL_TYPES_OPTIONS,
+    UTILITIES_OPTIONS,
+} from '@/lib/constants';
+import SchoolFormButton from './SchoolFormButton';
+import MyEditor from "@/app/components/common/MyEditor";
+
+const {Option} = Select;
 
 
 interface FieldType {
@@ -40,12 +47,15 @@ interface FieldType {
     // File Upload
     image?: File[];
 }
+
 interface SchoolFormFields {
-    hasButton: boolean
+    form?: any;
+    hasSaveDraftButton?: boolean;
+    hasSubmitButton?: boolean;
 }
 
-const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
-    const [form] = Form.useForm();
+const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraftButton, hasSubmitButton}) => {
+    const [form] = Form.useForm(externalForm);
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
@@ -61,16 +71,15 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
 
     //Hooks
     //TODO: Change to School email validate
-    const [triggerCheckEmail, { isFetching }] = useLazyCheckEmailQuery();
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
-    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
-    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
+    const [triggerCheckEmail, {isFetching}] = useLazyCheckEmailQuery();
+    const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
+    const {data: provinces, isLoading: isLoadingProvince} = useGetProvincesQuery();
+    const {data: districts, isLoading: isLoadingDistrict} = useGetDistrictsQuery(selectedProvince!, {
         skip: !selectedProvince,
     });
-    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
+    const {data: wards, isLoading: isLoadingWard} = useGetWardsQuery(selectedDistrict!, {
         skip: !selectedDistrict,
     });
-
 
 
     //Event handlers
@@ -117,14 +126,14 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
 
     // Address event handler
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({ district: undefined, ward: undefined, street: undefined }); // Reset dependent fields
+        form.setFieldsValue({district: undefined, ward: undefined, street: undefined}); // Reset dependent fields
         setSelectedProvince(provinceCode);
         setSelectedDistrict(undefined);
         setSelectedWard(undefined); // Reset ward when province changes
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ ward: undefined, street: undefined }); // Reset ward and street when district changes
+        form.setFieldsValue({ward: undefined, street: undefined}); // Reset ward and street when district changes
         setSelectedDistrict(districtCode);
         setSelectedWard(undefined); // Reset ward when district changes
     };
@@ -199,7 +208,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
             <Form<FieldType>
                 form={form}
                 onFinish={onFinish}
-                labelCol={{ span: 6, className: 'font-bold' }}
+                labelCol={{span: 6, className: 'font-bold'}}
                 labelAlign='left'
                 labelWrap
                 layout="horizontal"
@@ -212,9 +221,9 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
 
                             name="name"
                             label="School Name"
-                            rules={[{ required: true, message: 'Please enter school name' }]}
+                            rules={[{required: true, message: 'Please enter school name'}]}
                         >
-                            <Input placeholder="Enter School Name here..." />
+                            <Input placeholder="Enter School Name here..."/>
                         </Form.Item>
 
                         {/* School Type */}
@@ -222,20 +231,20 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
 
                             name="schoolType"
                             label="School Type"
-                            rules={[{ required: true, message: 'Please select school type' }]}
+                            rules={[{required: true, message: 'Please select school type'}]}
                         >
                             <Select placeholder="Select a type..." options={SCHOOL_TYPES_OPTIONS}>
                             </Select>
                         </Form.Item>
 
                         {/* Address */}
-                        <Form.Item label="Address" className='space-y-4' required  >
+                        <Form.Item label="Address" className='space-y-4' required>
 
                             {/* City, District, Province */}
                             <Form.Item
                                 name="province"
                                 className="mb-5"
-                                rules={[{ required: true, message: 'Please select a province' }]}
+                                rules={[{required: true, message: 'Please select a province'}]}
                             >
                                 <Select
                                     onChange={onProvinceChange}
@@ -252,7 +261,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                             <Form.Item
                                 name="district"
                                 className="mb-5"
-                                rules={[{ required: true, message: 'Please select a district' }]}
+                                rules={[{required: true, message: 'Please select a district'}]}
 
                             >
                                 <Select
@@ -271,7 +280,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                             <Form.Item
                                 name="ward"
                                 className="mb-5"
-                                rules={[{ required: true, message: 'Please select a ward' }]}
+                                rules={[{required: true, message: 'Please select a ward'}]}
 
                             >
                                 <Select
@@ -291,7 +300,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                 name="street"
                                 className='mb-4'
                             >
-                                <Input placeholder="Enter School Address here..." />
+                                <Input placeholder="Enter School Address here..."/>
                             </Form.Item>
                         </Form.Item>
                         {/* Email and Phone */}
@@ -303,6 +312,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                             validateTrigger="onFinish"
                             validateStatus={emailStatus}
                             help={emailHelp}
+                            required={true}
                         >
                             <Input
                                 placeholder="Enter your email"
@@ -314,7 +324,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                         {/* Phone Number */}
                         <Form.Item label="Phone Number"
 
-                            required
+                                   required
                         >
                             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                                 {/* Country Code Selector */}
@@ -322,8 +332,8 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                     loading={isLoadingCountry}
                                     value={selectedCountry?.code || ''}
                                     onChange={handleCountryChange}
-                                    dropdownStyle={{ width: 250 }}
-                                    style={{ width: 120, borderRight: "1px solid #ccc" }}
+                                    dropdownStyle={{width: 250}}
+                                    style={{width: 120, borderRight: "1px solid #ccc"}}
                                     optionLabelProp="label2"
                                     showSearch
                                     filterOption={(input, option) =>
@@ -338,18 +348,18 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                             label2={
                                                 <span className="flex items-center">
                                                     <Image src={country.flag}
-                                                        alt={country.label}
-                                                        width={20} height={14}
-                                                        className="mr-2 intrinsic" preview={false} />
+                                                           alt={country.label}
+                                                           width={20} height={14}
+                                                           className="mr-2 intrinsic" preview={false}/>
                                                     {country.code} {country.dialCode}
                                                 </span>
                                             }
                                         >
                                             <div className="flex items-center">
                                                 <Image src={country.flag}
-                                                    alt={country.label}
-                                                    width={20} height={14}
-                                                    className="mr-2 intrinsic" />
+                                                       alt={country.label}
+                                                       width={20} height={14}
+                                                       className="mr-2 intrinsic"/>
                                                 {country.dialCode} - {country.label}
                                             </div>
                                         </Select.Option>
@@ -357,14 +367,14 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                 </Select>
                                 <Form.Item
                                     name="phone"
-                                    rules={[{ required: true, message: 'Please input your phone number!' }]}
+                                    rules={[{required: true, message: 'Please input your phone number!'}]}
                                     noStyle
                                 >
                                     {/* Phone Input */}
                                     <Input
                                         placeholder="Enter your phone number"
                                         onChange={handlePhoneNumberChange}
-                                        style={{ flex: 1, border: "none", boxShadow: "none" }}
+                                        style={{flex: 1, border: "none", boxShadow: "none"}}
                                     />
                                 </Form.Item>
                             </div>
@@ -374,7 +384,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                         <Form.Item
                             name="receivingAge"
                             label="Child receiving age"
-                            rules={[{ required: true, message: 'Please select age range' }]}
+                            rules={[{required: true, message: 'Please select age range'}]}
                         >
                             <Select placeholder="Select a category..." options={CHILD_RECEIVING_AGES_OPTIONS}>
                             </Select>
@@ -385,7 +395,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
 
                             name="educationMethod"
                             label="Education method"
-                            rules={[{ required: true, message: 'Please select education method' }]}
+                            rules={[{required: true, message: 'Please select education method'}]}
                         >
                             <Select placeholder="Select a category..." options={EDUCATION_METHODS_OPTIONS}>
                             </Select>
@@ -402,7 +412,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                     <Form.Item
                                         name="feeFrom"
                                         label="From"
-                                        rules={[{ required: true, message: "Please select fee from" }]}
+                                        rules={[{required: true, message: "Please select fee from"}]}
                                     >
                                         <InputNumber
                                             placeholder="From"
@@ -412,9 +422,9 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                             onChange={(value) => {
                                                 const feeTo = form.getFieldValue("feeTo");
                                                 if (feeTo !== undefined && value !== null && value > feeTo) {
-                                                    form.setFieldsValue({ feeTo: value }); // Automatically set feeTo if feeFrom is greater
+                                                    form.setFieldsValue({feeTo: value}); // Automatically set feeTo if feeFrom is greater
                                                 }
-                                                form.setFieldsValue({ feeFrom: value });
+                                                form.setFieldsValue({feeFrom: value});
                                             }}
                                         />
                                     </Form.Item>
@@ -424,8 +434,8 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                         label="To"
                                         dependencies={["feeFrom"]}
                                         rules={[
-                                            { required: true, message: "Please select fee to" },
-                                            ({ getFieldValue }) => ({
+                                            {required: true, message: "Please select fee to"},
+                                            ({getFieldValue}) => ({
                                                 validator(_, value) {
                                                     const feeFrom = getFieldValue("feeFrom");
                                                     if (!value || feeFrom <= value) {
@@ -443,7 +453,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                             className="w-full"
                                             min={form.getFieldValue("feeFrom") || 0} // Ensure min value updates
                                             step={100000}
-                                            onChange={(value) => form.setFieldsValue({ feeTo: value })}
+                                            onChange={(value) => form.setFieldsValue({feeTo: value})}
                                         />
                                     </Form.Item>
                                 </div>
@@ -457,11 +467,11 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                             name="website"
                             label="School Website"
                         >
-                            <Input placeholder="Enter School Website here..." />
+                            <Input placeholder="Enter School Website here..."/>
                         </Form.Item>
                         <div>
                             {/* Facilities */}
-                            <Form.Item label="Facilities" name="facilities"  >
+                            <Form.Item label="Facilities" name="facilities">
                                 <Checkbox.Group
                                     options={FACILITIES_OPTIONS}
                                     value={facilities}
@@ -470,7 +480,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                             </Form.Item>
 
                             {/* Utilities */}
-                            <Form.Item label="Utilities" name="utilities"  >
+                            <Form.Item label="Utilities" name="utilities">
                                 <Checkbox.Group
                                     options={UTILITIES_OPTIONS}
                                     value={utilities}
@@ -478,23 +488,30 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                                 />
                             </Form.Item>
                             <style>{`
+                                .custom-add-school-select .ant-checkbox-wrapper {
+                                    display: flex;
+                                    align-items: center;
+                                }
+
                                 .custom-add-school-select .ant-checkbox-inner {
                                     width: 24px !important;
                                     height: 24px !important;
                                 }
+
                                 .custom-add-school-select .ant-checkbox-input {
                                     transform: scale(2);
                                 }
-                            `}</style>
+                             `}</style>
+
                         </div>
                         {/* School Introduction */}
-                        <div >
+                        <div>
                             <Form.Item
 
                                 name="description"
                                 label="School introduction"
                             >
-                                <TextArea rows={4} placeholder="Enter text here..." className='h-32' allowClear />
+                                <MyEditor description={form.getFieldValue("description") || undefined}/>
                             </Form.Item>
                         </div>
                         {/* School Image */}
@@ -504,12 +521,12 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                         >
                             <Form.Item name="image" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
                                 <Upload.Dragger name="schoolImage"
-                                    listType="picture"
-                                    beforeUpload={() => false} // Prevent automatic upload
-                                    maxCount={10}
-                                    accept="image/*">
+                                                listType="picture"
+                                                beforeUpload={() => false} // Prevent automatic upload
+                                                maxCount={10}
+                                                accept="image/*">
                                     <p className="ant-upload-drag-icon">
-                                        <InboxOutlined />
+                                        <InboxOutlined/>
                                     </p>
                                     <p className="ant-upload-text">Click or drag file to this area to upload</p>
                                     <p className="ant-upload-text">Upload pictures of format
@@ -522,7 +539,7 @@ const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
                     </div>
                 </div>
                 {/* Submit Buttons */}
-                {hasButton && <SchoolFromButton form={form} onSaveDraft={handleSaveDraft} />}
+              <SchoolFormButton form={form} hasSaveDraftButton={hasSaveDraftButton} hasSubmitButton={hasSubmitButton}/>
             </Form>
         </div>
     );

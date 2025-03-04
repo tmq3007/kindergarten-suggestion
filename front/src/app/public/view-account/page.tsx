@@ -14,7 +14,7 @@ import {ROLES} from "@/lib/constants";
 import {unauthorized} from "next/navigation";
 import {useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery} from "@/redux/services/parentApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
-import FormSkeleton from "@/app/components/FormSkeleton";
+import UserFormSkeleton from "@/app/components/skeleton/UserFormSkeleton";
 
 const {Option} = Select;
 const {Title} = Typography;
@@ -190,7 +190,7 @@ const Profile = () => {
         }
     }, [countries]);
 
-    if (isLoading) return <FormSkeleton/>;
+    if (isLoading) return <UserFormSkeleton/>;
     if (errorParent) return <p className="text-red-500">Can not load data.</p>;
 
     const backgroundStyle = {

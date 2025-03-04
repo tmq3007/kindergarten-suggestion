@@ -1,6 +1,5 @@
 'use client';
 import React, {useEffect, useRef, useState} from 'react';
-import background from "@public/background2.jpg";
 import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
@@ -201,7 +200,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         style={{
                             padding: 20,
                             minHeight: 280,
-                            backgroundImage: `url(${background.src})`,
                             borderRadius: borderRadiusLG,
                         }}
                     >
@@ -220,6 +218,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             Yes
                         </Button>,
                     ]}
+                    getContainer={false}
                 >
                     <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
                 </Modal>
