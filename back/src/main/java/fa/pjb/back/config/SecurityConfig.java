@@ -53,13 +53,14 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/reset-password").permitAll()
                                 .requestMatchers("/api/auth/check-email").permitAll()
                                 .requestMatchers("/api/parent/register").permitAll()
-//                                .anyRequest().permitAll()
-                                .anyRequest().authenticated()
+                                .requestMatchers("/api/school/review/**").permitAll()
+                                .anyRequest().permitAll()
+//                                .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
