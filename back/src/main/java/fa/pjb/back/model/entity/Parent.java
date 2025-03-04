@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @Table(name = "Parent")
 public class Parent {
     @Id
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "parent_id", nullable = false)
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)

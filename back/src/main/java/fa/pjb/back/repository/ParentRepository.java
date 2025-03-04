@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Optional;
 
 public interface ParentRepository extends JpaRepository<Parent,Integer> {
-    Parent findParentById(Integer id);
+    Parent findParentByUserId(Integer id);
 
     Parent getParentById(Integer id);
     Optional<Parent> findByUserId(Integer userId);

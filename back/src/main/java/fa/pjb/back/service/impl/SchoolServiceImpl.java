@@ -1,6 +1,6 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+import fa.pjb.back.common.exception._13xx_school.ReviewNotFoundException;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.SchoolVO;
@@ -20,7 +20,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public SchoolVO getSchoolInfo(Integer schoolId) {
         log.info("=========== school service ===============");
-        School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
+        School school = schoolRepository.findById(schoolId).orElseThrow(ReviewNotFoundException::new);
         return schoolMapper.toSchoolVO(school);
     }
 }

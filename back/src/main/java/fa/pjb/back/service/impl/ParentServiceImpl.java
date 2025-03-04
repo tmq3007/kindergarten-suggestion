@@ -12,6 +12,7 @@ import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.mapper.ParentMapper;
+import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
@@ -127,13 +128,13 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Transactional
-    public ParentDTO getParentById(Integer parentId) {
-        Parent parent = parentRepository.findParentById(parentId);
+    public ParentVO getParentById(Integer userId) {
+        Parent parent = parentRepository.findParentByUserId(userId);
         if (parent == null) {
             throw new UserNotFoundException();
         }
 
-        return parentMapper.toParentDTO(parent);
+        return parentMapper.toParentVO(parent);
     }
 
     @Transactional

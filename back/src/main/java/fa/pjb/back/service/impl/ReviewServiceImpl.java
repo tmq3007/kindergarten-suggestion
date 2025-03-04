@@ -1,6 +1,6 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+import fa.pjb.back.common.exception._13xx_school.ReviewNotFoundException;
 import fa.pjb.back.mapper.ReviewMapper;
 import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.vo.ReviewVO;
@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -23,12 +24,11 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
 
     @Override
-    public List<ReviewVO> getAllReview(Integer schoolId) {
-        List<Review> reviews = reviewRepository.getAllBySchool_Id(schoolId);
-
+    public List<ReviewVO> getAllReview(Integer schoolId, LocalDate fromDate, LocalDate toDate) {
+        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate);
         log.info("reviews: {}", reviews);
         if (reviews.isEmpty()) {
-            throw new SchoolNotFoundException();
+            throw new ReviewNotFoundException();
         }
 
         log.info("date: {}", reviews.get(0).getReceiveDate().toString());
@@ -40,7 +40,7 @@ public class ReviewServiceImpl implements ReviewService {
         List<Review> reviews = reviewRepository.getTop4RecentFiveStarFeedbacks();
 
         if (reviews.isEmpty()) {
-            throw new SchoolNotFoundException();
+            throw new ReviewNotFoundException();
         }
         return reviewMapper.toReviewVOList(reviews);
     }

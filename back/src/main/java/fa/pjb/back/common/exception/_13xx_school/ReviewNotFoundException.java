@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.NOT_FOUND)
 @Getter
 @Setter
-public class SchoolNotFoundException extends RuntimeException {
-    public SchoolNotFoundException() {
-        super("School not found");
+public class ReviewNotFoundException extends RuntimeException {
+    public ReviewNotFoundException() {
+        super("Review not found");
     }
 }
