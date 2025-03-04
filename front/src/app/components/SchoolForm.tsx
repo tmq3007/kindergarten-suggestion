@@ -7,6 +7,7 @@ import { Country, useGetCountriesQuery, useLazyCheckEmailQuery } from '@/redux/s
 import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
 import { CHILD_RECEIVING_AGES_OPTIONS, EDUCATION_METHODS_OPTIONS, FACILITIES_OPTIONS, SCHOOL_TYPES_OPTIONS, UTILITIES_OPTIONS, } from '@/lib/constants';
+import SchoolFromButton from './SchoolFromButton';
 
 
 interface FieldType {
@@ -39,9 +40,11 @@ interface FieldType {
     // File Upload
     image?: File[];
 }
+interface SchoolFormFields {
+    hasButton: boolean
+}
 
-
-const SchoolForm: React.FC = () => {
+const SchoolForm: React.FC<SchoolFormFields> = (hasButton) => {
     const [form] = Form.useForm();
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
@@ -188,9 +191,11 @@ const SchoolForm: React.FC = () => {
         return e?.fileList ?? []; // Ensure an array is returned
     };
 
+    const handleSaveDraft = () => {
+        console.log("Draft saved");
+    };
     return (
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6">Add new school</h2>
             <Form<FieldType>
                 form={form}
                 onFinish={onFinish}
@@ -204,7 +209,7 @@ const SchoolForm: React.FC = () => {
                     <div>
                         {/* School Name */}
                         <Form.Item
-                            tooltip="This is a required field"
+
                             name="name"
                             label="School Name"
                             rules={[{ required: true, message: 'Please enter school name' }]}
@@ -214,7 +219,7 @@ const SchoolForm: React.FC = () => {
 
                         {/* School Type */}
                         <Form.Item
-                            tooltip="This is a required field"
+
                             name="schoolType"
                             label="School Type"
                             rules={[{ required: true, message: 'Please select school type' }]}
@@ -224,7 +229,7 @@ const SchoolForm: React.FC = () => {
                         </Form.Item>
 
                         {/* Address */}
-                        <Form.Item label="Address" className='space-y-4' required tooltip="This is a required field">
+                        <Form.Item label="Address" className='space-y-4' required  >
 
                             {/* City, District, Province */}
                             <Form.Item
@@ -291,7 +296,7 @@ const SchoolForm: React.FC = () => {
                         </Form.Item>
                         {/* Email and Phone */}
                         <Form.Item
-                            tooltip="This is a required field"
+
                             name="email"
                             label="Email Address"
                             hasFeedback
@@ -308,7 +313,7 @@ const SchoolForm: React.FC = () => {
                         </Form.Item>
                         {/* Phone Number */}
                         <Form.Item label="Phone Number"
-                            tooltip="This is a required field"
+
                             required
                         >
                             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
@@ -367,7 +372,6 @@ const SchoolForm: React.FC = () => {
 
                         {/* Child Receiving Age */}
                         <Form.Item
-                            tooltip="This is a required field"
                             name="receivingAge"
                             label="Child receiving age"
                             rules={[{ required: true, message: 'Please select age range' }]}
@@ -378,7 +382,7 @@ const SchoolForm: React.FC = () => {
 
                         {/* Education Method */}
                         <Form.Item
-                            tooltip="This is a required field"
+
                             name="educationMethod"
                             label="Education method"
                             rules={[{ required: true, message: 'Please select education method' }]}
@@ -390,7 +394,7 @@ const SchoolForm: React.FC = () => {
                         {/* Fee Month (From/To) */}
                         <div>
                             <Form.Item
-                                tooltip="This is a required field"
+
                                 label="Fee/Month (VND)"
                                 required
                             >
@@ -449,7 +453,7 @@ const SchoolForm: React.FC = () => {
                     <div>
                         {/* Website */}
                         <Form.Item
-                            tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
+
                             name="website"
                             label="School Website"
                         >
@@ -457,7 +461,7 @@ const SchoolForm: React.FC = () => {
                         </Form.Item>
                         <div>
                             {/* Facilities */}
-                            <Form.Item label="Facilities" name="facilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
+                            <Form.Item label="Facilities" name="facilities"  >
                                 <Checkbox.Group
                                     options={FACILITIES_OPTIONS}
                                     value={facilities}
@@ -466,7 +470,7 @@ const SchoolForm: React.FC = () => {
                             </Form.Item>
 
                             {/* Utilities */}
-                            <Form.Item label="Utilities" name="utilities" tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}>
+                            <Form.Item label="Utilities" name="utilities"  >
                                 <Checkbox.Group
                                     options={UTILITIES_OPTIONS}
                                     value={utilities}
@@ -486,7 +490,7 @@ const SchoolForm: React.FC = () => {
                         {/* School Introduction */}
                         <div >
                             <Form.Item
-                                tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
+
                                 name="description"
                                 label="School introduction"
                             >
@@ -495,7 +499,7 @@ const SchoolForm: React.FC = () => {
                         </div>
                         {/* School Image */}
                         <Form.Item
-                            tooltip={{ title: 'This is Optional', icon: <InfoCircleOutlined /> }}
+
                             label="School image"
                         >
                             <Form.Item name="image" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
@@ -515,22 +519,10 @@ const SchoolForm: React.FC = () => {
                                 </Upload.Dragger>
                             </Form.Item>
                         </Form.Item>
-
-                        {/* Submit Buttons */}
-
                     </div>
                 </div>
-                <div className="flex lg:justify-center space-x-4 justify-end">
-                    <Button htmlType="button" onClick={() => form.resetFields()}>
-                        Cancel
-                    </Button>
-                    <Button htmlType="button">
-                        Save draft
-                    </Button>
-                    <Button type="primary" htmlType="submit" >
-                        Submit
-                    </Button>
-                </div>
+                {/* Submit Buttons */}
+                {hasButton && <SchoolFromButton form={form} onSaveDraft={handleSaveDraft} />}
             </Form>
         </div>
     );
