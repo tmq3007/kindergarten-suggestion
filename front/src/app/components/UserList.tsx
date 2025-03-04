@@ -1,12 +1,15 @@
-import {ApiResponse} from "@/redux/services/config/baseQuery";
-import {Pageable, UserVO} from "@/redux/services/userListApi";
-import {message, Pagination, Popconfirm, Space, Table, Tag, Typography} from "antd";
-import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import { ApiResponse } from "@/redux/services/config/baseQuery";
+import { Pageable, UserVO } from "@/redux/services/userListApi";
+import { Table, Tag, Space, Pagination, Popconfirm, Result, Button } from "antd";
+import { EditOutlined, DeleteOutlined, ReloadOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import Link from "next/link";
-import {useState} from "react";
-import {useRouter} from "next/navigation";
+import { useState } from "react";
+import { Typography } from "antd";
+import { useRouter } from "next/navigation";
 import ErrorComponent from "./ErrorComponent";
-import {useToggleUserStatusMutation} from "@/redux/services/userApi";
+const { Paragraph, Text } = Typography;
+import { message } from "antd";
+import { useToggleUserStatusMutation } from "@/redux/services/userApi";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; pageable: Pageable }> | undefined;
@@ -19,10 +22,10 @@ interface UserListProps {
 
 export default function UserList({fetchPage, data, error, isFetching}: UserListProps) {
     const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(15);
     const [toggleUserStatus] = useToggleUserStatusMutation();
     const router = useRouter();
-    const users = data?.data.content.map((user) => ({...user, key: user.id})) || [];
+    const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
     const totalElements = data?.data.pageable.totalElements || 0;
     const handlePageChange = (page: number, size: number) => {
         setPageSize(size);
@@ -32,6 +35,7 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
     const handleToggleStatus = async (userId: number) => {
         try {
             await toggleUserStatus(userId).unwrap();
+            handlePageChange(current, pageSize);
             message.success("User status updated successfully!");
         } catch (error) {
             message.error("Failed to update user status!");
@@ -40,11 +44,11 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
 
     //table layout
     const columns = [
-        {title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120, fixed: true},
-        {title: "Email", dataIndex: "email", key: "email", width: 200},
-        {title: "Phone No.", dataIndex: "phone", key: "phone", width: 100},
-        {title: "Address", dataIndex: "address", key: "address", width: 400},
-        {title: "Role", dataIndex: "role", key: "role", width: 100},
+        { title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120, fixed: true },
+        { title: "Email", dataIndex: "email", key: "email", width: 200 },
+        { title: "Phone No.", dataIndex: "phone", key: "phone", width: 100 },
+        { title: "Address", dataIndex: "address", key: "address", width: 400 },
+        { title: "Role", dataIndex: "role", key: "role", width: 100 },
         {
             title: "Status",
             dataIndex: "status",
@@ -86,15 +90,10 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
     }
     return (
         <div className="shadow-md sm:rounded-lg p-4">
-            <Table className="over-flow-scroll" columns={columns} locale={{emptyText: "No results found"}}
-                   dataSource={users} pagination={false} loading={isFetching} scroll={{x: "max-content", y: 600}}/>
+            <Table className="over-flow-scroll" columns={columns} locale={{emptyText: "No results found"} } size="small"
+                   dataSource={users} pagination={false} loading={isFetching} scroll={{x: "max-content", y: 600}} />
             <div className="flex justify-between items-center px-4 py-3">
-                <Pagination
-                    current={current}
-                    total={totalElements}
-                    pageSize={pageSize}
-                    onChange={handlePageChange}
-                />
+                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} pageSizeOptions={[15, 30, 50, 100]}/>
             </div>
         </div>
     );
