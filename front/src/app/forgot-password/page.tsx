@@ -1,7 +1,7 @@
 'use client'
 import React from 'react';
 import {useForgotPasswordMutation} from "@/redux/services/authApi";
-import ForgotPasswordForm from "@/app/components/ForgotPasswordForm";
+import ForgotPasswordForm from "@/app/components/user/ForgotPasswordForm";
 import {motion} from 'framer-motion'
 
 

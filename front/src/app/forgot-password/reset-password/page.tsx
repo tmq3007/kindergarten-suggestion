@@ -2,7 +2,7 @@
 
 import {useResetPasswordMutation} from "@/redux/services/authApi";
 import React from "react";
-import ResetPasswordForm from "@/app/components/ResetPasswordForm";
+import ResetPasswordForm from "@/app/components/user/ResetPasswordForm";
 
 export default function Page() {
 

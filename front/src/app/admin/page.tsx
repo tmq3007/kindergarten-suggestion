@@ -1,7 +1,7 @@
 'use client'
 import React from 'react';
 import {useLoginByAdminMutation} from "@/redux/services/authApi";
-import AdminLoginForm from "@/app/components/AdminLoginForm";
+import AdminLoginForm from "@/app/components/user/AdminLoginForm";
 import {motion} from 'framer-motion'
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
