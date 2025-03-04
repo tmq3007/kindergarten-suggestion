@@ -280,7 +280,7 @@ const Profile = () => {
                                                 </Form.Item>
                                                 <Form.Item
                                                     name="province"
-                                                    label={<span className="text-black">Province</span>}
+                                                    label={<span className="text-black">&nbsp;Province</span>}
                                                 >
                                                     <Select
                                                         onChange={onProvinceChange}
@@ -296,7 +296,7 @@ const Profile = () => {
                                                 </Form.Item>
                                                 <Form.Item
                                                     name="district"
-                                                    label={<span className="text-black">District</span>}
+                                                    label={<span className="text-black">&nbsp;District</span>}
                                                 >
                                                     <Select
                                                         loading={isLoadingDistrict}
@@ -386,7 +386,7 @@ const Profile = () => {
                                                 </Form.Item>
                                                 <Form.Item
                                                     name="ward"
-                                                    label={<span className="text-black">Ward</span>}
+                                                    label={<span className="text-black">&nbsp;Ward</span>}
                                                 >
                                                     <Select
                                                         loading={isLoadingWard}
@@ -403,7 +403,7 @@ const Profile = () => {
                                                 </Form.Item>
                                                 <Form.Item
                                                     name="street"
-                                                    label={<span className="text-black">Street</span>}
+                                                    label={<span className="text-black">&nbsp;Street</span>}
                                                     dependencies={['province', 'district', 'ward']}
                                                 >
                                                     <Input

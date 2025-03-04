@@ -239,6 +239,7 @@ const CreateUser: React.FC = () => {
                         <Form.Item
                             label="DOB"
                             name="dob"
+                            required={true}
                             rules={[{
                                 validator: (_, value) => {
                                     if (!value) return Promise.reject('Date of birth is required!');
