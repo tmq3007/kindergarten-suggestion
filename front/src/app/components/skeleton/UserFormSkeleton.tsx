@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 const { TabPane } = Tabs;
 
-const FormSkeleton: React.FC = () => {
+const UserFormSkeleton: React.FC = () => {
     const backgroundStyle = {
         backgroundImage: `url('/bg3.jpg')`,
         backgroundSize: 'cover',
@@ -96,4 +96,4 @@ const FormSkeleton: React.FC = () => {
     );
 };
 
-export default FormSkeleton;
+export default UserFormSkeleton;

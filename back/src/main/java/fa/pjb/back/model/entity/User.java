@@ -50,8 +50,6 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private ERole role;
 
-//    @MapsId
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 //    private Parent Parent;
 
 //    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

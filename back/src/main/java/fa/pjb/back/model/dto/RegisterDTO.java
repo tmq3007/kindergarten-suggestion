@@ -6,10 +6,10 @@ import org.hibernate.validator.constraints.Length;
 
 public record RegisterDTO(
         @NotBlank(message = "Fullname cannot be empty")
-        @Length(min = 1, max = 255, message = "Fullname must be between 1 and 50 characters")
+        @Length(min = 1, max = 255, message = "Fullname must be between 1 and 255 characters")
         String fullname,
         @NotBlank(message = "Email cannot be empty")
-        @Length(min = 1, max = 255, message = "Email must be between 1 and 50 characters")
+        @Length(min = 1, max = 255, message = "Email must be between 1 and 255 characters")
         @Pattern(regexp = ".+@.+\\..+", message = "Invalid email format")
         String email,
         @NotBlank(message = "Phone cannot be empty")

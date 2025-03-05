@@ -198,10 +198,8 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                     </Header>
                     <Content
                         style={{
-                            margin: '15px 10px 0px 10px',
                             padding: 20,
                             minHeight: 280,
-                            background: colorBgContainer,
                             borderRadius: borderRadiusLG,
                         }}
                     >
@@ -220,6 +218,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             Yes
                         </Button>,
                     ]}
+                    getContainer={false}
                 >
                     <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
                 </Modal>
