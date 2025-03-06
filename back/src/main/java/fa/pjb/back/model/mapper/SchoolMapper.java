@@ -21,7 +21,7 @@ public interface SchoolMapper {
     SchoolDTO toSchoolDTO(School school);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "image", ignore = true) // Image might be handled separately
+   // @Mapping(target = "image", ignore = true) // Image might be handled separately
     @Mapping(target = "facilities", source = "facilities", qualifiedByName = "mapFacilityIds")
     @Mapping(target = "utilities", source = "utilities", qualifiedByName = "mapUtilityIds")
     School toSchoolEntityFromAddSchoolDTO(AddSchoolDTO schoolDTO);

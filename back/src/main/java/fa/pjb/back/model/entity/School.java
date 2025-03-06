@@ -70,9 +70,9 @@ public class School {
     @Column(name = "fee_to")
     private Integer feeTo;
 
-    @Size(max = 255)
-    @Column(name = "image")
-    private String image;
+//    @Size(max = 255)
+//    @Column(name = "image")
+//    private String image;
 
     @Size(max = 255)
     @NotNull
