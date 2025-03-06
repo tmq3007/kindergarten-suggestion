@@ -1,7 +1,8 @@
 import React from "react";
+import Link from "next/link";
 
 interface BreadcrumbProps {
-    paths: { label: string; href?: string }[];  // Mảng các đối tượng chứa label và href (tuỳ chọn)
+    paths: { label: string; href?: string }[];
 }
 
 const MyBreadcrumb: React.FC<BreadcrumbProps> = ({paths}) => {
@@ -10,11 +11,11 @@ const MyBreadcrumb: React.FC<BreadcrumbProps> = ({paths}) => {
             {paths.map((path, index) => (
                 <span key={index}>
                     {path.href ? (
-                        <a href={path.href} className="text-blue-600 hover:text-blue-600 cursor-pointer">
+                        <Link href={path.href} className="text-blue-600 hover:text-blue-600 cursor-pointer">
                             {path.label}
-                        </a>
+                        </Link>
                     ) : (
-                        <span className="text-blue-600 hover:text-blue-600 cursor-pointer">{path.label}</span> // Không có href thì màu xám
+                        <span className="text-blue-600 hover:text-blue-600 cursor-pointer">{path.label}</span>
                     )}
                     {index < paths.length - 1 && " > "}
                 </span>
