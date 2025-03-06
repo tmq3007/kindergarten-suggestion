@@ -111,7 +111,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     @Override
     public List<ImageVO> uploadListImages(List<java.io.File> files, String fileNamePrefix, FileFolderEnum fileFolder) {
         List<ImageVO> uploadResults = Collections.synchronizedList(new ArrayList<>());
-        ExecutorService executor = Executors.newFixedThreadPool(10); // Limit to 5 parallel uploads
+        ExecutorService executor = Executors.newFixedThreadPool(10); // Limit to 10 parallel uploads
 
         List<Future<ImageVO>> futures = new ArrayList<>();
         for (java.io.File file : files) {
@@ -126,7 +126,6 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
                 log.error("Error in bulk upload: {}", e.getMessage());
             }
         }
-
         executor.shutdown(); // Shutdown thread pool
         return uploadResults;
     }

@@ -1,5 +1,8 @@
 package fa.pjb.back.model.vo;
 
+import java.util.List;
+import java.util.Set;
+
 public record SchoolVO(
         Byte status,
         String name,

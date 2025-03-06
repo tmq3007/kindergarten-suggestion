@@ -76,30 +76,30 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
 
     // Handle form submission
     const onFinish = async (values: FieldType) => {
-        // Trigger email validation if it hasn't been validated yet
+        // Trigger email validation
         const isEmailValid = await emailInputRef.current?.validateEmail();
-        if (!isEmailValid || emailStatus !== 'success') {
-          console.log('Email validation failed or emailStatus is not success:', emailStatus);
-          return; // Stop submission if email validation fails
+        if (!isEmailValid) {
+            console.log('Email validation failed');
+            return; // Stop submission if email validation fails
         }
-    
+
         let formattedPhone = values.phone || '';
         if (selectedCountry && !countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith('0')) {
-          formattedPhone = formattedPhone.substring(1);
+            formattedPhone = formattedPhone.substring(1);
         }
         const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
         const fileList: File[] = (values.image || [])
-          .filter((file) => file.originFileObj)
-          .map((file) => file.originFileObj as File);
-    
+            .filter((file) => file.originFileObj)
+            .map((file) => file.originFileObj as File);
+
         const finalValues: SchoolDTO = {
-          ...values,
-          image: fileList,
-          phone: fullPhoneNumber,
+            ...values,
+            image: fileList,
+            phone: fullPhoneNumber,
         };
-        console.log('Form submitted with values:', finalValues);
-        // addSchool(finalValues); // Uncomment when ready
-      };
+        // console.log('Form submitted with values:', finalValues);
+        addSchool(finalValues); // Uncomment when ready
+    };
 
     // Handle province change from AddressInput
     const handleProvinceChange = (provinceCode: number) => {
@@ -149,6 +149,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
                             onDistrictChange={handleDistrictChange} // Pass handler to update selectedDistrict
                         />
                         <EmailInput
+                            ref={emailInputRef} // Add this line
                             onEmailStatusChange={(status, help) => {
                                 setEmailStatus(status);
                                 setEmailHelp(help);
@@ -224,20 +225,41 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
                         </Form.Item>
                     </div>
                     <div>
-                        <Form.Item label="Facilities" name="facilities">
-                            <Checkbox.Group
-                                options={FACILITIES_OPTIONS}
-                                value={facilities}
-                                className="grid grid-cols-3 gap-2 custom-add-school-select"
-                            />
-                        </Form.Item>
-                        <Form.Item label="Utilities" name="utilities">
-                            <Checkbox.Group
-                                options={UTILITIES_OPTIONS}
-                                value={utilities}
-                                className="grid grid-cols-3 gap-2 custom-add-school-select"
-                            />
-                        </Form.Item>
+                        <div>
+                            {/* Facilities */}
+                            <Form.Item label="Facilities" name="facilities">
+                                <Checkbox.Group
+                                    options={FACILITIES_OPTIONS}
+                                    value={facilities}
+                                    className="grid grid-cols-3 gap-2 custom-add-school-select"
+                                />
+                            </Form.Item>
+
+                            {/* Utilities */}
+                            <Form.Item label="Utilities" name="utilities">
+                                <Checkbox.Group
+                                    options={UTILITIES_OPTIONS}
+                                    value={utilities}
+                                    className="grid grid-cols-3 gap-2 custom-add-school-select"
+                                />
+                            </Form.Item>
+                            <style>{`
+                                    .custom-add-school-select .ant-checkbox-wrapper {
+                                        display: flex;
+                                        align-items: center;
+                                    }
+                        
+                                    .custom-add-school-select .ant-checkbox-inner {
+                                        width: 24px !important;
+                                        height: 24px !important;
+                                    }
+                        
+                                    .custom-add-school-select .ant-checkbox-input {
+                                        transform: scale(2);
+                                    }
+                                `}</style>
+
+                        </div>
                         <Form.Item name="description" label="School introduction">
                             <MyEditor description={form.getFieldValue('description') || undefined} />
                         </Form.Item>

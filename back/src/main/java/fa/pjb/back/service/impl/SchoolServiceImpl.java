@@ -1,13 +1,25 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
+import fa.pjb.back.common.exception._14xx_data.PhoneExistedException;
+import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.entity.Facility;
+import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
+import fa.pjb.back.model.entity.Utility;
 import fa.pjb.back.model.mapper.SchoolMapper;
+import fa.pjb.back.model.vo.ImageVO;
 import fa.pjb.back.model.vo.SchoolVO;
+import fa.pjb.back.repository.FacilityRepository;
+import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolRepository;
+import fa.pjb.back.repository.UtilityRepository;
+import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -58,7 +71,7 @@ public class SchoolServiceImpl implements SchoolService {
         if(checkPhoneExists(schoolDTO.phone())){
             throw new PhoneExistedException("This phone is already in used");
         }
-        School school = schoolMapper.toSchoolEntityFromAddSchoolDTO(schoolDTO);
+        School school = schoolMapper.toSchool(schoolDTO);
         List<ImageVO> imageVOList = null;
 
         //Get existing facilities from DB
@@ -76,7 +89,7 @@ public class SchoolServiceImpl implements SchoolService {
             throw new InvalidDataException("Some utilities do not exist in the database");
         }
 
-        school.setPosted_date(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        school.setPostedDate(LocalDate.now());
         School newSchool = schoolRepository.save(school);
 
         // Validate and upload images (if provided)
@@ -113,10 +126,10 @@ public class SchoolServiceImpl implements SchoolService {
                     Media media = new Media();
                     media.setUrl(imageVO.url());
                     media.setSize(String.valueOf(imageVO.size()));
-                    media.setFileId(imageVO.fileId());
+                    media.setCloudId(imageVO.fileId());
                     media.setFilename(imageVO.fileName());
                     media.setType("image/png");
-                    media.setUploadTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+                    media.setUploadTime(LocalDate.now());
                     media.setSchool(newSchool);
                     temp.add(media);
                 }

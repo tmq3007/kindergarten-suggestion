@@ -17,7 +17,7 @@ import java.time.LocalDate;
 public class Media {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "file_id",nullable = false)
     private Integer id;
 
     @Column(name = "type", length = 10)

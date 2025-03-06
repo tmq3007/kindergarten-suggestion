@@ -13,48 +13,49 @@ const EmailInput = forwardRef(({ initialEmail = '', onEmailStatusChange }: Email
     const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
     const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
-
-    const checkEmailExists = async (emailToCheck: string) => {
-        setEmailStatus('validating');
-        setEmailHelp('Checking email availability...');
-        try {
-            const response = await triggerCheckEmail(emailToCheck).unwrap();
-            if (response.data === 'true') {
-                setEmailStatus('error');
-                setEmailHelp('This email is already registered!');
-            } else {
-                setEmailStatus('success');
-                setEmailHelp(null);
-            }
-        } catch (error) {
-            setEmailStatus('error');
-            setEmailHelp('Failed to validate email.');
-        }
-        if (onEmailStatusChange) onEmailStatusChange(emailStatus, emailHelp);
-        return emailStatus; // Return the final status
-    };
-
     const validateEmail = async () => {
         if (!email) {
             setEmailStatus('error');
             setEmailHelp('Please input your email!');
+            if (onEmailStatusChange) onEmailStatusChange('error', 'Please input your email!');
             return false;
         }
         if (email.length > 50) {
             setEmailStatus('error');
             setEmailHelp('Email cannot exceed 50 characters!');
+            if (onEmailStatusChange) onEmailStatusChange('error', 'Email cannot exceed 50 characters!');
             return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setEmailStatus('error');
             setEmailHelp('Please enter a valid email address!');
+            if (onEmailStatusChange) onEmailStatusChange('error', 'Please enter a valid email address!');
             return false;
         }
-        await checkEmailExists(email);
-        return emailStatus === 'success';
+        setEmailStatus('validating');
+        setEmailHelp('Checking email availability...');
+        if (onEmailStatusChange) onEmailStatusChange('validating', 'Checking email availability...');
+        try {
+            const response = await triggerCheckEmail(email).unwrap();
+            if (response.data === 'true') {
+                setEmailStatus('error');
+                setEmailHelp('This email is already registered!');
+                if (onEmailStatusChange) onEmailStatusChange('error', 'This email is already registered!');
+                return false;
+            } else {
+                setEmailStatus('success');
+                setEmailHelp(null);
+                if (onEmailStatusChange) onEmailStatusChange('success', null);
+                return true;
+            }
+        } catch (error) {
+            setEmailStatus('error');
+            setEmailHelp('Failed to validate email.');
+            if (onEmailStatusChange) onEmailStatusChange('error', 'Failed to validate email.');
+            return false;
+        }
     };
-
     // Expose validateEmail to parent via ref
     useImperativeHandle(ref, () => ({
         validateEmail,
