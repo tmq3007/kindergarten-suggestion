@@ -20,10 +20,8 @@ public class Parent {
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
 
     @Size(max = 255)
     @Column(name = "district", nullable = false)
@@ -38,6 +36,9 @@ public class Parent {
     private String province;
 
     @Size(max = 255)
-    @Column(name = "street" , nullable = true)
+    @Column(name = "street", nullable = true)
     private String street;
+
+    @OneToOne(mappedBy = "parent", cascade = CascadeType.ALL)
+    private Media media;
 }

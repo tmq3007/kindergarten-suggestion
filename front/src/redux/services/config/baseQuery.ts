@@ -31,7 +31,11 @@ export const baseQueryWithReauth = async (
 ) => {
     let result = await baseQuery(args, api, extraOptions);
     // Nếu lỗi 403 Unauthorized thì gửi lại request bằng PUT method
-    if (result.error && result.error.status === 403) {
+    if (
+        result.error &&
+        result.error.status === 403 &&
+        (result.error as CustomFetchBaseQueryError).data?.code !== 1200
+    ) {
         interface RefreshResponse {
             code: number;
             data: {

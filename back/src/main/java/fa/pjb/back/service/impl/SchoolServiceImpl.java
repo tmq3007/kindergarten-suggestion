@@ -3,7 +3,6 @@ package fa.pjb.back.service.impl;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.SchoolVO;
@@ -40,7 +39,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public SchoolVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
-        School school = schoolMapper.toSchoolEntityFromAddSchoolDTO(schoolDTO);
+        School school = schoolMapper.toSchool(schoolDTO);
         // Validate images (if provided)
         if (image != null) {
             for (MultipartFile file : image) {
