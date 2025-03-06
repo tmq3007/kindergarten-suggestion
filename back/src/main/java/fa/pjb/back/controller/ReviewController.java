@@ -1,11 +1,9 @@
 package fa.pjb.back.controller;
 
-import fa.pjb.back.common.exception.school.SchoolNotFoundException;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

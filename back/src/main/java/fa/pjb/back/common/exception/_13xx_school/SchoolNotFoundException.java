@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseErrorCode("1300")
 @ResponseStatus(HttpStatus.NOT_FOUND)
-@Getter
-@Setter
 public class SchoolNotFoundException extends RuntimeException {
     public SchoolNotFoundException() {
         super("School not found");
