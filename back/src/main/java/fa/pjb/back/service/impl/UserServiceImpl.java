@@ -216,17 +216,6 @@ public class UserServiceImpl implements UserService {
         // Save User to database
         userRepository.save(user);
 
-//        UserDTO responseDTO = UserDTO.builder()
-//                .id(user.getId())
-//                .username(user.getUsername())
-//                .email(user.getEmail())
-//                .role(String.valueOf(userDTO.role()))
-//                .status(String.valueOf(user.getStatus()))
-//                .phone(user.getPhone())
-//                .dob(user.getDob())
-//                .fullname(user.getFullname())
-//                .build();
-
         UserDTO responseDTO = userMapper.toUserDTO(user);
 
         emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
