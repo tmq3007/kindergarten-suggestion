@@ -7,7 +7,6 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -35,7 +34,7 @@ public class School {
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "email",unique = true, nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @NotNull
@@ -97,9 +96,6 @@ public class School {
     @ColumnDefault("CURRENT_DATE")
     private LocalDate postedDate;
 
-    @OneToMany(mappedBy = "school",cascade = CascadeType.ALL)
-    private List<Media> images;
-
     @ManyToMany
     @JoinTable(name = "School_Facilities",
             joinColumns = @JoinColumn(name = "school_id"),
@@ -111,5 +107,7 @@ public class School {
             joinColumns = @JoinColumn(name = "school_id"),
             inverseJoinColumns = @JoinColumn(name = "uid"))
     private Set<Utility> utilities;
+
+@OneToMany()
 
 }

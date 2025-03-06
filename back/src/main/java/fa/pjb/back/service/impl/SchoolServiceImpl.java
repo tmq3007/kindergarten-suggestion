@@ -1,26 +1,13 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
-import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
-import fa.pjb.back.common.exception._14xx_data.PhoneExistedException;
-import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
-import fa.pjb.back.model.entity.Facility;
-import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
-import fa.pjb.back.model.entity.Utility;
-import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.model.mapper.SchoolMapper;
-import fa.pjb.back.model.vo.ImageVO;
 import fa.pjb.back.model.vo.SchoolVO;
-import fa.pjb.back.repository.FacilityRepository;
-import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolRepository;
-import fa.pjb.back.repository.UtilityRepository;
-import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

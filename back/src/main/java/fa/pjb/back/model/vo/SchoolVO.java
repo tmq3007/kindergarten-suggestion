@@ -1,8 +1,5 @@
 package fa.pjb.back.model.vo;
 
-import java.util.List;
-import java.util.Set;
-
 public record SchoolVO(
         Byte status,
         String name,
@@ -18,7 +15,8 @@ public record SchoolVO(
         Integer feeFrom,
         Integer feeTo,
         String description,
-        Set<Integer> facilities,
-        Set<Integer> utilities,
-        List<String> imageList) {
+        Set<FacilityVO> facilities,
+        Set<UtilityVO> utilities,
+        List<MediaVO> imageList
+) {
 }

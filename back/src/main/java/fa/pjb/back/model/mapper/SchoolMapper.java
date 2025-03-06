@@ -29,7 +29,7 @@ public interface SchoolMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "facilities", source = "facilities", qualifiedByName = "mapFacilityIds")
     @Mapping(target = "utilities", source = "utilities", qualifiedByName = "mapUtilityIds")
-    School toSchoolEntityFromAddSchoolDTO(AddSchoolDTO schoolDTO);
+    School toSchool(AddSchoolDTO schoolDTO);
 
     // Convert List<Integer> to Set<Facility>
     @Named("mapFacilityIds")
