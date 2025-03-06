@@ -1,9 +1,11 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+
 
 @Builder
 @AllArgsConstructor
@@ -15,13 +17,13 @@ import java.time.LocalDate;
 public class Media {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "file_id",nullable = false)
     private Integer id;
 
-    @Column(name = "type", nullable = false, length = 10)
+    @Column(name = "type", length = 10)
     private String type;
 
-    @Column(name = "size", nullable = false, length = 10)
+    @Column(name = "size", length = 10)
     private String size;
 
     @Column(name = "url", nullable = false, length = 1000)

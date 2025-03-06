@@ -20,6 +20,6 @@ public record SchoolVO(
         String description,
         Set<FacilityVO> facilities,
         Set<UtilityVO> utilities,
-        List<MediaVO> mediaList
+        List<MediaVO> imageList
 ) {
 }

@@ -35,7 +35,7 @@ public class School {
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "email", nullable = false)
+    @Column(name = "email",unique = true, nullable = false)
     private String email;
 
     @NotNull
@@ -97,6 +97,9 @@ public class School {
     @ColumnDefault("CURRENT_DATE")
     private LocalDate postedDate;
 
+    @OneToMany(mappedBy = "school",cascade = CascadeType.ALL)
+    private List<Media> images;
+
     @ManyToMany
     @JoinTable(name = "School_Facilities",
             joinColumns = @JoinColumn(name = "school_id"),
@@ -108,8 +111,5 @@ public class School {
             joinColumns = @JoinColumn(name = "school_id"),
             inverseJoinColumns = @JoinColumn(name = "uid"))
     private Set<Utility> utilities;
-
-    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Media> mediaList;
 
 }

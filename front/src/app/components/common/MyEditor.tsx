@@ -19,7 +19,7 @@ export default function MyEditor({ description }: MyEditorProps) {
                 toolbar:
                     "undo redo | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code",
                 menubar: false,
-                height: 300,
+                height: 250,
                 content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
             }}
             initialValue={description ? description : "Enter Text Here..."}

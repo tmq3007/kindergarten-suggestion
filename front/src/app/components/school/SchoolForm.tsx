@@ -1,8 +1,8 @@
-import React, {useEffect, useState} from 'react';
-import {Checkbox, Form, Image, Input, InputNumber, Select, Upload, UploadFile} from 'antd';
-import {InboxOutlined} from '@ant-design/icons';
-import {Country, useGetCountriesQuery, useLazyCheckEmailQuery} from '@/redux/services/registerApi';
-import {useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery} from '@/redux/services/addressApi';
+import React, { useEffect, useState } from 'react';
+import { Checkbox, Form, Image, Input, InputNumber, Select, Upload, UploadFile } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
+import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
 import {
     CHILD_RECEIVING_AGES_OPTIONS,
@@ -13,15 +13,16 @@ import {
 } from '@/lib/constants';
 import SchoolFormButton from './SchoolFormButton';
 import MyEditor from "@/app/components/common/MyEditor";
+import { SchoolDTO, useAddSchoolMutation, useLazyCheckSchoolEmailQuery } from '@/redux/services/schoolApi';
 
-const {Option} = Select;
+const { Option } = Select;
 
 
 interface FieldType {
     name: string;
     schoolType: number;
     website?: string;
-
+    status: number;
     // Address Fields
     province: string;
     district: string;
@@ -45,7 +46,7 @@ interface FieldType {
     description?: string; // School introduction
 
     // File Upload
-    image?: File[];
+    image?: UploadFile[];
 }
 
 interface SchoolFormFields {
@@ -54,7 +55,7 @@ interface SchoolFormFields {
     hasSubmitButton?: boolean;
 }
 
-const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraftButton, hasSubmitButton}) => {
+const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDraftButton, hasSubmitButton }) => {
     const [form] = Form.useForm(externalForm);
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
@@ -71,13 +72,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
 
     //Hooks
     //TODO: Change to School email validate
-    const [triggerCheckEmail, {isFetching}] = useLazyCheckEmailQuery();
-    const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
-    const {data: provinces, isLoading: isLoadingProvince} = useGetProvincesQuery();
-    const {data: districts, isLoading: isLoadingDistrict} = useGetDistrictsQuery(selectedProvince!, {
+    const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
+    const [addSchool, { data: addSchoolData, isLoading: addSchoolIsLoading, error: addSchoolError }] = useAddSchoolMutation();
+    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
+    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
+    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
         skip: !selectedProvince,
     });
-    const {data: wards, isLoading: isLoadingWard} = useGetWardsQuery(selectedDistrict!, {
+    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
         skip: !selectedDistrict,
     });
 
@@ -117,29 +119,39 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
         // Combine dial code with the formatted phone number
         const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
 
-        const finalValues = {
+        // Convert UploadFile[] to File[]
+        const fileList: File[] = (values.image || [])
+            .filter((file) => file.originFileObj) // Ensure originFileObj exists
+            .map((file) => file.originFileObj as File); // Extract native File object
+
+        const finalValues: SchoolDTO = {
             ...values,
+            image: fileList,
             phone: fullPhoneNumber
         };
-        console.log('Form values:', finalValues);
+        // Prevent form submission if email status is not "success"
+        if (emailStatus !== 'success') {
+            return;
+        }
+        addSchool(finalValues);
     };
 
     // Address event handler
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({district: undefined, ward: undefined, street: undefined}); // Reset dependent fields
+        form.setFieldsValue({ district: undefined, ward: undefined, street: undefined }); // Reset dependent fields
         setSelectedProvince(provinceCode);
         setSelectedDistrict(undefined);
         setSelectedWard(undefined); // Reset ward when province changes
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ward: undefined, street: undefined}); // Reset ward and street when district changes
+        form.setFieldsValue({ ward: undefined, street: undefined }); // Reset ward and street when district changes
         setSelectedDistrict(districtCode);
         setSelectedWard(undefined); // Reset ward when district changes
     };
 
-    const onWardChange = (wardCode: string) => {
-        setSelectedWard(wardCode); // Update ward when user selects
+    const onWardChange = (wardCode: number) => {
+        setSelectedWard(wardCode.toString()); // Update ward when user selects
     };
 
     // Email event handler
@@ -200,15 +212,13 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
         return e?.fileList ?? []; // Ensure an array is returned
     };
 
-    const handleSaveDraft = () => {
-        console.log("Draft saved");
-    };
     return (
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form<FieldType>
+                size='middle'
                 form={form}
                 onFinish={onFinish}
-                labelCol={{span: 6, className: 'font-bold'}}
+                labelCol={{ span: 6, className: 'font-bold' }}
                 labelAlign='left'
                 labelWrap
                 layout="horizontal"
@@ -221,9 +231,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
 
                             name="name"
                             label="School Name"
-                            rules={[{required: true, message: 'Please enter school name'}]}
+                            rules={[{ required: true, message: 'Please enter school name' }]}
                         >
-                            <Input placeholder="Enter School Name here..."/>
+                            <Input placeholder="Enter School Name here..." />
                         </Form.Item>
 
                         {/* School Type */}
@@ -231,7 +241,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
 
                             name="schoolType"
                             label="School Type"
-                            rules={[{required: true, message: 'Please select school type'}]}
+                            rules={[{ required: true, message: 'Please select school type' }]}
                         >
                             <Select placeholder="Select a type..." options={SCHOOL_TYPES_OPTIONS}>
                             </Select>
@@ -244,10 +254,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                             <Form.Item
                                 name="province"
                                 className="mb-5"
-                                rules={[{required: true, message: 'Please select a province'}]}
+                                rules={[{ required: true, message: 'Please select a province' }]}
                             >
                                 <Select
-                                    onChange={onProvinceChange}
+                                    onChange={(districtName) => {
+                                        const selectedProvince = provinces?.find(d => d.name === districtName);
+                                        if (selectedProvince) {
+                                            onProvinceChange(selectedProvince.code); // Pass code
+                                        }
+                                    }}
                                     placeholder="Select a province"
                                     loading={isLoadingProvince}
                                 >
@@ -261,17 +276,22 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                             <Form.Item
                                 name="district"
                                 className="mb-5"
-                                rules={[{required: true, message: 'Please select a district'}]}
+                                rules={[{ required: true, message: 'Please select a district' }]}
 
                             >
                                 <Select
                                     loading={isLoadingDistrict}
                                     placeholder="Select district"
-                                    onChange={onDistrictChange}
+                                    onChange={(districtName) => {
+                                        const selectedDistrict = districts?.find(d => d.name === districtName);
+                                        if (selectedDistrict) {
+                                            onDistrictChange(selectedDistrict.code); // Pass code
+                                        }
+                                    }}
                                     disabled={!selectedProvince}
                                 >
                                     {districts?.map((district) => (
-                                        <Option key={district.code} value={district.name}>
+                                        <Option key={district.code} code={district.code} value={district.name}>
                                             {district.name}
                                         </Option>
                                     ))}
@@ -280,17 +300,22 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                             <Form.Item
                                 name="ward"
                                 className="mb-5"
-                                rules={[{required: true, message: 'Please select a ward'}]}
+                                rules={[{ required: true, message: 'Please select a ward' }]}
 
                             >
                                 <Select
                                     loading={isLoadingWard}
                                     placeholder="Select ward"
-                                    onChange={onWardChange} // Cập nhật trạng thái ward khi thay đổi
+                                    onChange={(wardName) => {
+                                        const selectedWard = wards?.find(w => w.name === wardName);
+                                        if (selectedWard) {
+                                            onWardChange(selectedWard.code);
+                                        }
+                                    }}
                                     disabled={!selectedDistrict}
                                 >
                                     {wards?.map((ward) => (
-                                        <Option key={ward.code} value={ward.name}>
+                                        <Option key={ward.code} code={ward.code} value={ward.name}>
                                             {ward.name}
                                         </Option>
                                     ))}
@@ -300,7 +325,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                 name="street"
                                 className='mb-4'
                             >
-                                <Input placeholder="Enter School Address here..."/>
+                                <Input placeholder="Enter School Address here..." />
                             </Form.Item>
                         </Form.Item>
                         {/* Email and Phone */}
@@ -322,9 +347,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                             />
                         </Form.Item>
                         {/* Phone Number */}
+                        //TODO: Add check phone number exists 
                         <Form.Item label="Phone Number"
 
-                                   required
+                            required
                         >
                             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                                 {/* Country Code Selector */}
@@ -332,8 +358,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                     loading={isLoadingCountry}
                                     value={selectedCountry?.code || ''}
                                     onChange={handleCountryChange}
-                                    dropdownStyle={{width: 250}}
-                                    style={{width: 120, borderRight: "1px solid #ccc"}}
+                                    dropdownStyle={{ width: 250 }}
+                                    style={{ width: 120, borderRight: "1px solid #ccc" }}
                                     optionLabelProp="label2"
                                     showSearch
                                     filterOption={(input, option) =>
@@ -348,18 +374,18 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                             label2={
                                                 <span className="flex items-center">
                                                     <Image src={country.flag}
-                                                           alt={country.label}
-                                                           width={20} height={14}
-                                                           className="mr-2 intrinsic" preview={false}/>
+                                                        alt={country.label}
+                                                        width={20} height={14}
+                                                        className="mr-2 intrinsic" preview={false} />
                                                     {country.code} {country.dialCode}
                                                 </span>
                                             }
                                         >
                                             <div className="flex items-center">
                                                 <Image src={country.flag}
-                                                       alt={country.label}
-                                                       width={20} height={14}
-                                                       className="mr-2 intrinsic"/>
+                                                    alt={country.label}
+                                                    width={20} height={14}
+                                                    className="mr-2 intrinsic" />
                                                 {country.dialCode} - {country.label}
                                             </div>
                                         </Select.Option>
@@ -367,14 +393,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                 </Select>
                                 <Form.Item
                                     name="phone"
-                                    rules={[{required: true, message: 'Please input your phone number!'}]}
+                                    rules={[{ required: true, message: 'Please input your phone number!' }]}
                                     noStyle
                                 >
                                     {/* Phone Input */}
                                     <Input
                                         placeholder="Enter your phone number"
                                         onChange={handlePhoneNumberChange}
-                                        style={{flex: 1, border: "none", boxShadow: "none"}}
+                                        style={{ flex: 1, border: "none", boxShadow: "none" }}
                                     />
                                 </Form.Item>
                             </div>
@@ -384,7 +410,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                         <Form.Item
                             name="receivingAge"
                             label="Child receiving age"
-                            rules={[{required: true, message: 'Please select age range'}]}
+                            rules={[{ required: true, message: 'Please select age range' }]}
                         >
                             <Select placeholder="Select a category..." options={CHILD_RECEIVING_AGES_OPTIONS}>
                             </Select>
@@ -395,7 +421,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
 
                             name="educationMethod"
                             label="Education method"
-                            rules={[{required: true, message: 'Please select education method'}]}
+                            rules={[{ required: true, message: 'Please select education method' }]}
                         >
                             <Select placeholder="Select a category..." options={EDUCATION_METHODS_OPTIONS}>
                             </Select>
@@ -404,7 +430,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                         {/* Fee Month (From/To) */}
                         <div>
                             <Form.Item
-
+                                className='mb-0'
                                 label="Fee/Month (VND)"
                                 required
                             >
@@ -412,7 +438,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                     <Form.Item
                                         name="feeFrom"
                                         label="From"
-                                        rules={[{required: true, message: "Please select fee from"}]}
+                                        rules={[{ required: true, message: "Please select fee from" }]}
                                     >
                                         <InputNumber
                                             placeholder="From"
@@ -422,9 +448,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                             onChange={(value) => {
                                                 const feeTo = form.getFieldValue("feeTo");
                                                 if (feeTo !== undefined && value !== null && value > feeTo) {
-                                                    form.setFieldsValue({feeTo: value}); // Automatically set feeTo if feeFrom is greater
+                                                    form.setFieldsValue({ feeTo: value }); // Automatically set feeTo if feeFrom is greater
                                                 }
-                                                form.setFieldsValue({feeFrom: value});
+                                                form.setFieldsValue({ feeFrom: value });
                                             }}
                                         />
                                     </Form.Item>
@@ -434,8 +460,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                         label="To"
                                         dependencies={["feeFrom"]}
                                         rules={[
-                                            {required: true, message: "Please select fee to"},
-                                            ({getFieldValue}) => ({
+                                            { required: true, message: "Please select fee to" },
+                                            ({ getFieldValue }) => ({
                                                 validator(_, value) {
                                                     const feeFrom = getFieldValue("feeFrom");
                                                     if (!value || feeFrom <= value) {
@@ -453,22 +479,21 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                                             className="w-full"
                                             min={form.getFieldValue("feeFrom") || 0} // Ensure min value updates
                                             step={100000}
-                                            onChange={(value) => form.setFieldsValue({feeTo: value})}
+                                            onChange={(value) => form.setFieldsValue({ feeTo: value })}
                                         />
                                     </Form.Item>
                                 </div>
                             </Form.Item>
                         </div>
-                    </div>
-                    <div>
                         {/* Website */}
                         <Form.Item
-
                             name="website"
                             label="School Website"
                         >
-                            <Input placeholder="Enter School Website here..."/>
+                            <Input placeholder="Enter School Website here..." />
                         </Form.Item>
+                    </div>
+                    <div>
                         <div>
                             {/* Facilities */}
                             <Form.Item label="Facilities" name="facilities">
@@ -507,26 +532,24 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                         {/* School Introduction */}
                         <div>
                             <Form.Item
-
                                 name="description"
                                 label="School introduction"
                             >
-                                <MyEditor description={form.getFieldValue("description") || undefined}/>
+                                <MyEditor description={form.getFieldValue("description") || undefined} />
                             </Form.Item>
                         </div>
                         {/* School Image */}
                         <Form.Item
-
                             label="School image"
                         >
                             <Form.Item name="image" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
                                 <Upload.Dragger name="schoolImage"
-                                                listType="picture"
-                                                beforeUpload={() => false} // Prevent automatic upload
-                                                maxCount={10}
-                                                accept="image/*">
+                                    listType="picture"
+                                    beforeUpload={() => false} // Prevent automatic upload
+                                    maxCount={10}
+                                    accept="image/*">
                                     <p className="ant-upload-drag-icon">
-                                        <InboxOutlined/>
+                                        <InboxOutlined />
                                     </p>
                                     <p className="ant-upload-text">Click or drag file to this area to upload</p>
                                     <p className="ant-upload-text">Upload pictures of format
@@ -539,7 +562,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({form: externalForm, hasSaveDraf
                     </div>
                 </div>
                 {/* Submit Buttons */}
-              <SchoolFormButton form={form} hasSaveDraftButton={hasSaveDraftButton} hasSubmitButton={hasSubmitButton}/>
+                <SchoolFormButton form={form} hasSaveDraftButton={hasSaveDraftButton} hasSubmitButton={hasSubmitButton} isAddSchoolLoading={addSchoolIsLoading} />
             </Form>
         </div>
     );

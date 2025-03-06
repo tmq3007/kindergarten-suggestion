@@ -81,7 +81,7 @@ public class AuthController {
     public ApiResponse<String> checkEmail(@RequestParam String email) {
         return ApiResponse.<String>builder()
                 .code(HttpStatus.OK.value())
-                .message("Email available!")
+                .message("Email checked!")
                 .data(String.valueOf(authService.checkEmailExists(email)))
                 .build();
     }
