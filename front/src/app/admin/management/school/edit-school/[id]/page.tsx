@@ -16,10 +16,11 @@ export default function EditSchool() {
     const {data, isError, isLoading} = useGetSchoolQuery(Number(schoolId));
     const school = data?.data;
     const [form] = Form.useForm();
+    console.log(data)
     useEffect(() => {
         if (school) {
             form.setFieldsValue({
-                schoolName: school.name || '',
+                name: school.name || '',
                 schoolType: school.schoolType || 'International school',
                 province: school.province || '',
                 district: school.district || '',
@@ -42,16 +43,6 @@ export default function EditSchool() {
         paragraph: "text-base",
         text: "text-gray-900"
     };
-    const receivingAgeOptions = [
-        {value: 'jack', label: 'Jack'},
-        {value: 'lucy', label: 'Lucy'},
-        {value: 'Yiminghe', label: 'yiminghe'},
-    ];
-
-    const educationMethodOptions = [
-        {value: 'International school', label: 'International school'},
-        {value: 'Monolingual', label: 'Monolingual'}
-    ]
 
     const onFinish = (values: any) => {
         console.log('Received values of form: ', values);

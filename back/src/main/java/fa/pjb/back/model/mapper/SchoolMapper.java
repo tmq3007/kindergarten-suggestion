@@ -6,6 +6,7 @@ import fa.pjb.back.model.entity.Facility;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.Utility;
 import fa.pjb.back.model.vo.SchoolVO;
+import fa.pjb.back.model.vo.UtilityVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -16,15 +17,25 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface SchoolMapper {
+
+//    @Mapping(source = "utilities", target = "utilities", qualifiedByName = "mapUtilitiesToVO")
     SchoolVO toSchoolVO(School school);
+
+    // Convert Set<Utility> to Set<UtilityVO>
+//    @Named("mapUtilitiesToVO")
+//    default Set<UtilityVO> mapUtilitiesToVO(Set<Utility> utilities) {
+//        if (utilities == null) return null;
+//        return utilities.stream()
+//                .map(utility -> new UtilityVO(utility.getName()))
+//                .collect(Collectors.toSet());
+//    }
 
     SchoolDTO toSchoolDTO(School school);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "image", ignore = true) // Image might be handled separately
     @Mapping(target = "facilities", source = "facilities", qualifiedByName = "mapFacilityIds")
     @Mapping(target = "utilities", source = "utilities", qualifiedByName = "mapUtilityIds")
-    School toSchoolEntityFromAddSchoolDTO(AddSchoolDTO schoolDTO);
+    School toSchool(AddSchoolDTO schoolDTO);
 
     // Convert List<Integer> to Set<Facility>
     @Named("mapFacilityIds")

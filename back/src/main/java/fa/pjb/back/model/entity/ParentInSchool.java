@@ -27,8 +27,8 @@ public class ParentInSchool {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private Parent user;
+    @JoinColumn(name = "parent_id", nullable = false)
+    private Parent parent;
 
     @NotNull
     @Column(name = "`from`", nullable = false)

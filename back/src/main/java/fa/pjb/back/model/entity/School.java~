@@ -7,7 +7,6 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -109,7 +108,6 @@ public class School {
             inverseJoinColumns = @JoinColumn(name = "uid"))
     private Set<Utility> utilities;
 
-    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Media> mediaList;
+@OneToMany()
 
 }
