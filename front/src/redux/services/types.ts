@@ -1,4 +1,7 @@
 // Nơi định nghĩa các types được dùng trong API services
+
+import { SchoolDTO } from "./schoolApi";
+
 // Định nghĩa các VO được trả về từ controller
 export type Pokemon = {
     species: {
@@ -30,37 +33,6 @@ export type Country = {
     label: string;
     dialCode: string;
     flag: string;
-}
-
-export type SchoolDTO = {
-    name: string;
-    schoolType: number;
-    website?:string;
-    
-    // Address Fields
-    province: string;
-    district: string;
-    ward: string;
-    street?: string;
-    
-    email: string;
-    phone: string;
-    
-    receivingAge: number;
-    educationMethod: number;
-    
-    // Fee Range
-    feeFrom: number;
-    feeTo: number;
-    
-    // Facilities and Utilities (Checkbox Groups)
-    facilities?: number[];
-    utilities?: number[];
-    
-    description?: string; // School introduction
-    
-    // File Upload
-    image?: File[];
 }
 
 

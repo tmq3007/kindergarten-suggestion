@@ -51,12 +51,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
-        log.info("into user service");
         Pageable pageable = PageRequest.of(page-1, size);
         ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
 
         Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
-        log.info("page: {}", userEntitiesPage);
         return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
 

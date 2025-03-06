@@ -3,8 +3,11 @@ package fa.pjb.back.model.mapper;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.Facility;
+import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.Utility;
+import fa.pjb.back.model.vo.FacilityVO;
+import fa.pjb.back.model.vo.MediaVO;
 import fa.pjb.back.model.vo.SchoolVO;
 import fa.pjb.back.model.vo.UtilityVO;
 import org.mapstruct.Mapper;
@@ -18,17 +21,11 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface SchoolMapper {
 
-//    @Mapping(source = "utilities", target = "utilities", qualifiedByName = "mapUtilitiesToVO")
+    @Mapping(source = "facilities", target = "facilities", qualifiedByName = "facilityToId")
+    @Mapping(source = "utilities", target = "utilities", qualifiedByName = "utilityToId")
+    @Mapping(target = "imageList", source = "images", qualifiedByName = "mapImageUrl")
     SchoolVO toSchoolVO(School school);
 
-    // Convert Set<Utility> to Set<UtilityVO>
-//    @Named("mapUtilitiesToVO")
-//    default Set<UtilityVO> mapUtilitiesToVO(Set<Utility> utilities) {
-//        if (utilities == null) return null;
-//        return utilities.stream()
-//                .map(utility -> new UtilityVO(utility.getName()))
-//                .collect(Collectors.toSet());
-//    }
 
     SchoolDTO toSchoolDTO(School school);
 
@@ -39,7 +36,7 @@ public interface SchoolMapper {
 
     // Convert List<Integer> to Set<Facility>
     @Named("mapFacilityIds")
-    default Set<Facility> mapFacilityIds(List<Integer> facilityIds) {
+    default Set<Facility> mapFacilityIds(Set<Integer> facilityIds) {
         if (facilityIds == null) return null;
         return facilityIds.stream()
                 .map(id -> {
@@ -52,7 +49,7 @@ public interface SchoolMapper {
 
     // Convert List<Integer> to Set<Utility>
     @Named("mapUtilityIds")
-    default Set<Utility> mapUtilityIds(List<Integer> utilityIds) {
+    default Set<Utility> mapUtilityIds(Set<Integer> utilityIds) {
         if (utilityIds == null) return null;
         return utilityIds.stream()
                 .map(id -> {
@@ -61,5 +58,21 @@ public interface SchoolMapper {
                     return utility;
                 })
                 .collect(Collectors.toSet());
+    }
+
+    @Named("mapImageUrl")
+    default List<MediaVO> mapImageUrl(List<Media> media) {
+        if (media == null) return null;
+        return media.stream().map(media1 -> new MediaVO(media1.getUrl(),media1.getFilename(),media1.getCloudId())).toList();
+    }
+
+    @Named("facilityToId")
+    default Set<FacilityVO> mapFacilities(Set<Facility> facilities) {
+        return facilities != null ? facilities.stream().map(facility -> new FacilityVO(facility.getFid(),facility.getName())).collect(Collectors.toSet()) : null;
+    }
+
+    @Named("utilityToId")
+    default Set<UtilityVO> mapUtilities(Set<Utility> utilities) {
+        return utilities != null ? utilities.stream().map(utility -> new UtilityVO(utility.getUid(), utility.getName())).collect(Collectors.toSet()) : null;
     }
 }
