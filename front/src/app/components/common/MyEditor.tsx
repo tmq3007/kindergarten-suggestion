@@ -2,7 +2,7 @@ import React from "react";
 import { Editor } from "@tinymce/tinymce-react";
 
 interface MyEditorProps {
-    description: string;
+    description?: string;
 }
 
 export default function MyEditor({ description }: MyEditorProps) {
