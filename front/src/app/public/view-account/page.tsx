@@ -21,8 +21,8 @@ import { ROLES } from '@/lib/constants';
 import { unauthorized } from 'next/navigation';
 import { useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery } from '@/redux/services/parentApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
-import FormSkeleton from '@/app/components/FormSkeleton';
 import ProfileSidebar from "@/app/public/view-account/ProfileSideBar";
+import UserFormSkeleton from "@/app/components/skeleton/UserFormSkeleton";
 
 const { Option } = Select;
 const { TabPane } = Tabs;

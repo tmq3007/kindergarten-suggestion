@@ -1,15 +1,11 @@
 package fa.pjb.back.controller;
 
-import fa.pjb.back.common.exception.school.SchoolNotFoundException;
 import fa.pjb.back.common.response.ApiResponse;
-import fa.pjb.back.model.dto.ReviewRequestDTO;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;

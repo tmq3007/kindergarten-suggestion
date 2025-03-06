@@ -10,7 +10,7 @@ const transparentTabStyle = {
     border: 'none !important',
 };
 
-const ProfileSkeleton = () => {
+const UserFormSkeleton = () => {
     return (
         <div className="min-h-screen mt-14 bg-white">
             <div className="container mx-auto mt-10 px-4 py-10">
