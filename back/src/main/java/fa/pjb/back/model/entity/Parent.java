@@ -39,6 +39,8 @@ public class Parent {
     @Column(name = "street", nullable = true)
     private String street;
 
-    @OneToOne(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private Media media;
+
+
 }
