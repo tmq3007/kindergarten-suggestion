@@ -39,7 +39,7 @@ public class Media {
     private String cloudId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="parent_id")
+    @JoinColumn(name = "parent_id")
     private Parent parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
