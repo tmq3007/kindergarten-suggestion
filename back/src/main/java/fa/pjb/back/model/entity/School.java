@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -33,7 +35,7 @@ public class School {
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "email", nullable = false)
+    @Column(name = "email",unique = true, nullable = false)
     private String email;
 
     @NotNull
@@ -71,10 +73,6 @@ public class School {
     private Integer feeTo;
 
     @Size(max = 255)
-    @Column(name = "image")
-    private String image;
-
-    @Size(max = 255)
     @NotNull
     @Column(name = "district", nullable = false)
     private String district;
@@ -93,6 +91,12 @@ public class School {
     @NotNull
     @Column(name = "street", nullable = false)
     private String street;
+
+    @OneToMany(mappedBy = "school",cascade = CascadeType.ALL)
+    private List<Media> images;
+
+    @Column(name = "posted_date",nullable = false)
+    private Date posted_date;
 
     @ManyToMany
     @JoinTable(name = "School_Facilities",

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Checkbox, Form, Image, Input, InputNumber, Select, Upload, UploadFile } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
-import { Country, useGetCountriesQuery, useLazyCheckEmailQuery } from '@/redux/services/registerApi';
+import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
 import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
 import {
@@ -13,7 +13,7 @@ import {
 } from '@/lib/constants';
 import SchoolFormButton from './SchoolFormButton';
 import MyEditor from "@/app/components/common/MyEditor";
-import { SchoolDTO, useAddSchoolMutation } from '@/redux/services/schoolApi';
+import { SchoolDTO, useAddSchoolMutation, useLazyCheckSchoolEmailQuery } from '@/redux/services/schoolApi';
 
 const { Option } = Select;
 
@@ -72,7 +72,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
 
     //Hooks
     //TODO: Change to School email validate
-    const [triggerCheckEmail, { isFetching }] = useLazyCheckEmailQuery();
+    const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
     const [addSchool, { data: addSchoolData, isLoading: addSchoolIsLoading, error: addSchoolError }] = useAddSchoolMutation();
     const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
     const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
@@ -124,7 +124,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
             .filter((file) => file.originFileObj) // Ensure originFileObj exists
             .map((file) => file.originFileObj as File); // Extract native File object
 
-        const finalValues:SchoolDTO = {
+        const finalValues: SchoolDTO = {
             ...values,
             image: fileList,
             phone: fullPhoneNumber
@@ -347,6 +347,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
                             />
                         </Form.Item>
                         {/* Phone Number */}
+                        //TODO: Add check phone number exists 
                         <Form.Item label="Phone Number"
 
                             required

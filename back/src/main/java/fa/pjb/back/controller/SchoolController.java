@@ -38,6 +38,22 @@ public class SchoolController {
                 .data(schoolService.getSchoolInfo(schoolId))
                 .build();
     }
+    @GetMapping("/check-email/{email}")
+    public ApiResponse<String> checkEmail(@PathVariable String email) {
+        return ApiResponse.<String>builder()
+                .code(HttpStatus.OK.value())
+                .message("Email checked!")
+                .data(String.valueOf(schoolService.checkEmailExists(email)))
+                .build();
+    }
+    @GetMapping("/check-phone/{phone}")
+    public ApiResponse<String> checkPhone(@PathVariable String phone) {
+        return ApiResponse.<String>builder()
+                .code(HttpStatus.OK.value())
+                .message("Email checked!")
+                .data(String.valueOf(schoolService.checkPhoneExists(phone)))
+                .build();
+    }
 
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolVO> addSchool(

@@ -1,27 +1,42 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
+import fa.pjb.back.common.exception._14xx_data.PhoneExistedException;
+import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.entity.Facility;
+import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
+import fa.pjb.back.model.entity.Utility;
+import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.ImageVO;
 import fa.pjb.back.model.vo.SchoolVO;
+import fa.pjb.back.repository.FacilityRepository;
+import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolRepository;
+import fa.pjb.back.repository.UtilityRepository;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+
+import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 
 
 @Slf4j
@@ -33,6 +48,9 @@ public class SchoolServiceImpl implements SchoolService {
 
 
     private final SchoolRepository schoolRepository;
+    private final FacilityRepository facilityRepository;
+    private final UtilityRepository utilityRepository;
+    private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
     private final GGDriveImageService imageService;
     private static final Tika tika = new Tika();
@@ -44,10 +62,37 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolVO(school);
     }
 
+    @Transactional
     @Override
     public SchoolVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
+        if(checkEmailExists(schoolDTO.email())){
+            throw new EmailAlreadyExistedException("This email is already in used");
+        }
+        if(checkPhoneExists(schoolDTO.phone())){
+            throw new PhoneExistedException("This phone is already in used");
+        }
         School school = schoolMapper.toSchoolEntityFromAddSchoolDTO(schoolDTO);
-        // Validate images (if provided)
+        List<ImageVO> imageVOList = null;
+
+        //Get existing facilities from DB
+        Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
+
+        //Validate: Check if all requested fids exist in the database
+        if (existingFacilities.size() != school.getFacilities().size()) {
+            throw new InvalidDataException("Some facilities do not exist in the database");
+        }
+        //Get existing utilities from DB
+        Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
+
+        //Validate: Check if all requested uids exist in the database
+        if (existingUtilities.size() != school.getUtilities().size()) {
+            throw new InvalidDataException("Some utilities do not exist in the database");
+        }
+
+        school.setPosted_date(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        School newSchool = schoolRepository.save(school);
+
+        // Validate and upload images (if provided)
         if (image != null) {
             for (MultipartFile file : image) {
                 // Check file size
@@ -64,13 +109,44 @@ public class SchoolServiceImpl implements SchoolService {
                     throw new InvalidFileFormatException("Error when processing file");
                 }
             }
-        }
-        try {
-           List<ImageVO> imageVOList = imageService.uploadListImages(imageService.convertMultiPartFileToFile(image),"School_Image_");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            //Upload images
+            try {
+                imageVOList = imageService.uploadListImages(
+                        imageService.convertMultiPartFileToFile(image),
+                        "School_"+newSchool.getId()+"Image_",
+                        SCHOOL_IMAGES
+                );
+            } catch (IOException e) {
+                throw new UploadFileException("Error while uploading images" + e.getMessage());
+            }
+            List<Media> temp = new ArrayList<>();
+            for (ImageVO imageVO : imageVOList) {
+                if (imageVO.status() == 200) {
+                    Media media = new Media();
+                    media.setUrl(imageVO.url());
+                    media.setSize(String.valueOf(imageVO.size()));
+                    media.setFileId(imageVO.fileId());
+                    media.setFilename(imageVO.fileName());
+                    media.setType("image/png");
+                    media.setUploadTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+                    media.setSchool(newSchool);
+                    temp.add(media);
+                }
+            }
+            mediaRepository.saveAll(temp);
         }
 
-        return schoolMapper.toSchoolVO(school);
+        return schoolMapper.toSchoolVO(newSchool);
+    }
+
+    @Override
+    public boolean checkEmailExists(String email) {
+        return schoolRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean checkPhoneExists(String phone) {
+        return schoolRepository.existsByPhone(phone);
     }
 }

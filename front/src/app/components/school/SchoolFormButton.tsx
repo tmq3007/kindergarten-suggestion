@@ -33,12 +33,12 @@ const SchoolFormButton: React.FC<ButtonGroupProps> = ({ form, hasSaveDraftButton
                     Cancel
                 </Button>
                 {hasSaveDraftButton &&
-                    <Button htmlType="button" onClick={handleSaveDraft}>
+                    <Button htmlType="button" onClick={handleSaveDraft} loading={isAddSchoolLoading}>
                         Save draft
                     </Button>
                 }
                 {hasSubmitButton &&
-                    <Button type="primary" htmlType="button" onClick={handleSubmit}>
+                    <Button type="primary" htmlType="button" onClick={handleSubmit} loading={isAddSchoolLoading}>
                         Submit
                     </Button>
                 }

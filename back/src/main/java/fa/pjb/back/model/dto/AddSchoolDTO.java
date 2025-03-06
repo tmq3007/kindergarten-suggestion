@@ -11,6 +11,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
+import java.util.Set;
 
 
 @ValidFeeRange
@@ -68,10 +69,10 @@ public record AddSchoolDTO(
 
         // Facilities and Utilities (Checkbox Groups)
         @Size(max = 8, message = "Invalid facilities selection")
-        List<@Min(0) @Max(7) Integer> facilities,
+        Set<@Min(0) @Max(7) Integer> facilities,
 
         @Size(max = 7, message = "Invalid utilities selection")
-        List<@Min(0) @Max(6) Integer> utilities,
+        Set<@Min(0) @Max(6) Integer> utilities,
 
         String description // School introduction
 

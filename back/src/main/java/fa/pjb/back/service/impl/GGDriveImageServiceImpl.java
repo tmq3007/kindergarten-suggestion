@@ -10,6 +10,7 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.model.vo.ImageVO;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -39,7 +40,6 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     private static final Dotenv dotenv = Dotenv.load();
     private static final String SERVICE_ACCOUNT_KEY_PATH = dotenv.get("GOOGLE_APPLICATION_CREDENTIALS");
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String FOLDER_ID = dotenv.get("GOOGLE_DRIVE_FOLDER_ID"); // Google Drive Folder ID
 
     private Drive driveService;
 
@@ -62,12 +62,13 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     //TODO: remake this to return webp file
     private java.io.File processImage(java.io.File file) throws IOException {
         BufferedImage originalImage = ImageIO.read(file);
-        java.io.File resizedFile = new java.io.File("resized_" + file.getName());
+        String newFileName = file.getName().replaceAll("\\.tmp$", ".png");
+        java.io.File resizedFile = new java.io.File("resized_" + newFileName);
 
         try (OutputStream os = new FileOutputStream(resizedFile)) {
             Thumbnails.of(originalImage)
-                    .size(600, 600)  // Resize to max 600px width/height
-                    .outputFormat("jpg") // Ensure output format is JPG
+                    .size(600, 600)  // Resize to max 600px w/h
+                    .outputFormat("png") // Ensure output format is JPG
                     .outputQuality(0.9) // Maintain quality while reducing file size
                     .toOutputStream(os);
         }
@@ -75,36 +76,32 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     }
 
     @Override
-    public ImageVO uploadImage(java.io.File file,String fileNamePrefix) {
+    public ImageVO uploadImage(java.io.File file, String fileNamePrefix, FileFolderEnum fileFolder) {
         java.io.File resizedFile = null;
         try {
-            // 🔹 Process & resize the image
+            //Process & resize the image
             resizedFile = processImage(file);
 
             Drive drive = getDriveService();
-            String uniqueFileName = fileNamePrefix + UUID.randomUUID().toString() + "_" + file.getName();
+            String uniqueFileName = fileNamePrefix + UUID.randomUUID() + "_" + file.getName();
 
-            // Prepare metadata
+            //Prepare metadata
             File fileMetaData = new File();
             fileMetaData.setName(uniqueFileName);
-            fileMetaData.setParents(Collections.singletonList(FOLDER_ID));
+            fileMetaData.setParents(Collections.singletonList(fileFolder.getValue()));
 
-            // Upload resized file
-            FileContent fileContent = new FileContent("image/jpeg", resizedFile);
+            //Upload resized file
+            FileContent fileContent = new FileContent("image/png", resizedFile);
             File uploadFile = drive.files().create(fileMetaData, fileContent)
-                    .setFields("id")
+                    .setFields("id, webContentLink, webViewLink, size")
                     .execute();
+            String imageUrl = "https://drive.google.com/uc?id=" + uploadFile.getId();
 
-            String fileId = uploadFile.getId();
-            String imageUrl = "https://drive.google.com/uc?export=view&id=" + fileId;
-
-            return new ImageVO(200, "Upload successful", (int) resizedFile.length(), uniqueFileName, imageUrl);
+            return new ImageVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(),uploadFile.getId(), imageUrl);
         } catch (IOException | GeneralSecurityException e) {
-            log.error("Failed to upload image: {}", e.getMessage());
-            return new ImageVO(500, "Failed to connect to Google Drive", 0, "Failed", e.getMessage());
+            return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed","", e.getMessage());
         } finally {
             boolean deleted = file.delete() && resizedFile.delete();
-
             if (!deleted) {
                 log.warn("Original file deletion failed: {}", file.getName());
             }
@@ -112,13 +109,13 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     }
 
     @Override
-    public List<ImageVO> uploadListImages(List<java.io.File> files, String fileNamePrefix) {
+    public List<ImageVO> uploadListImages(List<java.io.File> files, String fileNamePrefix, FileFolderEnum fileFolder) {
         List<ImageVO> uploadResults = Collections.synchronizedList(new ArrayList<>());
         ExecutorService executor = Executors.newFixedThreadPool(10); // Limit to 5 parallel uploads
 
         List<Future<ImageVO>> futures = new ArrayList<>();
         for (java.io.File file : files) {
-            futures.add(executor.submit(() -> uploadImage(file,fileNamePrefix)));
+            futures.add(executor.submit(() -> uploadImage(file,fileNamePrefix,fileFolder)));
         }
 
         // Wait for all uploads to complete
@@ -140,10 +137,10 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             Drive drive = getDriveService();
             drive.files().delete(fileId).execute();
             log.info("File deleted successfully: {}", fileId);
-            return new ImageVO(200, "File deleted successfully", 0, "Deleted", "File deleted successfully.");
+            return new ImageVO(200, "File deleted successfully", 0L, "Deleted",fileId, "File deleted successfully.");
         } catch (IOException | GeneralSecurityException e) {
             log.error("Failed to delete file: {}", e.getMessage());
-            return new ImageVO(500, "Failed to delete file", 0, "Failed", e.getMessage());
+            return new ImageVO(500, "Failed to delete file", 0L,fileId, "Failed", e.getMessage());
         }
     }
 
