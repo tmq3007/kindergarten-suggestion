@@ -75,8 +75,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
             image: fileList,
             phone: fullPhoneNumber,
         };
-        console.log('Form submitted with values:', finalValues);
-        // addSchool(finalValues);
+        // console.log('Form submitted with values:', finalValues);
+        addSchool(finalValues);
     };
 
     const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => e?.fileList ?? [];
