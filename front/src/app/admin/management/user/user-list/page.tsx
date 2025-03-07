@@ -10,7 +10,7 @@ const { Search } = Input;
 
 export default function Page() {
     const [currentPage, setCurrentPage] = useState(1); // State to manage the current pagination page
-    const [currentPageSize, setCurrentPageSize] = useState(10); // State to manage the number of items per page
+    const [currentPageSize, setCurrentPageSize] = useState(15); // State to manage the number of items per page
     const [searchCriteria, setSearchCriteria] = useState({
         role: undefined as string | undefined, // Search criteria for role
         email: undefined as string | undefined, // Search criteria for email
@@ -79,7 +79,7 @@ export default function Page() {
 
     return (
         <>
-            <div>
+            <div className="bg-white p-5">
                 {/* Breadcrumb navigation */}
                 <nav className="text-sm text-gray-500 mb-4">
                     <span className="text-blue-600 cursor-pointer hover:underline">User Management</span> {" > "}

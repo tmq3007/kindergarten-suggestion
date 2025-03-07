@@ -34,7 +34,18 @@
      }
  }
  
+ .ant-table-body::-webkit-scrollbar {
+  width: 6px;  /* Adjust width */
+}
 
+.ant-table-body::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3); /* Change color */
+  border-radius: 3px; /* Round edges */
+}
+
+.ant-table-body::-webkit-scrollbar-track {
+  background-color: #f0f0f0; /* Change track color */
+}
  /*body {*/
 /*  color: var(--foreground);*/
 /*  background: var(--background);*/

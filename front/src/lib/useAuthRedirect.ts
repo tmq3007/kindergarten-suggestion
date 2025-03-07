@@ -64,7 +64,7 @@ const useAuthRedirect = (
                 const code = (error as CustomFetchBaseQueryError).data?.code;
                 if (code == 1000) {
                     messageApi.error('Email or password is wrong.', 1);
-                } else if (code == 1201) {
+                } else if (code == 1200) {
                     messageApi.error('Access Denied.', 1);
                 } else {
                     messageApi.error('Something went wrong. Try again later!', 1);

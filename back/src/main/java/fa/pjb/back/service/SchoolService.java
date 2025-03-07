@@ -14,4 +14,8 @@ public interface SchoolService {
     SchoolVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image);
 
     void updateSchoolStatus(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
+
+    boolean checkEmailExists(String email);
+
+    boolean checkPhoneExists(String phone);
 }

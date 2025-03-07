@@ -49,7 +49,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException, UserNotFoundException {
 
         // Skip JWT verification if the request belongs to the PUBLIC_URLS list
         String requestURI = request.getRequestURI();
