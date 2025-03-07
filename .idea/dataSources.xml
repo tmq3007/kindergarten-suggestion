@@ -13,7 +13,7 @@
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="KSS" uuid="9de5d656-3a2b-4bda-8d1b-508c1d2f2ae9">
+    <data-source source="LOCAL" name="KSS@marco.cpwqmg2akccy.ap-southeast-2.rds.amazonaws.com" uuid="9de5d656-3a2b-4bda-8d1b-508c1d2f2ae9">
       <driver-ref>mysql.cloud_sql.8</driver-ref>
       <synchronize>true</synchronize>
       <imported>true</imported>

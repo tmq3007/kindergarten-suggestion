@@ -17,7 +17,7 @@ import java.time.LocalDate;
 public class Media {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "file_id",nullable = false)
+    @Column(name = "id",nullable = false)
     private Integer id;
 
     @Column(name = "type", length = 10)
@@ -38,8 +38,7 @@ public class Media {
     @Column(name = "cloud_id", length = 255)
     private String cloudId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="parent_id")
+    @OneToOne(mappedBy = "media",fetch = FetchType.LAZY)
     private Parent parent;
 
     @ManyToOne(fetch = FetchType.LAZY)

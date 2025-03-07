@@ -17,9 +17,11 @@ import java.time.LocalDate;
 public class Parent {
     @Id
     @Column(name = "parent_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -39,6 +41,7 @@ public class Parent {
     @Column(name = "street", nullable = true)
     private String street;
 
-    @OneToOne(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image",referencedColumnName = "id")
     private Media media;
 }

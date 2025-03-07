@@ -35,5 +35,6 @@ public interface ParentMapper {
     @Mapping(target = "status", source = "user.status")
     @Mapping(target = "phone", source = "user.phone")
     @Mapping(target = "dob", source = "user.dob")
+    @Mapping(target = "media", source = "media")
     ParentVO toParentVO(Parent parent);
 }
