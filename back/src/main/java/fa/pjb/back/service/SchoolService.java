@@ -22,4 +22,6 @@ public interface SchoolService {
     boolean checkEmailExists(String email);
 
     boolean checkPhoneExists(String phone);
+
+    SchoolVO editSchoolByAdmin(AddSchoolDTO schoolDTO, List<MultipartFile> image);
 }

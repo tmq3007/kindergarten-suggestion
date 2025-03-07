@@ -1,7 +1,6 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import logo from '@public/logo2-removebg-preview.png';
-import background from "@public/background2.jpg";
 import {
     BellOutlined,
     HomeOutlined,
@@ -12,20 +11,22 @@ import {
     UserOutlined,
     WindowsOutlined,
 } from '@ant-design/icons';
-import { Button, ConfigProvider, Layout, Menu, MenuProps, message, Modal, Space, theme } from 'antd';
+import {Button, ConfigProvider, Layout, Menu, message, Modal, Space, theme} from 'antd';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useLogoutMutation } from '@/redux/services/authApi';
-import { forbidden, unauthorized, useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { ROLES } from '@/lib/constants';
-import { resetUser } from '@/redux/features/userSlice';
+import {useLogoutMutation} from '@/redux/services/authApi';
+import {forbidden, unauthorized, useRouter} from 'next/navigation';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from '@/redux/store';
+import {ROLES} from '@/lib/constants';
+import {resetUser} from '@/redux/features/userSlice';
+import {Resizable} from 'react-resizable';
+import 'react-resizable/css/styles.css'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({children}: { children: React.ReactNode }) {
     const [messageApi, contextHolder] = message.useMessage();
     const [collapsed, setCollapsed] = useState(false);
-    const { Header, Content, Sider } = Layout;
+    const {Header, Content, Sider} = Layout;
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const router = useRouter();
     const [logout] = useLogoutMutation();
@@ -33,30 +34,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.user);
     const role = user.role;
+
     if (!role) {
         unauthorized();
     }
-    // Kiểm tra role, nhưng bỏ qua nếu đang logout
+    // Check role, but skip if logging out
     const isLoggingOut = useRef(false);
     useEffect(() => {
-        if (role === ROLES.PARENT && !isLoggingOut.current) {
+        if (role !== ROLES.ADMIN && !isLoggingOut.current) {
             forbidden();
         }
     }, [role]);
 
-    const siderStyle: React.CSSProperties = {
-        overflow: 'auto',
-        height: '100vh',
-        position: 'sticky',
-        insetInlineStart: 0,
-        top: 0,
-        bottom: 0,
-        scrollbarWidth: 'thin',
-        scrollbarGutter: 'stable',
-    };
-
     const {
-        token: { colorBgContainer, borderRadiusLG },
+        token: {colorBgContainer, borderRadiusLG},
     } = theme.useToken();
 
     const handleLogout = async () => {
@@ -65,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         try {
             setIsModalOpen(false);
-            isLoggingOut.current = true; // Đánh dấu là đang logout
+            isLoggingOut.current = true; // Mark as on logout process
 
             const result = await logout(undefined).unwrap();
 
@@ -87,6 +78,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     };
 
+    const [siderWidth, setSiderWidth] = useState(200); // Chiều rộng ban đầu
+    const onResize = (event: any, {size}: { size: { width: number; height: number } }) => {
+        setSiderWidth(size.width);
+    };
+
     return (
         <>
             {contextHolder}
@@ -101,43 +97,70 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         },
                     }}
                 >
-                    <Sider style={siderStyle} className={'hidden md:block'} trigger={null} collapsible
-                        collapsed={collapsed}>
-                        <Image className={'mx-auto'} src={logo} alt={'logo'} height={70} width={70} />
-                        <div className="demo-logo-vertical" />
-                        <Menu
-                            theme="dark"
-                            mode="inline"
-                            defaultSelectedKeys={['1']}
-                            items={[
-                                {
-                                    key: '1',
-                                    icon: <HomeOutlined />,
-                                    label: <Link href="/admin/management/school/school-list">School Management</Link>,
-                                },
-                                {
-                                    key: '2',
-                                    icon: <UserOutlined />,
-                                    label: <Link href="/admin/management/user/user-list">User Management</Link>,
-                                },
-                                {
-                                    key: '3',
-                                    icon: <BellOutlined />,
-                                    label: <Link href="/reminder">Reminder</Link>,
-                                },
-                                {
-                                    key: '4',
-                                    icon: <UsergroupAddOutlined />,
-                                    label: <Link href="/parent-management">Parent Management</Link>,
-                                },
-                                {
-                                    key: '5',
-                                    icon: <WindowsOutlined />,
-                                    label: <Link href="/request-management">Request Management</Link>,
-                                },
-                            ]}
-                        />
-                    </Sider>
+
+                    <Resizable
+                        width={siderWidth}
+                        height={Infinity}
+                        onResize={onResize}
+                        minConstraints={[200, Infinity]} // Chiều rộng tối thiểu
+                        maxConstraints={[350, Infinity]} // Chiều rộng tối đa
+                        handle={
+                            <div
+                                className="react-resizable-handle"
+                                style={{
+                                    width: '5px',
+                                    height: '100%',
+                                    background: 'transparent',
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 0,
+                                    cursor: 'ew-resize',
+                                    zIndex: 1,
+                                }}
+                            />
+                        }
+                        className="hidden md:block"
+                    >
+                        <Sider width={siderWidth}
+                               trigger={null}
+                               collapsible
+                               collapsed={collapsed}>
+                            <Image className={'mx-auto'} src={logo} alt={'logo'} height={70} width={70}/>
+                            <div className="demo-logo-vertical"/>
+                            <Menu
+                                theme="dark"
+                                mode="inline"
+                                defaultSelectedKeys={['1']}
+                                items={[
+                                    {
+                                        key: '1',
+                                        icon: <HomeOutlined/>,
+                                        label: <Link href="/school-management">School Management</Link>,
+                                    },
+                                    {
+                                        key: '2',
+                                        icon: <UserOutlined/>,
+                                        label: <Link href="/admin/management/user/user-list">User Management</Link>,
+                                    },
+                                    {
+                                        key: '3',
+                                        icon: <BellOutlined/>,
+                                        label: <Link href="/reminder">Reminder</Link>,
+                                    },
+                                    {
+                                        key: '4',
+                                        icon: <UsergroupAddOutlined/>,
+                                        label: <Link href="/parent-management">Parent Management</Link>,
+                                    },
+                                    {
+                                        key: '5',
+                                        icon: <WindowsOutlined/>,
+                                        label: <Link href="/request-management">Request Management</Link>,
+                                    },
+                                ]}
+                            />
+                        </Sider>
+                    </Resizable>
                 </ConfigProvider>
                 <Layout>
                     <Header
@@ -153,7 +176,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Button
                             className={'hidden md:block'}
                             type="text"
-                            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                            icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                             onClick={() => setCollapsed(!collapsed)}
                             style={{
                                 fontSize: '16px',
@@ -163,28 +186,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         />
                         <Space className={'md:hidden flex justify-evenly w-full h-full'}>
                             <Link href="/school-management">
-                                <HomeOutlined />
+                                <HomeOutlined/>
                             </Link>
                             <Link href="/user-management">
-                                <UserOutlined />
+                                <UserOutlined/>
                             </Link>
                             <Link href="/reminder">
-                                <BellOutlined />
+                                <BellOutlined/>
                             </Link>
                             <Link href="/parent-management">
-                                <UsergroupAddOutlined />
+                                <UsergroupAddOutlined/>
                             </Link>
                             <Link href="/request-management">
-                                <WindowsOutlined />
+                                <WindowsOutlined/>
                             </Link>
                             <Link href="" onClick={() => setIsModalOpen(true)}>
-                                <LogoutOutlined />
+                                <LogoutOutlined/>
                             </Link>
                         </Space>
                         <Link className="hidden md:block" href="">
                             <Button
                                 type="text"
-                                icon={<LogoutOutlined />}
+                                icon={<LogoutOutlined/>}
                                 style={{
                                     fontSize: '16px',
                                     width: 'auto',
@@ -223,7 +246,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                     <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
                 </Modal>
-            </Layout >
+            </Layout>
         </>
 
     );

@@ -19,12 +19,15 @@ const SchoolFormButton: React.FC<ButtonGroupProps> = ({ form, hasSaveDraftButton
         // Submit the form manually
         form.submit();
     };
-    const handleSubmit = () => {
-        // Ensure `status` is set before submitting
-        form.setFieldsValue({ status: 1 });
 
-        // Submit the form manually
-        form.submit();
+    const handleSubmit = async () => {
+        try {
+            // Get form values
+            const values = await form.validateFields();
+            console.log("✅ Form values:", values);
+        } catch (error) {
+            console.error("❌ Validation failed:", error);
+        }
     };
     return (
         <>

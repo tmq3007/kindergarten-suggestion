@@ -19,6 +19,7 @@ public record SchoolVO(
         Byte educationMethod,
         Integer feeFrom,
         Integer feeTo,
+        String website,
         String description,
         Set<FacilityVO> facilities,
         Set<UtilityVO> utilities,

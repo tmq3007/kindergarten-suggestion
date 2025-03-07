@@ -44,7 +44,6 @@ public class SchoolServiceImpl implements SchoolService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif");
 
-
     private final SchoolRepository schoolRepository;
     private final FacilityRepository facilityRepository;
     private final UtilityRepository utilityRepository;
@@ -55,7 +54,6 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public SchoolVO getSchoolInfo(Integer schoolId) {
-        log.info("=========== school service ===============");
         School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
         return schoolMapper.toSchoolVO(school);
     }
@@ -161,5 +159,10 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
+    }
+
+    @Override
+    public SchoolVO editSchoolByAdmin(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
+        return null;
     }
 }
