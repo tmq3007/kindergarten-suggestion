@@ -7,7 +7,6 @@ import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.PhoneExistedException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.Facility;
 import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
@@ -21,19 +20,18 @@ import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UtilityRepository;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
@@ -138,6 +136,21 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         return schoolMapper.toSchoolVO(newSchool);
+    }
+
+    @Override
+    public Page<SchoolVO> getAllSchools(String name, String province, String district,
+        String street, String email, String phone, Pageable pageable) {
+        log.info("=========== school service: getAllSchools ===============");
+        Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
+        return schoolPage.map(schoolMapper::toSchoolVO);
+    }
+
+    @Override
+    public Page<SchoolVO> getSchoolsByUserId(Integer userId, Pageable pageable, String name) {
+        log.info("=========== school service: getSchoolsByUserId ===============");
+        Page<School> schoolPage = schoolRepository.findSchoolsByUserId(userId, name, pageable);
+        return schoolPage.map(schoolMapper::toSchoolVO);
     }
 
     @Override

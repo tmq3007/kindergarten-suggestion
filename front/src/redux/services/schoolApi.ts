@@ -1,23 +1,32 @@
 import{createApi}from"@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth }from "@/redux/services/config/baseQuery";
+export interface Facility {
+    fid: number;
+    name: string;
+}
 
+export interface Utility {
+    uid: number;
+    name: string;
+}
 export type SchoolVO = {
-status: number;
-name: string;
-schoolType: number;
-district: string;
-ward: string;
-province: string;
-street: string;
-email: string;
-phone: string;
-receivingAge: number;
-educationMethod: number;
-feeFrom: number;
-feeTo: number;
-description: string;
-facilities: [];
-utilities: [];
+    status: number;
+    name: string;
+    schoolType: number;
+    district: string;
+    ward: string;
+    province: string;
+    street: string;
+    email: string;
+    phone: string;
+    receivingAge: number;
+    educationMethod: number;
+    feeFrom: number;
+    feeTo: number;
+    description: string;
+    facilities: Facility[];
+    utilities: Utility[];
+    posted_date: Date | null;
 };
 
 export type SchoolDTO = {

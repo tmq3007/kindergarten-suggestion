@@ -347,7 +347,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
                             />
                         </Form.Item>
                         {/* Phone Number */}
-                        //TODO: Add check phone number exists 
                         <Form.Item label="Phone Number"
 
                             required

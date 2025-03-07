@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkAdmin) {
+    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
         // Authenticate the token using AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
@@ -72,11 +72,11 @@ public class AuthServiceImpl implements AuthService {
         // Extract UserDetails from Authentication
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        // If checkAdmin = true, check the user's role and deny access if they are not ADMIN
-        if (checkAdmin) {
-            boolean isAdmin = authorities.stream()
-                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_ADMIN.toString()));
-            if (!isAdmin) {
+        // If checkParent = true, check the user's role and deny access if they are not ADMIN
+        if (checkParent) {
+            boolean isParent = authorities.stream()
+                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_PARENT.toString()));
+            if (isParent) {
                 throw new AccessDeniedException("Access denied");
             }
         }

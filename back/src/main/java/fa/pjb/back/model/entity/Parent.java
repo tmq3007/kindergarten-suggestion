@@ -39,7 +39,8 @@ public class Parent {
     @Column(name = "street", nullable = true)
     private String street;
 
-    @OneToOne(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image",referencedColumnName = "id")
     private Media media;
 
 
