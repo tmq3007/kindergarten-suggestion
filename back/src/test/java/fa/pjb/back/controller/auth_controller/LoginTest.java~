@@ -58,7 +58,7 @@ class LoginTest {
                 .csrfToken("csrfToken")
                 .build();
 
-        when(authService.loginAdmin(any(LoginDTO.class))).thenReturn(loginVO);
+        when(authService.loginByAdmin(any(LoginDTO.class))).thenReturn(loginVO);
 
         ResultActions response = mockMvc.perform(post("/auth/login/admin")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ class LoginTest {
                 .csrfToken("csrfToken")
                 .build();
 
-        when(authService.loginAdmin(any(LoginDTO.class))).thenReturn(loginVO);
+        when(authService.loginByAdmin(any(LoginDTO.class))).thenReturn(loginVO);
 
         ResultActions response = mockMvc.perform(post("/auth/login/admin")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -175,7 +175,7 @@ class LoginTest {
                 .csrfToken("csrfToken")
                 .build();
 
-        when(authService.loginAdmin(any(LoginDTO.class))).thenReturn(loginVO);
+        when(authService.loginByAdmin(any(LoginDTO.class))).thenReturn(loginVO);
 
         ResultActions response = mockMvc.perform(post("/auth/login/admin")
                 .contentType(MediaType.APPLICATION_JSON)
