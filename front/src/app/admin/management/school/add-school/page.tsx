@@ -3,6 +3,7 @@
 import { Select } from 'antd';
 import SchoolForm from '@/app/components/school/SchoolForm';
 import Form2 from '@/app/components/school/Form2';
+import { h2 } from 'framer-motion/client';
 
 const { Option } = Select;
 const page = () => {

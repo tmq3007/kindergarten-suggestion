@@ -35,4 +35,7 @@ public class SchoolOwner {
     @JoinColumn(name = "school_id")
     private School school;
 
+    @Column(name = "assign_time")
+    private LocalDate assignTime;
+
 }

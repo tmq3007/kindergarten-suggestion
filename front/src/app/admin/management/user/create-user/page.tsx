@@ -60,9 +60,10 @@ const CreateUser: React.FC = () => {
         let formattedValues = {
             ...values,
             dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
-            fullname: values.fullname,
             role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
             phone: formattedPhone,
+            status:Boolean(values.status),
+            email: values.email,
         };
 
         try {
@@ -239,6 +240,7 @@ const CreateUser: React.FC = () => {
                         <Form.Item
                             label="DOB"
                             name="dob"
+                            required={true}
                             rules={[{
                                 validator: (_, value) => {
                                     if (!value) return Promise.reject('Date of birth is required!');
@@ -277,12 +279,12 @@ const CreateUser: React.FC = () => {
                         animate="animate"
                         custom={6} // Delay = 6 * 0.2
                     >
-                        <Form.Item initialValue={'1'} label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
+                        <Form.Item   label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
                             <Select
                                 placeholder="Select status"
                                 options={[
-                                    { value: '1', label: 'Active' },
-                                    { value: '0', label: 'Inactive' },
+                                    { value: true, label: 'Active' },
+                                    { value: false, label: 'Inactive' },
                                 ]}
                             />
                         </Form.Item>

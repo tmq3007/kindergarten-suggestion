@@ -49,20 +49,21 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(ALLOWED_URLS).permitAll()
-//                                .requestMatchers("/api/auth/login/admin").permitAll()
-//                                .requestMatchers("/api/auth/login/public").permitAll()
-//                                .requestMatchers("/api/auth/refresh-token").permitAll()
-//                                .requestMatchers("/api/auth/forgot-password").permitAll()
-//                                .requestMatchers("/api/auth/reset-password").permitAll()
-//                                .requestMatchers("/api/auth/check-email").permitAll()
-//                                .requestMatchers("/api/parent/register").permitAll()
+                                .requestMatchers("/api/auth/login/admin").permitAll()
+                                .requestMatchers("/api/auth/login/public").permitAll()
+                                .requestMatchers("/api/auth/refresh-token").permitAll()
+                                .requestMatchers("/api/auth/forgot-password").permitAll()
+                                .requestMatchers("/api/auth/reset-password").permitAll()
+                                .requestMatchers("/api/auth/check-email").permitAll()
+                                .requestMatchers("/api/parent/register").permitAll()
+                                .requestMatchers("/api/school/review/**").permitAll()
                                 .anyRequest().permitAll()
 //                                .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

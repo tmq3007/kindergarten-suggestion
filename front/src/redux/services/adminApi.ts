@@ -16,7 +16,7 @@ export type UserDTO = {
     id: number;
     username?: string;
     email: string;
-    status?: Boolean;
+    status: Boolean;
     fullname: string;
     phone: string;
     dob: string; // Because TypeScript does not have LocalDate, use string to represent ISO date

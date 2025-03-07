@@ -22,6 +22,7 @@ import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.UserService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -175,7 +176,7 @@ public class UserServiceImpl implements UserService {
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
         User user =User.builder()
                 .username(usernameAutoGen)
-                .password(passwordAutoGen)
+                .password(passwordEncoder.encode(passwordAutoGen))
                 .phone(userDTO.phone())
                 .fullname(userDTO.fullname())
                 .status(Boolean.valueOf(userDTO.status()))
@@ -188,10 +189,11 @@ public class UserServiceImpl implements UserService {
             // Create new Parent
             Parent newParent = Parent.builder()
                     .user(user)
-                    .district("")
+                     .district("")
                     .ward("")
                     .province("")
                     .street("")
+                    .media(null)
                     .build();
 
             // Save Parent to database
@@ -203,6 +205,7 @@ public class UserServiceImpl implements UserService {
             SchoolOwner schoolOwner = SchoolOwner.builder()
                     .user(user)
                     .school(null)
+                    .assignTime(LocalDate.from(LocalDateTime.now()))
                     .build();
 
             // Save SchoolOwner to database
@@ -213,17 +216,6 @@ public class UserServiceImpl implements UserService {
 
         // Save User to database
         userRepository.save(user);
-
-//        UserDTO responseDTO = UserDTO.builder()
-//                .id(user.getId())
-//                .username(user.getUsername())
-//                .email(user.getEmail())
-//                .role(String.valueOf(userDTO.role()))
-//                .status(String.valueOf(user.getStatus()))
-//                .phone(user.getPhone())
-//                .dob(user.getDob())
-//                .fullname(user.getFullname())
-//                .build();
 
         UserDTO responseDTO = userMapper.toUserDTO(user);
 
