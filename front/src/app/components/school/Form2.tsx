@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Checkbox, Form, Input, InputNumber, Select, Upload, UploadFile } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
-import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
 import {
     CHILD_RECEIVING_AGES_OPTIONS,
@@ -13,7 +12,7 @@ import {
 } from '@/lib/constants';
 import SchoolFormButton from './SchoolFormButton';
 import MyEditor from '@/app/components/common/MyEditor';
-import { SchoolDTO, useAddSchoolMutation } from '@/redux/services/schoolApi';
+import { SchoolDTO, useAddSchoolMutation, useLazyCheckSchoolPhoneQuery, useLazyCheckSchoolEmailQuery } from '@/redux/services/schoolApi';
 import AddressInput from '../common/AddressInput';
 import EmailInput from '../common/Emailinput';
 import PhoneInput from '../common/PhoneInput';
@@ -47,47 +46,26 @@ interface SchoolFormFields {
 
 const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDraftButton, hasSubmitButton }) => {
     const [form] = Form.useForm(externalForm);
-    const emailInputRef = useRef<any>(null); // Ref to access EmailInput methods
+    const emailInputRef = useRef<any>(null);
+    const phoneInputRef = useRef<any>(null);
+
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
-    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>();
-    const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
-    const [emailHelp, setEmailHelp] = useState<string | null>(null);
-    const [selectedProvince, setSelectedProvince] = useState<number | undefined>(); // Manage province selection
-    const [selectedDistrict, setSelectedDistrict] = useState<number | undefined>(); // Manage district selection
 
+    const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
+    const [triggerCheckPhone] = useLazyCheckSchoolPhoneQuery();
     const [addSchool, { isLoading: addSchoolIsLoading }] = useAddSchoolMutation();
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
-    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
-    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
-        skip: !selectedProvince, // Only fetch districts when province is selected
-    });
-    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
-        skip: !selectedDistrict, // Only fetch wards when district is selected
-    });
-
-    // Set default country to Vietnam on mount
-    useEffect(() => {
-        if (countries && !selectedCountry) {
-            const defaultCountry = countries.find((c) => c.code === 'VN');
-            setSelectedCountry(defaultCountry);
-        }
-    }, [countries]);
 
     // Handle form submission
     const onFinish = async (values: FieldType) => {
-        // Trigger email validation
         const isEmailValid = await emailInputRef.current?.validateEmail();
-        if (!isEmailValid) {
-            console.log('Email validation failed');
-            return; // Stop submission if email validation fails
+        const isPhoneValid = await phoneInputRef.current?.validatePhone();
+        if (!isEmailValid || !isPhoneValid) {
+            console.log('Validation failed');
+            return;
         }
 
-        let formattedPhone = values.phone || '';
-        if (selectedCountry && !countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith('0')) {
-            formattedPhone = formattedPhone.substring(1);
-        }
-        const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
+        const fullPhoneNumber = phoneInputRef.current?.getFormattedPhoneNumber() || values.phone;
         const fileList: File[] = (values.image || [])
             .filter((file) => file.originFileObj)
             .map((file) => file.originFileObj as File);
@@ -97,18 +75,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
             image: fileList,
             phone: fullPhoneNumber,
         };
-        // console.log('Form submitted with values:', finalValues);
-        addSchool(finalValues); // Uncomment when ready
-    };
-
-    // Handle province change from AddressInput
-    const handleProvinceChange = (provinceCode: number) => {
-        setSelectedProvince(provinceCode); // Update state to trigger districts query
-    };
-
-    // Handle district change from AddressInput
-    const handleDistrictChange = (districtCode: number) => {
-        setSelectedDistrict(districtCode); // Update state to trigger wards query
+        console.log('Form submitted with values:', finalValues);
+        // addSchool(finalValues);
     };
 
     const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => e?.fileList ?? [];
@@ -138,27 +106,16 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
                             <Select placeholder="Select a type..." options={SCHOOL_TYPES_OPTIONS} />
                         </Form.Item>
                         <AddressInput
-                            provinces={provinces}
-                            districts={districts}
-                            wards={wards}
-                            isLoadingProvince={isLoadingProvince}
-                            isLoadingDistrict={isLoadingDistrict}
-                            isLoadingWard={isLoadingWard}
                             form={form}
-                            onProvinceChange={handleProvinceChange} // Pass handler to update selectedProvince
-                            onDistrictChange={handleDistrictChange} // Pass handler to update selectedDistrict
                         />
                         <EmailInput
                             ref={emailInputRef} // Add this line
-                            onEmailStatusChange={(status, help) => {
-                                setEmailStatus(status);
-                                setEmailHelp(help);
-                            }}
+                            triggerCheckEmail={triggerCheckEmail}
                         />
                         <PhoneInput
-                            countries={countries}
-                            isLoadingCountry={isLoadingCountry}
+                            ref={phoneInputRef}
                             onPhoneChange={(phone) => form.setFieldsValue({ phone })}
+                            triggerCheckPhone={triggerCheckPhone}
                         />
                         <Form.Item
                             name="receivingAge"
@@ -234,7 +191,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({ form: externalForm, hasSaveDra
                                     className="grid grid-cols-3 gap-2 custom-add-school-select"
                                 />
                             </Form.Item>
-
                             {/* Utilities */}
                             <Form.Item label="Utilities" name="utilities">
                                 <Checkbox.Group
