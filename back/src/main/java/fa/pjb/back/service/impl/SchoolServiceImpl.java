@@ -65,30 +65,32 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
-        if(checkEmailExists(schoolDTO.email())){
+        if (checkEmailExists(schoolDTO.email())) {
             throw new EmailAlreadyExistedException("This email is already in used");
         }
-        if(checkPhoneExists(schoolDTO.phone())){
+        if (checkPhoneExists(schoolDTO.phone())) {
             throw new PhoneExistedException("This phone is already in used");
         }
         School school = schoolMapper.toSchool(schoolDTO);
         List<ImageVO> imageVOList = null;
+        if (schoolDTO.facilities()!=null) {
+            //Get existing facilities from DB
+            Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
 
-        //Get existing facilities from DB
-        Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
-
-        //Validate: Check if all requested fids exist in the database
-        if (existingFacilities.size() != school.getFacilities().size()) {
-            throw new InvalidDataException("Some facilities do not exist in the database");
+            //Validate: Check if all requested fids exist in the database
+            if (existingFacilities.size() != school.getFacilities().size()) {
+                throw new InvalidDataException("Some facilities do not exist in the database");
+            }
         }
-        //Get existing utilities from DB
-        Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
+        if (schoolDTO.utilities() != null) {
+            //Get existing utilities from DB
+            Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
 
-        //Validate: Check if all requested uids exist in the database
-        if (existingUtilities.size() != school.getUtilities().size()) {
-            throw new InvalidDataException("Some utilities do not exist in the database");
+            //Validate: Check if all requested uids exist in the database
+            if (existingUtilities.size() != school.getUtilities().size()) {
+                throw new InvalidDataException("Some utilities do not exist in the database");
+            }
         }
-
         school.setPostedDate(LocalDate.now());
         School newSchool = schoolRepository.save(school);
 
@@ -114,7 +116,7 @@ public class SchoolServiceImpl implements SchoolService {
             try {
                 imageVOList = imageService.uploadListImages(
                         imageService.convertMultiPartFileToFile(image),
-                        "School_"+newSchool.getId()+"Image_",
+                        "School_" + newSchool.getId() + "Image_",
                         SCHOOL_IMAGES
                 );
             } catch (IOException e) {
