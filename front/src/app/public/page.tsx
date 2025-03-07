@@ -5,6 +5,9 @@ import SchoolSearchForm from "@/app/components/school/SchoolSearchForm";
 import Testimonial from "@/app/components/common/Testimonial";
 import Information from "@/app/components/common/Information";
 
+const hanldeBtn = async ()=>{
+    await fetch("http://localhost:8080/api/test")
+}
 export default function Page() {
     return (
         <motion.div
@@ -13,7 +16,6 @@ export default function Page() {
             transition={{duration: 1.8, ease: "easeInOut"}}
             className="w-full min-h-[800px] relative"
         >
-
             <div
                 style={{
                     backgroundImage: `url(${background.src})`,

@@ -112,4 +112,8 @@ public class School {
             inverseJoinColumns = @JoinColumn(name = "uid"))
     private Set<Utility> utilities;
 
+    @OneToOne
+    @JoinColumn(name = "ref_id")
+    private School draft;
+
 }
