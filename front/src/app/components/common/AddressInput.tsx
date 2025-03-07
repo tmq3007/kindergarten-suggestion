@@ -1,56 +1,83 @@
 import React, { useState } from 'react';
 import { Form, Select, Input } from 'antd';
-import { Province, District, Ward } from '@/redux/services/addressApi';
+import { useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery } from '@/redux/services/addressApi';
 
 interface AddressInputProps {
-  provinces: Province[] | undefined;
-  districts: District[] | undefined;
-  wards: Ward[] | undefined;
-  isLoadingProvince: boolean;
-  isLoadingDistrict: boolean;
-  isLoadingWard: boolean;
-  form: any;
-  onProvinceChange: (provinceCode: number) => void; // Added to notify parent
-  onDistrictChange: (districtCode: number) => void; // Added to notify parent
+  form: any; // Ant Design Form instance
+  onAddressChange?: (address: { province?: string; district?: string; ward?: string; street?: string }) => void; // Optional callback to notify parent
 }
 
 const { Option } = Select;
 
-const AddressInput: React.FC<AddressInputProps> = ({
-  provinces,
-  districts,
-  wards,
-  isLoadingProvince,
-  isLoadingDistrict,
-  isLoadingWard,
-  form,
-  onProvinceChange: onProvinceChangeParent, // Renamed to avoid conflict
-  onDistrictChange: onDistrictChangeParent, // Renamed to avoid conflict
-}) => {
-  const [selectedProvince, setSelectedProvince] = useState<number | undefined>();
-  const [selectedDistrict, setSelectedDistrict] = useState<number | undefined>();
-  const [selectedWard, setSelectedWard] = useState<string | undefined>();
+const AddressInput: React.FC<AddressInputProps> = ({ form, onAddressChange }) => {
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState<number | undefined>();
+  const [selectedDistrictCode, setSelectedDistrictCode] = useState<number | undefined>();
+  const [selectedWardCode, setSelectedWardCode] = useState<string | undefined>();
 
-  // Handle province selection and notify parent to fetch districts
-  const onProvinceChange = (provinceCode: number) => {
-    form.setFieldsValue({ district: undefined, ward: undefined, street: undefined }); // Reset dependent fields
-    setSelectedProvince(provinceCode);
-    setSelectedDistrict(undefined); // Clear district
-    setSelectedWard(undefined); // Clear ward
-    onProvinceChangeParent(provinceCode); // Notify parent to update districts query
+  // Fetch provinces
+  const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
+
+  // Fetch districts based on selected province
+  const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvinceCode!, {
+    skip: !selectedProvinceCode, // Only fetch when province is selected
+  });
+
+  // Fetch wards based on selected district
+  const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrictCode!, {
+    skip: !selectedDistrictCode, // Only fetch when district is selected
+  });
+
+  // Handle province selection
+  const onProvinceChange = (provinceName: string) => {
+    const selected = provinces?.find((p) => p.name === provinceName);
+    if (selected) {
+      setSelectedProvinceCode(selected.code);
+      setSelectedDistrictCode(undefined); // Reset district
+      setSelectedWardCode(undefined); // Reset ward
+      form.setFieldsValue({ district: undefined, ward: undefined, street: undefined }); // Reset dependent fields
+      onAddressChange?.({ province: provinceName, district: undefined, ward: undefined, street: undefined });
+    }
   };
 
-  // Handle district selection and notify parent to fetch wards
-  const onDistrictChange = (districtCode: number) => {
-    form.setFieldsValue({ ward: undefined, street: undefined }); // Reset ward and street
-    setSelectedDistrict(districtCode);
-    setSelectedWard(undefined); // Clear ward
-    onDistrictChangeParent(districtCode); // Notify parent to update wards query
+  // Handle district selection
+  const onDistrictChange = (districtName: string) => {
+    const selected = districts?.find((d) => d.name === districtName);
+    if (selected) {
+      setSelectedDistrictCode(selected.code);
+      setSelectedWardCode(undefined); // Reset ward
+      form.setFieldsValue({ ward: undefined, street: undefined }); // Reset dependent fields
+      onAddressChange?.({
+        province: form.getFieldValue('province'),
+        district: districtName,
+        ward: undefined,
+        street: undefined,
+      });
+    }
   };
 
   // Handle ward selection
-  const onWardChange = (wardCode: number) => {
-    setSelectedWard(wardCode.toString());
+  const onWardChange = (wardName: string) => {
+    const selected = wards?.find((w) => w.name === wardName);
+    if (selected) {
+      setSelectedWardCode(selected.code.toString());
+      onAddressChange?.({
+        province: form.getFieldValue('province'),
+        district: form.getFieldValue('district'),
+        ward: wardName,
+        street: form.getFieldValue('street'),
+      });
+    }
+  };
+
+  // Handle street input change
+  const onStreetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const street = e.target.value;
+    onAddressChange?.({
+      province: form.getFieldValue('province'),
+      district: form.getFieldValue('district'),
+      ward: form.getFieldValue('ward'),
+      street,
+    });
   };
 
   return (
@@ -61,10 +88,7 @@ const AddressInput: React.FC<AddressInputProps> = ({
         rules={[{ required: true, message: 'Please select a province' }]}
       >
         <Select
-          onChange={(provinceName) => {
-            const selected = provinces?.find((p) => p.name === provinceName);
-            if (selected) onProvinceChange(selected.code);
-          }}
+          onChange={onProvinceChange}
           placeholder="Select a province"
           loading={isLoadingProvince}
         >
@@ -83,11 +107,8 @@ const AddressInput: React.FC<AddressInputProps> = ({
         <Select
           loading={isLoadingDistrict}
           placeholder="Select district"
-          onChange={(districtName) => {
-            const selected = districts?.find((d) => d.name === districtName);
-            if (selected) onDistrictChange(selected.code);
-          }}
-          disabled={!selectedProvince} // Disable until province is selected
+          onChange={onDistrictChange}
+          disabled={!selectedProvinceCode} // Disable until province is selected
         >
           {districts?.map((district) => (
             <Option key={district.code} value={district.name}>
@@ -104,11 +125,8 @@ const AddressInput: React.FC<AddressInputProps> = ({
         <Select
           loading={isLoadingWard}
           placeholder="Select ward"
-          onChange={(wardName) => {
-            const selected = wards?.find((w) => w.name === wardName);
-            if (selected) onWardChange(selected.code);
-          }}
-          disabled={!selectedDistrict} // Disable until district is selected
+          onChange={onWardChange}
+          disabled={!selectedDistrictCode} // Disable until district is selected
         >
           {wards?.map((ward) => (
             <Option key={ward.code} value={ward.name}>
@@ -118,7 +136,7 @@ const AddressInput: React.FC<AddressInputProps> = ({
         </Select>
       </Form.Item>
       <Form.Item name="street" className="mb-4">
-        <Input placeholder="Enter School Address here..." />
+        <Input placeholder="Enter School Address here..." onChange={onStreetChange} />
       </Form.Item>
     </Form.Item>
   );
