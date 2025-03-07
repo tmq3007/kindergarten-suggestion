@@ -101,12 +101,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginVO loginAdmin(LoginDTO loginDTO) {
+    public LoginVO loginByAdmin(LoginDTO loginDTO) {
         return loginWithCondition(loginDTO, true);
     }
 
     @Override
-    public LoginVO loginPublic(LoginDTO loginDTO) {
+    public LoginVO loginByParent(LoginDTO loginDTO) {
         return loginWithCondition(loginDTO, false);
     }
 

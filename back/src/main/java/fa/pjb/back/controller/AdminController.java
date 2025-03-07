@@ -6,7 +6,12 @@ import fa.pjb.back.service.UserService;
 import fa.pjb.back.service.impl.ParentServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
 
 @RequiredArgsConstructor
 @RestController
