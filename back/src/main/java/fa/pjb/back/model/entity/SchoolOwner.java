@@ -1,6 +1,7 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -19,8 +20,14 @@ public class SchoolOwner {
     @Column(name = "user_id", nullable = false)
     private Integer id;
 
+    @Column(name = "expected_school", nullable = false)
+    @Max(value = 255)
+    private String expectedSchool;
+
+    @Column(name = "public_permission" )
+    private Boolean publicPermission;
+
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

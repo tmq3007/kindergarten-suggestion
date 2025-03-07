@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Checkbox, Form, Image, Input, message, Select } from 'antd';
 import { useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
 import { Country } from '@/redux/services/types';
-import countriesKeepZero from '@/lib/countriesKeepZero';
 import Link from 'next/link';
+import PhoneInput from '../common/PhoneInput';
+import EmailInput from '../common/Emailinput';
 
 interface FieldType {
     fullname: string;
@@ -22,21 +23,13 @@ interface RegisterFormProps {
 
 export default function RegisterForm({ onSuccess, onCancel, countries, isLoadingCountry }: RegisterFormProps) {
     const [form] = Form.useForm();
+    const emailInputRef = useRef<any>(null); // Ref to access EmailInput methods
+    const phoneInputRef = useRef<any>(null);
 
-    const [formValues, setFormValues] = useState<Partial<FieldType>>({ termAndCon: false });
-    const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
-    const [emailHelp, setEmailHelp] = useState<string | null>(null);
-    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
+    const [formValues, setFormValues] = useState<Partial<FieldType>>({ termAndCon: false })
     const [messageApi, contextHolder] = message.useMessage();
     const [register, { data: registerData, isLoading: isRegistering, error: registerError }] = useRegisterMutation();
-
-    // Set default country to VN 
-    useEffect(() => {
-        if (countries && !selectedCountry) {
-            const defaultCountry = countries.find((c) => c.code === "VN");
-            setSelectedCountry(defaultCountry);
-        }
-    }, [countries])
+    const [triggerCheckEmail] = useLazyCheckEmailQuery();
 
     useEffect(() => {
         // Handle successful registration
@@ -53,33 +46,16 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
         }
     }, [registerData, registerError])
 
-    // Handle country selection change
-    const handleCountryChange = (value: string) => {
-        if (countries) {
-            const country = countries.find((c) => c.code === value);
-            if (country) {
-                setSelectedCountry(country);
-            }
-        }
-    };
-
-    // Handle phone number input change (remove non-numeric characters)
-    const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value.replace(/\D/g, "");
-        e.target.value = value;  // Add sanitized value back to input
-    };
-
     // Handle form submission
-    const onFinish = (values: FieldType) => {
-        let formattedPhone = values.phone || "";
+    const onFinish = async (values: FieldType) => {
 
-        // Format phone number if the country uses a trunk prefix and phone starts with "0"
-        if (selectedCountry && !countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith("0")) {
-            formattedPhone = formattedPhone.substring(1);
+        const isEmailValid = await emailInputRef.current?.validateEmail();
+
+        if (!isEmailValid) {
+            return;
         }
 
-        // Combine dial code with the formatted phone number
-        const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
+        const fullPhoneNumber = phoneInputRef.current?.getFormattedPhoneNumber() || values.phone;
 
         // Finalize values to be submitted
         const finalValues = {
@@ -87,10 +63,6 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
             phone: fullPhoneNumber
         };
 
-        // Prevent form submission if email status is not "success"
-        if (emailStatus !== 'success') {
-            return;
-        }
 
         // Prepare DTO for registration
         const registerDTO = {
@@ -102,61 +74,6 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
 
         // Call the register mutation
         register(registerDTO);
-    };
-
-    const [email, setEmail] = useState("");
-    const [triggerCheckEmail, { isFetching }] = useLazyCheckEmailQuery();
-
-    // Check if the email exists in the system
-    const checkEmailExists = async () => {
-        setEmailStatus("validating");
-        setEmailHelp("Checking email availability...");
-
-        try {
-            const response = await triggerCheckEmail(email).unwrap();
-            if (response.data === "true") {
-                setEmailStatus("error");
-                setEmailHelp("This email is already registered!");
-            } else {
-                setEmailStatus("success");
-                setEmailHelp(null);
-            }
-        } catch (error) {
-            setEmailStatus("error");
-            setEmailHelp("Failed to validate email.");
-        }
-    };
-
-    // Reset email status while typing
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
-        setEmailStatus(""); // Clear email status
-        setEmailHelp(null);  // Clear email help text
-    };
-
-    // Validate email on blur
-    const handleEmailBlur = async () => {
-        if (!email) {
-            setEmailStatus("error");
-            setEmailHelp("Please input your email!");
-            return;
-        }
-        if (email.length > 50) {
-            setEmailStatus("error");
-            setEmailHelp("Email cannot exceed 50 characters!");
-            return;
-        }
-
-        // Check if the entered email matches a valid email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            setEmailStatus("error");
-            setEmailHelp("Please enter a valid email address!");
-            return;
-        }
-
-        // Check email availability
-        await checkEmailExists();
     };
 
     return (
@@ -184,81 +101,15 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
                     <Input placeholder="Enter your full name" />
                 </Form.Item>
                 {/* Email */}
-                <Form.Item
-                    name="email"
-                    label="Email Address"
-                    hasFeedback
-                    validateTrigger="onFinish"
-                    validateStatus={emailStatus}
-                    help={emailHelp}
-                    rules={[
-                        { required: true, message: "Please input your email!" },
-                        { type: "email", message: "Please enter a valid email address!" },
-                        { max: 50, message: "Email cannot exceed 50 characters!" },
-                    ]}
-                >
-                    <Input
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={handleEmailChange}
-                        onBlur={handleEmailBlur}
-                    />
-                </Form.Item>
+                <EmailInput
+                    ref={emailInputRef}
+                    triggerCheckEmail={triggerCheckEmail}
+                />
                 {/* Phone Number */}
-                <Form.Item label="Phone Number">
-                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                        {/* Country Code Selector */}
-                        <Select
-                            loading={isLoadingCountry}
-                            value={selectedCountry?.code || ''}
-                            onChange={handleCountryChange}
-                            dropdownStyle={{ width: 250 }}
-                            style={{ width: 120, borderRight: "1px solid #ccc" }}
-                            optionLabelProp="label2"
-                            showSearch
-                            filterOption={(input, option) =>
-                                String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                            }
-                        >
-                            {countries?.map((country) => (
-                                <Select.Option
-                                    key={country.code}
-                                    value={country.code}
-                                    label={country.label}
-                                    label2={
-                                        <span className="flex items-center">
-                                            <Image src={country.flag}
-                                                alt={country.label}
-                                                width={20} height={14}
-                                                className="mr-2 intrinsic" preview={false} />
-                                            {country.code} {country.dialCode}
-                                        </span>
-                                    }
-                                >
-                                    <div className="flex items-center">
-                                        <Image src={country.flag}
-                                            alt={country.label}
-                                            width={20} height={14}
-                                            className="mr-2 intrinsic" />
-                                        {country.dialCode} - {country.label}
-                                    </div>
-                                </Select.Option>
-                            ))}
-                        </Select>
-                        <Form.Item
-                            name="phone"
-                            rules={[{ required: true, message: 'Please input your phone number!' }]}
-                            noStyle
-                        >
-                            {/* Phone Input */}
-                            <Input
-                                placeholder="Enter your phone number"
-                                onChange={handlePhoneNumberChange}
-                                style={{ flex: 1, border: "none", boxShadow: "none" }}
-                            />
-                        </Form.Item>
-                    </div>
-                </Form.Item>
+                <PhoneInput
+                    ref={phoneInputRef}
+                    onPhoneChange={(phone) => form.setFieldsValue({ phone })}
+                />
                 <Form.Item
                     name="password"
                     label="Password"
@@ -321,7 +172,7 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
                         Sign Up
                     </Button>
                 </div>
-            </Form>
+            </Form >
         </>
     );
 }

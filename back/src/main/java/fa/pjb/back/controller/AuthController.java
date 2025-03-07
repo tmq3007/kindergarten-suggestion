@@ -32,7 +32,7 @@ public class AuthController {
         return ApiResponse.<LoginVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Login successful")
-                .data(authService.loginByAdmin(loginDTO))
+                .data(authService.loginAdmin(loginDTO))
                 .build();
     }
 
@@ -42,7 +42,7 @@ public class AuthController {
         return ApiResponse.<LoginVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Login successful")
-                .data(authService.loginByParent(loginDTO))
+                .data(authService.loginPublic(loginDTO))
                 .build();
     }
 
