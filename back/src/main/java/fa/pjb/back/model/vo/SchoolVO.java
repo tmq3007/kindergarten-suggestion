@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 public record SchoolVO(
+        Integer id,
         Byte status,
         String name,
         Byte schoolType,

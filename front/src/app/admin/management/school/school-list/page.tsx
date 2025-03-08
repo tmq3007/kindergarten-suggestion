@@ -52,6 +52,7 @@ export default function SchoolList() {
   const role = useSelector((state: RootState) => state.user?.role);
   const userIdString = useSelector((state: RootState) => state.user?.id);
   const userId = userIdString ? parseInt(userIdString as string) : null;
+
   // Kiểm tra nếu không có role hoặc userId thì chuyển hướng về login
   if (!role || !userId) {
     console.warn("No role or userId found in Redux store, redirecting to login");
@@ -135,7 +136,7 @@ export default function SchoolList() {
       align: "center" as const,
       render: (_: any, record: { id: number }) => (
           <Space size="middle" className="flex justify-center">
-            <Link href={`/admin/management/school/edit-school?schoolId=${record.id}`}>
+            <Link href={`/admin/management/school/school-detail/${record.id}`}>
               <Button type="link" icon={<EditOutlined />} />
             </Link>
             <Button type="link" icon={<DeleteOutlined />} danger />
