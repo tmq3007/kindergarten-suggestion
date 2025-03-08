@@ -4,7 +4,7 @@ import { useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/re
 import { Country } from '@/redux/services/types';
 import Link from 'next/link';
 import PhoneInput from '../common/PhoneInput';
-import EmailInput from '../common/Emailinput';
+import EmailInput from '../common/EmailInput';
 
 interface FieldType {
     fullname: string;

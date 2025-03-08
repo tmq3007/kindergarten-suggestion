@@ -24,6 +24,7 @@ export type SchoolVO = {
     feeFrom: number;
     feeTo: number;
     description: string;
+    website: string;
     facilities: Facility[];
     utilities: Utility[];
     posted_date: Date | null;

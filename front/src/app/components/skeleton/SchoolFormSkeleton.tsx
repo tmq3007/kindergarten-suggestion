@@ -1,22 +1,10 @@
 import React from 'react';
-import {Badge, Button, Checkbox, Form, Skeleton} from 'antd';
-import {FACILITIES_OPTIONS, UTILITIES_OPTIONS} from '@/lib/constants';
-import {nunito} from "@/lib/fonts";
-import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import {Checkbox, Form, Skeleton} from 'antd';
+import {FACILITY_OPTIONS, UTILITY_OPTIONS} from '@/lib/constants';
 
 const SchoolFormSkeleton: React.FC = () => {
     return (
         <>
-            <MyBreadcrumb paths={
-                [
-                    {label: 'School Management'},
-                    {label: 'Edit school'}
-                ]
-            }/>
-            <div className="flex items-center m-6">
-                <span className={`${nunito.className} text-3xl font-bold mr-6`}>Edit school</span>
-                <Badge className="h-1/2 bg-red-500 py-2 px-5 rounded-xl">Saved</Badge>
-            </div>
             <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
                 <Form
                     labelCol={{span: 6, className: 'font-bold'}}
@@ -119,31 +107,44 @@ const SchoolFormSkeleton: React.FC = () => {
                                     </Form.Item>
                                 </div>
                             </Form.Item>
-                        </div>
-                        <div>
                             <Form.Item
                                 name="website"
                                 label="School Website"
                             >
                                 <Skeleton.Input active className={'!w-full'}/>
                             </Form.Item>
-
+                        </div>
+                        <div>
                             <Form.Item
                                 name="facilities"
                                 label="Facilities"
                             >
                                 <Checkbox.Group
-                                    options={FACILITIES_OPTIONS}
+                                    options={FACILITY_OPTIONS}
                                     className="grid grid-cols-3 gap-2 custom-add-school-select"
                                 />
                             </Form.Item>
-
+                            <style>{`
+                                    .custom-add-school-select .ant-checkbox-wrapper {
+                                        display: flex;
+                                        align-items: center;
+                                    }
+                        
+                                    .custom-add-school-select .ant-checkbox-inner {
+                                        width: 24px !important;
+                                        height: 24px !important;
+                                    }
+                        
+                                    .custom-add-school-select .ant-checkbox-input {
+                                        transform: scale(2);
+                                    }
+                                `}</style>
                             <Form.Item
                                 name="utilities"
                                 label="Utilities"
                             >
                                 <Checkbox.Group
-                                    options={UTILITIES_OPTIONS}
+                                    options={UTILITY_OPTIONS}
                                     className="grid grid-cols-3 gap-2 custom-add-school-select"
                                 />
                             </Form.Item>

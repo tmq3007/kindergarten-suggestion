@@ -22,6 +22,6 @@ public class Facility {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @ManyToMany(mappedBy = "facilities", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "facilities", fetch = FetchType.LAZY)
     private Set<School> schools;
 }

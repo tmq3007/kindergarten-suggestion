@@ -1,23 +1,23 @@
 "use client";
 
-import { Badge, Button, message, Form, Skeleton } from "antd";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect } from "react";
-import {
-    useGetSchoolByIdQuery,
-    useApproveSchoolMutation,
-} from "@/redux/services/schoolListApi";
+import {Form, message} from "antd";
+import {useParams, useRouter} from "next/navigation";
+import React, {useEffect} from "react";
+import {useApproveSchoolMutation, useGetSchoolByIdQuery,} from "@/redux/services/schoolListApi";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import { nunito } from "@/lib/fonts";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
+import {SCHOOL_STATUS, SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
+import SchoolFormButton from "@/app/components/school/SchoolFormButton";
 
 export default function SchoolDetail() {
     const params = useParams();
     const schoolId = Number(params.id as string);
     const router = useRouter();
-    const { data, isError, isLoading } = useGetSchoolByIdQuery(schoolId);
+    const {data, isError, isLoading} = useGetSchoolByIdQuery(schoolId);
     const school = data?.data;
+    const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
 
     const [approveSchool] = useApproveSchoolMutation();
@@ -43,10 +43,10 @@ export default function SchoolDetail() {
             });
 
             const facilityValues: string[] = school.facilities?.map((facility) => String(facility.fid)) || [];
-            form.setFieldsValue({ facilities: facilityValues });
+            form.setFieldsValue({facilities: facilityValues});
 
             const utilityValues: string[] = school.utilities?.map((utility) => String(utility.uid)) || [];
-            form.setFieldsValue({ utilities: utilityValues });
+            form.setFieldsValue({utilities: utilityValues});
         }
     }, [school, form]);
 
@@ -136,7 +136,7 @@ export default function SchoolDetail() {
             const values = await form.validateFields();
             const response = await fetch(`http://localhost:8080/api/school/${schoolId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(values),
             });
             if (response.ok) {
@@ -150,78 +150,17 @@ export default function SchoolDetail() {
         }
     };
 
-    const getStatusText = (status: number) => {
-        switch (status) {
-            case 0: return "Saved";
-            case 1: return "Submitted";
-            case 2: return "Approved";
-            case 3: return "Rejected";
-            case 4: return "Published";
-            case 5: return "Unpublished";
-            case 6: return "Deleted";
-            default: return "Unknown";
-        }
-    };
-
-    // Xử lý hiển thị nút dựa trên status
-    const renderActionButtons = () => {
-        if (!school) return null;
-
-        const status = school.status;
-
-        return (
-            <>
-                <Button danger onClick={handleDelete} style={{ margin: '0 8px' }}>
-                    Delete
-                </Button>
-                <Link href={`/admin/management/school/edit-school?schoolId=${schoolId}`}>
-                    <Button type="primary" style={{ margin: '0 8px' }}>
-                        Edit
-                    </Button>
-                </Link>
-                {status === 0 && (
-                    <Button type="primary" onClick={handleSave} style={{ margin: '0 8px' }}>
-                        Save
-                    </Button>
-                )}
-                {status === 1 || status === 2 ? (
-                    <>
-                        <Button danger onClick={handleReject} style={{ margin: '0 8px' }}>
-                            Reject
-                        </Button>
-                        <Button type="primary" onClick={handleApprove} style={{ margin: '0 8px' }}>
-                            Approve
-                        </Button>
-                    </>
-                ) : status === 4 ? (
-                    <Button type="primary" onClick={handleUnpublish} style={{ margin: '0 8px' }}>
-                        Unpublish
-                    </Button>
-                ) : status === 5 ? (
-                    <Button type="primary" onClick={handlePublish} style={{ margin: '0 8px' }}>
-                        Publish
-                    </Button>
-                ) : null}
-            </>
-        );
-    };
-
     if (isLoading) {
         return (
             <div className="pt-2">
                 <MyBreadcrumb
                     paths={[
-                        { label: "School Management" },
-                        { label: "School Detail" },
+                        {label: 'School Management', href: '/admin/management/school/school-list'},
+                        {label: 'Add new school'},
                     ]}
                 />
-                <div className="flex items-center m-6">
-                    <span className={`${nunito.className} text-3xl font-bold mr-6`}>School Detail</span>
-                    <Skeleton.Button active shape="round" />
-                </div>
-                <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
-                    <Skeleton active paragraph={{ rows: 10 }} />
-                </div>
+                <SchoolManageTitle title={'School details'}/>
+                <SchoolFormSkeleton/>
             </div>
         );
     }
@@ -234,24 +173,35 @@ export default function SchoolDetail() {
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    { label: "School Management" },
-                    { label: "School Detail" },
+                    {label: 'School Management', href: '/admin/management/school/school-list'},
+                    {label: 'Add new school'},
                 ]}
             />
-            <div className="flex items-center m-6">
-                <span className={`${nunito.className} text-3xl font-bold mr-6`}>School Detail</span>
-                <Badge className="h-1/2 bg-red-500 py-2 px-5 rounded-xl">
-                    {getStatusText(school.status)}
-                </Badge>
-            </div>
+            <SchoolManageTitle title={'School details'} schoolStatus={schoolStatus!}/>
 
             <div className="read-only-form">
                 <SchoolForm
                     form={form}
-                    hasSubmitButton={false} // Không hiển thị Submit
                     hideImageUpload={true}
                     imageList={school.imageList || []}
-                    actionButtons={renderActionButtons()} // Truyền các nút hành động vào form
+                    hasCancelButton={false}
+                    hasDeleteButton={school.status === SCHOOL_STATUS.Submitted ||
+                        school.status === SCHOOL_STATUS.Published ||
+                        school.status === SCHOOL_STATUS.Unpublished}
+
+                    hasEditButton={school.status === SCHOOL_STATUS.Submitted ||
+                        school.status === SCHOOL_STATUS.Approved ||
+                        school.status === SCHOOL_STATUS.Published ||
+                        school.status === SCHOOL_STATUS.Unpublished}
+
+                    hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
+
+                    hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
+
+                    hasPublishButton={school.status === SCHOOL_STATUS.Approved ||
+                        school.status === SCHOOL_STATUS.Unpublished}
+
+                    hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
                 />
             </div>
 
@@ -264,12 +214,15 @@ export default function SchoolDetail() {
                     pointer-events: none;
                     background-color: #f5f5f5;
                 }
+
                 .read-only-form :global(.ant-select-selector) {
                     background-color: #f5f5f5 !important;
                 }
+
                 .read-only-form :global(.ant-checkbox-input) {
                     pointer-events: none;
                 }
+
                 .read-only-form :global(a) {
                     pointer-events: none;
                     color: #999 !important;

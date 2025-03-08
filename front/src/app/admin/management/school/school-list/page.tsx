@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
 interface SchoolVO {
   id: number;
@@ -150,46 +151,47 @@ export default function SchoolList() {
   };
 
   return (
-      <div className="pt-2">
+      <div className="pt-2 h-screen">
         <MyBreadcrumb
             paths={[
               { label: 'School Management', href: '/admin/management/school/school-list' },
               { label: 'School List' },
             ]}
         />
-        <Typography.Title level={3} className="mb-4">
-          School List
-        </Typography.Title>
-        <div className="flex justify-between items-center mb-4">
-          <Input
-              placeholder="Search by school name"
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
+        <SchoolManageTitle title={'School List'}/>
+        <div className={'bg-white p-5 rounded-lg'}>
+          <div className="flex justify-between items-center mb-4">
+            <Input
+                placeholder="Search by school name"
+                prefix={<SearchOutlined/>}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{width: 300}}
+            />
+            <Link href="/admin/management/school/add-school">
+              <Button type="primary" icon={<PlusOutlined/>}>
+                Add School
+              </Button>
+            </Link>
+          </div>
+          <Table
+              size={"small"}
+              columns={columns}
+              dataSource={tableData}
+              loading={isLoading}
+              pagination={{
+                current: page,
+                pageSize,
+                total: totalElements,
+                onChange: (newPage) => setPage(newPage),
+                position: ["bottomCenter"],
+              }}
+              locale={{emptyText: error ? "Error loading data" : "No results found"}}
+              rowClassName={getRowClassName}
+              scroll={{x: 1200, y: 600}}
+              className={'h-full'}
           />
-          <Link href="/admin/management/school/add-school">
-            <Button type="primary" icon={<PlusOutlined />}>
-              Add School
-            </Button>
-          </Link>
         </div>
-        <Table
-            size={"small"}
-            columns={columns}
-            dataSource={tableData}
-            loading={isLoading}
-            pagination={{
-              current: page,
-              pageSize,
-              total: totalElements,
-              onChange: (newPage) => setPage(newPage),
-              position: ["bottomCenter"],
-            }}
-            locale={{ emptyText: error ? "Error loading data" : "No results found" }}
-            rowClassName={getRowClassName}
-            scroll={{ x: 1200, y: 400 }}
-        />
       </div>
   );
 }
