@@ -75,4 +75,6 @@ public interface SchoolMapper {
     default Set<UtilityVO> mapUtilities(Set<Utility> utilities) {
         return utilities != null ? utilities.stream().map(utility -> new UtilityVO(utility.getUid(), utility.getName())).collect(Collectors.toSet()) : null;
     }
+
+    //School toSchoolEntityFromAddSchoolDTO(AddSchoolDTO schoolDTO);
 }

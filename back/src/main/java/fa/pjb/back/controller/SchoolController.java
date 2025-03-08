@@ -9,8 +9,12 @@ import fa.pjb.back.service.SchoolService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,10 +37,44 @@ public class SchoolController {
     public ApiResponse<SchoolVO> getSchoolInfo(@PathVariable Integer schoolId) {
         log.info("=========== school controller ===============");
         return ApiResponse.<SchoolVO>builder()
-                .code(HttpStatus.OK.value())
-                .message("Get school information successfully.")
-                .data(schoolService.getSchoolInfo(schoolId))
-                .build();
+            .code(HttpStatus.OK.value())
+            .message("Get school information successfully.")
+            .data(schoolService.getSchoolInfo(schoolId))
+            .build();
+    }
+
+    @GetMapping("/all")
+    public ApiResponse<Page<SchoolVO>> getAllSchools(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String province,
+        @RequestParam(required = false) String district,
+        @RequestParam(required = false) String street,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String phone) {
+        log.info("=========== school controller: getAllSchools ===============");
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return ApiResponse.<Page<SchoolVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Get all schools successfully.")
+            .data(schoolService.getAllSchools(name, province, district, street, email, phone, pageable))
+            .build();
+    }
+
+    @GetMapping("/by-user/{userId}")
+    public ApiResponse<Page<SchoolVO>> getSchoolsByUserId(
+        @PathVariable Integer userId,
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String name) {
+        log.info("=========== school controller: getSchoolsByUserId ===============");
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return ApiResponse.<Page<SchoolVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Get schools by user ID successfully.")
+            .data(schoolService.getSchoolsByUserId(userId, pageable, name))
+            .build();
     }
     @GetMapping("/check-email/{email}")
     public ApiResponse<String> checkEmail(@PathVariable String email) {
