@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,6 +26,7 @@ import java.util.Collections;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
     public static final String SWAGGER_UI_URL = "/swagger-ui/**";
@@ -53,14 +56,14 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/reset-password").permitAll()
                                 .requestMatchers("/api/auth/check-email").permitAll()
                                 .requestMatchers("/api/parent/register").permitAll()
-                                .requestMatchers(("/api/school/by-user/**")).permitAll()
-//                                .anyRequest().permitAll()
-                                .anyRequest().authenticated()
+                                .requestMatchers("/api/school/review/**").permitAll()
+                                .anyRequest().permitAll()
+//                                .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

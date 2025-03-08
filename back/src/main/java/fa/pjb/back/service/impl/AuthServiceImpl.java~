@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent) {
+    public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkAdmin) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
         // Authenticate the token using AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
@@ -72,11 +72,11 @@ public class AuthServiceImpl implements AuthService {
         // Extract UserDetails from Authentication
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        // If checkParent = true, check the user's role and deny access if they are not ADMIN
-        if (checkParent) {
-            boolean isParent = authorities.stream()
-                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_PARENT.toString()));
-            if (isParent) {
+        // If checkAdmin = true, check the user's role and deny access if they are not ADMIN
+        if (checkAdmin) {
+            boolean isAdmin = authorities.stream()
+                    .anyMatch(authority -> authority.getAuthority().equals(ERole.ROLE_ADMIN.toString()));
+            if (!isAdmin) {
                 throw new AccessDeniedException("Access denied");
             }
         }
@@ -101,12 +101,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginVO loginAdmin(LoginDTO loginDTO) {
+    public LoginVO loginByAdmin(LoginDTO loginDTO) {
         return loginWithCondition(loginDTO, true);
     }
 
     @Override
-    public LoginVO loginPublic(LoginDTO loginDTO) {
+    public LoginVO loginByParent(LoginDTO loginDTO) {
         return loginWithCondition(loginDTO, false);
     }
 

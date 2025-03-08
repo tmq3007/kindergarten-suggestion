@@ -49,8 +49,6 @@ springdoc:
 application-description: '@project.description@'
 application-version: '@project.version@'
 access-token-exp: 600000
-
-
 refresh-token-exp: 60000000
 csrf-token-exp: 600000
 forgot-password-token-exp: 300000

@@ -1,10 +1,9 @@
-package fa.pjb.back.mapper;
+package fa.pjb.back.model.mapper;
 
 import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.vo.ReviewVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 

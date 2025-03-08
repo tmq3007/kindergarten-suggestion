@@ -8,6 +8,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import fa.pjb.back.model.enums.FileFolderEnum;
@@ -95,11 +96,16 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             File uploadFile = drive.files().create(fileMetaData, fileContent)
                     .setFields("id, webContentLink, webViewLink, size")
                     .execute();
-            String imageUrl = "https://drive.google.com/uc?id=" + uploadFile.getId();
+            // Set file permissions to be publicly viewable
+            Permission permission = new Permission()
+                    .setType("anyone")
+                    .setRole("reader");
+            drive.permissions().create(uploadFile.getId(), permission).execute();
 
-            return new ImageVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(),uploadFile.getId(), imageUrl);
+            String imageUrl = "https://drive.google.com/uc?id=" + uploadFile.getId();
+            return new ImageVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(), uploadFile.getId(), imageUrl);
         } catch (IOException | GeneralSecurityException e) {
-            return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed","", e.getMessage());
+            return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.getMessage());
         } finally {
             boolean deleted = file.delete() && resizedFile.delete();
             if (!deleted) {
@@ -115,7 +121,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
 
         List<Future<ImageVO>> futures = new ArrayList<>();
         for (java.io.File file : files) {
-            futures.add(executor.submit(() -> uploadImage(file,fileNamePrefix,fileFolder)));
+            futures.add(executor.submit(() -> uploadImage(file, fileNamePrefix, fileFolder)));
         }
 
         // Wait for all uploads to complete
@@ -136,15 +142,15 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             Drive drive = getDriveService();
             drive.files().delete(fileId).execute();
             log.info("File deleted successfully: {}", fileId);
-            return new ImageVO(200, "File deleted successfully", 0L, "Deleted",fileId, "File deleted successfully.");
+            return new ImageVO(200, "File deleted successfully", 0L, "Deleted", fileId, "File deleted successfully.");
         } catch (IOException | GeneralSecurityException e) {
             log.error("Failed to delete file: {}", e.getMessage());
-            return new ImageVO(500, "Failed to delete file", 0L,fileId, "Failed", e.getMessage());
+            return new ImageVO(500, "Failed to delete file", 0L, fileId, "Failed", e.getMessage());
         }
     }
 
-    public List<java.io.File>  convertMultiPartFileToFile(List<MultipartFile> list) throws IOException {
-        List<java.io.File> res  = new ArrayList<>();
+    public List<java.io.File> convertMultiPartFileToFile(List<MultipartFile> list) throws IOException {
+        List<java.io.File> res = new ArrayList<>();
         assert list != null;
         for (MultipartFile multipartFile : list) {
             java.io.File tempFile = java.io.File.createTempFile("temp", null);
