@@ -1,6 +1,6 @@
 import React from 'react';
 import {Checkbox, Form, Skeleton} from 'antd';
-import {FACILITIES_OPTIONS, UTILITIES_OPTIONS} from '@/lib/constants';
+import {FACILITY_OPTIONS, UTILITY_OPTIONS} from '@/lib/constants';
 
 const SchoolFormSkeleton: React.FC = () => {
     return (
@@ -120,7 +120,7 @@ const SchoolFormSkeleton: React.FC = () => {
                                 label="Facilities"
                             >
                                 <Checkbox.Group
-                                    options={FACILITIES_OPTIONS}
+                                    options={FACILITY_OPTIONS}
                                     className="grid grid-cols-3 gap-2 custom-add-school-select"
                                 />
                             </Form.Item>
@@ -144,7 +144,7 @@ const SchoolFormSkeleton: React.FC = () => {
                                 label="Utilities"
                             >
                                 <Checkbox.Group
-                                    options={UTILITIES_OPTIONS}
+                                    options={UTILITY_OPTIONS}
                                     className="grid grid-cols-3 gap-2 custom-add-school-select"
                                 />
                             </Form.Item>

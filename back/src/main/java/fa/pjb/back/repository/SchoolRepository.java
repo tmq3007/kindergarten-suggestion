@@ -6,10 +6,12 @@ import org.springframework.data.domain.Pageable;
 import fa.pjb.back.model.entity.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SchoolRepository extends JpaRepository<School, Integer> {
@@ -19,8 +21,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
 
     boolean existsByEmail(String email);
 
-
-  @Query("SELECT s FROM School s " +
+    @Query("SELECT s FROM School s " +
       "JOIN SchoolOwner so ON s.id = so.school.id " +
       "WHERE so.id = :userId " +
       "AND s.status != 0 " +

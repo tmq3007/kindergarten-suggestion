@@ -2,6 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolVO;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.model.vo.ImageVO;
@@ -44,7 +45,7 @@ public class SchoolController {
     }
 
     @GetMapping("/all")
-    public ApiResponse<Page<SchoolVO>> getAllSchools(
+    public ApiResponse<Page<SchoolListVO>> getAllSchools(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String name,
@@ -55,7 +56,7 @@ public class SchoolController {
         @RequestParam(required = false) String phone) {
         log.info("=========== school controller: getAllSchools ===============");
         Pageable pageable = PageRequest.of(page - 1, size);
-        return ApiResponse.<Page<SchoolVO>>builder()
+        return ApiResponse.<Page<SchoolListVO>>builder()
             .code(HttpStatus.OK.value())
             .message("Get all schools successfully.")
             .data(schoolService.getAllSchools(name, province, district, street, email, phone, pageable))

@@ -5,7 +5,7 @@ export const ROLES = {
 } as const;
 
 //School Options
-export const FACILITIES_OPTIONS = [
+export const FACILITY_OPTIONS = [
     {label: "Outdoor playground", value: "0"},
     {label: "Camera", value: "1"},
     {label: "Swimming pool", value: "2"},
@@ -16,7 +16,7 @@ export const FACILITIES_OPTIONS = [
     {label: "STEM room", value: "7"}
 ];
 
-export const UTILITIES_OPTIONS = [
+export const UTILITY_OPTIONS = [
     {label: "School bus", value: "0"},
     {label: "Breakfast", value: "1"},
     {label: "Afterschool care", value: "2"},
@@ -26,7 +26,7 @@ export const UTILITIES_OPTIONS = [
     {label: "E-Contact book", value: "6"}
 ];
 
-export const SCHOOL_STATUSES_OPTIONS = [
+export const SCHOOL_STATUS_OPTIONS = [
     {label: "Saved", value: "0"},
     {label: "Submitted", value: "1"},
     {label: "Approved", value: "2"},
@@ -36,7 +36,18 @@ export const SCHOOL_STATUSES_OPTIONS = [
     {label: "Deleted", value: "6"}
 ];
 
-export const EDUCATION_METHODS_OPTIONS = [
+export const SCHOOL_STATUS = {
+    Saved: 0,
+    Submitted: 1,
+    Approved: 2,
+    Rejected: 3,
+    Published: 4,
+    Unpublished: 5,
+    Deleted: 6
+};
+
+
+export const EDUCATION_METHOD_OPTIONS = [
     {label: "Montessori", value: "0"},
     {label: "STEM", value: "1"},
     {label: "Steiner", value: "2"},
@@ -46,7 +57,7 @@ export const EDUCATION_METHODS_OPTIONS = [
     {label: "Glenn Doman", value: "6"}
 ];
 
-export const SCHOOL_TYPES_OPTIONS = [
+export const SCHOOL_TYPE_OPTIONS = [
     {label: "Public", value: "0"},
     {label: "International", value: "1"},
     {label: "Private", value: "2"},
@@ -54,7 +65,7 @@ export const SCHOOL_TYPES_OPTIONS = [
     {label: "International Bilingual", value: "4"}
 ];
 
-export const CHILD_RECEIVING_AGES_OPTIONS = [
+export const CHILD_RECEIVING_AGE_OPTIONS = [
     {label: "6m - 1y", value: "0"},
     {label: "1y - 3y", value: "1"},
     {label: "3y - 6y", value: "2"}

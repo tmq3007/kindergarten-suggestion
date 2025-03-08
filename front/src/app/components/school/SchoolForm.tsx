@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { Checkbox, Form, Image, Input, InputNumber, Select, Upload, UploadFile, Collapse } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
-import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
-import { useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery } from '@/redux/services/addressApi';
+import React, {useEffect, useState} from 'react';
+import {Checkbox, Collapse, Form, Image, Input, InputNumber, Select, Upload, UploadFile} from 'antd';
+import {InboxOutlined} from '@ant-design/icons';
+import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
+import {useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery} from '@/redux/services/addressApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
-import {
-    CHILD_RECEIVING_AGES_OPTIONS,
-    EDUCATION_METHODS_OPTIONS,
-    FACILITIES_OPTIONS,
-    SCHOOL_TYPES_OPTIONS,
-    UTILITIES_OPTIONS,
-} from '@/lib/constants';
+
 import SchoolFormButton from './SchoolFormButton';
 import MyEditor from "@/app/components/common/MyEditor";
-import { SchoolDTO, useAddSchoolMutation, useLazyCheckSchoolEmailQuery } from '@/redux/services/schoolApi';
+import {SchoolDTO, useAddSchoolMutation, useLazyCheckSchoolEmailQuery} from '@/redux/services/schoolApi';
+import {
+    CHILD_RECEIVING_AGE_OPTIONS,
+    EDUCATION_METHOD_OPTIONS,
+    FACILITY_OPTIONS,
+    SCHOOL_TYPE_OPTIONS, UTILITY_OPTIONS
+} from "@/lib/constants";
 
-const { Option } = Select;
-const { Panel } = Collapse;
+const {Option} = Select;
+const {Panel} = Collapse;
 
 interface FieldType {
     name: string;
@@ -51,8 +51,15 @@ interface FieldType {
 
 interface SchoolFormFields {
     form?: any;
-    hasSaveDraftButton?: boolean;
+    hasCancelButton?: boolean;
+    hasSaveButton?: boolean;
     hasSubmitButton?: boolean;
+    hasDeleteButton?: boolean;
+    hasEditButton?: boolean;
+    hasRejectButton?: boolean;
+    hasApproveButton?: boolean;
+    hasPublishButton?: boolean;
+    hasUnpublishButton?: boolean;
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
     actionButtons?: React.ReactNode; // Prop để truyền các nút hành động
@@ -60,8 +67,15 @@ interface SchoolFormFields {
 
 const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     form: externalForm,
-                                                    hasSaveDraftButton,
+                                                    hasCancelButton,
+                                                    hasSaveButton,
                                                     hasSubmitButton,
+                                                    hasDeleteButton,
+                                                    hasEditButton,
+                                                    hasRejectButton,
+                                                    hasApproveButton,
+                                                    hasPublishButton,
+                                                    hasUnpublishButton,
                                                     hideImageUpload = false,
                                                     imageList = [],
                                                     actionButtons, // Nhận các nút hành động
@@ -81,13 +95,17 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     // Hooks
     const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
-    const [addSchool, { data: addSchoolData, isLoading: addSchoolIsLoading, error: addSchoolError }] = useAddSchoolMutation();
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
-    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
-    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
+    const [addSchool, {
+        data: addSchoolData,
+        isLoading: addSchoolIsLoading,
+        error: addSchoolError
+    }] = useAddSchoolMutation();
+    const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
+    const {data: provinces, isLoading: isLoadingProvince} = useGetProvincesQuery();
+    const {data: districts, isLoading: isLoadingDistrict} = useGetDistrictsQuery(selectedProvince!, {
         skip: !selectedProvince,
     });
-    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
+    const {data: wards, isLoading: isLoadingWard} = useGetWardsQuery(selectedDistrict!, {
         skip: !selectedDistrict,
     });
 
@@ -123,8 +141,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
         const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
 
         const fileList: File[] = (values.image || [])
-        .filter((file) => file.originFileObj)
-        .map((file) => file.originFileObj as File);
+            .filter((file) => file.originFileObj)
+            .map((file) => file.originFileObj as File);
 
         const finalValues: SchoolDTO = {
             ...values,
@@ -139,14 +157,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     };
 
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({ district: undefined, ward: undefined, street: undefined });
+        form.setFieldsValue({district: undefined, ward: undefined, street: undefined});
         setSelectedProvince(provinceCode);
         setSelectedDistrict(undefined);
         setSelectedWard(undefined);
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ ward: undefined, street: undefined });
+        form.setFieldsValue({ward: undefined, street: undefined});
         setSelectedDistrict(districtCode);
         setSelectedWard(undefined);
     };
@@ -217,7 +235,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                 size='middle'
                 form={form}
                 onFinish={onFinish}
-                labelCol={{ span: 6, className: 'font-bold' }}
+                labelCol={{span: 6, className: 'font-bold'}}
                 labelAlign='left'
                 labelWrap
                 layout="horizontal"
@@ -228,24 +246,24 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="name"
                             label="School Name"
-                            rules={[{ required: true, message: 'Please enter school name' }]}
+                            rules={[{required: true, message: 'Please enter school name'}]}
                         >
-                            <Input placeholder="Enter School Name here..." />
+                            <Input placeholder="Enter School Name here..."/>
                         </Form.Item>
 
                         <Form.Item
                             name="schoolType"
                             label="School Type"
-                            rules={[{ required: true, message: 'Please select school type' }]}
+                            rules={[{required: true, message: 'Please select school type'}]}
                         >
-                            <Select placeholder="Select a type..." options={SCHOOL_TYPES_OPTIONS} />
+                            <Select placeholder="Select a type..." options={SCHOOL_TYPE_OPTIONS}/>
                         </Form.Item>
 
                         <Form.Item label="Address" className='space-y-4' required>
                             <Form.Item
                                 name="province"
                                 className="mb-5"
-                                rules={[{ required: true, message: 'Please select a province' }]}
+                                rules={[{required: true, message: 'Please select a province'}]}
                             >
                                 <Select
                                     onChange={(districtName) => {
@@ -267,7 +285,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             <Form.Item
                                 name="district"
                                 className="mb-5"
-                                rules={[{ required: true, message: 'Please select a district' }]}
+                                rules={[{required: true, message: 'Please select a district'}]}
                             >
                                 <Select
                                     loading={isLoadingDistrict}
@@ -290,7 +308,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             <Form.Item
                                 name="ward"
                                 className="mb-5"
-                                rules={[{ required: true, message: 'Please select a ward' }]}
+                                rules={[{required: true, message: 'Please select a ward'}]}
                             >
                                 <Select
                                     loading={isLoadingWard}
@@ -314,7 +332,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 name="street"
                                 className='mb-4'
                             >
-                                <Input placeholder="Enter School Address here..." />
+                                <Input placeholder="Enter School Address here..."/>
                             </Form.Item>
                         </Form.Item>
 
@@ -341,8 +359,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     loading={isLoadingCountry}
                                     value={selectedCountry?.code || ''}
                                     onChange={handleCountryChange}
-                                    dropdownStyle={{ width: 250 }}
-                                    style={{ width: 120, borderRight: "1px solid #ccc" }}
+                                    dropdownStyle={{width: 250}}
+                                    style={{width: 120, borderRight: "1px solid #ccc"}}
                                     optionLabelProp="label2"
                                     showSearch
                                     filterOption={(input, option) =>
@@ -356,13 +374,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             label={country.label}
                                             label2={
                                                 <span className="flex items-center">
-                                                    <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2 intrinsic" preview={false} />
+                                                    <Image src={country.flag} alt={country.label} width={20} height={14}
+                                                           className="mr-2 intrinsic" preview={false}/>
                                                     {country.code} {country.dialCode}
                                                 </span>
                                             }
                                         >
                                             <div className="flex items-center">
-                                                <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2 intrinsic" />
+                                                <Image src={country.flag} alt={country.label} width={20} height={14}
+                                                       className="mr-2 intrinsic"/>
                                                 {country.dialCode} - {country.label}
                                             </div>
                                         </Select.Option>
@@ -370,13 +390,13 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 </Select>
                                 <Form.Item
                                     name="phone"
-                                    rules={[{ required: true, message: 'Please input your phone number!' }]}
+                                    rules={[{required: true, message: 'Please input your phone number!'}]}
                                     noStyle
                                 >
                                     <Input
                                         placeholder="Enter your phone number"
                                         onChange={handlePhoneNumberChange}
-                                        style={{ flex: 1, border: "none", boxShadow: "none" }}
+                                        style={{flex: 1, border: "none", boxShadow: "none"}}
                                     />
                                 </Form.Item>
                             </div>
@@ -385,17 +405,17 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="receivingAge"
                             label="Child receiving age"
-                            rules={[{ required: true, message: 'Please select age range' }]}
+                            rules={[{required: true, message: 'Please select age range'}]}
                         >
-                            <Select placeholder="Select a category..." options={CHILD_RECEIVING_AGES_OPTIONS} />
+                            <Select placeholder="Select a category..." options={CHILD_RECEIVING_AGE_OPTIONS}/>
                         </Form.Item>
 
                         <Form.Item
                             name="educationMethod"
                             label="Education method"
-                            rules={[{ required: true, message: 'Please select education method' }]}
+                            rules={[{required: true, message: 'Please select education method'}]}
                         >
-                            <Select placeholder="Select a category..." options={EDUCATION_METHODS_OPTIONS} />
+                            <Select placeholder="Select a category..." options={EDUCATION_METHOD_OPTIONS}/>
                         </Form.Item>
 
                         <Form.Item label="Fee/Month (VND)" required>
@@ -403,7 +423,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 <Form.Item
                                     name="feeFrom"
                                     label="From"
-                                    rules={[{ required: true, message: "Please select fee from" }]}
+                                    rules={[{required: true, message: "Please select fee from"}]}
                                 >
                                     <InputNumber
                                         placeholder="From"
@@ -413,9 +433,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         onChange={(value) => {
                                             const feeTo = form.getFieldValue("feeTo");
                                             if (feeTo !== undefined && value !== null && value > feeTo) {
-                                                form.setFieldsValue({ feeTo: value });
+                                                form.setFieldsValue({feeTo: value});
                                             }
-                                            form.setFieldsValue({ feeFrom: value });
+                                            form.setFieldsValue({feeFrom: value});
                                         }}
                                     />
                                 </Form.Item>
@@ -424,8 +444,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     label="To"
                                     dependencies={["feeFrom"]}
                                     rules={[
-                                        { required: true, message: "Please select fee to" },
-                                        ({ getFieldValue }) => ({
+                                        {required: true, message: "Please select fee to"},
+                                        ({getFieldValue}) => ({
                                             validator(_, value) {
                                                 const feeFrom = getFieldValue("feeFrom");
                                                 if (!value || feeFrom <= value) {
@@ -441,7 +461,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         className="w-full"
                                         min={form.getFieldValue("feeFrom") || 0}
                                         step={100000}
-                                        onChange={(value) => form.setFieldsValue({ feeTo: value })}
+                                        onChange={(value) => form.setFieldsValue({feeTo: value})}
                                     />
                                 </Form.Item>
                             </div>
@@ -451,13 +471,13 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             name="website"
                             label="School Website"
                         >
-                            <Input placeholder="Enter School Website here..." />
+                            <Input placeholder="Enter School Website here..."/>
                         </Form.Item>
                     </div>
                     <div>
                         <Form.Item label="Facilities" name="facilities">
                             <Checkbox.Group
-                                options={FACILITIES_OPTIONS}
+                                options={FACILITY_OPTIONS}
                                 value={facilities}
                                 className="grid grid-cols-3 gap-2 custom-add-school-select"
                             />
@@ -465,7 +485,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
                         <Form.Item label="Utilities" name="utilities">
                             <Checkbox.Group
-                                options={UTILITIES_OPTIONS}
+                                options={UTILITY_OPTIONS}
                                 value={utilities}
                                 className="grid grid-cols-3 gap-2 custom-add-school-select"
                             />
@@ -490,16 +510,26 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             name="description"
                             label="School introduction"
                         >
-                            <MyEditor description={form.getFieldValue("description") || undefined} />
+                            <MyEditor
+                                description={form.getFieldValue("description") || undefined}
+                                onChange={(value) => form.setFieldsValue({description: value})}
+                            />
                         </Form.Item>
 
                         <Form.Item label="School image">
                             {imageList.length > 0 ? (
-                                <Collapse defaultActiveKey={[]} style={{ background: '#f5f5f5', borderRadius: '4px', marginBottom: '16px' }}>
-                                    <Panel header={`View ${imageList.length} image${imageList.length > 1 ? 's' : ''}`} key="1">
-                                        <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '8px' }}>
+                                <Collapse defaultActiveKey={[]}
+                                          style={{background: '#f5f5f5', borderRadius: '4px', marginBottom: '16px'}}>
+                                    <Panel header={`View ${imageList.length} image${imageList.length > 1 ? 's' : ''}`}
+                                           key="1">
+                                        <div style={{maxHeight: '300px', overflowY: 'auto', padding: '8px'}}>
                                             {imageList.map((image, index) => (
-                                                <div key={index} style={{ display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+                                                <div key={index} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '8px 0',
+                                                    borderBottom: '1px solid #f0f0f0'
+                                                }}>
                                                     {image.url ? (
                                                         <Image
                                                             src={image.url}
@@ -511,7 +541,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                             onError={() => console.log(`Failed to load image: ${image.url}`)}
                                                         />
                                                     ) : (
-                                                        <span style={{ color: 'red', marginRight: '8px' }}>Image not available</span>
+                                                        <span style={{color: 'red', marginRight: '8px'}}>Image not available</span>
                                                     )}
                                                     <span>{image.filename || `Image ${index + 1}`}</span>
                                                 </div>
@@ -529,7 +559,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         accept="image/*"
                                     >
                                         <p className="ant-upload-drag-icon">
-                                            <InboxOutlined />
+                                            <InboxOutlined/>
                                         </p>
                                         <p className="ant-upload-text">Click or drag file to this area to upload</p>
                                         <p className="ant-upload-text">Upload pictures of format
@@ -544,17 +574,22 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                     </div>
                 </div>
                 {/* Thêm Form.Item cho các nút ở đáy form */}
-                <Form.Item style={{ textAlign: 'center', marginTop: '16px' }}>
+                <Form.Item style={{textAlign: 'center', marginTop: '16px'}}>
                     {actionButtons}
                 </Form.Item>
-                {hasSaveDraftButton || hasSubmitButton ? (
                     <SchoolFormButton
                         form={form}
-                        hasSaveDraftButton={hasSaveDraftButton}
+                        hasCancelButton={hasCancelButton}
+                        hasSaveButton={hasSaveButton}
                         hasSubmitButton={hasSubmitButton}
+                        hasDeleteButton={hasDeleteButton}
+                        hasEditButton={hasEditButton}
+                        hasRejectButton={hasRejectButton}
+                        hasApproveButton={hasApproveButton}
+                        hasPublishButton={hasPublishButton}
+                        hasUnpublishButton={hasUnpublishButton}
                         isAddSchoolLoading={addSchoolIsLoading}
                     />
-                ) : null}
             </Form>
         </div>
     );

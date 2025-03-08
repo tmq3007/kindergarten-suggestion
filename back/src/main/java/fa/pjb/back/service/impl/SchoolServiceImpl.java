@@ -13,6 +13,7 @@ import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.Utility;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.ImageVO;
+import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolVO;
 import fa.pjb.back.repository.FacilityRepository;
 import fa.pjb.back.repository.MediaRepository;
@@ -137,11 +138,11 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public Page<SchoolVO> getAllSchools(String name, String province, String district,
-        String street, String email, String phone, Pageable pageable) {
+    public Page<SchoolListVO> getAllSchools(String name, String province, String district,
+                                            String street, String email, String phone, Pageable pageable) {
         log.info("=========== school service: getAllSchools ===============");
         Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
-        return schoolPage.map(schoolMapper::toSchoolVO);
+        return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 
     @Override

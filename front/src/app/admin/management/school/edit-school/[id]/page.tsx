@@ -3,11 +3,11 @@ import {useParams} from "next/navigation";
 import {nunito} from "@/lib/fonts";
 import {Badge, Form} from "antd";
 import {useGetSchoolQuery} from "@/redux/services/schoolApi";
-import {useEffect} from "react";
+import React, {useEffect} from "react";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import {SCHOOL_STATUSES_OPTIONS} from "@/lib/constants";
+import {SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
 import clsx from "clsx";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
@@ -26,7 +26,7 @@ export default function EditSchool() {
     const schoolId = params.id;
     const {data, isLoading} = useGetSchoolQuery(Number(schoolId));
     const school = data?.data;
-    const schoolStatus = SCHOOL_STATUSES_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
+    const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -69,9 +69,14 @@ export default function EditSchool() {
 
     return (
         <>
-            <MyBreadcrumb paths={[{label: 'School Management'}, {label: 'Edit school'}]}/>
+            <MyBreadcrumb
+                paths={[
+                    {label: 'School Management', href: '/admin/management/school/school-list'},
+                    {label: 'Edit school'},
+                ]}
+            />
             <SchoolManageTitle title={'Edit School'} schoolStatus={schoolStatus!}/>
-            <SchoolForm form={form} hasSubmitButton={true}/>
+            <SchoolForm form={form} hasCancelButton={true} hasSubmitButton={true}/>
         </>
     );
 }

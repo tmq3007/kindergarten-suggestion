@@ -1,5 +1,5 @@
 'use client';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {Fragment, useEffect, useRef, useState} from 'react';
 import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
@@ -84,7 +84,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     };
 
     return (
-        <>
+        <Fragment>
             {contextHolder}
             <Layout hasSider>
                 <ConfigProvider
@@ -135,7 +135,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                     {
                                         key: '1',
                                         icon: <HomeOutlined/>,
-                                        label: <Link href="/school-management">School Management</Link>,
+                                        label: <Link href="/admin/management/school/school-list">School Management</Link>,
                                     },
                                     {
                                         key: '2',
@@ -185,7 +185,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             }}
                         />
                         <Space className={'md:hidden flex justify-evenly w-full h-full'}>
-                            <Link href="/school-management">
+                            <Link href="/admin/management/school/school-list">
                                 <HomeOutlined/>
                             </Link>
                             <Link href="/user-management">
@@ -224,7 +224,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         style={{
                             padding: 20,
                             minHeight: 280,
-
                         }}
                     >
                         {children}
@@ -247,7 +246,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                     <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
                 </Modal>
             </Layout>
-        </>
-
+        </Fragment>
     );
 }
