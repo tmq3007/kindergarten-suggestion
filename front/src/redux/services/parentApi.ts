@@ -19,6 +19,20 @@ export type ParentDTO = {
     street: string;
     role: "ROLE_PARENT"; // Define fixed value of role
 };
+
+export type ParentVO = {
+    username?: string;
+    email: string;
+    status?: Boolean;
+    fullname: string;
+    phone: string;
+    dob: string; // Because TypeScript does not have LocalDate, use string to represent ISO date
+    district: string;
+    ward: string;
+    province: string;
+    street: string;
+    role: "ROLE_PARENT"; // Define fixed value of role
+};
 export const parentApi = createApi({
     reducerPath: "parentApi",
     baseQuery: baseQueryWithReauth,
@@ -32,9 +46,9 @@ export const parentApi = createApi({
         //     }),
         //     invalidatesTags: ["Parent"], // Clear cache when creation is successful
         // }),
-        getParentById: build.query<ApiResponse<ParentDTO>, number>({
-            query: (parentId) => ({
-                url:`parent/${parentId}`,
+        getParentById: build.query<ApiResponse<ParentVO>, number>({
+            query: (userId) => ({
+                url:`parent/${userId}`,
                 method:"GET",
             }) , // API endpoint to get Parent by ID
             transformErrorResponse: (response: { status: string | number }, meta, arg) => response.status,
