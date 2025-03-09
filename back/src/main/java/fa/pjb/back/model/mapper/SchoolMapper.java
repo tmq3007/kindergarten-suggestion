@@ -6,10 +6,7 @@ import fa.pjb.back.model.entity.Facility;
 import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.Utility;
-import fa.pjb.back.model.vo.FacilityVO;
-import fa.pjb.back.model.vo.MediaVO;
-import fa.pjb.back.model.vo.SchoolVO;
-import fa.pjb.back.model.vo.UtilityVO;
+import fa.pjb.back.model.vo.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -26,6 +23,7 @@ public interface SchoolMapper {
     @Mapping(target = "imageList", source = "images", qualifiedByName = "mapImageUrl")
     SchoolVO toSchoolVO(School school);
 
+    SchoolListVO toSchoolListVO(School school);
 
     SchoolDTO toSchoolDTO(School school);
 
@@ -63,16 +61,18 @@ public interface SchoolMapper {
     @Named("mapImageUrl")
     default List<MediaVO> mapImageUrl(List<Media> media) {
         if (media == null) return null;
-        return media.stream().map(media1 -> new MediaVO(media1.getUrl(),media1.getFilename(),media1.getCloudId())).toList();
+        return media.stream().map(media1 -> new MediaVO(media1.getUrl(), media1.getFilename(), media1.getCloudId())).toList();
     }
 
     @Named("facilityToId")
     default Set<FacilityVO> mapFacilities(Set<Facility> facilities) {
-        return facilities != null ? facilities.stream().map(facility -> new FacilityVO(facility.getFid(),facility.getName())).collect(Collectors.toSet()) : null;
+        return facilities != null ? facilities.stream().map(facility -> new FacilityVO(facility.getFid(), facility.getName())).collect(Collectors.toSet()) : null;
     }
 
     @Named("utilityToId")
     default Set<UtilityVO> mapUtilities(Set<Utility> utilities) {
         return utilities != null ? utilities.stream().map(utility -> new UtilityVO(utility.getUid(), utility.getName())).collect(Collectors.toSet()) : null;
     }
+
+    //School toSchoolEntityFromAddSchoolDTO(AddSchoolDTO schoolDTO);
 }

@@ -1,9 +1,11 @@
 package fa.pjb.back.model.vo;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 public record SchoolVO(
+        Integer id,
         Byte status,
         String name,
         Byte schoolType,
@@ -17,9 +19,11 @@ public record SchoolVO(
         Byte educationMethod,
         Integer feeFrom,
         Integer feeTo,
+        String website,
         String description,
         Set<FacilityVO> facilities,
         Set<UtilityVO> utilities,
-        List<MediaVO> imageList
+        List<MediaVO> imageList,
+        Date posted_date
 ) {
 }

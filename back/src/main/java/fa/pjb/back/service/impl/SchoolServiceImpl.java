@@ -8,7 +8,6 @@ import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.PhoneExistedException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.Facility;
 import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
@@ -16,6 +15,7 @@ import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.Utility;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.ImageVO;
+import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolVO;
 import fa.pjb.back.repository.FacilityRepository;
 import fa.pjb.back.repository.MediaRepository;
@@ -24,20 +24,19 @@ import fa.pjb.back.repository.UtilityRepository;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
@@ -49,7 +48,6 @@ import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 public class SchoolServiceImpl implements SchoolService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif");
-
 
     private final SchoolRepository schoolRepository;
     private final FacilityRepository facilityRepository;
@@ -65,7 +63,6 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public SchoolVO getSchoolInfo(Integer schoolId) {
-        log.info("=========== school service ===============");
         School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
         return schoolMapper.toSchoolVO(school);
     }
@@ -148,6 +145,21 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolVO(newSchool);
     }
 
+    @Override
+    public Page<SchoolListVO> getAllSchools(String name, String province, String district,
+                                            String street, String email, String phone, Pageable pageable) {
+        log.info("=========== school service: getAllSchools ===============");
+        Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
+        return schoolPage.map(schoolMapper::toSchoolListVO);
+    }
+
+    @Override
+    public Page<SchoolVO> getSchoolsByUserId(Integer userId, Pageable pageable, String name) {
+        log.info("=========== school service: getSchoolsByUserId ===============");
+        Page<School> schoolPage = schoolRepository.findSchoolsByUserId(userId, name, pageable);
+        return schoolPage.map(schoolMapper::toSchoolVO);
+    }
+
     /**
      * Updates the status of a school based on the provided status code.
      **/
@@ -222,5 +234,10 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
+    }
+
+    @Override
+    public SchoolVO editSchoolByAdmin(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
+        return null;
     }
 }
