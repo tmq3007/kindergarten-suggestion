@@ -32,7 +32,7 @@ const AdminLoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error
         dispatch(setPreviousPage(currentPath)); // Save before state
     };
 
-    useAuthRedirect(data, error, messageApi, '/admin/management', false);
+    useAuthRedirect(data, error, messageApi, '/admin/management/school/school-list', false);
 
     const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
         const loginDTO: LoginDTO = {

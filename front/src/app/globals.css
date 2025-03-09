@@ -155,3 +155,22 @@
 /*     padding: 10px;*/
 /*   }*/
 /* }*/
+ /* CSS cho bảng xen kẽ */
+ .table-row-light {
+   background-color: #ffffff; /* Màu trắng cho dòng chẵn */
+ }
+
+ .table-row-dark {
+   background-color: #e6f0fa; /* Màu xanh lam nhạt cho dòng lẻ */
+ }
+
+ /* Đảm bảo các ô trong cột cố định cũng có màu nền xen kẽ */
+ .ant-table-tbody > tr.table-row-light > td.ant-table-cell-fix-left,
+ .ant-table-tbody > tr.table-row-light > td.ant-table-cell-fix-right {
+   background-color: #ffffff; /* Đồng bộ với table-row-light */
+ }
+
+ .ant-table-tbody > tr.table-row-dark > td.ant-table-cell-fix-left,
+ .ant-table-tbody > tr.table-row-dark > td.ant-table-cell-fix-right {
+   background-color: #e6f0fa; /* Đồng bộ với table-row-dark */
+ }

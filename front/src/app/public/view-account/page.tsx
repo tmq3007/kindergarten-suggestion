@@ -23,6 +23,7 @@ import countriesKeepZero from '@/lib/countriesKeepZero';
 import ProfileSidebar from "@/app/public/view-account/ProfileSideBar";
 import UserFormSkeleton from "@/app/components/skeleton/UserFormSkeleton";
 import background from "@public/background2.jpg";
+import {handleDistrictChange, handleProvinceChange, handleWardChange} from "@/lib/addressUtils";
 
 const {Option} = Select;
 const {TabPane} = Tabs;
@@ -174,20 +175,15 @@ const Profile = () => {
     };
 
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({district: undefined, ward: undefined, street: undefined});
-        setSelectedProvince(provinceCode);
-        setSelectedDistrict(undefined);
-        setSelectedWard(undefined);
+        handleProvinceChange(provinceCode, form, setSelectedProvince, setSelectedDistrict, setSelectedWard);
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ward: undefined, street: undefined});
-        setSelectedDistrict(districtCode);
-        setSelectedWard(undefined);
+        handleDistrictChange(districtCode, form, setSelectedDistrict, setSelectedWard);
     };
 
     const onWardChange = (wardCode: string) => {
-        setSelectedWard(wardCode);
+        handleWardChange(wardCode, setSelectedWard);
     };
 
     useEffect(() => {
