@@ -57,7 +57,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/check-email").permitAll()
                                 .requestMatchers("/api/parent/register").permitAll()
                                 .requestMatchers("/api/school/review/**").permitAll()
-//                                .anyRequest().permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)

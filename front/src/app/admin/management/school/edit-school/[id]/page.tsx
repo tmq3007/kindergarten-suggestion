@@ -76,7 +76,7 @@ export default function EditSchool() {
                 ]}
             />
             <SchoolManageTitle title={'Edit School'} schoolStatus={schoolStatus!}/>
-            <SchoolForm form={form} hasCancelButton={true} hasSubmitButton={true}/>
+            <SchoolForm form={form} hasCancelButton={true} hasUpdateSubmitButton={true}/>
         </>
     );
 }

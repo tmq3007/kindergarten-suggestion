@@ -3,17 +3,18 @@ import {Checkbox, Collapse, Form, Image, Input, InputNumber, Select, Upload, Upl
 import {InboxOutlined} from '@ant-design/icons';
 import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
 import {useGetDistrictsQuery, useGetProvincesQuery, useGetWardsQuery} from '@/redux/services/addressApi';
-import countriesKeepZero from '@/lib/countriesKeepZero';
 
-import SchoolFormButton from './SchoolFormButton';
 import MyEditor from "@/app/components/common/MyEditor";
-import {SchoolDTO, useAddSchoolMutation, useLazyCheckSchoolEmailQuery} from '@/redux/services/schoolApi';
+import {useLazyCheckSchoolEmailQuery} from '@/redux/services/schoolApi';
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
     FACILITY_OPTIONS,
-    SCHOOL_TYPE_OPTIONS, UTILITY_OPTIONS
+    SCHOOL_TYPE_OPTIONS,
+    UTILITY_OPTIONS
 } from "@/lib/constants";
+import SchoolFormButton from "@/app/components/school/SchoolFormButton";
+import {handleDistrictChange, handleProvinceChange, handleWardChange} from "@/lib/addressUtils";
 
 const {Option} = Select;
 const {Panel} = Collapse;
@@ -28,23 +29,17 @@ interface FieldType {
     district: string;
     ward: string;
     street?: string;
-
     email: string;
     phone: string;
-
     receivingAge: number;
     educationMethod: number;
-
     // Fee Range
     feeFrom: number;
     feeTo: number;
-
     // Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
-
     description?: string; // School introduction
-
     // File Upload
     image?: UploadFile[];
 }
@@ -53,7 +48,8 @@ interface SchoolFormFields {
     form?: any;
     hasCancelButton?: boolean;
     hasSaveButton?: boolean;
-    hasSubmitButton?: boolean;
+    hasCreateSubmitButton?: boolean;
+    hasUpdateSubmitButton?: boolean;
     hasDeleteButton?: boolean;
     hasEditButton?: boolean;
     hasRejectButton?: boolean;
@@ -69,7 +65,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     form: externalForm,
                                                     hasCancelButton,
                                                     hasSaveButton,
-                                                    hasSubmitButton,
+                                                    hasCreateSubmitButton,
+                                                    hasUpdateSubmitButton,
                                                     hasDeleteButton,
                                                     hasEditButton,
                                                     hasRejectButton,
@@ -95,11 +92,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     // Hooks
     const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
-    const [addSchool, {
-        data: addSchoolData,
-        isLoading: addSchoolIsLoading,
-        error: addSchoolError
-    }] = useAddSchoolMutation();
     const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
     const {data: provinces, isLoading: isLoadingProvince} = useGetProvincesQuery();
     const {data: districts, isLoading: isLoadingDistrict} = useGetDistrictsQuery(selectedProvince!, {
@@ -127,50 +119,19 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     };
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value.replace(/\D/g, "");
-        e.target.value = value;
-    };
-
-    const onFinish = (values: FieldType) => {
-        let formattedPhone = values.phone || "";
-
-        if (selectedCountry && !countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith("0")) {
-            formattedPhone = formattedPhone.substring(1);
-        }
-
-        const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
-
-        const fileList: File[] = (values.image || [])
-            .filter((file) => file.originFileObj)
-            .map((file) => file.originFileObj as File);
-
-        const finalValues: SchoolDTO = {
-            ...values,
-            image: fileList,
-            phone: fullPhoneNumber
-        };
-
-        if (emailStatus !== 'success') {
-            return;
-        }
-        addSchool(finalValues);
+        e.target.value = e.target.value.replace(/\D/g, "");
     };
 
     const onProvinceChange = (provinceCode: number) => {
-        form.setFieldsValue({district: undefined, ward: undefined, street: undefined});
-        setSelectedProvince(provinceCode);
-        setSelectedDistrict(undefined);
-        setSelectedWard(undefined);
+        handleProvinceChange(provinceCode, form, setSelectedProvince, setSelectedDistrict, setSelectedWard);
     };
 
     const onDistrictChange = (districtCode: number) => {
-        form.setFieldsValue({ward: undefined, street: undefined});
-        setSelectedDistrict(districtCode);
-        setSelectedWard(undefined);
+        handleDistrictChange(districtCode, form, setSelectedDistrict, setSelectedWard);
     };
 
     const onWardChange = (wardCode: number) => {
-        setSelectedWard(wardCode.toString());
+        handleWardChange(wardCode.toString(), setSelectedWard);
     };
 
     const checkEmailExists = async () => {
@@ -234,7 +195,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
             <Form<FieldType>
                 size='middle'
                 form={form}
-                onFinish={onFinish}
                 labelCol={{span: 6, className: 'font-bold'}}
                 labelAlign='left'
                 labelWrap
@@ -266,14 +226,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 rules={[{required: true, message: 'Please select a province'}]}
                             >
                                 <Select
+                                    placeholder="Select a province"
+                                    loading={isLoadingProvince}
                                     onChange={(districtName) => {
                                         const selectedProvince = provinces?.find(d => d.name === districtName);
                                         if (selectedProvince) {
                                             onProvinceChange(selectedProvince.code);
                                         }
                                     }}
-                                    placeholder="Select a province"
-                                    loading={isLoadingProvince}
                                 >
                                     {provinces?.map(province => (
                                         <Select.Option key={province.code} value={province.name}>
@@ -577,19 +537,20 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                 <Form.Item style={{textAlign: 'center', marginTop: '16px'}}>
                     {actionButtons}
                 </Form.Item>
-                    <SchoolFormButton
-                        form={form}
-                        hasCancelButton={hasCancelButton}
-                        hasSaveButton={hasSaveButton}
-                        hasSubmitButton={hasSubmitButton}
-                        hasDeleteButton={hasDeleteButton}
-                        hasEditButton={hasEditButton}
-                        hasRejectButton={hasRejectButton}
-                        hasApproveButton={hasApproveButton}
-                        hasPublishButton={hasPublishButton}
-                        hasUnpublishButton={hasUnpublishButton}
-                        isAddSchoolLoading={addSchoolIsLoading}
-                    />
+                <SchoolFormButton
+                    form={form}
+                    hasCancelButton={hasCancelButton}
+                    hasSaveButton={hasSaveButton}
+                    hasCreateSubmitButton={hasCreateSubmitButton}
+                    hasUpdateSubmitButton={hasUpdateSubmitButton}
+                    hasDeleteButton={hasDeleteButton}
+                    hasEditButton={hasEditButton}
+                    hasRejectButton={hasRejectButton}
+                    hasApproveButton={hasApproveButton}
+                    hasPublishButton={hasPublishButton}
+                    hasUnpublishButton={hasUnpublishButton}
+                    selectedCountry={selectedCountry}
+                />
             </Form>
         </div>
     );

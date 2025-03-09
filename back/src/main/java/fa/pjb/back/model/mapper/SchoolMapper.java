@@ -2,6 +2,7 @@ package fa.pjb.back.model.mapper;
 
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.Facility;
 import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
@@ -9,6 +10,7 @@ import fa.pjb.back.model.entity.Utility;
 import fa.pjb.back.model.vo.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import java.util.List;
@@ -21,7 +23,7 @@ public interface SchoolMapper {
     @Mapping(source = "facilities", target = "facilities", qualifiedByName = "facilityToId")
     @Mapping(source = "utilities", target = "utilities", qualifiedByName = "utilityToId")
     @Mapping(target = "imageList", source = "images", qualifiedByName = "mapImageUrl")
-    SchoolVO toSchoolVO(School school);
+    SchoolDetailVO toSchoolDetailVO(School school);
 
     SchoolListVO toSchoolListVO(School school);
 
@@ -74,5 +76,8 @@ public interface SchoolMapper {
         return utilities != null ? utilities.stream().map(utility -> new UtilityVO(utility.getUid(), utility.getName())).collect(Collectors.toSet()) : null;
     }
 
-    //School toSchoolEntityFromAddSchoolDTO(AddSchoolDTO schoolDTO);
+    @Mapping(target = "facilities", ignore = true)
+    @Mapping(target = "utilities", ignore = true)
+    void updateSchoolFromDto(SchoolUpdateDTO schoolUpdateDTO, @MappingTarget School school);
+
 }
