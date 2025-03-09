@@ -10,6 +10,7 @@ import fa.pjb.back.model.entity.Utility;
 import fa.pjb.back.model.vo.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
 import java.util.List;
@@ -75,6 +76,8 @@ public interface SchoolMapper {
         return utilities != null ? utilities.stream().map(utility -> new UtilityVO(utility.getUid(), utility.getName())).collect(Collectors.toSet()) : null;
     }
 
-    School toSchool(SchoolUpdateDTO schoolDTO);
+    @Mapping(target = "facilities", ignore = true)
+    @Mapping(target = "utilities", ignore = true)
+    void updateSchoolFromDto(SchoolUpdateDTO schoolUpdateDTO, @MappingTarget School school);
 
 }

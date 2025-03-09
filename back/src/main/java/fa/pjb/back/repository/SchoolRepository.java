@@ -46,4 +46,5 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
       @Param("email") String email,
       @Param("phone") String phone,
       Pageable pageable);
+
 }
