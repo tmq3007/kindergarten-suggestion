@@ -18,7 +18,7 @@ const page = () => {
                 ]}
             />
             <SchoolManageTitle title={'Add new school'}/>
-            <SchoolForm hasCancelButton={true} hasSaveButton={true} hasSubmitButton={true}/>
+            <SchoolForm hasCancelButton={true} hasSaveButton={true} hasCreateSubmitButton={true}/>
         </>
     );
 }

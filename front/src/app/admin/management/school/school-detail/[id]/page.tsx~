@@ -9,6 +9,7 @@ import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import {SCHOOL_STATUS, SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
+import SchoolFormButton from "@/app/components/school/SchoolFormButtonForAdmin";
 
 export default function SchoolDetail() {
     const params = useParams();
