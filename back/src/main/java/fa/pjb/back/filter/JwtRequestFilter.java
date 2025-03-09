@@ -35,15 +35,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     // List of URLs that do not require authentication
     private static final List<String> PUBLIC_URLS = List.of(
-            "/"
-//            "/api/auth/login/admin",
-//            "/api/auth/login/public",
-//            "/api/auth/refresh-token",
-//            "/api/auth/forgot-password",
-//            "/api/auth/refresh",
-//            "/api/auth/check-email",
-//            "/api/parent/register",
-//            "/api/auth/reset-password"
+//            "/"
+            "/api/auth/login/admin",
+            "/api/auth/login/public",
+            "/api/auth/refresh-token",
+            "/api/auth/forgot-password",
+            "/api/auth/refresh",
+            "/api/auth/check-email",
+            "/api/parent/register",
+            "/api/auth/reset-password"
     );
 
     @Override

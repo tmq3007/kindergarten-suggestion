@@ -1,5 +1,7 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
@@ -8,19 +10,13 @@ import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.PhoneExistedException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
-import fa.pjb.back.model.entity.Facility;
-import fa.pjb.back.model.entity.Media;
+import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.entity.School;
-import fa.pjb.back.model.entity.Utility;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.ImageVO;
 import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolVO;
-import fa.pjb.back.repository.FacilityRepository;
-import fa.pjb.back.repository.MediaRepository;
-import fa.pjb.back.repository.SchoolRepository;
-import fa.pjb.back.repository.UtilityRepository;
+import fa.pjb.back.repository.*;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolService;
@@ -31,6 +27,7 @@ import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +53,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final SchoolMapper schoolMapper;
     private final EmailService emailService;
     private final GGDriveImageService imageService;
+    private final SchoolOwnerRepository schoolOwnerRepository;
     private static final Tika tika = new Tika();
     @Value("${school-detailed-link}")
     private String schoolDetailedLink;
@@ -170,58 +168,134 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolRepository.findById(schoolID)
                 .orElseThrow(SchoolNotFoundException::new);
 
-        switch (changeSchoolStatusDTO.status()) {
-            case 1 -> {
-                // Transition to status 1 is allowed from statuses 0, 2, 4, 5
-                if (school.getStatus() == 0 || school.getStatus() == 2 || school.getStatus() == 4 || school.getStatus() == 5) {
-                    school.setStatus(changeSchoolStatusDTO.status());
-                } else {
-                    throw new InappropriateSchoolStatusException();
-                }
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String username;
+        String role;
+        Boolean publicPermission = true;
+
+        // Check if principal is an instance of User entity
+        if (principal instanceof User user) {
+            role = String.valueOf(user.getRole());
+            username = user.getUsername();
+            if(role.equals("ROLE_SCHOOL_OWNER")){
+
+                publicPermission = schoolOwnerRepository.findById(user.getId()).orElseThrow().getPublicPermission();
+
             }
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
+        switch (changeSchoolStatusDTO.status()) {
 
             case 2 -> {
-                // Transition to status 2 is allowed from status 1
-                if (school.getStatus() == 1) {
-                    school.setStatus(changeSchoolStatusDTO.status());
-                    emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink + schoolID);
+                if(role.equals("ROLE_ADMIN")){
+                    // Change to "Approved" status if current status is "Submitted"
+                    if (school.getStatus() == 1) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                        emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink + schoolID);
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
                 } else {
-                    throw new InappropriateSchoolStatusException();
+                    throw new AuthenticationFailedException("You do not have permission to approve the school");
                 }
             }
 
             case 3 -> {
-                // Transition to status 3 is allowed from status 1
-                if (school.getStatus() == 1) {
-                    school.setStatus(changeSchoolStatusDTO.status());
-                    emailService.sendSchoolRejectedEmail(school.getEmail(), school.getName());
+                if(role.equals("ROLE_ADMIN")){
+                    // Change to "Rejected" status if current status is "Submitted"
+                    if (school.getStatus() == 1) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                        emailService.sendSchoolRejectedEmail(school.getEmail(), school.getName());
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
                 } else {
-                    throw new InappropriateSchoolStatusException();
+                    throw new AuthenticationFailedException("You do not have permission to reject the school");
                 }
             }
 
             case 4 -> {
-                // Transition to status 4 is allowed from statuses 2, 5
-                if (school.getStatus() == 2 || school.getStatus() == 5) {
-                    school.setStatus(changeSchoolStatusDTO.status());
-                    emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), changeSchoolStatusDTO.username(), schoolDetailedLink + schoolID);
-                } else {
-                    throw new InappropriateSchoolStatusException();
+
+                // Check if the principal is an admin or school owner with public permission
+                if (role.equals("ROLE_SCHOOL_OWNER") && publicPermission) {
+                    // Change to "Published" status if current status is "Approved" or "Unpublished"
+                    if (school.getStatus() == 2 || school.getStatus() == 5) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
                 }
+
+                else if(role.equals("ROLE_ADMIN")){
+                    if (school.getStatus() == 2 || school.getStatus() == 5) {
+
+                        school.setStatus(changeSchoolStatusDTO.status());
+
+                        // Set public permission to true for all school owners relate to current school
+                        List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
+                        for (SchoolOwner so : schoolOwners) {
+                            so.setPublicPermission(true);
+                        }
+                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
+                } else {
+                    throw new AuthenticationFailedException("You do not have permission to publish the school");
+                }
+
             }
 
             case 5 -> {
-                // Transition to status 5 is allowed from status 4
-                if (school.getStatus() == 4) {
-                    school.setStatus(changeSchoolStatusDTO.status());
-                } else {
-                    throw new InappropriateSchoolStatusException();
+
+                // Check if the principal is a school owner
+                if (role.equals("ROLE_SCHOOL_OWNER")) {
+                    // Change to "Unpublished" status if current status is "Published"
+                    if (school.getStatus() == 4) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
                 }
+
+                else if (role.equals("ROLE_ADMIN")){
+                    // Change to "Unpublished" status if current status is "Published"
+                    if (school.getStatus() == 4) {
+
+                        school.setStatus(changeSchoolStatusDTO.status());
+
+                        // Set public permission to false for all school owners relate to current school
+                        List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
+                        for (SchoolOwner so : schoolOwners) {
+                            so.setPublicPermission(false);
+                        }
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
+                } else {
+                    throw new AuthenticationFailedException("You do not have permission to publish the school");
+                }
+
+
             }
 
             case 6 -> {
-                // Directly set status to 6 without any checks
-                school.setStatus(changeSchoolStatusDTO.status());
+                if (role.equals("ROLE_ADMIN")) {
+                    // Change to "Deleted" status
+                    school.setStatus(changeSchoolStatusDTO.status());
+                }
+                else if (role.equals("ROLE_SCHOOL_OWNER") && school.getStatus() == 0) {
+
+                        school.setStatus(changeSchoolStatusDTO.status());
+
+                }
+                else {
+                    throw new AuthenticationFailedException("You do not have permission to delete the school");
+                }
             }
         }
     }
