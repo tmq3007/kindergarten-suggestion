@@ -1,5 +1,6 @@
-import{createApi}from"@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth }from "@/redux/services/config/baseQuery";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+
 export interface Facility {
     fid: number;
     name: string;
@@ -9,7 +10,8 @@ export interface Utility {
     uid: number;
     name: string;
 }
-export type SchoolVO = {
+
+export type SchoolDetailVO = {
     status: number;
     name: string;
     schoolType: number;
@@ -31,43 +33,40 @@ export type SchoolVO = {
 };
 
 export type SchoolDTO = {
-name: string;
-schoolType: number;
-website?: string;
-status: number;
-
+    name: string;
+    schoolType: number;
+    website?: string;
+    status: number;
 // Address Fields
-province: string;
-district: string;
-ward: string;
-street?: string;
-
-email: string;
-phone: string;
-
-receivingAge: number;
-educationMethod: number;
-
+    province: string;
+    district: string;
+    ward: string;
+    street?: string;
+    email: string;
+    phone: string;
+    receivingAge: number;
+    educationMethod: number;
 // Fee Range
-feeFrom: number;
-feeTo: number;
-
+    feeFrom: number;
+    feeTo: number;
 // Facilities and Utilities (Checkbox Groups)
-facilities?: number[];
-utilities?: number[];
-
-description?: string; // School introduction
-
+    facilities?: number[];
+    utilities?: number[];
+    description?: string; // School introduction
 // File Upload
-image?: File[];
+    image?: File[];
+}
+
+export interface SchoolUpdateDTO extends SchoolDTO {
+    id: number;
 }
 
 export const schoolApi = createApi({
-reducerPath: "schoolApi",
-baseQuery: baseQueryWithReauth,
-tagTypes: ["School"],
-endpoints:(build) => ({
-        getSchool: build.query<ApiResponse<SchoolVO>, number>({
+    reducerPath: "schoolApi",
+    baseQuery: baseQueryWithReauth,
+    tagTypes: ["School"],
+    endpoints: (build) => ({
+        getSchool: build.query<ApiResponse<SchoolDetailVO>, number>({
             query: (schoolId) => ({
                 url: `/school/${schoolId}`,
                 method: 'GET',
@@ -88,15 +87,15 @@ endpoints:(build) => ({
             }),
             keepUnusedDataFor: 0,
         }),
-        addSchool: build.mutation<ApiResponse<SchoolVO>, SchoolDTO>({
+        addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolDTO>({
             query: (schoolDTO) => {
                 const formData = new FormData();
-                const { image, ...schoolDataWithoutImage } = schoolDTO;
-                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], { type: "application/json" }));
+                const {image, ...schoolDataWithoutImage} = schoolDTO;
+                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
                 // Append JSON data
                 formData.append(
                     "data",
-                    new Blob([JSON.stringify(schoolDataWithoutImage)], { type: "application/json" })
+                    new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"})
                 );
                 // Append images with validation
                 if (image && Array.isArray(image)) {
@@ -116,7 +115,42 @@ endpoints:(build) => ({
                 };
             },
         }),
+        updateSchoolByAdmin: build.mutation<ApiResponse<SchoolDetailVO>, SchoolUpdateDTO>({
+            query: (schoolUpdateDTO) => {
+                console.log('schoolUpdateDTO', schoolUpdateDTO);
+                const formData = new FormData();
+                const {image, ...schoolDataWithoutImage} = schoolUpdateDTO;
+                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
+                // Append JSON data
+                formData.append(
+                    "data",
+                    new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"})
+                );
+                // Append images with validation
+                if (image && Array.isArray(image)) {
+                    image.forEach((file, index) => {
+                        if (file instanceof File) {
+                            formData.append("image", file);
+                        } else {
+                            console.error(`Item ${index} is not a File:`, file);
+                        }
+                    });
+                }
+                return {
+                    url: "/school/update/by-admin",
+                    method: "POST",
+                    body: formData,
+                    formData: true,
+                };
+            },
+        }),
     }),
 });
 
-export const { useGetSchoolQuery, useAddSchoolMutation,useLazyCheckSchoolEmailQuery,useLazyCheckSchoolPhoneQuery } = schoolApi;
+export const {
+    useGetSchoolQuery,
+    useAddSchoolMutation,
+    useLazyCheckSchoolEmailQuery,
+    useLazyCheckSchoolPhoneQuery,
+    useUpdateSchoolByAdminMutation
+} = schoolApi;

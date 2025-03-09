@@ -193,6 +193,7 @@ public class SchoolServiceImpl implements SchoolService {
         school.setDescription(schoolDTO.description());
 
 
+
         school.setStatus((byte) 1);
         log.info("school: {}", school);
 
