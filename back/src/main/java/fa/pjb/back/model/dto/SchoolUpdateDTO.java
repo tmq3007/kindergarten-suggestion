@@ -1,5 +1,6 @@
 package fa.pjb.back.model.dto;
 
+import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 
 import java.util.Set;
@@ -14,13 +15,9 @@ public record SchoolUpdateDTO(
         @Max(value = 4, message = "Invalid school type")
         Byte schoolType,
 
+        @Size(max = 255)
         String website,
 
-        @Min(value = 0, message = "Invalid status")
-        @Max(value = 1, message = "Invalid status")
-        Byte status,
-
-        // Address Fields
         @NotBlank(message = "Province is required")
         String province,
 
@@ -30,6 +27,8 @@ public record SchoolUpdateDTO(
         @NotBlank(message = "Ward is required")
         String ward,
 
+        @Size(max = 255)
+        @NotNull
         String street,
 
         @NotBlank(message = "Email is required")
@@ -50,20 +49,19 @@ public record SchoolUpdateDTO(
         @Max(value = 6, message = "Invalid education method")
         Byte educationMethod,
 
-        // Fee Range
         @Min(value = 0, message = "Fee must be at least 0")
         Integer feeFrom,
 
         @Min(value = 0, message = "Fee must be at least 0")
         Integer feeTo,
 
-        // Facilities and Utilities (Checkbox Groups)
         @Size(max = 8, message = "Invalid facilities selection")
         Set<@Min(0) @Max(7) Integer> facilities,
 
         @Size(max = 7, message = "Invalid utilities selection")
         Set<@Min(0) @Max(6) Integer> utilities,
 
-        String description // School introduction
-)  {
+        @Lob
+        String description
+) {
 }
