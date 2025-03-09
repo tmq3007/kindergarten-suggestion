@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, Carousel, Button, Rate } from 'antd';
 
-const App = () => {
+const SchoolDetailPage = () => {
     // Array of image URLs (replace with actual URLs or local images)
     const images = [
         'https://kame.asia/wp-content/uploads/2023/12/2-1-2048x1024.jpg', // Main city skyline
@@ -112,4 +112,4 @@ const App = () => {
     );
 };
 
-export default App;
+export default SchoolDetailPage;

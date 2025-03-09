@@ -1,18 +1,24 @@
 'use client';
 
-import { Image, Select } from 'antd';
+import {Select} from 'antd';
 import SchoolForm from '@/app/components/school/SchoolForm';
-import Form2 from '@/app/components/school/Form2';
-import { h2 } from 'framer-motion/client';
+import {h2} from 'framer-motion/client';
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import React from "react";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
-const { Option } = Select;
+const {Option} = Select;
 const page = () => {
     return (
         <>
-            <div className='bg-white rounded-lg'>
-                <h2 className="ml-4 text-2xl font-bold ">Add new school</h2>
-                <Form2 hasSaveDraftButton={true} hasSubmitButton={true} />
-            </div>
+            <MyBreadcrumb
+                paths={[
+                    {label: 'School Management', href: '/admin/management/school/school-list'},
+                    {label: 'Add new school'},
+                ]}
+            />
+            <SchoolManageTitle title={'Add new school'}/>
+            <SchoolForm hasCancelButton={true} hasSaveButton={true} hasCreateSubmitButton={true}/>
         </>
     );
 }

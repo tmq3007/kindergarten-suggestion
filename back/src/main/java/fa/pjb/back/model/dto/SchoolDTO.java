@@ -1,5 +1,6 @@
 package fa.pjb.back.model.dto;
 
+import java.util.Date;
 import lombok.Builder;
 
 @Builder
@@ -20,6 +21,7 @@ public record SchoolDTO(
         String district,
         String ward,
         String province,
-        String street
+        String street,
+        Date posted_date
 ) {
 }
