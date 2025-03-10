@@ -123,10 +123,21 @@ public class SchoolController {
                 .build();
     }
 
-    @PutMapping("/change-status/{schoolId}")
-    public ApiResponse<?> updateSchoolStatus(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+    @PutMapping("/change-status/by-admin/{schoolId}")
+    public ApiResponse<?> updateSchoolStatusByAdmin(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
-        schoolService.updateSchoolStatus(schoolId, changeSchoolStatusDTO);
+        schoolService.updateSchoolStatusByAdmin(schoolId, changeSchoolStatusDTO);
+
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Update school status successfully.")
+                .build();
+    }
+
+    @PutMapping("/change-status/by-school-owner/{schoolId}")
+    public ApiResponse<?> updateSchoolStatusBySchoolOwner(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+
+        schoolService.updateSchoolStatusBySchoolOwner(schoolId, changeSchoolStatusDTO);
 
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())

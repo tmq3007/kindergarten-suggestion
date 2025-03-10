@@ -37,6 +37,11 @@ spring:
       enabled: true
       max-file-size: 5MB
       max-request-size: 55MB
+logging:
+  level:
+    org.springframework.transaction.interceptor: TRACE
+    org.springframework.orm.jpa.JpaTransactionManager: DEBUG
+    org.hibernate.engine.transaction.internal.TransactionImpl: DEBUG
 error:
   handling:
     search-super-class-hierarchy: true

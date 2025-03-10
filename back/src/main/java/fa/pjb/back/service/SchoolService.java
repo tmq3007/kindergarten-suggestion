@@ -2,7 +2,6 @@ package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
@@ -22,7 +21,9 @@ public interface SchoolService {
 
     SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image);
 
-    void updateSchoolStatus(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
+    void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
+
+    void updateSchoolStatusBySchoolOwner(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
     boolean checkEmailExists(String email);
 
