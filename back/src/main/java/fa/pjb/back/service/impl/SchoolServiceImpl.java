@@ -82,15 +82,16 @@ public class SchoolServiceImpl implements SchoolService {
         mediaRepository.saveAll(mediaList);
     }
 
+    //TODO: add school based on user role and id
     @Transactional
     @Override
     public SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
         if (checkEmailExists(schoolDTO.email())) {
             throw new EmailAlreadyExistedException("This email is already in used");
         }
-        if (checkPhoneExists(schoolDTO.phone())) {
-            throw new PhoneExistedException("This phone is already in used");
-        }
+//        if (checkPhoneExists(schoolDTO.phone())) {
+//            throw new PhoneExistedException("This phone is already in used");
+//        }
         School school = schoolMapper.toSchool(schoolDTO);
         List<ImageVO> imageVOList = null;
         //Get existing facilities from DB
@@ -107,6 +108,7 @@ public class SchoolServiceImpl implements SchoolService {
         }
         school.setPostedDate(LocalDate.now());
         School newSchool = schoolRepository.save(school);
+
         // Validate and upload images (if provided)
         if (image != null) {
             for (MultipartFile file : image) {

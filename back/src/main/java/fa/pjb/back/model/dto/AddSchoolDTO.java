@@ -16,6 +16,9 @@ import java.util.Set;
 
 @ValidFeeRange
 public record AddSchoolDTO(
+        @NotNull
+        int userId,
+
         @NotBlank(message = "School name is required")
         String name,
 

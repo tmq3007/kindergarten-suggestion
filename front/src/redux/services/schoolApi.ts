@@ -1,5 +1,5 @@
-import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
 
 export interface Facility {
     fid: number;
@@ -33,11 +33,12 @@ export type SchoolDetailVO = {
 };
 
 export type SchoolDTO = {
+
     name: string;
     schoolType: number;
     website?: string;
     status: number;
-// Address Fields
+    // Address Fields
     province: string;
     district: string;
     ward: string;
@@ -46,19 +47,23 @@ export type SchoolDTO = {
     phone: string;
     receivingAge: number;
     educationMethod: number;
-// Fee Range
+    // Fee Range
     feeFrom: number;
     feeTo: number;
-// Facilities and Utilities (Checkbox Groups)
+    // Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
     description?: string; // School introduction
-// File Upload
+    // File Upload
     image?: File[];
 }
 
 export interface SchoolUpdateDTO extends SchoolDTO {
     id: number;
+}
+
+export interface SchoolCreateDTO extends SchoolDTO{
+    userId: number;
 }
 
 export const schoolApi = createApi({
@@ -87,15 +92,15 @@ export const schoolApi = createApi({
             }),
             keepUnusedDataFor: 0,
         }),
-        addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolDTO>({
+        addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({
             query: (schoolDTO) => {
                 const formData = new FormData();
-                const {image, ...schoolDataWithoutImage} = schoolDTO;
-                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
+                const { image, ...schoolDataWithoutImage } = schoolDTO;
+                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], { type: "application/json" }));
                 // Append JSON data
                 formData.append(
                     "data",
-                    new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"})
+                    new Blob([JSON.stringify(schoolDataWithoutImage)], { type: "application/json" })
                 );
                 // Append images with validation
                 if (image && Array.isArray(image)) {
@@ -119,12 +124,12 @@ export const schoolApi = createApi({
             query: (schoolUpdateDTO) => {
                 console.log('schoolUpdateDTO', schoolUpdateDTO);
                 const formData = new FormData();
-                const {image, ...schoolDataWithoutImage} = schoolUpdateDTO;
-                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
+                const { image, ...schoolDataWithoutImage } = schoolUpdateDTO;
+                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], { type: "application/json" }));
                 // Append JSON data
                 formData.append(
                     "data",
-                    new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"})
+                    new Blob([JSON.stringify(schoolDataWithoutImage)], { type: "application/json" })
                 );
                 // Append images with validation
                 if (image && Array.isArray(image)) {
