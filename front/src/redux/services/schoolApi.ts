@@ -58,6 +58,10 @@ export type SchoolDTO = {
     image?: File[];
 }
 
+export type ChangeSchoolStatusDTO = {
+    status: number;
+}
+
 export interface SchoolUpdateDTO extends SchoolDTO {
     id: number;
 }
@@ -148,6 +152,23 @@ export const schoolApi = createApi({
                     formData: true,
                 };
             },
+            invalidatesTags: ["School"],
+        }),
+        updateSchoolStatusByAdmin: build.mutation<ApiResponse<void>, { schoolId: number; changeSchoolStatusDTO: ChangeSchoolStatusDTO }>({
+            query: ({ schoolId, changeSchoolStatusDTO }) => ({
+                url: `/school/change-status/by-admin/${schoolId}`,
+                method: 'PUT',
+                body: changeSchoolStatusDTO,
+            }),
+            invalidatesTags: ["School"],
+        }),
+        updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, { schoolId: number; changeSchoolStatusDTO: ChangeSchoolStatusDTO }>({
+            query: ({ schoolId, changeSchoolStatusDTO }) => ({
+                url: `/school/change-status/by-school-owner/${schoolId}`,
+                method: 'PUT',
+                body: changeSchoolStatusDTO,
+            }),
+            invalidatesTags: ["School"],
         }),
     }),
 });
@@ -157,5 +178,7 @@ export const {
     useAddSchoolMutation,
     useLazyCheckSchoolEmailQuery,
     useLazyCheckSchoolPhoneQuery,
-    useUpdateSchoolByAdminMutation
+    useUpdateSchoolByAdminMutation,
+    useUpdateSchoolStatusByAdminMutation,
+    useUpdateSchoolStatusBySchoolOwnerMutation
 } = schoolApi;

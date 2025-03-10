@@ -55,7 +55,7 @@ export default function EditSchool() {
                 website: school.website || ''
             });
         }
-    }, [school, form]);
+    }, [school, form, schoolStatus]);
 
     if (isLoading) {
         return (

@@ -1,16 +1,18 @@
-import { Button, message, notification, UploadFile } from "antd";
-import React from "react";
-import { useParams, useRouter } from "next/navigation";
-import { RootState } from '@/redux/store';
+import {Button, message, UploadFile} from "antd";
+import React, {useEffect} from "react";
+import {useParams, useRouter} from "next/navigation";
 import {
     SchoolCreateDTO,
     SchoolDTO,
     SchoolUpdateDTO,
     useAddSchoolMutation,
-    useUpdateSchoolByAdminMutation,
+    useUpdateSchoolByAdminMutation, useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
 import { ButtonGroupProps } from "@/app/components/school/SchoolFormButton";
 import { useSelector } from "react-redux";
+import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
+import countriesKeepZero from "@/lib/countriesKeepZero";
+import {useGetSchoolByIdQuery} from "@/redux/services/schoolListApi";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     form,
@@ -36,7 +38,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [addSchool, { isLoading: isCreating }] = useAddSchoolMutation();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
-
+    const {refetch} = useGetSchoolByIdQuery(Number(schoolId));
+    const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
 
 
 
@@ -174,7 +177,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         if (!schoolData) return;
         try {
             await updateSchoolByAdmin({ id: Number(schoolId), ...schoolData }).unwrap();
-            messageApi.success('School updated successfully!')
+            messageApi.success('School updated successfully!');
+            refetch();
         } catch (error) {
             messageApi.error("Failed to update school. Please try again.");
         }
@@ -184,15 +188,49 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         router.back();
     };
 
-    const handlePublish = () => {
+    const handlePublish = async () => {
+        try {
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
+            messageApi.success('School published successfully!');
+            refetch();
+        } catch (error) {
+            messageApi.error("Failed to publish school. Please try again.");
+        }
     };
-    const handleUnpublish = () => {
+    const handleUnpublish = async () => {
+        try {
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
+            messageApi.success('School unpublished successfully!');
+            refetch();
+        } catch (error) {
+            messageApi.error("Failed to unpublish school. Please try again.");
+        }
     };
-    const handleDelete = () => {
+    const handleDelete = async () => {
+        try {
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 6 } }).unwrap();
+            messageApi.success('School deleted successfully!')
+        } catch (error) {
+            messageApi.error("Failed to delete school. Please try again.");
+        }
     };
-    const handleApprove = () => {
+    const handleApprove = async () => {
+        try {
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 2 } }).unwrap();
+            messageApi.success('School approved successfully!');
+            refetch();
+        } catch (error) {
+            messageApi.error("Failed to approve school. Please try again.");
+        }
     };
-    const handleReject = () => {
+    const handleReject = async () => {
+        try {
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 3 } }).unwrap();
+            messageApi.success('School rejected successfully!');
+            refetch();
+        } catch (error) {
+            messageApi.error("Failed to reject school. Please try again.");
+        }
     };
     const handleEdit = () => {
         router.push(`/admin/management/school/edit-school/${schoolId}`);
