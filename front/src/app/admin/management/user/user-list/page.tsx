@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import UserList from "@/app/components/user/UserList";
-import { useGetUserListQuery } from "@/redux/services/userListApi";
 import { useState } from "react";
 import { Input } from "antd";
+import {useGetUserListQuery} from "@/redux/services/userApi";
 
 const { Search } = Input;
 

@@ -4,7 +4,7 @@ import {ROLES} from "@/lib/constants";
 import SchoolFormButtonForAdmin from "@/app/components/school/SchoolFormButtonForAdmin";
 import {FormInstance} from "antd/es/form";
 import SchoolFormButtonForSchoolOwner from "@/app/components/school/SchoolFormButtonForSchoolOwner";
-import {Country} from "@/redux/services/types";
+import {Country} from "@/redux/services/registerApi";
 
 export interface ButtonGroupProps {
     form: FormInstance;

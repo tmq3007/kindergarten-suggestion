@@ -4,12 +4,12 @@ import { Input, Button, Table, Tag, Space, Breadcrumb, Typography, message } fro
 import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { useGetSchoolListQuery, useGetSchoolListByUserIdQuery } from "@/redux/services/schoolListApi";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import {useGetSchoolListByUserIdQuery, useGetSchoolListQuery} from "@/redux/services/schoolApi";
 
 interface SchoolVO {
   id: number;

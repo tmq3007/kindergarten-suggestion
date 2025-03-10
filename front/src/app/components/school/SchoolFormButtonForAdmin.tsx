@@ -4,12 +4,11 @@ import {useParams, useRouter} from "next/navigation";
 import {
     SchoolDTO,
     SchoolUpdateDTO,
-    useAddSchoolMutation,
+    useAddSchoolMutation, useGetSchoolByIdQuery,
     useUpdateSchoolByAdminMutation, useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
 import countriesKeepZero from "@/lib/countriesKeepZero";
-import {useGetSchoolByIdQuery} from "@/redux/services/schoolListApi";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -31,7 +30,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [updateSchoolByAdmin, {isLoading: isUpdating}] = useUpdateSchoolByAdminMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
     const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
-    const {refetch} = useGetSchoolByIdQuery(Number(schoolId));
+    const {refetch: getSchoolByIdRefetch} = useGetSchoolByIdQuery(Number(schoolId));
     const [messageApi, contextHolder] = message.useMessage();
     /**
      * Utility function to prepare school data before submission
@@ -91,7 +90,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         try {
             await updateSchoolByAdmin({ id: Number(schoolId), ...schoolData }).unwrap();
             messageApi.success('School updated successfully!');
-            refetch();
+            getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to update school. Please try again.");
         }
@@ -105,7 +104,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         try {
             await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
             messageApi.success('School published successfully!');
-            refetch();
+            getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to publish school. Please try again.");
         }
@@ -114,7 +113,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         try {
             await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
             messageApi.success('School unpublished successfully!');
-            refetch();
+            getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to unpublish school. Please try again.");
         }
@@ -131,7 +130,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         try {
             await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 2 } }).unwrap();
             messageApi.success('School approved successfully!');
-            refetch();
+            getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to approve school. Please try again.");
         }
@@ -140,7 +139,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         try {
             await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 3 } }).unwrap();
             messageApi.success('School rejected successfully!');
-            refetch();
+            getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to reject school. Please try again.");
         }
@@ -187,24 +186,25 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 </Button>
             )}
             {hasRejectButton && (
-                <Button htmlType="button" onClick={handleReject} className={'bg-red-300 text-red-800 border-red-900'}>
+                <Button htmlType="button" onClick={handleReject} loading={isUpdatingStatus}
+                        className={'bg-red-300 text-red-800 border-red-900'}>
                     Reject
                 </Button>
             )}
             {hasApproveButton && (
-                <Button htmlType="button" onClick={handleApprove}
+                <Button htmlType="button" onClick={handleApprove} loading={isUpdatingStatus}
                         className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
                     Approve
                 </Button>
             )}
             {hasPublishButton && (
-                <Button htmlType="button" onClick={handlePublish}
+                <Button htmlType="button" onClick={handlePublish} loading={isUpdatingStatus}
                         className={'bg-green-300 text-green-800 border-green-900'}>
                     Publish
                 </Button>
             )}
             {hasUnpublishButton && (
-                <Button htmlType="button" onClick={handleUnpublish}
+                <Button htmlType="button" onClick={handleUnpublish} loading={isUpdatingStatus}
                         className={'bg-purple-300 text-purple-800 border-purple-900'}>
                     Unpublish
                 </Button>
