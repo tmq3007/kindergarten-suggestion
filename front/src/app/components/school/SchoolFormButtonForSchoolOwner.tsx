@@ -1,7 +1,8 @@
-import {Button} from "antd";
+import {Button, message} from "antd";
 import React from "react";
 import {useParams, useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
+import {useUpdateSchoolStatusBySchoolOwnerMutation} from "@/redux/services/schoolApi";
 
 
 const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
@@ -21,6 +22,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const router = useRouter();
     const params = useParams();
     const schoolId = params.id;
+    const [updateSchoolStatusBySchoolOwner, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusBySchoolOwnerMutation();
+    const [messageApi, contextHolder] = message.useMessage();
     const handleSave = () => {
 
     };
@@ -37,16 +40,30 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
 
     };
 
-    const handlePublish = () => {
-
+    const handlePublish = async () => {
+        try {
+            await updateSchoolStatusBySchoolOwner({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
+            messageApi.success('School published successfully!')
+        } catch (error) {
+            messageApi.error("Failed to publish school. Please try again.");
+        }
+    };
+    const handleUnpublish = async () => {
+        try {
+            await updateSchoolStatusBySchoolOwner({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
+            messageApi.success('School unpublished successfully!')
+        } catch (error) {
+            messageApi.error("Failed to unpublish school. Please try again.");
+        }
     };
 
-    const handleUnpublish = () => {
-
-    };
-
-    const handleDelete = () => {
-
+    const handleDelete = async () => {
+        try {
+            await updateSchoolStatusBySchoolOwner({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
+            messageApi.success('School unpublished successfully!')
+        } catch (error) {
+            messageApi.error("Failed to unpublish school. Please try again.");
+        }
     };
 
     const handleEdit = () => {

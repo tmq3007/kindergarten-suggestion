@@ -2,6 +2,8 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
@@ -120,4 +122,28 @@ public class SchoolController {
                 .data(schoolService.updateSchoolByAdmin(schoolDTO, images))
                 .build();
     }
+
+    @PutMapping("/change-status/by-admin/{schoolId}")
+    public ApiResponse<?> updateSchoolStatusByAdmin(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+
+        schoolService.updateSchoolStatusByAdmin(schoolId, changeSchoolStatusDTO);
+
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Update school status successfully.")
+                .build();
+    }
+
+    @PutMapping("/change-status/by-school-owner/{schoolId}")
+    public ApiResponse<?> updateSchoolStatusBySchoolOwner(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+
+        schoolService.updateSchoolStatusBySchoolOwner(schoolId, changeSchoolStatusDTO);
+
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Update school status successfully.")
+                .build();
+    }
+
+
 }

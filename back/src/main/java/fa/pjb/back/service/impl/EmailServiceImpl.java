@@ -56,22 +56,32 @@ public class EmailServiceImpl implements EmailService {
     }
 
 
+    /**
+     * Sends an email to the user with a link to reset their password.
+     *
+     * @param to      the recipient's email address
+     * @param name    the user's name
+     * @param resetLink the link to reset the password
+     * @return a message indicating the success or failure of the email sending
+     */
     @Override
     public String sendLinkPasswordResetEmail(String to, String name, String resetLink) {
         try {
-            // Transmit data into template Freemarker
+            // Create a model to hold the data to be sent in the email
             Map<String, Object> model = new HashMap<>();
             model.put("name", name);
             model.put("resetLink", resetLink);
 
-            // Send mail
+            // Send mail using the "password-reset.html" template
             sendEmailWithTemplate(to, "Password Reset", "password-reset", model);
-            return "Link password reset sent successfully!";
 
+            // Return a message indicating the success of the email sending
+            return "Link password reset sent successfully!";
 
         // Catch error
         } catch (MessagingException | IOException | TemplateException e) {
 
+            // Return a message indicating the error
             return "Error while sending email: " + e.getMessage();
         }
     }
@@ -89,6 +99,68 @@ public class EmailServiceImpl implements EmailService {
             return "send username password successfully!";
         }catch (MessagingException | IOException | TemplateException e) {
 
+            return "Error while sending email: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Sends an email to the user about the school approval.
+     *
+     * @param to      the recipient's email address
+     * @param schoolName the name of the school
+     * @param detailLink the link to the school detail page
+     * @return a message indicating the success or failure of the email sending
+     */
+    @Override
+    public String sendSchoolApprovedEmail(String to, String schoolName, String detailLink) {
+        try{
+            // Create a model to hold the data to be sent in the email
+            Map<String,Object> model = new HashMap<>();
+            model.put("schoolName", schoolName);
+            model.put("detailsLink", detailLink);
+
+            // Send the email with the template
+            sendEmailWithTemplate(to, "School Approved", "approved-school",model);
+            return "send school approved successfully!";
+        }catch (MessagingException | IOException | TemplateException e) {
+
+            // Return an error message if there was a problem sending the email
+            return "Error while sending email: " + e.getMessage();
+        }
+    }
+
+    @Override
+    public String sendSchoolRejectedEmail(String to, String schoolName) {
+        try{
+            // Create a model to hold the data to be sent in the email
+            Map<String,Object> model = new HashMap<>();
+            model.put("schoolName", schoolName);
+
+            // Send the email with the template
+            sendEmailWithTemplate(to, "School Rejected", "rejected-school",model);
+            return "send school rejected successfully!";
+        }catch (MessagingException | IOException | TemplateException e) {
+
+            // Return an error message if there was a problem sending the email
+            return "Error while sending email: " + e.getMessage();
+        }
+    }
+
+    @Override
+    public String sendSchoolPublishedEmail(String to, String schoolName, String username, String detailLink) {
+        try{
+            // Create a model to hold the data to be sent in the email
+            Map<String,Object> model = new HashMap<>();
+            model.put("schoolName", schoolName);
+            model.put("username", username);
+            model.put("detailsLink", detailLink);
+
+            // Send the email with the template
+            sendEmailWithTemplate(to, "School Published", "published-school",model);
+            return "send school published successfully!";
+        }catch (MessagingException | IOException | TemplateException e) {
+
+            // Return an error message if there was a problem sending the email
             return "Error while sending email: " + e.getMessage();
         }
     }

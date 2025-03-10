@@ -1,5 +1,8 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
+import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
@@ -8,26 +11,24 @@ import fa.pjb.back.common.exception._14xx_data.PhoneExistedException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
-import fa.pjb.back.model.entity.Facility;
-import fa.pjb.back.model.entity.Media;
-import fa.pjb.back.model.entity.School;
-import fa.pjb.back.model.entity.Utility;
+import fa.pjb.back.model.entity.*;
+import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.ImageVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
-import fa.pjb.back.repository.FacilityRepository;
-import fa.pjb.back.repository.MediaRepository;
-import fa.pjb.back.repository.SchoolRepository;
-import fa.pjb.back.repository.UtilityRepository;
+import fa.pjb.back.repository.*;
 import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +55,13 @@ public class SchoolServiceImpl implements SchoolService {
     private final UtilityRepository utilityRepository;
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
+    private final EmailService emailService;
     private final GGDriveImageService imageService;
+    private final SchoolOwnerRepository schoolOwnerRepository;
     private static final Tika tika = new Tika();
+    @Value("${school-detailed-link}")
+    private String schoolDetailedLink;
+
 
     @Override
     public SchoolDetailVO getSchoolInfo(Integer schoolId) {
@@ -212,6 +218,164 @@ public class SchoolServiceImpl implements SchoolService {
     public Page<SchoolDetailVO> getSchoolsByUserId(Integer userId, Pageable pageable, String name) {
         Page<School> schoolPage = schoolRepository.findSchoolsByUserId(userId, name, pageable);
         return schoolPage.map(schoolMapper::toSchoolDetailVO);
+    }
+
+    /**
+     * Updates the status of a school based on the provided status code.
+     **/
+
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Override
+    @Transactional
+    public void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+        // Retrieve the school entity by ID, or throw an exception if not found
+        School school = schoolRepository.findById(schoolID)
+                .orElseThrow(SchoolNotFoundException::new);
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String username;
+
+        // Check if principal is an instance of User entity
+        if (principal instanceof User user) {
+
+            username = user.getUsername();
+
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
+        switch (changeSchoolStatusDTO.status()) {
+
+            case 2 -> {
+                    // Change to "Approved" status if current status is "Submitted"
+                    if (school.getStatus() == 1) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                        emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink + schoolID);
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
+            }
+
+            case 3 -> {
+                    // Change to "Rejected" status if current status is "Submitted"
+                    if (school.getStatus() == 1) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                        emailService.sendSchoolRejectedEmail(school.getEmail(), school.getName());
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
+            }
+
+            case 4 -> {
+                    // Change to "Published" status if current status is "Approved"
+                    if (school.getStatus() == 2 || school.getStatus() == 5) {
+
+                        school.setStatus(changeSchoolStatusDTO.status());
+
+                        // Set public permission to true for all school owners relate to current school
+                        List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
+
+                        for (SchoolOwner so : schoolOwners) {
+                            so.setPublicPermission(true);
+                            schoolOwnerRepository.saveAndFlush(so);
+                        }
+                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
+
+            }
+
+            case 5 -> {
+                    //Change to "Unpublished" status if current status is "Published"
+                    if (school.getStatus() == 4) {
+
+                        school.setStatus(changeSchoolStatusDTO.status());
+
+                        // Set public permission to false for all school owners relate to current school
+                        List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
+
+                        for (SchoolOwner so : schoolOwners) {
+                            so.setPublicPermission(false);
+                            schoolOwnerRepository.saveAndFlush(so);
+                        }
+
+                    } else {
+                        log.info("InappropriateSchoolStatusException");
+                        throw new InappropriateSchoolStatusException();
+                    }
+            }
+
+            case 6 -> {
+                    // Change to "Deleted" status
+                    school.setStatus(changeSchoolStatusDTO.status());
+            }
+        }
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public void updateSchoolStatusBySchoolOwner(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+        // Retrieve the school entity by ID, or throw an exception if not found
+        School school = schoolRepository.findById(schoolID)
+                .orElseThrow(SchoolNotFoundException::new);
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String username;
+
+        Boolean publicPermission = true;
+
+        // Check if principal is an instance of User entity
+        if (principal instanceof User user) {
+
+            username = user.getUsername();
+
+            publicPermission = schoolOwnerRepository.findById(user.getId()).orElseThrow().getPublicPermission();
+
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
+        switch (changeSchoolStatusDTO.status()) {
+
+            case 4 -> {
+
+                // Check if public permission is true
+                if (publicPermission) {
+                    // Change to "Published" status if current status is "Approved" or "Unpublished"
+                    if (school.getStatus() == 2 || school.getStatus() == 5) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
+                } else {
+                    throw new AuthenticationFailedException("You do not have permission to publish the school");
+                }
+
+            }
+
+            case 5 -> {
+                    // Change to "Unpublished" status if current status is "Published"
+                    if (school.getStatus() == 4) {
+                        school.setStatus(changeSchoolStatusDTO.status());
+                    } else {
+                        throw new InappropriateSchoolStatusException();
+                    }
+
+            }
+
+            case 6 -> {
+                if (school.getStatus() == 0 || school.getStatus() == 1) {
+
+                    school.setStatus(changeSchoolStatusDTO.status());
+
+                }
+            }
+        }
     }
 
     @Override
