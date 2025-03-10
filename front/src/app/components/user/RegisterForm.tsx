@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Checkbox, Form, Image, Input, message, Select } from 'antd';
-import { useLazyCheckEmailQuery, useRegisterMutation } from '@/redux/services/registerApi';
-import { Country } from '@/redux/services/types';
+import {Country, useLazyCheckEmailQuery, useRegisterMutation} from '@/redux/services/registerApi';
 import Link from 'next/link';
 import PhoneInput from '../common/PhoneInput';
 import EmailInput from '../common/EmailInput';

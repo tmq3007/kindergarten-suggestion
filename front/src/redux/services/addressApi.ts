@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 
 export interface Province {
     code: number;
@@ -22,7 +22,7 @@ export interface Ward {
 
 export const addressApi = createApi({
     reducerPath: 'addressApi',
-    baseQuery: fetchBaseQuery({ baseUrl: 'https://provinces.open-api.vn/api/' }),
+    baseQuery: fetchBaseQuery({baseUrl: 'https://provinces.open-api.vn/api/'}),
     endpoints: (builder) => ({
         getProvinces: builder.query<Province[], void>({
             query: () => 'p/',
