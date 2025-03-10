@@ -78,7 +78,7 @@ public class EmailServiceImpl implements EmailService {
             // Return a message indicating the success of the email sending
             return "Link password reset sent successfully!";
 
-        // Catch error
+            // Catch error
         } catch (MessagingException | IOException | TemplateException e) {
 
             // Return a message indicating the error
@@ -88,16 +88,16 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public String sendUsernamePassword(String to, String name, String username, String password) {
-        try{
-            Map<String,Object> model = new HashMap<>();
-            model.put("name",name);
+        try {
+            Map<String, Object> model = new HashMap<>();
+            model.put("name", name);
             model.put("username", username);
-            model.put("password",password);
+            model.put("password", password);
 
             //gui mail
-            sendEmailWithTemplate(to, "Username Password", "create-user",model);
+            sendEmailWithTemplate(to, "Username Password", "create-user", model);
             return "send username password successfully!";
-        }catch (MessagingException | IOException | TemplateException e) {
+        } catch (MessagingException | IOException | TemplateException e) {
 
             return "Error while sending email: " + e.getMessage();
         }
@@ -164,4 +164,19 @@ public class EmailServiceImpl implements EmailService {
             return "Error while sending email: " + e.getMessage();
         }
     }
+
+//    @Override
+//    public String sendSubmitSchool(String schoolLink) {
+//        try {
+//            Map<String, Object> model = new HashMap<>();
+//
+//            //gui mail
+//            sendEmailWithTemplate(to, "Username Password", "create-user", model);
+//            return "send username password successfully!";
+//        } catch (MessagingException | IOException | TemplateException e) {
+//
+//            return "Error while sending email: " + e.getMessage();
+//        }
+//    }
+
 }

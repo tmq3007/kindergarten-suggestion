@@ -1,6 +1,10 @@
 import {Button, message, UploadFile} from "antd";
 import React, {useEffect} from "react";
 import {useParams, useRouter} from "next/navigation";
+import { Button, message, notification, UploadFile } from "antd";
+import React, { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { RootState } from '@/redux/store';
 import {
     SchoolCreateDTO,
     SchoolDTO,
@@ -19,6 +23,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     hasCancelButton,
     hasSaveButton,
     hasCreateSubmitButton,
+    hasCreateSaveButton,
     hasUpdateSubmitButton,
     hasDeleteButton,
     hasEditButton,
@@ -40,6 +45,9 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [api, notificationContextHolder] = notification.useNotification();
     const {refetch} = useGetSchoolByIdQuery(Number(schoolId));
     const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
+
+    const [addStatus, setaddStatus] = useState(1);
+
 
 
 
@@ -139,13 +147,13 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     /**
      * Handles school creation
      */
-    const handleCreateSubmit = async () => {
+    const addSchoolHandle = async () => {
         const schoolValue = await prepareSchoolData();
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
             userId: Number(user.id),
-            status: 1,
+            status: addStatus,
         };
         try {
             await addSchool(finalValues).unwrap();
@@ -245,6 +253,15 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                     Cancel
                 </Button>
             )}
+            {hasCreateSaveButton && (
+                <Button htmlType="button" onClick={() => {
+                    setaddStatus(1);
+                    addSchoolHandle();
+                }} variant="outlined" color="primary"
+                >
+                    Save
+                </Button>
+            )}
             {hasSaveButton && (
                 <Button htmlType="button" onClick={() => {
                 }} variant="outlined" color="primary"
@@ -253,7 +270,10 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 </Button>
             )}
             {hasCreateSubmitButton && (
-                <Button htmlType="button" type="primary" onClick={handleCreateSubmit}
+                <Button htmlType="button" type="primary" onClick={() => {
+                    setaddStatus(2);
+                    addSchoolHandle();
+                }}
                     loading={isCreating}>
                     Submit
                 </Button>

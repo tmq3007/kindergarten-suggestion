@@ -12,6 +12,8 @@ import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.*;
+import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.ImageVO;
@@ -36,12 +38,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
+import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
+import static fa.pjb.back.model.enums.SchoolStatusEnum.SUBMITTED;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,6 +56,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final UtilityRepository utilityRepository;
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
+    private final UserRepository userRepository;
     private final EmailService emailService;
     private final GGDriveImageService imageService;
     private final SchoolOwnerRepository schoolOwnerRepository;
@@ -100,17 +102,30 @@ public class SchoolServiceImpl implements SchoolService {
 //        }
         School school = schoolMapper.toSchool(schoolDTO);
         List<ImageVO> imageVOList = null;
-        //Get existing facilities from DB
-        Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
-        //Validate: Check if all requested fids exist in the database
-        if (existingFacilities.size() != school.getFacilities().size()) {
-            throw new InvalidDataException("Some facilities do not exist in the database");
+        if (schoolDTO.facilities() != null) {
+            //Get existing facilities from DB
+            Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
+            //Validate: Check if all requested fids exist in the database
+            if (existingFacilities.size() != school.getFacilities().size()) {
+                throw new InvalidDataException("Some facilities do not exist in the database");
+            }
         }
-        //Get existing utilities from DB
-        Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
-        //Validate: Check if all requested uids exist in the database
-        if (existingUtilities.size() != school.getUtilities().size()) {
-            throw new InvalidDataException("Some utilities do not exist in the database");
+        if (schoolDTO.utilities() != null) {
+            //Get existing utilities from DB
+            Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
+            //Validate: Check if all requested uids exist in the database
+            if (existingUtilities.size() != school.getUtilities().size()) {
+                throw new InvalidDataException("Some utilities do not exist in the database");
+            }
+        }
+        // If the submit person is admin then auto change status to to approve
+        User user = userRepository.findById(schoolDTO.userId()).get();
+        if (schoolDTO.status() == SUBMITTED.getValue()) {
+            if (user.getRole().equals(ERole.ROLE_ADMIN)) {
+                school.setStatus((byte) APPROVED.getValue());
+            }else {
+
+            }
         }
         school.setPostedDate(LocalDate.now());
         School newSchool = schoolRepository.save(school);

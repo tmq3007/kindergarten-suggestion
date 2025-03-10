@@ -11,6 +11,7 @@ export interface ButtonGroupProps {
     hasCancelButton?: boolean;
     hasSaveButton?: boolean;
     hasCreateSubmitButton?: boolean;
+    hasCreateSaveButton?: boolean;
     hasUpdateSubmitButton?: boolean;
     hasDeleteButton?: boolean;
     hasEditButton?: boolean;
@@ -28,6 +29,7 @@ export default function SchoolFormButton(
         hasCancelButton,
         hasSaveButton,
         hasCreateSubmitButton,
+        hasCreateSaveButton,
         hasUpdateSubmitButton,
         hasDeleteButton,
         hasEditButton,
@@ -46,6 +48,7 @@ export default function SchoolFormButton(
             form={form}
             hasCancelButton={hasCancelButton}
             hasSaveButton={hasSaveButton}
+            hasCreateSaveButton={hasCreateSaveButton}
             hasCreateSubmitButton={hasCreateSubmitButton}
             hasUpdateSubmitButton={hasUpdateSubmitButton}
             hasDeleteButton={hasDeleteButton}

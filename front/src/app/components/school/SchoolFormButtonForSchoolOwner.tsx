@@ -16,7 +16,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         hasEditButton,
         hasPublishButton,
         hasUnpublishButton,
-        selectedCountry,
+        emailInputRef,
+        phoneInputRef
     }
 ) => {
     const router = useRouter();
