@@ -27,10 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -107,7 +104,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
         } catch (IOException | GeneralSecurityException e) {
             return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.getMessage());
         } finally {
-            boolean deleted = file.delete() && resizedFile.delete();
+            boolean deleted = file.delete() && Objects.requireNonNull(resizedFile).delete();
             if (!deleted) {
                 log.warn("Original file deletion failed: {}", file.getName());
             }

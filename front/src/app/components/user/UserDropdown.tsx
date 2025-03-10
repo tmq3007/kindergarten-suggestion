@@ -1,19 +1,22 @@
-import { Button, Dropdown, MenuProps, message, Modal, Space } from "antd";
-import { DownOutlined, UserOutlined } from "@ant-design/icons";
-import React, { useRef, useState } from "react";
-import { useDispatch } from "react-redux";
-import { resetUser } from "@/redux/features/userSlice";
-import { useRouter } from "next/navigation";
-import { useLogoutMutation } from "@/redux/services/authApi";
+import {Button, Dropdown, MenuProps, message, Modal, Space} from "antd";
+import {DownOutlined, UserOutlined} from "@ant-design/icons";
+import React, {useRef, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {resetUser} from "@/redux/features/userSlice";
+import {useRouter} from "next/navigation";
+import {useLogoutMutation} from "@/redux/services/authApi";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import {motion} from "framer-motion";
+import {RootState} from "@/redux/store";
+import {ROLES} from "@/lib/constants";
 
 interface UserDropdownProps {
     username: string;
 }
 
-export default function UserDropdown({ username }: UserDropdownProps) {
+export default function UserDropdown({username}: UserDropdownProps) {
     const [messageApi, contextHolder] = message.useMessage();
+    const role = useSelector((state: RootState) => state.user?.role);
     const dispatch = useDispatch();
     const modalContainerRef = useRef<HTMLDivElement>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -67,7 +70,7 @@ export default function UserDropdown({ username }: UserDropdownProps) {
             ),
             key: "1",
         },
-        { type: "divider" },
+        {type: "divider"},
         {
             label: (
                 <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
@@ -76,7 +79,7 @@ export default function UserDropdown({ username }: UserDropdownProps) {
             ),
             key: "2",
         },
-        { type: "divider" },
+        {type: "divider"},
         {
             label: (
                 <Link
@@ -88,7 +91,21 @@ export default function UserDropdown({ username }: UserDropdownProps) {
             ),
             key: "3",
         },
-        { type: "divider" },
+        {type: "divider"},
+        ...(role === ROLES.SCHOOL_OWNER ? [
+            {
+                label: (
+                    <Link
+                        href="/public/school-owner"
+                        className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300"
+                    >
+                        As School Owner
+                    </Link>
+                ),
+                key: "4",
+            },
+            {type: "divider" as "divider"},
+        ] : []),
         {
             label: (
                 <div
@@ -98,11 +115,11 @@ export default function UserDropdown({ username }: UserDropdownProps) {
                     Logout
                 </div>
             ),
-            key: "4",
+            key: "5",
         },
     ];
 
-    const menuProps = { items };
+    const menuProps = {items};
 
     // Define keyframes for smoother gradient animation
     const gradientAnimation = {
@@ -127,7 +144,7 @@ export default function UserDropdown({ username }: UserDropdownProps) {
                 >
                     <div onClick={() => setIsDropdownVisible(true)}>
                         <Space>
-                            <UserOutlined className="text-black text-sm md:text-2xl" />
+                            <UserOutlined className="text-black text-sm md:text-2xl"/>
                             <motion.span
                                 className="text-sm md:text-lg hover:cursor-pointer font-bold"
                                 style={{
@@ -152,7 +169,7 @@ export default function UserDropdown({ username }: UserDropdownProps) {
                             >
                                 {`Welcome! ${username}`}
                             </motion.span>
-                            <DownOutlined />
+                            <DownOutlined/>
                         </Space>
                     </div>
                 </Dropdown>
