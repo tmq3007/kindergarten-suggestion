@@ -29,8 +29,8 @@ public record AddSchoolDTO(
 
         String website,
 
-        @Min(value = 0, message = "Invalid status")
-        @Max(value = 1, message = "Invalid status")
+        @Min(value = 1, message = "Invalid status")
+        @Max(value = 2, message = "Invalid status")
         int status,
 
         // Address Fields

@@ -1,9 +1,7 @@
-import {Button, message, UploadFile} from "antd";
-import React, {useEffect} from "react";
-import {useParams, useRouter} from "next/navigation";
-import { Button, message, notification, UploadFile } from "antd";
-import React, { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Button, message, notification, UploadFile } from "antd";
 import { RootState } from '@/redux/store';
 import {
     SchoolCreateDTO,
@@ -12,11 +10,9 @@ import {
     useAddSchoolMutation,
     useUpdateSchoolByAdminMutation, useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
-import { ButtonGroupProps } from "@/app/components/school/SchoolFormButton";
 import { useSelector } from "react-redux";
-import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
-import countriesKeepZero from "@/lib/countriesKeepZero";
-import {useGetSchoolByIdQuery} from "@/redux/services/schoolListApi";
+import { useGetSchoolByIdQuery } from "@/redux/services/schoolListApi";
+import { ButtonGroupProps } from "./SchoolFormButton";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     form,
@@ -43,10 +39,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [addSchool, { isLoading: isCreating }] = useAddSchoolMutation();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
-    const {refetch} = useGetSchoolByIdQuery(Number(schoolId));
-    const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
-
-    const [addStatus, setaddStatus] = useState(1);
+    const { refetch } = useGetSchoolByIdQuery(Number(schoolId));
+    const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
 
 
 
@@ -147,7 +141,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     /**
      * Handles school creation
      */
-    const addSchoolHandle = async () => {
+    async function addSchoolHandle(addStatus:number) {
         const schoolValue = await prepareSchoolData();
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
@@ -255,9 +249,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             )}
             {hasCreateSaveButton && (
                 <Button htmlType="button" onClick={() => {
-                    setaddStatus(1);
-                    addSchoolHandle();
-                }} variant="outlined" color="primary"
+                    addSchoolHandle(1);
+                }} variant="outlined" color="primary" loading={isCreating}
                 >
                     Save
                 </Button>
@@ -271,8 +264,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             )}
             {hasCreateSubmitButton && (
                 <Button htmlType="button" type="primary" onClick={() => {
-                    setaddStatus(2);
-                    addSchoolHandle();
+                    addSchoolHandle(2);
                 }}
                     loading={isCreating}>
                     Submit

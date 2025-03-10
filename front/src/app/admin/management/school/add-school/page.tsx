@@ -16,7 +16,6 @@ const page = () => {
                     { label: 'Add new school' },
                 ]}
             />
-            <Image src='https://drive.google.com/file/d/13XE4Ah1aK5kSGniMbeard9DJ1iuroR_K/view'></Image>
             <div className='bg-white pt-1 rounded-lg'>
                 <SchoolManageTitle title={'Add new school'} />
                 <SchoolForm hasCancelButton={true} hasSaveButton={true} hasCreateSubmitButton={true} />

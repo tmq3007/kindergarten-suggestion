@@ -7,5 +7,5 @@ public interface EmailService {
     String sendSchoolApprovedEmail(String to, String schoolName, String detailLink);
     String sendSchoolRejectedEmail(String to, String schoolName);
     String sendSchoolPublishedEmail(String to, String schoolName, String username, String detailLink);
-//    String sendSubmitSchool(String schoolLink);
+    String sendSubmitSchool(String to, String schoolName, String username, String detailLink);
 }

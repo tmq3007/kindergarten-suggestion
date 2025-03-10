@@ -4,7 +4,6 @@ import { ROLES } from "@/lib/constants";
 import SchoolFormButtonForAdmin from "@/app/components/school/SchoolFormButtonForAdmin";
 import { FormInstance } from "antd/es/form";
 import SchoolFormButtonForSchoolOwner from "@/app/components/school/SchoolFormButtonForSchoolOwner";
-import { Country } from "@/redux/services/types";
 
 export interface ButtonGroupProps {
     form: FormInstance;
@@ -66,6 +65,7 @@ export default function SchoolFormButton(
             form={form}
             hasCancelButton={hasCancelButton}
             hasSaveButton={hasSaveButton}
+            hasCreateSaveButton={hasCreateSaveButton}
             hasCreateSubmitButton={hasCreateSubmitButton}
             hasUpdateSubmitButton={hasUpdateSubmitButton}
             hasDeleteButton={hasDeleteButton}
