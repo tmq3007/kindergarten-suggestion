@@ -7,6 +7,7 @@ export type ReviewVO = {
     schoolName: string;
     parentId: number;
     parentName: string;
+    parentImage: string;
     learningProgram: number;
     facilitiesAndUtilities: number;
     extracurricularActivities: number;

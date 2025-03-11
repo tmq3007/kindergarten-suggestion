@@ -168,7 +168,9 @@ const RatingsDashboard = () => {
         setFilteredReviews(
             selectedRates.length === 0
                 ? reviews
-                : reviews.filter((review) => review.average && selectedRates.includes(Math.floor(review.average).toString()))
+                : reviews.filter((review) => {
+                    return metrics.totalAverage >= parseFloat(selectedRates[0]);
+                })
         );
     };
 
@@ -340,7 +342,7 @@ const RatingsDashboard = () => {
                                 >
                                     <List.Item>
                                         <List.Item.Meta
-                                            avatar={<Avatar className="bg-blue-500">{item.parentName?.[0] || "A"}</Avatar>}
+                                            avatar={<Avatar src={item.parentImage}  className="bg-blue-500">{item.parentImage || "A"}</Avatar>}
                                             title={
                                                 <div className="flex justify-between items-center">
                                                     <Text strong>{item.feedback || "No feedback provided"}</Text>
@@ -355,7 +357,7 @@ const RatingsDashboard = () => {
                                                 <div className="flex items-center gap-2">
                                                     <Text type="secondary">{item.parentName || "Anonymous"}</Text>
                                                     <div className="flex">
-                                                        {[...Array(Math.floor(item.average || 0))].map((_, i) => (
+                                                        {[...Array(Math.floor(metrics.totalAverage || 0))].map((_, i) => (
                                                             <StarFilled key={i} className="text-yellow-400 text-sm" />
                                                         ))}
                                                     </div>
