@@ -13,9 +13,8 @@ import {
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import dayjs from 'dayjs';
-import { useGetCountriesQuery } from '@/redux/services/registerApi';
-import { Country } from '@/redux/services/types';
-import { useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery } from '@/redux/services/addressApi';
+import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
+ import { useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery } from '@/redux/services/addressApi';
 import { ROLES } from '@/lib/constants';
 import { unauthorized } from 'next/navigation';
 import {
@@ -226,12 +225,12 @@ const Profile = () => {
         <div style={{
             backgroundSize: "cover",
             backgroundPosition: "center",
-        }} className="min-h-screen mt-14 bg-gray-100">
+         }} className="min-h-screen mt-14  bg-gray-100  ">
             {contextHolder}
             <div className="container mx-auto mt-10 px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Sidebar Column */}
                 <div className="col-span-1">
-                    <div className="bg-teal-100 rounded-lg shadow-md p-6 h-full">
+                    <div className=" bg-white  rounded-lg shadow-md p-6 h-full">
                         <ProfileSidebar
                             fullname={parentData?.data?.fullname}
                             email={parentData?.data?.email}
@@ -246,12 +245,12 @@ const Profile = () => {
                 </div>
 
                 {/* Main Content Column */}
-                <div className="col-span-1 md:col-span-2 bg-teal-100 bg-opacity-60 rounded-lg shadow-md p-4 h-full">
+                <div className="col-span-1 md:col-span-2  bg-white rounded-lg shadow-md p-4 h-full">
                     <Tabs
                         defaultActiveKey="1"
                         type="card"
                         size="small"
-                        className="h-full bg-teal-100 bg-opacity-0"
+                        className="h-full "
                         tabBarStyle={{
                             marginBottom: 0,
                             color: '#555',
@@ -260,7 +259,7 @@ const Profile = () => {
                         <TabPane
                             tab="My Information"
                             key="1"
-                            className="p-2 bg-teal-100 bg-opacity-0"
+                            className="p-2  "
                             style={transparentTabStyle}
                         >
                             <Form

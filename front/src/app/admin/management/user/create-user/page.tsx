@@ -236,7 +236,6 @@ const CreateUser: React.FC = () => {
                                 options={[
                                     { value: 'admin', label: 'Admin' },
                                     { value: 'school_owner', label: 'School Owner' },
-                                    { value: 'parent', label: 'Parent' },
                                 ]}
                             />
                         </Form.Item>
