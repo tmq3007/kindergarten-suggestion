@@ -64,8 +64,8 @@ export default function Header() {
                                         className={clsx(
                                             path === '/public' && 'font-bold !text-custom-200',
                                         )}>
-                                        <span className={'hidden md:block'}>School Search</span>
-                                        <SearchOutlined className={'md:hidden'}/>
+                                        <span className={'hidden md:block text-white'}>School Search</span>
+                                        <SearchOutlined className={'md:hidden text-white'}/>
                                     </Link>,
                                     key: 'school',
                                 },
@@ -76,7 +76,7 @@ export default function Header() {
                                             path === '/public/community' && 'font-bold !text-custom-200',
                                         )}>
                                         <span className={'hidden md:block text-white'}>Community</span>
-                                        <PartitionOutlined className={'md:hidden'}/>
+                                        <PartitionOutlined className={'md:hidden text-white'}/>
                                     </Link>,
                                     key: 'community',
                                 },
@@ -87,7 +87,7 @@ export default function Header() {
                                             path === '/public/about' && 'font-bold !text-custom-200',
                                         )}>
                                         <span className={'hidden md:block text-white'}>About Us</span>
-                                        <InfoCircleOutlined className={'md:hidden'}/>
+                                        <InfoCircleOutlined className={'md:hidden text-white'}/>
                                     </Link>,
                                     key: 'about',
                                 },

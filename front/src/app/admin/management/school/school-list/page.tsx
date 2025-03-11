@@ -242,7 +242,7 @@ export default function SchoolList() {
             ]}
         />
         <SchoolManageTitle title={"School List"} />
-        <div className="bg-white p-5 rounded-lg h-full">
+        <div className="bg-white p-5 rounded-lg">
           <div className="flex justify-between items-center mb-4">
             <Input
                 placeholder="Search by school name"
@@ -272,8 +272,6 @@ export default function SchoolList() {
               }}
               locale={{ emptyText: error ? "Error loading data" : "No results found" }}
               rowClassName={getRowClassName}
-              scroll={{ x: "" }}
-              className="h-full"
           />
         </div>
       </div>

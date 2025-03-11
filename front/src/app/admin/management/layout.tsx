@@ -109,7 +109,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             <div
                                 className="react-resizable-handle"
                                 style={{
-                                    width: '5px',
+                                    width: '10px',
                                     height: '100%',
                                     background: 'transparent',
                                     position: 'absolute',
@@ -125,7 +125,8 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         <Sider width={siderWidth}
                                trigger={null}
                                collapsible
-                               collapsed={collapsed}>
+                               collapsed={collapsed}
+                        >
                             <Image className={'mx-auto'} src={logo} alt={'logo'} height={70} width={70}/>
                             <div className="demo-logo-vertical"/>
                             <Menu
@@ -136,7 +137,8 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                     {
                                         key: '1',
                                         icon: <HomeOutlined/>,
-                                        label: <Link href="/admin/management/school/school-list">School Management</Link>,
+                                        label: <Link href="/admin/management/school/school-list">School
+                                            Management</Link>,
                                     },
                                     {
                                         key: '2',
@@ -222,7 +224,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         </Link>
                     </Header>
                     <Content
-                    className='rounded-lg'
+                        className='rounded-lg h-screen'
                         style={{
                             padding: 15,
                             minHeight: 280,

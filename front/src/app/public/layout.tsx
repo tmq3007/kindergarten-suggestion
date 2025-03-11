@@ -1,7 +1,6 @@
 import type {Metadata} from "next";
 import {Props} from "@/redux/StoreProvider";
 import Header from "@/app/components/common/Header";
-import Information from "@/app/components/common/Information";
 import Footer from "@/app/components/common/Footer";
 
 

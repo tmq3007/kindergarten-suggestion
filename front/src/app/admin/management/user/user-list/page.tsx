@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import UserList from "@/app/components/user/UserList";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Input } from "antd";
 import {useGetUserListQuery} from "@/redux/services/userApi";
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
 const { Search } = Input;
 
@@ -79,17 +81,18 @@ export default function Page() {
 
     return (
         <>
-            <div className="bg-white p-5">
+            <div className="p-5">
                 {/* Breadcrumb navigation */}
-                <nav className="text-sm text-gray-500 mb-4">
-                    <span className="text-blue-600 cursor-pointer hover:underline">User Management</span> {" > "}
-                    <span className="text-gray-700">User List</span>
-                </nav>
+                <MyBreadcrumb
+                    paths={[
+                        {label: "User Management", href: "/admin/management/user/user-list"},
+                        {label: "User List"},
+                    ]}
+                />
 
                 {/* Page header with search bar and add user button */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                    <h2 className="text-2xl font-semibold mb-4 md:mb-0">User List</h2>
-
+                    <SchoolManageTitle title={"User List"}/>
                     <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
                         <div className="w-full md:w-80 relative">
                             <Search
