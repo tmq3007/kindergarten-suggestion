@@ -12,21 +12,21 @@ const transparentTabStyle = {
 
 const UserFormSkeleton = () => {
     return (
-        <div className="min-h-screen mt-14 bg-white">
+        <div className="min-h-screen mt-14 bg-teal-100 bg-opacity-0">
             <div className="container mx-auto mt-10 px-4 py-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="col-span-1">
-                        <div className="bg-blue-50 rounded-lg shadow-md p-6 h-full">
+                        <div className="bg-teal-100 rounded-lg shadow-md p-6 h-full">
                             <ProfileSideBarSkeleton />
                         </div>
                     </div>
                     <div className="col-span-1 md:col-span-2">
-                        <div className="bg-blue-50 rounded-lg shadow-md p-4 h-full">
+                        <div className="bg-teal-100 bg-opacity-60 rounded-lg shadow-md p-4 h-full">
                             <Tabs
                                 defaultActiveKey="1"
                                 type="card"
                                 size="small"
-                                className="h-full bg-blue-50"
+                                className="h-full bg-teal-100 bg-opacity-0"
                                 tabBarStyle={{
                                     marginBottom: 0,
                                     color: '#555',
@@ -35,7 +35,7 @@ const UserFormSkeleton = () => {
                                 <TabPane
                                     tab="My Information"
                                     key="1"
-                                    className="p-2 bg-blue-50"
+                                    className="p-2 bg-teal-100 bg-opacity-0"
                                     style={transparentTabStyle}
                                 >
                                     <div className="space-y-6 mt-12">
@@ -61,8 +61,8 @@ const UserFormSkeleton = () => {
                                 </TabPane>
                                 <TabPane tab="Change Password" key="2" className="p-4">
                                     <div className="max-w-md mx-auto space-y-6 mt-12">
-                                        <Skeleton.Input active className="!w-1/2" size="large" />
-                                        <Skeleton.Input active className="!w-1/2 mt-4" size="large" />
+                                        <Skeleton.Input active className="!w-full" size="large" />
+                                        <Skeleton.Input active className="!w-full mt-4" size="large" />
                                         <Skeleton.Button active className="mt-6" size="large" />
                                     </div>
                                 </TabPane>

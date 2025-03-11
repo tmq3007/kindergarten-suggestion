@@ -14,6 +14,7 @@ public interface ReviewMapper {
     @Mapping(source = "school.name", target = "schoolName")
     @Mapping(source = "parent.id", target = "parentId")
     @Mapping(source = "parent.user.fullname", target = "parentName")
+    @Mapping(source = "parent.media.url", target = "parentImage")
     ReviewVO toReviewVO(Review review);
 
     List<ReviewVO> toReviewVOList(List<Review> reviews);

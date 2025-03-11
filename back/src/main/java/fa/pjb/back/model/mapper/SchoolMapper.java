@@ -1,7 +1,6 @@
 package fa.pjb.back.model.mapper;
 
 import fa.pjb.back.model.dto.AddSchoolDTO;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.Facility;
 import fa.pjb.back.model.entity.Media;
@@ -26,8 +25,6 @@ public interface SchoolMapper {
     SchoolDetailVO toSchoolDetailVO(School school);
 
     SchoolListVO toSchoolListVO(School school);
-
-    SchoolDTO toSchoolDTO(School school);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "facilities", source = "facilities", qualifiedByName = "mapFacilityIds")

@@ -1,77 +1,101 @@
-import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
 
-interface ChangePasswordDTO{
+interface ChangePasswordDTO {
     oldPassword: string;
-    newPassword: string
+    newPassword: string;
 }
-export type ParentDTO = {
-    id: number;
+
+export type ParentUpdateDTO = {
+    id?: number;
     username?: string;
     email: string;
-    status?: Boolean;
+    status?: boolean;
     fullname: string;
     phone: string;
-    dob: string; // Because TypeScript does not have LocalDate, use string to represent ISO date
-    district: string;
+    dob: string;
+    district: string |undefined;
     ward: string;
     province: string;
     street: string;
-    role: "ROLE_PARENT"; // Define fixed value of role
+    role: string;
+    media?: File;
 };
 
 export type ParentVO = {
     username?: string;
     email: string;
-    status?: Boolean;
+    status?: boolean;
     fullname: string;
     phone: string;
-    dob: string; // Because TypeScript does not have LocalDate, use string to represent ISO date
+    dob: string;
     district: string;
     ward: string;
     province: string;
     street: string;
-    role: "ROLE_PARENT"; // Define fixed value of role
+    role: string;
+    media?: MediaVO;
+};
+export type MediaVO = {
+    url: string;
+    filename: string;
+    cloudId: string;
 };
 export const parentApi = createApi({
     reducerPath: "parentApi",
     baseQuery: baseQueryWithReauth,
     tagTypes: ["Parent"],
     endpoints: (build) => ({
-        // createParent: build.mutation<ApiResponse<ParentDTO>, ParentDTO>({
-        //     query: (parentData) => ({
-        //         url: "admin/parents",
-        //         method: "POST",
-        //         body: parentData, // Data sent to API
-        //     }),
-        //     invalidatesTags: ["Parent"], // Clear cache when creation is successful
-        // }),
         getParentById: build.query<ApiResponse<ParentVO>, number>({
             query: (userId) => ({
-                url:`parent/${userId}`,
-                method:"GET",
-            }) , // API endpoint to get Parent by ID
-            transformErrorResponse: (response: { status: string | number }, meta, arg) => response.status,
-            providesTags: ["Parent"], // Update cache data when there are changes
-        }),
-        editParent: build.mutation<ApiResponse<ParentDTO>, { parentId: string; data: ParentDTO }>({
-            query: ({ parentId, data }) => ({
-                url: `parent/edit/${Number(parentId)}`,
-                method: "PUT",
-                body: data,
+                url: `parent/${userId}`,
+                method: "GET",
             }),
+            transformErrorResponse: (response: { status: string | number }) => response.status,
+            providesTags: ["Parent"],
+        }),
+        editParent: build.mutation<
+            ApiResponse<ParentVO>,
+            { parentId: string; data: ParentUpdateDTO; image?: File }
+        >({
+            query: ({ parentId, data, image }) => {
+                const formData = new FormData();
+
+                const { media, ...parentDataWithoutImage } = data;
+
+                formData.append(
+                    "data",
+                    new Blob([JSON.stringify(parentDataWithoutImage)], { type: "application/json" })
+                );
+
+                if (image instanceof File) {
+                    formData.append("image", image);
+                }
+
+                return {
+                    url: `parent/edit/${Number(parentId)}`,
+                    method: "PUT",
+                    body: formData,
+                    // Không cần set header Content-Type, browser sẽ tự động set multipart/form-data
+                };
+            },
             invalidatesTags: ["Parent"],
         }),
-
-        changePassword: build.mutation<ApiResponse<void>, { parentId: number; data: ChangePasswordDTO }>({
+        changePassword: build.mutation<
+            ApiResponse<void>,
+            { parentId: number; data: ChangePasswordDTO }
+        >({
             query: ({ parentId, data }) => ({
                 url: `parent/${parentId}/change-password`,
                 method: "PUT",
                 body: data,
+                headers: {
+                    "Content-Type": "application/json",
+                },
             }),
             invalidatesTags: ["Parent"],
         }),
     }),
 });
 
-export const {  useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation } = parentApi;
+export const { useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation } = parentApi;

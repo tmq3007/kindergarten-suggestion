@@ -1,18 +1,7 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 
-interface AdminDTO{
-    id: string,
-    fullname: string,
-    email: string,
-    phone: string,
-    dob: string,
-    address: string,
-    role: string,
-    status: string,
-}
-
-export type UserDTO = {
+export type UserCreateDTO = {
     id: number;
     username?: string;
     email: string;
@@ -20,14 +9,15 @@ export type UserDTO = {
     fullname: string;
     phone: string;
     dob: string; // Because TypeScript does not have LocalDate, use string to represent ISO date
-    role: string
+    role: string;
+    expectedSchool?: string;
 }
 export const adminApi = createApi({
     reducerPath: "adminApi",
     baseQuery: baseQueryWithReauth,
     tagTypes: ["Admin"],
     endpoints: (build) => ({
-        createUser: build.mutation<ApiResponse<UserDTO>, UserDTO>({
+        createUser: build.mutation<ApiResponse<UserCreateDTO>, UserCreateDTO>({
             query: (adminData) => ({
                 url: "admin/user",
                 method: "POST",
