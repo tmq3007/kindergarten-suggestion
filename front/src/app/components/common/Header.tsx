@@ -34,7 +34,7 @@ export default function Header() {
                 ease: "easeInOut",
                 opacity: { duration: 2, ease: "easeInOut" },
             }}
-            className="fixed w-full top-0 bg-teal-100 shadow-md z-10">
+            className="fixed w-full top-0 bg-custom text-white shadow-md z-10">
             <div className="flex items-center justify-between md:px-8 py-3">
                 {/* Logo */}
                 <div className="flex items-center">
@@ -56,14 +56,13 @@ export default function Header() {
                     >
                         <Menu
                             mode="horizontal"
-                            className="border-none text-lg bg-transparent "
+                            className="border-none text-lg bg-transparent"
                             items={[
                                 {
                                     label: <Link
                                         href="/public"
                                         className={clsx(
-                                            'text-blue-500',
-                                            path === '/public' && 'font-bold !text-blue-500',
+                                            path === '/public' && 'font-bold !text-custom-200',
                                         )}>
                                         <span className={'hidden md:block'}>School Search</span>
                                         <SearchOutlined className={'md:hidden'}/>
@@ -74,10 +73,9 @@ export default function Header() {
                                     label: <Link
                                         href="/public/community"
                                         className={clsx(
-                                            'text-blue-500',
-                                            path === '/public/community' && 'font-bold',
+                                            path === '/public/community' && 'font-bold !text-custom-200',
                                         )}>
-                                        <span className={'hidden md:block'}>Community</span>
+                                        <span className={'hidden md:block text-white'}>Community</span>
                                         <PartitionOutlined className={'md:hidden'}/>
                                     </Link>,
                                     key: 'community',
@@ -86,10 +84,9 @@ export default function Header() {
                                     label: <Link
                                         href="/public/about"
                                         className={clsx(
-                                            'text-blue-500',
-                                            path === '/public/about' && 'font-bold',
+                                            path === '/public/about' && 'font-bold !text-custom-200',
                                         )}>
-                                        <span className={'hidden md:block'}>About Us</span>
+                                        <span className={'hidden md:block text-white'}>About Us</span>
                                         <InfoCircleOutlined className={'md:hidden'}/>
                                     </Link>,
                                     key: 'about',

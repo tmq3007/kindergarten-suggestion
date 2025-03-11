@@ -80,11 +80,9 @@ export default function SchoolSearchForm() {
             </Compact>
 
 
-            <p className={'italic mt-6'}>NOTE: The inclusion of a school in this search does NOT constitute an
+            <p className={'italic mt-10'}>NOTE: The inclusion of a school in this search does NOT constitute an
                 endorsement of the school and
                 should NOT be used to infer the accreditation status of the school.</p>
-
-
         </div>
     );
 }
