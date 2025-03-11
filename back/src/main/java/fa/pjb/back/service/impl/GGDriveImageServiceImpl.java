@@ -102,7 +102,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             String imageUrl = "https://drive.google.com/thumbnail?id=" + uploadFile.getId();
             return new ImageVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(), uploadFile.getId(), imageUrl);
         } catch (IOException | GeneralSecurityException e) {
-            return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.getMessage());
+            return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.toString());
         } finally {
             boolean deleted = file.delete() && Objects.requireNonNull(resizedFile).delete();
             if (!deleted) {

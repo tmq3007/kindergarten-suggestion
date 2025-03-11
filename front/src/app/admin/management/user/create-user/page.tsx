@@ -1,9 +1,9 @@
 'use client'
 import React, { useState } from 'react';
 import {
-    Button, DatePicker, Form, Input, Select, Space, Typography, notification, Image, Spin
+    Button, DatePicker, Form, Input, Select, Space, Typography, notification, Image, Spin, InputProps
 } from 'antd';
-import { Breadcrumb } from 'antd';
+import { Breadcrumb, Input as AntdInput } from 'antd';
 import Link from "next/link";
 import dayjs from "dayjs";
 import { useDispatch } from 'react-redux';
@@ -15,6 +15,8 @@ import countriesKeepZero from "@/lib/countriesKeepZero";
 import { motion, Variants } from 'framer-motion';
 
 const { Title } = Typography;
+const { TextArea } = AntdInput; // Importing TextArea from AntdInput
+
 const formItemLayout = {
     labelCol: { xs: { span: 24 }, sm: { span: 8 } },
     wrapperCol: { xs: { span: 24 }, sm: { span: 16 } },
@@ -22,11 +24,11 @@ const formItemLayout = {
 
 // Animation variants for fade-in and slide-up effect with staggered delays
 const fadeInUpVariants: Variants = {
-    initial: { opacity: 0, y: 50 }, // Start from below
+    initial: { opacity: 0, y: 50 },
     animate: (i: number) => ({
         opacity: 1,
         y: 0,
-        transition: { duration: 0.5, delay: i * 0.2 } // Incremental delay for staggered effect
+        transition: { duration: 0.3, delay: i * 0.1 }
     }),
 };
 
@@ -41,9 +43,9 @@ const CreateUser: React.FC = () => {
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(
         countries?.find((c) => c.code === "VN") // Default to Vietnam
     );
+    const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined); // Track selected role
 
     const onFinish = async (values: any) => {
-        // Handle form submission
         setSpinning(true);
         const countriesWithTrunkPrefix = countries
             ? countries
@@ -62,8 +64,9 @@ const CreateUser: React.FC = () => {
             dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
             role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
             phone: formattedPhone,
-            status:Boolean(values.status),
+            status: Boolean(values.status),
             email: values.email,
+            ...(values.expectedSchool && { expectedSchool: values.expectedSchool }), // Add expectedSchool if present
         };
 
         try {
@@ -83,24 +86,27 @@ const CreateUser: React.FC = () => {
     };
 
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
-        api[type]({ message, description }); // Show notification
+        api[type]({ message, description });
     };
 
     const handleCountryChange = (value: string) => {
         if (countries) {
             const country = countries.find((c) => c.code === value);
-            if (country) setSelectedCountry(country); // Update selected country
+            if (country) setSelectedCountry(country);
         }
     };
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+        let value = e.target.value.replace(/\D/g, "");
+    };
+
+    const handleRoleChange = (value: string) => {
+        setSelectedRole(value); // Update selected role
     };
 
     return (
         <div className={'h-[100%] p-0'}>
             {contextHolder}
-            {/* Breadcrumb navigation */}
             <Breadcrumb
                 className={'m-0'}
                 items={[
@@ -110,7 +116,6 @@ const CreateUser: React.FC = () => {
             />
             <Title level={3} className="mb-1 mt-0.5 ml-16">Add New User</Title>
 
-            {/* Main form container with fade-in animation */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -125,25 +130,13 @@ const CreateUser: React.FC = () => {
                     labelWrap
                     onFinish={onFinish}
                 >
-                    {/* Username field - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={0} // Delay = 0 * 0.2
-                    >
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={0}>
                         <Form.Item label="User Name" name="username">
                             <Input placeholder="System Auto Generate" disabled />
                         </Form.Item>
                     </motion.div>
 
-                    {/* Full Name field - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={1} // Delay = 1 * 0.2
-                    >
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={1}>
                         <Form.Item
                             label="Full Name"
                             name="fullname"
@@ -158,13 +151,7 @@ const CreateUser: React.FC = () => {
                         </Form.Item>
                     </motion.div>
 
-                    {/* Email field - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={2} // Delay = 2 * 0.2
-                    >
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={2}>
                         <Form.Item
                             label="Email"
                             name="email"
@@ -178,13 +165,7 @@ const CreateUser: React.FC = () => {
                         </Form.Item>
                     </motion.div>
 
-                    {/* Phone Number field - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={3} // Delay = 3 * 0.2
-                    >
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={3}>
                         <Form.Item
                             label="Phone No."
                             name="phone"
@@ -230,13 +211,7 @@ const CreateUser: React.FC = () => {
                         </Form.Item>
                     </motion.div>
 
-                    {/* Date of Birth field - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={4} // Delay = 4 * 0.2
-                    >
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={4}>
                         <Form.Item
                             label="DOB"
                             name="dob"
@@ -253,16 +228,11 @@ const CreateUser: React.FC = () => {
                         </Form.Item>
                     </motion.div>
 
-                    {/* Role field - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={5} // Delay = 5 * 0.2
-                    >
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={5}>
                         <Form.Item label="Role" name="role" rules={[{ required: true, message: 'Please select a role!' }]}>
                             <Select
                                 placeholder="Select a role"
+                                onChange={handleRoleChange} // Track role change
                                 options={[
                                     { value: 'admin', label: 'Admin' },
                                     { value: 'school_owner', label: 'School Owner' },
@@ -272,14 +242,27 @@ const CreateUser: React.FC = () => {
                         </Form.Item>
                     </motion.div>
 
-                    {/* Status field - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={6} // Delay = 6 * 0.2
-                    >
-                        <Form.Item   label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
+                    {/* Conditional Expected School TextArea */}
+                    {selectedRole === 'school_owner' && (
+                        <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={6}>
+                            <Form.Item
+                                label="Expected "
+                                name="expectedSchool"
+                                rules={[
+                                    { required: true, message: 'Expected school name is required for School Owner!' },
+                                    { max: 200, message: 'Expected school name must not exceed 200 characters!' }
+                                ]}
+                            >
+                                <TextArea
+                                    rows={4}
+                                    placeholder="Enter the expected school name"
+                                />
+                            </Form.Item>
+                        </motion.div>
+                    )}
+
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 7 : 6}>
+                        <Form.Item label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
                             <Select
                                 placeholder="Select status"
                                 options={[
@@ -290,13 +273,7 @@ const CreateUser: React.FC = () => {
                         </Form.Item>
                     </motion.div>
 
-                    {/* Buttons - slides up with delay */}
-                    <motion.div
-                        variants={fadeInUpVariants}
-                        initial="initial"
-                        animate="animate"
-                        custom={7} // Delay = 7 * 0.2
-                    >
+                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 8 : 7}>
                         <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
                             <Space className="absolute bottom-6 top-1">
                                 <Link href={'/admin/management/user/user-list'}>
@@ -312,7 +289,6 @@ const CreateUser: React.FC = () => {
                     </motion.div>
                 </Form>
             </motion.div>
-            {/* Loading spinner */}
             <Spin spinning={spinning} percent={percent} fullscreen />
         </div>
     );

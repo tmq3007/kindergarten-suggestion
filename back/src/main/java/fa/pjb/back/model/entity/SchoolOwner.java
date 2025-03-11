@@ -17,17 +17,18 @@ import java.time.LocalDate;
 @Table(name = "School_Owner")
 public class SchoolOwner {
     @Id
-    @Column(name = "user_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Integer id;
 
     @Column(name = "expected_school", nullable = false)
-    @Max(value = 255)
+    //@Max(value = 255)
     private String expectedSchool;
 
     @Column(name = "public_permission" )
     private Boolean publicPermission;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

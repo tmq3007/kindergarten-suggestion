@@ -9,7 +9,7 @@ import lombok.Builder;
 import java.time.LocalDate;
 
 @Builder
-public record SchoolOwnerDTO(
+public record UserCreateDTO(
         Integer id,
 
         @NotBlank(message = "Username cannot be empty")
@@ -28,7 +28,7 @@ public record SchoolOwnerDTO(
         String role,
 
         @NotBlank(message = "Status cannot be null or empty")
-        String status,
+        Boolean status,
 
         @Size(max = 20, message = "Phone number cannot exceed 20 characters")
         @NotBlank(message = "Phone cannot be empty")
@@ -38,6 +38,6 @@ public record SchoolOwnerDTO(
         LocalDate dob,
 
         @Nullable
-        SchoolDTO school
+        String expectedSchool
 ) {
 }

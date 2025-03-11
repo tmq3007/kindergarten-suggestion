@@ -1,5 +1,6 @@
 package fa.pjb.back.model.dto;
 
+import fa.pjb.back.model.entity.Media;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,9 +11,7 @@ import org.hibernate.validator.constraints.Length;
 import java.time.LocalDate;
 
 @Builder
-public record ParentDTO(
-
-        Integer id,
+public record ParentUpdateDTO(
 
         @Nullable
         String username,
@@ -21,12 +20,6 @@ public record ParentDTO(
         @Length(min = 1, max = 255, message = "Fullname must be between 1 and 50 characters")
         String fullname,
 
-        @Length(min = 7,max = 100, message = "Password must be at least 7 characters long")
-        @Pattern(
-                regexp = "^(?=.*[A-Za-z])(?=.*\\d).{7,}$",
-                message = "Password must be at least 7 characters long, contain at least one letter, and one number"
-        )
-        String password,
         @NotNull
          @Length(min = 1, max = 255, message = "Email must be between 1 and 50 characters")
         @Pattern(regexp = ".+@.+\\..+", message = "Invalid email format")
@@ -54,6 +47,9 @@ public record ParentDTO(
         String province,
 
         @Nullable
-        String street
+        String street,
+
+        @Nullable
+        Media media
 ) {
 }

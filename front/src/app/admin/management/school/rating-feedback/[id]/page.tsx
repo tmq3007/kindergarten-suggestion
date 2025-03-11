@@ -19,7 +19,10 @@ import {
 } from "recharts";
 import dayjs, { Dayjs } from "dayjs";
 import { ReviewVO, useGetReviewBySchoolIdQuery } from "@/redux/services/reviewApi";
-import NoData from "./NoData";
+import NoData from "../NoData";
+import {useParams} from "next/navigation";
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -37,7 +40,8 @@ interface ReviewWithDayjs extends Omit<ReviewVO, "receiveDate"> {
 }
 
 const RatingsDashboard = () => {
-   const schoolId = 1; // Hardcoded for now, consider removing this in production
+    const params = useParams();
+    const schoolId = Number(params.id as string);
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<ReviewWithDayjs[]>([]);
     const [showAll, setShowAll] = useState(false);
@@ -180,18 +184,17 @@ const RatingsDashboard = () => {
         const errorData = (error as ApiError)?.data;
         if (errorData?.code === "1300" && errorData?.message === "Review not found") {
             return (
+
                 <div className="min-h-screen bg-gray-50 p-6">
-                    <Breadcrumb
-                        className="mb-6"
-                        items={[
-                            { title: <Link href="/admin/management/school/">School Management</Link> },
-                            { title: <Link href="/admin/management/school/school-list">School List</Link> },
-                            { title: <Link href="/admin/management/school/school-detail">School Detail</Link> },
+                    <MyBreadcrumb
+                        paths={[
+                            { label: 'School Management', href: '/admin/management/school/school-list' },
+                            { label: 'School List', href: '/admin/management/school/school-list' },
+                            { label: 'School Detail', href:`/admin/management/school/school-detail/${schoolId}` },
+                            { label: 'Ratings & Feedback'},
                         ]}
                     />
-                    <Title level={3} className="mb-6">
-                        Ratings & Feedback
-                    </Title>
+                    <SchoolManageTitle title={'Ratings & Feedback'}/>
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -217,17 +220,16 @@ const RatingsDashboard = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
-            <Breadcrumb
-                className="mb-6"
-                items={[
-                    { title: <Link href="/admin/management/school/">School Management</Link> },
-                    { title: <Link href="/admin/management/school/school-list">School List</Link> },
-                    { title: <Link href="/admin/management/school/school-detail">School Detail</Link> },
+            <MyBreadcrumb
+                paths={[
+                    { label: 'School Management', href: '/admin/management/school/school-list' },
+                    { label: 'School List', href: '/admin/management/school/school-list' },
+                    { label: 'School Detail', href:`/admin/management/school/school-detail/${schoolId}` },
+                    { label: 'Ratings & Feedback'},
                 ]}
             />
-            <Title level={3} className="mb-6">
-                Ratings & Feedback
-            </Title>
+            <SchoolManageTitle title={'Ratings & Feedback'}/>
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
