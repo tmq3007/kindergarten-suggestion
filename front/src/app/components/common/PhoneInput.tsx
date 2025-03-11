@@ -5,6 +5,7 @@ import { Image } from 'antd';
 import countriesKeepZero from '@/lib/countriesKeepZero';
 
 interface PhoneInputProps {
+  isReadOnly?: boolean;
   initialCountryCode?: string;  //Optional initial Country
   onPhoneChange?: (phone: string) => void; // Optional callback to update form value
   triggerCheckPhone?: (phone: string) => any; // Optional hook for server-side validation
@@ -14,6 +15,7 @@ interface PhoneInputProps {
 const PhoneInput = forwardRef(
   (
     {
+      isReadOnly,
       initialCountryCode = 'VN',
       onPhoneChange,
       triggerCheckPhone,
@@ -143,6 +145,8 @@ const PhoneInput = forwardRef(
                 filterOption={(input, option) =>
                   String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                 }
+                className={isReadOnly ? "pointer-events-none" : ""}
+                suffixIcon={!isReadOnly}
               >
                 {countries?.map((country) => (
                   <Select.Option
@@ -190,6 +194,7 @@ const PhoneInput = forwardRef(
                 onChange={handlePhoneNumberChange}
                 onBlur={triggerCheckPhone ? handlePhoneBlur : undefined}
                 style={{ flex: 1 }}
+                readOnly={isReadOnly}
               />
             </Form.Item>
             <style>{`

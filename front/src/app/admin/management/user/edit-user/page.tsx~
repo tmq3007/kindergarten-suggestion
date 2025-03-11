@@ -1,14 +1,14 @@
 'use client';
-import React, {useEffect} from 'react';
-import {Button, DatePicker, Form, Input, notification, Select, Space, Spin} from 'antd';
-import {useRouter, useSearchParams} from 'next/navigation';
+import React, { useEffect } from 'react';
+import { Spin, Button, DatePicker, Form, Input, Select, Space, Breadcrumb, notification } from 'antd';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import dayjs from 'dayjs';
 import {useGetUserDetailQuery, useUpdateUserMutation} from "@/redux/services/userApi";
-import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 
 const formItemLayout = {
-    labelCol: {sm: {span: 6}},
-    wrapperCol: {sm: {span: 14}},
+    labelCol: { sm: { span: 6 } },
+    wrapperCol: { sm: { span: 14 } },
 };
 
 const UserDetail: React.FC = () => {
@@ -19,11 +19,11 @@ const UserDetail: React.FC = () => {
     const userId = searchParams.get('userId');
 
     //take user detail information to userData
-    const {data: userData, isLoading, isError} = useGetUserDetailQuery(Number(userId), {
+    const { data: userData, isLoading, isError } = useGetUserDetailQuery(Number(userId), {
         skip: !userId,
     });
 
-    const [updateUser, {isLoading: isUpdating}] = useUpdateUserMutation();
+    const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
         api[type]({
@@ -83,8 +83,8 @@ const UserDetail: React.FC = () => {
     //Handle loading animation
     if (isLoading) {
         return (
-            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
-                <Spin size="large"/>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <Spin size="large" />
             </div>
         );
     }
@@ -92,13 +92,7 @@ const UserDetail: React.FC = () => {
     //Handle notification error
     if (isError || !userData) {
         return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
-                color: 'red'
-            }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'red' }}>
                 Error loading user data. Please try again later.
             </div>
         );
@@ -109,9 +103,9 @@ const UserDetail: React.FC = () => {
             {contextHolder}
 
             <MyBreadcrumb
-                paths={[
-                    {label: "User Management", href: "/admin/management/user/user-detail"},
-                    {label: "Edit User"},
+                items={[
+                    { title: <Link href="/admin/management/user/user-detail">User Management</Link> },
+                    { title: 'Edit User' },
                 ]}
             />
 
@@ -120,66 +114,66 @@ const UserDetail: React.FC = () => {
                 form={form}
                 labelAlign="left"
                 labelWrap
-                style={{maxWidth: 600}}
+                style={{ maxWidth: 600 }}
                 className="w-full mx-auto mt-5"
                 onFinish={saveUser}
             >
                 <Form.Item
                     label={<span>User Name</span>}
                     name="username"
-                    rules={[{required: true, message: 'User Name is required!'}]}
+                    rules={[{ required: true, message: 'User Name is required!' }]}
                 >
-                    <Input readOnly style={{background: 'transparent', color: '#000'}}/>
+                    <Input readOnly style={{ background: 'transparent', color: '#000' }} />
                 </Form.Item>
 
                 <Form.Item
                     label={<span>Full Name</span>}
                     name="fullname"
-                    rules={[{required: true, message: 'Full Name is required!'}]}
+                    rules={[{ required: true, message: 'Full Name is required!' }]}
                 >
-                    <Input/>
+                    <Input />
                 </Form.Item>
 
                 <Form.Item
                     label={<span>Email</span>}
                     name="email"
                     rules={[
-                        {required: true, message: 'Email is required!'},
-                        {type: 'email', message: 'Please enter a valid email address!'},
+                        { required: true, message: 'Email is required!' },
+                        { type: 'email', message: 'Please enter a valid email address!' },
                     ]}
                 >
-                    <Input/>
+                    <Input />
                 </Form.Item>
 
                 <Form.Item
                     label={<span>Phone No</span>}
                     name="phoneNumber"
                     rules={[
-                        {required: true, message: 'Phone number is required!'},
-                        {pattern: /^\+\d{1,4}[-\s]?\d{4,14}$/, message: 'Phone number is not correct format!'},
+                        { required: true, message: 'Phone number is required!' },
+                        { pattern: /^\+\d{1,4}[-\s]?\d{4,14}$/, message: 'Phone number is not correct format!' },
                     ]}
                 >
-                    <Input/>
+                    <Input />
                 </Form.Item>
 
                 <Form.Item
                     label={<span>DOB</span>}
                     name="DOB"
-                    rules={[{required: true, message: 'Date of Birth is required!'}]}
+                    rules={[{ required: true, message: 'Date of Birth is required!' }]}
                 >
-                    <DatePicker allowClear={false} style={{width: '100%'}}/>
+                    <DatePicker allowClear={false} style={{ width: '100%' }} />
                 </Form.Item>
 
                 <Form.Item
                     label={<span>Role</span>}
                     name="role"
-                    rules={[{required: true, message: 'Role is required!'}]}
+                    rules={[{ required: true, message: 'Role is required!' }]}
                 >
                     <Select
                         options={[
-                            {label: 'Admin', value: 'Admin'},
-                            {label: 'Parent', value: 'Parent'},
-                            {label: 'School Owner', value: 'School Owner'},
+                            { label: 'Admin', value: 'Admin' },
+                            { label: 'Parent', value: 'Parent' },
+                            { label: 'School Owner', value: 'School Owner' },
                         ]}
                     />
                 </Form.Item>
@@ -187,18 +181,18 @@ const UserDetail: React.FC = () => {
                 <Form.Item
                     label={<span>Status</span>}
                     name="status"
-                    rules={[{required: true, message: 'Status is required!'}]}
+                    rules={[{ required: true, message: 'Status is required!' }]}
                 >
                     <Select
                         disabled
                         options={[
-                            {label: 'Active', value: 'Active'},
-                            {label: 'Inactive', value: 'Inactive'},
+                            { label: 'Active', value: 'Active' },
+                            { label: 'Inactive', value: 'Inactive' },
                         ]}
                     />
                 </Form.Item>
 
-                <Form.Item wrapperCol={{offset: 6, span: 16}}>
+                <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
                     <Space>
                         <Button type="dashed" onClick={() => router.back()}>
                             Cancel

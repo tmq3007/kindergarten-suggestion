@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Tabs,
     Form,
@@ -10,13 +10,13 @@ import {
     notification,
     Select,
 } from 'antd';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import {useSelector} from 'react-redux';
+import {RootState} from '@/redux/store';
 import dayjs from 'dayjs';
 import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
- import { useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery } from '@/redux/services/addressApi';
-import { ROLES } from '@/lib/constants';
-import { unauthorized } from 'next/navigation';
+import {useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery} from '@/redux/services/addressApi';
+import {ROLES} from '@/lib/constants';
+import {unauthorized} from 'next/navigation';
 import {
     ParentUpdateDTO,
     useChangePasswordMutation,
@@ -24,13 +24,13 @@ import {
     useGetParentByIdQuery
 } from '@/redux/services/parentApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
-import ProfileSidebar from "@/app/public/view-account/ProfileSideBar";
+import ProfileSidebar from "@/app/components/user/ProfileSideBar";
 import UserFormSkeleton from "@/app/components/skeleton/UserFormSkeleton";
 import background from "@public/background2.jpg";
-import { handleDistrictChange, handleProvinceChange, handleWardChange } from "@/lib/addressUtils";
+import {handleDistrictChange, handleProvinceChange, handleWardChange} from "@/lib/addressUtils";
 
-const { Option } = Select;
-const { TabPane } = Tabs;
+const {Option} = Select;
+const {TabPane} = Tabs;
 
 const Profile = () => {
     const userId = useSelector((state: RootState) => state.user?.id);
@@ -47,21 +47,21 @@ const Profile = () => {
     const [selectedWard, setSelectedWard] = useState<string | undefined>();
     const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined); // Thêm state để lưu file avatar
     const [processedPhone, setProcessedPhone] = useState<string>(''); // State để lưu số điện thoại đã xử lý
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
-    const { data: provinces, isLoading: isLoadingProvince } = useGetProvincesQuery();
-    const { data: districts, isLoading: isLoadingDistrict } = useGetDistrictsQuery(selectedProvince!, {
+    const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
+    const {data: provinces, isLoading: isLoadingProvince} = useGetProvincesQuery();
+    const {data: districts, isLoading: isLoadingDistrict} = useGetDistrictsQuery(selectedProvince!, {
         skip: !selectedProvince,
     });
-    const { data: wards, isLoading: isLoadingWard } = useGetWardsQuery(selectedDistrict!, {
+    const {data: wards, isLoading: isLoadingWard} = useGetWardsQuery(selectedDistrict!, {
         skip: !selectedDistrict,
     });
 
-    const { data: parentData, isLoading, error: errorParent } = useGetParentByIdQuery(userIdNumber);
+    const {data: parentData, isLoading, error: errorParent} = useGetParentByIdQuery(userIdNumber);
     console.log(parentData);
 
-    const [editParent, { isLoading: isEditLoading }] = useEditParentMutation();
+    const [editParent, {isLoading: isEditLoading}] = useEditParentMutation();
     const [form] = Form.useForm();
-    const [changePassword, { isLoading: isChangePwdLoading }] = useChangePasswordMutation();
+    const [changePassword, {isLoading: isChangePwdLoading}] = useChangePasswordMutation();
     const [passwordForm] = Form.useForm();
     const [api, contextHolder] = notification.useNotification();
 
@@ -199,7 +199,7 @@ const Profile = () => {
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, '');
-        form.setFieldsValue({ phone: value });
+        form.setFieldsValue({phone: value});
     };
 
     const onProvinceChange = (provinceCode: number) => {
@@ -214,7 +214,7 @@ const Profile = () => {
         handleWardChange(wardCode, setSelectedWard);
     };
 
-    if (isLoading) return <UserFormSkeleton />;
+    if (isLoading) return <UserFormSkeleton/>;
     if (errorParent) return <p className="text-red-500">Can not load data.</p>;
 
     const transparentTabStyle = {
@@ -222,15 +222,17 @@ const Profile = () => {
     };
 
     return (
-        <div style={{
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-         }} className="min-h-screen mt-14  bg-gray-100  ">
+        <div
+            style={{
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+            }}
+            className="min-h-screen mt-14 bg-gray-100">
             {contextHolder}
-            <div className="container mx-auto mt-10 px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="container h-screen mx-auto mt-10 px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Sidebar Column */}
-                <div className="col-span-1">
-                    <div className=" bg-white  rounded-lg shadow-md p-6 h-full">
+                <div className="col-span-1 h-2/3 my-auto">
+                    <div className=" bg-white rounded-lg shadow-md p-6 h-full">
                         <ProfileSidebar
                             fullname={parentData?.data?.fullname}
                             email={parentData?.data?.email}
@@ -245,7 +247,7 @@ const Profile = () => {
                 </div>
 
                 {/* Main Content Column */}
-                <div className="col-span-1 md:col-span-2  bg-white rounded-lg shadow-md p-4 h-full">
+                <div className="h-2/3 my-auto col-span-1 md:col-span-2  bg-white rounded-lg shadow-md p-4">
                     <Tabs
                         defaultActiveKey="1"
                         type="card"
@@ -273,7 +275,7 @@ const Profile = () => {
                                     <div className="space-y-6">
                                         <Form.Item
                                             rules={[
-                                                { required: true, message: 'Full name is required!' },
+                                                {required: true, message: 'Full name is required!'},
                                                 {
                                                     pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/,
                                                     message: 'Full name must contain at least two words!',
@@ -283,11 +285,11 @@ const Profile = () => {
                                             name="fullname"
                                             label={<span className="text-black">Full Name</span>}
                                         >
-                                            <Input />
+                                            <Input/>
                                         </Form.Item>
                                         <Form.Item
                                             rules={[
-                                                { required: true, message: 'Email is required!' },
+                                                {required: true, message: 'Email is required!'},
                                                 {
                                                     pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                                                     message: 'Enter a valid email address!',
@@ -297,7 +299,7 @@ const Profile = () => {
                                             name="email"
                                             label={<span className="text-black">Email Address</span>}
                                         >
-                                            <Input />
+                                            <Input/>
                                         </Form.Item>
                                         <Form.Item
                                             name="province"
@@ -336,7 +338,7 @@ const Profile = () => {
                                     <div className="space-y-6">
                                         <Form.Item
                                             rules={[
-                                                { required: true, message: 'Date of birth is required!' },
+                                                {required: true, message: 'Date of birth is required!'},
                                                 {
                                                     validator: (_, value) => {
                                                         if (!value) return Promise.reject('Date of birth is required!');
@@ -350,27 +352,28 @@ const Profile = () => {
                                             name="dob"
                                             label={<span className="text-black">Date of Birth</span>}
                                         >
-                                            <DatePicker className="w-full" />
+                                            <DatePicker className="w-full"/>
                                         </Form.Item>
                                         <Form.Item
                                             name="phone"
                                             label={<span className="text-black">Phone Number</span>}
                                             rules={[
-                                                { required: true, message: 'Phone number is required!' },
+                                                {required: true, message: 'Phone number is required!'},
                                                 {
                                                     pattern: /^\d{4,14}$/,
                                                     message: 'Phone number must be between 4 and 14 digits!',
                                                 },
                                             ]}
                                         >
-                                            <div className="flex items-center border h-8 border-gray-300 rounded-lg overflow-hidden">
+                                            <div
+                                                className="flex items-center border h-8 border-gray-300 rounded-lg overflow-hidden">
                                                 <Select
                                                     className="w-2"
                                                     loading={isLoadingCountry}
                                                     value={selectedCountry?.code || ''}
                                                     onChange={handleCountryChange}
-                                                    dropdownStyle={{ width: 250 }}
-                                                    style={{ width: 120, borderRight: '1px #ccc' }}
+                                                    dropdownStyle={{width: 250}}
+                                                    style={{width: 120, borderRight: '1px #ccc'}}
                                                     optionLabelProp="label2"
                                                     showSearch={false}
                                                     filterOption={(input, option) =>
@@ -384,13 +387,15 @@ const Profile = () => {
                                                             label={country.label}
                                                             label2={
                                                                 <span className="flex items-center">
-                                                                    <img src={country.flag} alt={country.label} width={20} height={10} className="mr-3" />
+                                                                    <img src={country.flag} alt={country.label}
+                                                                         width={20} height={10} className="mr-3"/>
                                                                     {country.code} {country.dialCode}
                                                                 </span>
                                                             }
                                                         >
                                                             <div className="flex items-center">
-                                                                <img src={country.flag} alt={country.label} width={20} height={10} className="mr-2 ml-3" />
+                                                                <img src={country.flag} alt={country.label} width={20}
+                                                                     height={10} className="mr-2 ml-3"/>
                                                                 {country.dialCode} - {country.label}
                                                             </div>
                                                         </Select.Option>
@@ -400,7 +405,7 @@ const Profile = () => {
                                                     <Input
                                                         placeholder="Enter your phone number"
                                                         onChange={handlePhoneNumberChange}
-                                                        style={{ flex: 1, border: 'none', boxShadow: 'none' }}
+                                                        style={{flex: 1, border: 'none', boxShadow: 'none'}}
                                                     />
                                                 </Form.Item>
                                             </div>
@@ -467,16 +472,16 @@ const Profile = () => {
                                 <Form.Item
                                     name="oldPassword"
                                     label={<span className="text-black">Current Password</span>}
-                                    rules={[{ required: true, message: 'Please enter your current password' }]}
+                                    rules={[{required: true, message: 'Please enter your current password'}]}
                                 >
-                                    <Input.Password className="w-full" />
+                                    <Input.Password className="w-full"/>
                                 </Form.Item>
                                 <Form.Item
                                     name="newPassword"
                                     label={<span className="text-black">New Password</span>}
                                     rules={[
-                                        { required: true, message: 'Please input your password!' },
-                                        { min: 7, message: 'Password must be at least 7 characters!' },
+                                        {required: true, message: 'Please input your password!'},
+                                        {min: 7, message: 'Password must be at least 7 characters!'},
                                         {
                                             pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
                                             message: 'Password must include uppercase, lowercase, and a number!',
@@ -484,15 +489,15 @@ const Profile = () => {
                                     ]}
                                     hasFeedback
                                 >
-                                    <Input.Password className="w-full" />
+                                    <Input.Password className="w-full"/>
                                 </Form.Item>
                                 <Form.Item
                                     name="confirmPassword"
                                     label={<span className="text-black">Confirm New Password</span>}
                                     dependencies={['newPassword']}
                                     rules={[
-                                        { required: true, message: 'Please confirm your new password' },
-                                        ({ getFieldValue }) => ({
+                                        {required: true, message: 'Please confirm your new password'},
+                                        ({getFieldValue}) => ({
                                             validator(_, value) {
                                                 if (!value || getFieldValue('newPassword') === value) {
                                                     return Promise.resolve();
@@ -503,7 +508,7 @@ const Profile = () => {
                                     ]}
                                     hasFeedback
                                 >
-                                    <Input.Password className="w-full" />
+                                    <Input.Password className="w-full"/>
                                 </Form.Item>
                                 <div className="flex justify-center">
                                     <Button loading={isChangePwdLoading} type="primary" htmlType="submit">
