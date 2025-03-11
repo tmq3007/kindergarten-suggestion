@@ -169,7 +169,7 @@ const RatingsDashboard = () => {
             selectedRates.length === 0
                 ? reviews
                 : reviews.filter((review) => {
-                    return metrics.totalAverage >= parseFloat(selectedRates[0]) ;
+                    return metrics.totalAverage >= parseFloat(selectedRates[0])  ;
                 })
         );
     };
