@@ -14,9 +14,10 @@ import {
 import SchoolFormButton from "@/app/components/school/SchoolFormButton";
 import PhoneInput from '../common/PhoneInput';
 import AddressInput from '../common/AddressInput';
-import { useRouter } from 'next/navigation';
 import EmailInput from '../common/EmailInput';
 import { ImageUpload } from '../common/ImageUploader';
+import DebounceSelect from '../common/DebounceSelect';
+import { useLazySearchUsersQuery } from '@/redux/services/testApi';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -44,6 +45,10 @@ interface FieldType {
     description?: string; // School introduction
     // File Upload
     image?: UploadFile[];
+
+    //Selected School Owner
+    //TODO: Change to number[]
+    schoolOwners?: any[]
 }
 
 interface SchoolFormFields {
@@ -63,6 +68,10 @@ interface SchoolFormFields {
     actionButtons?: React.ReactNode; // Prop để truyền các nút hành động
 }
 
+interface UserValue {
+    label: string;
+    value: string;
+}
 const SchoolForm: React.FC<SchoolFormFields> = ({
     form: externalForm,
     hasCancelButton,
@@ -85,13 +94,11 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
+    const [value, setValue] = useState<UserValue[]>([]);
+
 
     const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
-
-    const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => {
-        return e?.fileList ?? [];
-    };
-
+    const [triggerSearchUsers, searchUsersResult] = useLazySearchUsersQuery(); // Get the full tuple
     // Log imageList để kiểm tra dữ liệu
     useEffect(() => {
         console.log('imageList:', imageList);
@@ -153,7 +160,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             <Select placeholder="Select a category..." options={EDUCATION_METHOD_OPTIONS} />
                         </Form.Item>
 
-                        <Form.Item label="Fee/Month (VND)" required>
+                        <Form.Item label="Fee/Month (VND)" required className='mb-0'>
                             <div className="grid grid-cols-2 gap-4">
                                 <Form.Item
                                     name="feeFrom"
@@ -201,7 +208,25 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 </Form.Item>
                             </div>
                         </Form.Item>
-
+                        <Form.Item
+                            name="schoolOwners"
+                            label="School Owners"
+                            rules={[{ required: true, message: 'Please select a school owner' }]}
+                        >
+                            <DebounceSelect
+                                mode='multiple'
+                                queryResult={[triggerSearchUsers, searchUsersResult]}
+                                placeholder="Search for a school owner..."
+                                style={{ width: '100%' }}
+                                transformData={(response) =>
+                                    response?.results?.map((user: any) => ({
+                                        label: `${user.name.first} ${user.name.last}`,
+                                        value: user.login.username,
+                                    })) || []
+                                }
+                                onChange={(newValue) => form.setFieldsValue({ schoolOwners: newValue })}
+                            />
+                        </Form.Item>
                         <Form.Item
                             name="website"
                             label="School Website"

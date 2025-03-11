@@ -13,9 +13,11 @@ import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.mapper.SchoolMapper;
+import fa.pjb.back.model.mapper.SchoolOwnerProjection;
 import fa.pjb.back.model.vo.ImageVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
+import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
@@ -35,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
@@ -223,6 +226,21 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(school);
     }
 
+    @Override
+    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwners(searchParam, ERole.ROLE_SCHOOL_OWNER);
+
+        // Convert projection to VO
+        return projections.stream()
+                .map(projection -> new SchoolOwnerVO(
+                        projection.getId(),
+                        projection.getUsername(),
+                        projection.getEmail(),
+                        projection.getExpectedSchool()
+                ))
+                .toList();
+    }
+
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
@@ -404,4 +422,6 @@ public class SchoolServiceImpl implements SchoolService {
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
     }
+
+
 }

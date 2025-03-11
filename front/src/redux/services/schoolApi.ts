@@ -56,6 +56,8 @@ export type SchoolDTO = {
     description?: string;
     // File Upload
     image?: File[];
+
+    schoolOwners?: number[]
 }
 
 export type ChangeSchoolStatusDTO = {
@@ -124,7 +126,10 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
 };
 
 export interface SchoolCreateDTO extends SchoolDTO{
-    userId: number;
+    userId: number,
+    
+    //TODO: Change to number[]
+    schoolOwners?: any[];
 }
 
 export const schoolApi = createApi({
