@@ -1,62 +1,132 @@
-import {Button, message, UploadFile} from "antd";
-import React, {useEffect, useState} from "react";
-import {useParams, useRouter} from "next/navigation";
+
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button, message, notification, UploadFile } from "antd";
+import { RootState } from '@/redux/store';
 import {
+    SchoolCreateDTO,
     SchoolDTO,
     SchoolUpdateDTO,
     useAddSchoolMutation, useGetSchoolByIdQuery,
     useUpdateSchoolByAdminMutation, useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
-import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
-import countriesKeepZero from "@/lib/countriesKeepZero";
+import { useSelector } from "react-redux";
+import { ButtonGroupProps } from "./SchoolFormButton";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
-                                                                  form,
-                                                                  hasCancelButton,
-                                                                  hasSaveButton,
-                                                                  hasCreateSubmitButton,
-                                                                  hasUpdateSubmitButton,
-                                                                  hasDeleteButton,
-                                                                  hasEditButton,
-                                                                  hasRejectButton,
-                                                                  hasApproveButton,
-                                                                  hasPublishButton,
-                                                                  hasUnpublishButton,
-                                                                  selectedCountry,
-                                                              }) => {
+    form,
+    hasCancelButton,
+    hasSaveButton,
+    hasCreateSubmitButton,
+    hasUpdateSubmitButton,
+    hasDeleteButton,
+    hasEditButton,
+    hasRejectButton,
+    hasApproveButton,
+    hasPublishButton,
+    hasUnpublishButton,
+    emailInputRef,
+    phoneInputRef
+}) => {
     const router = useRouter();
     const params = useParams();
     const schoolId = params.id;
-    const [updateSchoolByAdmin, {isLoading: isUpdating}] = useUpdateSchoolByAdminMutation();
-    const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
-    const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
-    const {refetch: getSchoolByIdRefetch} = useGetSchoolByIdQuery(Number(schoolId));
-    const [messageApi, contextHolder] = message.useMessage();
+    const user = useSelector((state: RootState) => state.user);
+
+    const [updateSchoolByAdmin, { isLoading: isUpdating }] = useUpdateSchoolByAdminMutation();
+    const [addSchool, { isLoading: isCreating }] = useAddSchoolMutation();
+    const [messageApi, messageContextHolder] = message.useMessage();
+    const [api, notificationContextHolder] = notification.useNotification();
+    const { refetch: getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
+    const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
     const [activeButton, setActiveButton] = useState<string | null>(null);
+
+
+
+
+    //Config notifications
+    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
+        api[type]({
+            message,
+            description,
+            duration: duration,
+            placement: 'topRight',
+            showProgress: true,
+            pauseOnHover: false,
+            onClose: onClose
+        });
+    };
+
+    // Function to handle error formatting
+    const formatErrorMessage = (error: unknown): string | React.ReactNode => {
+        let errorMessage: string | React.ReactNode = 'There was an error while adding the school. Please try again.';
+
+        if (error && typeof error === 'object' && 'data' in error) {
+            const errorData = (error as {
+                data?: {
+                    message?: string;
+                    fieldErrors?: { message: string }[];
+                    globalErrors?: { message: string }[];
+                }
+            }).data;
+
+            const allErrorMessages: string[] = [];
+
+            if (errorData?.fieldErrors && errorData.fieldErrors.length > 0) {
+                allErrorMessages.push(...errorData.fieldErrors.map(err => err.message));
+            }
+
+            if (errorData?.globalErrors && errorData.globalErrors.length > 0) {
+                allErrorMessages.push(...errorData.globalErrors.map(err => err.message));
+            }
+
+            if (allErrorMessages.length > 0) {
+                errorMessage = allErrorMessages.map((msg, index) => (
+                    <React.Fragment key={index}>
+                        {'-' + msg}
+                        {index < allErrorMessages.length - 1 && <br />}
+                    </React.Fragment>
+                ));
+            } else if (errorData?.message) {
+                errorMessage = errorData.message;
+            }
+        } else if (error && typeof error === 'object' && 'message' in error) {
+            errorMessage = (error as { message?: string }).message || errorMessage;
+        } else if (typeof error === 'string') {
+            errorMessage = error;
+        }
+
+        return errorMessage;
+    };
+
+
     /**
      * Utility function to prepare school data before submission
      * - Validates form fields
      * - Formats phone number correctly
      * - Extracts uploaded images
      */
+
     const prepareSchoolData = async (): Promise<SchoolDTO | SchoolUpdateDTO | null> => {
         try {
             // Validate form fields and get values
             const values = await form.validateFields();
+            // Validate email and phone using refs from SchoolForm
 
-            // Format phone number
-            let formattedPhone = values.phone || "";
-            if (selectedCountry && !countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith("0")) {
-                formattedPhone = formattedPhone.substring(1);
+            const isEmailValid = await emailInputRef?.current?.validateEmail();
+            const isPhoneValid = await phoneInputRef?.current?.validatePhone();
+
+            if (!isEmailValid || !isPhoneValid) {
+                console.log('Validation failed');
+                messageApi.error("Email or phone validation failed. Please check your inputs.");
+                return null;
             }
-            const fullPhoneNumber = selectedCountry ? `${selectedCountry.dialCode} ${formattedPhone}` : formattedPhone;
+            const fileList: File[] = (values.image as UploadFile[] || [])
+                .filter((file) => file.originFileObj)
+                .map((file) => file.originFileObj as File);
+            const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
 
-            // Extract uploaded images
-            const fileList: File[] = (values.image || [])
-                .filter((file: UploadFile) => file.originFileObj)
-                .map((file: UploadFile) => file.originFileObj as File);
-
-            // Return the prepared data object
+            // Prepare final data
             return {
                 ...values,
                 image: fileList,
@@ -71,14 +141,34 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     /**
      * Handles school creation
      */
-    const handleCreateSubmit = async () => {
-        const schoolData = await prepareSchoolData();
-        if (!schoolData) return;
+    async function addSchoolHandle(addStatus: number) {
+        const schoolValue = await prepareSchoolData();
+        if (!schoolValue) return;
+        const finalValues: SchoolCreateDTO = {
+            ...schoolValue,
+            userId: Number(user.id),
+            status: addStatus,
+        };
         try {
-            await addSchool({...schoolData, status: 1}).unwrap();
-            messageApi.success("School created successfully!");
-        } catch (error) {
-            messageApi.error("Failed to create school. Please try again.");
+            await addSchool(finalValues).unwrap();
+            // console.log(finalValues);
+            form.resetFields();
+            openNotificationWithIcon(
+                'success',
+                'School Added Successfully',
+                'The school has been added to the system successfully.',
+                2,
+                () => router.push("/admin/management/school/school-list")
+            );
+        } catch (error: unknown) {
+            const errorMessage = formatErrorMessage(error);
+            openNotificationWithIcon(
+                'error',
+                'Failed to Add School',
+                errorMessage,
+                5,
+                () => { },
+            );
         }
     };
 
@@ -156,27 +246,31 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
     return (
         <div className="flex lg:justify-center space-x-4 justify-end">
-            {contextHolder}
+            {messageContextHolder} {/* Render message context */}
+            {notificationContextHolder} {/* Render notification context */}
             {hasCancelButton && (
-                <Button htmlType="button" onClick={handleCancel} className={'bg-red-500 text-white border-red-900'}>
+                <Button htmlType="button" color="danger" onClick={handleCancel} >
                     Cancel
                 </Button>
             )}
             {hasSaveButton && (
                 <Button htmlType="button" onClick={() => {
-                }} className={'bg-gray-300 text-gray-800 border-gray-900'}>
+                }} variant="outlined" color="primary"
+                >
                     Save
                 </Button>
             )}
             {hasCreateSubmitButton && (
-                <Button htmlType="button" onClick={handleCreateSubmit}
-                        className={'bg-blue-300 text-blue-800 border-blue-900'} loading={isCreating}>
+                <Button htmlType="button" type="primary" onClick={() => {
+                    addSchoolHandle(1);
+                }}
+                    loading={isCreating}>
                     Submit
                 </Button>
             )}
             {hasUpdateSubmitButton && (
                 <Button htmlType="button" onClick={handleUpdateSubmit}
-                        className={'bg-blue-300 text-blue-800 border-blue-900'} loading={isUpdating}>
+                    className={'bg-blue-300 text-blue-800 border-blue-900'} loading={isUpdating}>
                     Submit
                 </Button>
             )}

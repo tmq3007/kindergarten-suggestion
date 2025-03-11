@@ -1,13 +1,10 @@
 'use client'
 import {motion} from "framer-motion";
-import background from "@public/background2.jpg";
+import background from "@public/bg4.png";
 import SchoolSearchForm from "@/app/components/school/SchoolSearchForm";
 import Testimonial from "@/app/components/common/Testimonial";
 import Information from "@/app/components/common/Information";
 
-const hanldeBtn = async ()=>{
-    await fetch("http://localhost:8080/api/test")
-}
 export default function Page() {
     return (
         <motion.div
@@ -23,7 +20,7 @@ export default function Page() {
                     backgroundPosition: "center",
                 }}
                 className=" inset-0 flex items-center justify-center pt-60 pb-52">
-                <div className="bg-teal-100 bg-opacity-60 p-8 md:p-20 rounded-2xl w-full max-w-2xl shadow-2xl">
+                <div className="bg-white bg-opacity-70 p-8 md:p-20 rounded-2xl w-full max-w-2xl shadow-2xl">
                     <SchoolSearchForm/>
                 </div>
             </div>

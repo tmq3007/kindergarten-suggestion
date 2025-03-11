@@ -11,6 +11,7 @@ public record ReviewVO(
         String schoolName,
         Integer parentId,
         String parentName,
+        String parentImage,
         Byte learningProgram,
         Byte facilitiesAndUtilities,
         Byte extracurricularActivities,

@@ -2,7 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangePasswordDTO;
-import fa.pjb.back.model.dto.ParentDTO;
+import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
@@ -44,12 +44,12 @@ public class ParentController {
                 .build();
     }
 
-    @PutMapping(value = "/edit/{parentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/edit/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ParentVO> editParent(
-            @PathVariable Integer parentId,
-            @RequestPart(value = "data") @Valid ParentDTO parentDTO,
+            @PathVariable Integer userId,
+            @RequestPart(value = "data") @Valid ParentUpdateDTO parentUpdateDTO,
             @RequestPart(value = "image", required = false) MultipartFile image) {
-        ParentVO updatedParent = parentService.editParent(parentId, parentDTO, image);
+        ParentVO updatedParent = parentService.editParent(userId, parentUpdateDTO, image);
         return ApiResponse.<ParentVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Parent updated successfully")

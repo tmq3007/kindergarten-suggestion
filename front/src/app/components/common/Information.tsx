@@ -16,8 +16,8 @@ import {Space} from "antd";
 export default function Information() {
     return (
         <>
-            <div className={'py-10 bg-teal-100'}>
-                <Title className={`${nunito.className} text-center`}>About Us</Title>
+            <div className={'py-10 bg-custom'}>
+                <Title className={`${nunito.className} text-center !text-white`}>About Us</Title>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 justify-center gap-7 p-4">
                     <div className="hidden lg:block lg:col-span-1"></div>
                     {/* Card 1 */}

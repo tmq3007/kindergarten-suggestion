@@ -22,6 +22,7 @@ import {ROLES} from '@/lib/constants';
 import {resetUser} from '@/redux/features/userSlice';
 import {Resizable} from 'react-resizable';
 import 'react-resizable/css/styles.css'
+import Footer from '@/app/components/common/Footer';
 
 export default function AdminLayout({children}: { children: React.ReactNode }) {
     const [messageApi, contextHolder] = message.useMessage();
@@ -221,13 +222,15 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         </Link>
                     </Header>
                     <Content
+                    className='rounded-lg'
                         style={{
-                            padding: 20,
+                            padding: 15,
                             minHeight: 280,
                         }}
                     >
                         {children}
                     </Content>
+                    <Footer/>
                 </Layout>
                 <Modal
                     title="Are you leaving?"

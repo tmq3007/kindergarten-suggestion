@@ -1,20 +1,21 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception.*;
 import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
-import fa.pjb.back.model.dto.ParentDTO;
+import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.FileFolderEnum;
+import fa.pjb.back.model.mapper.MediaMapper;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.vo.ImageVO;
+import fa.pjb.back.model.vo.MediaVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
@@ -47,7 +48,7 @@ public class ParentServiceImpl implements ParentService {
     private final EmailService emailService;
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
-
+    private final MediaMapper mediaMapper;
     @Transactional
     @Override
     public RegisterVO saveNewParent(RegisterDTO registerDTO) throws UserNotCreatedException {
@@ -77,14 +78,20 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Transactional
-    public ParentVO editParent(Integer parentId, ParentDTO parentDTO, MultipartFile image) {
-        Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> new RuntimeException("Parent not found"));
-        log.info("parent0000: {}", parentMapper.toParentDTO(parent));
+    public ParentVO editParent(Integer userId, ParentUpdateDTO parentUpdateDTO, MultipartFile image) {
+        // Fetch the existing Parent entity from the repository
+        Parent parent = parentRepository.findParentByUserId(userId);
+        if (parent == null) {
+            throw new UserNotFoundException();
+        }
+        log.info("parentCheck: {}", parent);
+        log.info("parentUpdateDTO: {}", parentMapper.toParentDTO(parent));
 
+        // Get the existing User entity associated with the Parent
         User user = parent.getUser();
 
-        String newEmail = parentDTO.email() != null ? parentDTO.email() : user.getEmail();
+        // Check and update email if provided, otherwise keep the current one
+        String newEmail = parentUpdateDTO.email() != null ? parentUpdateDTO.email() : user.getEmail();
         if (!newEmail.equals(user.getEmail())) {
             Optional<User> existingUserEmail = userRepository.findByEmail(newEmail);
             if (existingUserEmail.isPresent() && !existingUserEmail.get().getId().equals(user.getId())) {
@@ -92,55 +99,40 @@ public class ParentServiceImpl implements ParentService {
             }
             log.info("email: {}", newEmail);
         }
-        log.info("parent {}" ,parentDTO);
+        log.info("parentUpdateDTO: {}", parentUpdateDTO);
 
-        // Check if the date of birth is in the past
-        if (parentDTO.dob() == null || !parentDTO.dob().isBefore(LocalDate.now())) {
+        // Validate that the date of birth is in the past
+        if (parentUpdateDTO.dob() == null || !parentUpdateDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        // Update User
-        user = User.builder()
-                .id(user.getId())
-                .username(parent.getUser().getUsername())
-                .phone(parentDTO.phone())
-                .fullname(parentDTO.fullname())
-                .status(parentDTO.status())
-                .dob(parentDTO.dob())
-                .role(ROLE_PARENT)
-                .password(user.getPassword())
-                .email(newEmail)
-                .phone(parentDTO.phone())
-                .build();
-        log.info("user: {}", user);
+        // Update User fields directly on the existing entity
+        user.setFullname(parentUpdateDTO.fullname());
+        user.setEmail(newEmail);
+        user.setPhone(parentUpdateDTO.phone());
+        user.setStatus(parentUpdateDTO.status());
+        user.setDob(parentUpdateDTO.dob());
+        user.setRole(ROLE_PARENT);
 
         // Handle image upload if provided
-        Media media = parent.getMedia(); // Existing media, if any
+        Media media = parent.getMedia(); // Get existing Media, if any
         log.info("media: {}", media);
         if (image != null && !image.isEmpty()) {
-            // Validate file size (e.g., max 5MB)
+            // Validate file size (max 5MB)
             long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
             log.info("size: {}", image.getSize());
             if (image.getSize() > MAX_FILE_SIZE) {
                 throw new RuntimeException("Image file cannot exceed 5MB");
             }
 
-            log.info("da check size: {}", image);
-
-            // Validate file type (e.g., JPEG, PNG)
-            try {
-                String mimeType = image.getContentType();
-                if (mimeType == null || !mimeType.startsWith("image/")) {
-                    throw new RuntimeException("Invalid file type. Only images (JPEG, PNG) are allowed.");
-                }
-                log.info("da check type: {}", image);
-            } catch (Exception e) {
-                throw new RuntimeException("Error validating image file: " + e.getMessage());
+            // Validate file type (JPEG or PNG)
+            String mimeType = image.getContentType();
+            if (mimeType == null || !mimeType.startsWith("image/")) {
+                throw new RuntimeException("Invalid file type. Only JPEG or PNG images are allowed.");
             }
+            log.info("File type validated: {}", mimeType);
 
-
-
-            // Convert MultipartFile to java.io.File
+            // Convert MultipartFile to a temporary java.io.File
             java.io.File tempFile;
             try {
                 tempFile = java.io.File.createTempFile("parent_image_", ".tmp");
@@ -148,67 +140,61 @@ public class ParentServiceImpl implements ParentService {
                 log.info("tempFile: {}", tempFile);
             } catch (IOException e) {
                 throw new RuntimeException("Error converting image file: " + e.getMessage());
-
             }
 
-            // Upload image using GGDriveImageService
+            // Upload the image to Google Drive using GGDriveImageService
             ImageVO imageVO = ggDriveImageService.uploadImage(
                     tempFile,
-                    "Parent_" + parentId + "_Profile_",
-                    FileFolderEnum.USER_IMAGES// Assuming this enum exists
+                    "Parent_" + userId + "_Profile_",
+                    FileFolderEnum.USER_IMAGES
             );
             log.info("imageVO: {}", imageVO);
 
             if (imageVO.status() == 200) {
-                // Create or update Media entity
+                // Create a new Media entity or update the existing one
                 if (media == null) {
                     media = new Media();
-                   parent.setMedia(media); // Set the parent reference
-                } else {
-                    // Optionally delete the old image from Google Drive
-                    if (media.getCloudId() != null) {
-                        ggDriveImageService.deleteUploadedImage(media.getCloudId());
-                    }
+                    media.setParent(parent); // Link the Media to the Parent
+                } else if (media.getCloudId() != null) {
+                    // Delete the old image from Google Drive if it exists
+                    ggDriveImageService.deleteUploadedImage(media.getCloudId());
                 }
 
+                // Update Media fields with the new image details
                 media.setUrl(imageVO.url());
                 media.setSize(String.valueOf(imageVO.size()));
                 media.setCloudId(imageVO.fileId());
                 media.setFilename(imageVO.fileName());
-                media.setType("image/png"); // Assuming PNG from uploadImage output
+                media.setType("image/png"); // Assuming PNG format
                 media.setUploadTime(LocalDate.now());
-                 media.setId(media.getId());
 
+                parent.setMedia(media); // Assign the updated Media to Parent
                 log.info("Image uploaded successfully: {}", imageVO.url());
             } else {
                 throw new RuntimeException("Failed to upload image: " + imageVO.message());
             }
 
-            // Clean up temporary file
+            // Clean up the temporary file
             if (!tempFile.delete()) {
                 log.warn("Failed to delete temporary file: {}", tempFile.getName());
+                tempFile.deleteOnExit(); // Fallback to delete when JVM exits
             }
         }
 
-        // Update Parent
-        parent = Parent.builder()
-                .id(parentId)
-                .district(parentDTO.district())
+        // Update Parent fields directly on the existing entity
+        parent.setDistrict(parentUpdateDTO.district());
+        parent.setWard(parentUpdateDTO.ward());
+        parent.setProvince(parentUpdateDTO.province());
+        parent.setStreet(parentUpdateDTO.street());
+        parent.setUser(user); // Ensure User is linked (though not necessary due to existing relationship)
 
-                .ward(parentDTO.ward())
-                .province(parentDTO.province())
-                .street(parentDTO.street())
-                .user(user)
-                .media(media) // Set the updated or new media
-                .build();
         log.info("parent2: {}", parentMapper.toParentVO(parent));
 
-        // Save changes
-        userRepository.save(user);
-        parentRepository.save(parent); // This will also save the associated Media due to cascade = CascadeType.ALL
-        log.info("save parent success");
+        // Save the Parent entity (this will cascade to User and Media due to CascadeType.ALL)
+        parentRepository.save(parent);
+        log.info("Parent saved successfully");
 
-        // Return updated information
+        // Return the updated ParentVO
         return parentMapper.toParentVO(parent);
     }
 
@@ -218,16 +204,26 @@ public class ParentServiceImpl implements ParentService {
         if (parent == null) {
             throw new UserNotFoundException();
         }
+        log.info("parentVO: {}", parent);
 
+        // Assuming parent has a Media entity relationship
+        MediaVO mediaVO = parent.getMedia() != null ?
+                new MediaVO(
+                        parent.getMedia().getUrl(),
+                        parent.getMedia().getFilename(),
+                        parent.getMedia().getCloudId()
+                 ) : null;
+        parent.setMedia(mediaMapper.toMedia(mediaVO));
+        log.info("mediaVO: {}", mediaVO);
         return parentMapper.toParentVO(parent);
     }
 
     @Transactional
     public void changePassword(Integer parentId, String oldPassword, String newPassword) {
-        Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(UserNotFoundException::new);
+        Parent parent = parentRepository.findParentByUserId(parentId);
 
         User user = parent.getUser();
+        log.info("user: {}", user.getPassword());
 
         // Check if the old password is correct
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {

@@ -149,7 +149,7 @@ const UserDetail: React.FC = () => {
                     name="phoneNumber"
                     rules={[
                         { required: true, message: 'Phone number is required!' },
-                        { pattern: /^0\d{9}$/, message: 'Phone number must be 10 digits and start with 0!' },
+                        { pattern: /^\+\d{1,4}[-\s]?\d{4,14}$/, message: 'Phone number is not correct format!' },
                     ]}
                 >
                     <Input />

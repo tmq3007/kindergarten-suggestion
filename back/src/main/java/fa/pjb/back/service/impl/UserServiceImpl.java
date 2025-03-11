@@ -3,7 +3,7 @@ package fa.pjb.back.service.impl;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
-import fa.pjb.back.model.dto.UserDTO;
+import fa.pjb.back.model.dto.UserCreateDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
@@ -15,7 +15,6 @@ import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
-import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
@@ -159,8 +158,8 @@ public class UserServiceImpl implements UserService {
   }
 
     @Override
-    public UserDTO createUser(UserDTO userDTO) {
-        Optional<User> existingUserEmail = userRepository.findByEmail(userDTO.email());
+    public UserCreateDTO createUser(UserCreateDTO userCreateDTO) {
+        Optional<User> existingUserEmail = userRepository.findByEmail(userCreateDTO.email());
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
@@ -168,22 +167,22 @@ public class UserServiceImpl implements UserService {
         }
 
         // Check if the date of birth is in the past
-        if (userDTO.dob() == null || !userDTO.dob().isBefore(LocalDate.now())) {
+        if (userCreateDTO.dob() == null || !userCreateDTO.dob().isBefore(LocalDate.now())) {
             throw new InvalidDateException("Dob must be in the past");
         }
         // Create User
-        String usernameAutoGen = autoGeneratorHelper.generateUsername(userDTO.fullname());
+        String usernameAutoGen = autoGeneratorHelper.generateUsername(userCreateDTO.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
         User user =User.builder()
                 .username(usernameAutoGen)
                 .password(passwordEncoder.encode(passwordAutoGen))
-                .phone(userDTO.phone())
-                .fullname(userDTO.fullname())
-                .status(Boolean.valueOf(userDTO.status()))
-                .dob(userDTO.dob())
-                .email(userDTO.email())
+                .phone(userCreateDTO.phone())
+                .fullname(userCreateDTO.fullname())
+                .status(Boolean.valueOf(userCreateDTO.status()))
+                .dob(userCreateDTO.dob())
+                .email(userCreateDTO.email())
                 .build();
-        if(Objects.equals(userDTO.role(), "ROLE_PARENT")) {
+        if(Objects.equals(userCreateDTO.role(), "ROLE_PARENT")) {
             user.setRole(ERole.ROLE_PARENT);
 
             // Create new Parent
@@ -198,29 +197,35 @@ public class UserServiceImpl implements UserService {
 
             // Save Parent to database
             parentRepository.save(newParent);
-        } else if(Objects.equals(userDTO.role(), "ROLE_SCHOOL_OWNER")) {
+        } else if(Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
             user.setRole(ERole.ROLE_SCHOOL_OWNER);
 
             // Create SchoolOwner
             SchoolOwner schoolOwner = SchoolOwner.builder()
                     .user(user)
+                    .expectedSchool(userCreateDTO.expectedSchool())
+                    .publicPermission(true)
                     .school(null)
                     .assignTime(LocalDate.from(LocalDateTime.now()))
                     .build();
 
             // Save SchoolOwner to database
             schoolOwnerRepository.save(schoolOwner);
-        } else if(Objects.equals(userDTO.role(), "ROLE_ADMIN")) {
+        } else if(Objects.equals(userCreateDTO.role(), "ROLE_ADMIN")) {
             user.setRole(ERole.ROLE_ADMIN);
         }
 
         // Save User to database
         userRepository.save(user);
 
-        UserDTO responseDTO = userMapper.toUserDTO(user);
+        UserCreateDTO responseDTO = userMapper.toUserDTO(user);
 
-        emailService.sendUsernamePassword(userDTO.email(), userDTO.fullname(),
-                usernameAutoGen,passwordAutoGen);
+        //Check email exist
+        if (existingUserEmail.isEmpty()) {
+            emailService.sendUsernamePassword(userCreateDTO.email(), userCreateDTO.fullname(),
+                    usernameAutoGen,passwordAutoGen);
+        }
+
         return responseDTO;
     }
 
