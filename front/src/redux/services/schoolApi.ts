@@ -77,6 +77,7 @@ export type SchoolVO = {
     street: string;
     email: string;
     phone: string;
+    website: string;
     receivingAge: number; // Byte
     educationMethod: number; // Byte
     feeFrom: number; // Integer
@@ -126,6 +127,14 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
 export interface SchoolCreateDTO extends SchoolDTO{
     userId: number;
 }
+
+const formatPhoneNumber = (phone: string | undefined): string => {
+    if (phone && phone.startsWith('+84') && /^\+84\d{9,10}$/.test(phone)) {
+        return phone.substring(3);
+    }
+    return 'Invalid phone number';
+};
+
 
 export const schoolApi = createApi({
     reducerPath: "schoolApi",
