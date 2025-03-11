@@ -37,7 +37,6 @@ public class SchoolController {
 
     @GetMapping("/{schoolId}")
     public ApiResponse<SchoolDetailVO> getSchoolInfo(@PathVariable Integer schoolId) {
-        log.info("=========== school controller ===============");
         return ApiResponse.<SchoolDetailVO>builder()
             .code(HttpStatus.OK.value())
             .message("Get school information successfully.")
@@ -55,7 +54,6 @@ public class SchoolController {
         @RequestParam(required = false) String street,
         @RequestParam(required = false) String email,
         @RequestParam(required = false) String phone) {
-        log.info("=========== school controller: getAllSchools ===============");
         Pageable pageable = PageRequest.of(page - 1, size);
         return ApiResponse.<Page<SchoolListVO>>builder()
             .code(HttpStatus.OK.value())
@@ -70,7 +68,6 @@ public class SchoolController {
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String name) {
-        log.info("=========== school controller: getSchoolsByUserId ===============");
         Pageable pageable = PageRequest.of(page - 1, size);
         return ApiResponse.<Page<SchoolDetailVO>>builder()
             .code(HttpStatus.OK.value())
@@ -99,9 +96,6 @@ public class SchoolController {
     public ApiResponse<SchoolDetailVO> addSchool(
             @RequestPart(value = "data") @Valid AddSchoolDTO schoolDTO,
             @RequestPart(value = "image", required = false) List<MultipartFile> images) throws IOException {
-        log.info("=========== school controller: addSchool ===============");
-        log.info("schoolDTO: {}", schoolDTO);
-        log.info("images: {}", images);
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("School Created!")
@@ -113,9 +107,6 @@ public class SchoolController {
     public ApiResponse<SchoolDetailVO> updateSchoolByAdmin(
             @RequestPart(value = "data") @Valid SchoolUpdateDTO schoolDTO,
             @RequestPart(value = "image", required = false) List<MultipartFile> images) throws IOException {
-        log.info("=========== school controller: updateSchoolByAdmin ===============");
-        log.info("schoolDTO: {}", schoolDTO);
-        log.info("images: {}", images);
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("School updated successfully")

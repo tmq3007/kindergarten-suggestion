@@ -37,7 +37,7 @@ export type SchoolDTO = {
     schoolType: number;
     website?: string;
     status: number;
-// Address Fields
+    // Address Fields
     province: string;
     district: string;
     ward: string;
@@ -46,14 +46,15 @@ export type SchoolDTO = {
     phone: string;
     receivingAge: number;
     educationMethod: number;
-// Fee Range
+    // Fee Range
     feeFrom: number;
     feeTo: number;
-// Facilities and Utilities (Checkbox Groups)
+    // Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
-    description?: string; // School introduction
-// File Upload
+    // School introduction
+    description?: string;
+    // File Upload
     image?: File[];
 }
 
@@ -67,7 +68,7 @@ export interface SchoolUpdateDTO extends SchoolDTO {
 
 export type SchoolVO = {
     id: number;
-    status: number; // Byte trong Java => number trong TS
+    status: number; // Byte in Java == number in TS
     name: string;
     schoolType: number; // Byte
     district: string;
@@ -81,9 +82,9 @@ export type SchoolVO = {
     feeFrom: number; // Integer
     feeTo: number; // Integer
     description: string;
-    posted_date: string; // Date trong Java => string (ISO format) trong TS
-    facilities?: { fid: number }[]; // Thêm facilities (giả sử cấu trúc này)
-    utilities?: { uid: number }[]; // Thêm utilities (giả sử cấu trúc này)
+    posted_date: string; // Date in Java => string (ISO format) in TS
+    facilities?: { fid: number }[]; // Add facilities (assuming this structure)
+    utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
 };
 
@@ -100,12 +101,34 @@ export type Pageable = {
     totalPages: number;
 };
 
+// Utility function to handle FormData creation
+const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData => {
+    const formData = new FormData();
+    const {image, ...schoolDataWithoutImage} = schoolData;
+
+    // Append JSON data
+    formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
+
+    // Append images with validation
+    if (image && Array.isArray(image)) {
+        image.forEach((file, index) => {
+            if (file instanceof File) {
+                formData.append("image", file);
+            } else {
+                console.error(`Item ${index} is not a File:`, file);
+            }
+        });
+    }
+
+    return formData;
+};
+
 export const schoolApi = createApi({
     reducerPath: "schoolApi",
     baseQuery: baseQueryWithReauth,
     tagTypes: ["School", "SchoolList"],
     endpoints: (build) => ({
-        // Lấy danh sách trường học
+        // Get school list
         getSchoolList: build.query<
             ApiResponse<{ content: SchoolVO[]; pageable: Pageable }>,
             {
@@ -179,23 +202,24 @@ export const schoolApi = createApi({
             }),
         }),
 
-        // Lấy chi tiết một trường học theo ID
+        // Get school detail by ID
         getSchoolById: build.query<ApiResponse<SchoolVO>, number>({
             query: (schoolId) => ({
                 url: `/school/${schoolId}`,
                 method: "GET",
             }),
-            providesTags: ["SchoolList"], // Để refetch khi dữ liệu thay đổi
+            providesTags: ["SchoolList"], // refetch data after changing
         }),
 
-        // Mutation để xử lý approve
+        // Mutation to handle approve
         approveSchool: build.mutation<ApiResponse<SchoolVO>, number>({
             query: (schoolId) => ({
                 url: `/school/${schoolId}/approve`,
                 method: "PUT",
             }),
-            invalidatesTags: ["SchoolList"], // Làm mới dữ liệu sau khi approve
+            invalidatesTags: ["SchoolList"], // refetch data after approving
         }),
+
         getSchool: build.query<ApiResponse<SchoolDetailVO>, number>({
             query: (schoolId) => ({
                 url: `/school/${schoolId}`,
@@ -203,6 +227,7 @@ export const schoolApi = createApi({
             }),
             providesTags: ["School"],
         }),
+
         checkSchoolEmail: build.query<ApiResponse<string>, string>({
             query: (email) => ({
                 url: `/school/check-email/${email}`,
@@ -210,6 +235,7 @@ export const schoolApi = createApi({
             }),
             keepUnusedDataFor: 0,
         }),
+
         checkSchoolPhone: build.query<ApiResponse<string>, string>({
             query: (phone) => ({
                 url: `/school/check-phone/${phone}`,
@@ -217,26 +243,10 @@ export const schoolApi = createApi({
             }),
             keepUnusedDataFor: 0,
         }),
+
         addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolDTO>({
             query: (schoolDTO) => {
-                const formData = new FormData();
-                const {image, ...schoolDataWithoutImage} = schoolDTO;
-                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
-                // Append JSON data
-                formData.append(
-                    "data",
-                    new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"})
-                );
-                // Append images with validation
-                if (image && Array.isArray(image)) {
-                    image.forEach((file, index) => {
-                        if (file instanceof File) {
-                            formData.append("image", file);
-                        } else {
-                            console.error(`Item ${index} is not a File:`, file);
-                        }
-                    });
-                }
+                const formData = createSchoolFormData(schoolDTO); // Sử dụng hàm utility
                 return {
                     url: "/school/add",
                     method: "POST",
@@ -245,27 +255,10 @@ export const schoolApi = createApi({
                 };
             },
         }),
+
         updateSchoolByAdmin: build.mutation<ApiResponse<SchoolDetailVO>, SchoolUpdateDTO>({
             query: (schoolUpdateDTO) => {
-                console.log('schoolUpdateDTO', schoolUpdateDTO);
-                const formData = new FormData();
-                const {image, ...schoolDataWithoutImage} = schoolUpdateDTO;
-                formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
-                // Append JSON data
-                formData.append(
-                    "data",
-                    new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"})
-                );
-                // Append images with validation
-                if (image && Array.isArray(image)) {
-                    image.forEach((file, index) => {
-                        if (file instanceof File) {
-                            formData.append("image", file);
-                        } else {
-                            console.error(`Item ${index} is not a File:`, file);
-                        }
-                    });
-                }
+                const formData = createSchoolFormData(schoolUpdateDTO); // Sử dụng hàm utility
                 return {
                     url: "/school/update/by-admin",
                     method: "POST",
@@ -275,6 +268,7 @@ export const schoolApi = createApi({
             },
             invalidatesTags: ["School"],
         }),
+
         updateSchoolStatusByAdmin: build.mutation<ApiResponse<void>, {
             schoolId: number;
             changeSchoolStatusDTO: ChangeSchoolStatusDTO
@@ -286,6 +280,7 @@ export const schoolApi = createApi({
             }),
             invalidatesTags: ["School", "SchoolList"],
         }),
+        
         updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, {
             schoolId: number;
             changeSchoolStatusDTO: ChangeSchoolStatusDTO
