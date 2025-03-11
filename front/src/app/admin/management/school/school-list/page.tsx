@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, Button, Table, Tag, Space, Breadcrumb, Typography, message } from "antd";
+import { Input, Button, Table, Tag, Space, notification } from "antd";
 import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
-import {useGetSchoolListByUserIdQuery, useGetSchoolListQuery} from "@/redux/services/schoolApi";
+import {useGetSchoolListQuery, useGetSchoolListByUserIdQuery, } from "@/redux/services/schoolApi";
 
 interface SchoolVO {
   id: number;
@@ -54,47 +54,58 @@ export default function SchoolList() {
   const userIdString = useSelector((state: RootState) => state.user?.id);
   const userId = userIdString ? parseInt(userIdString as string) : null;
 
-  // Kiểm tra nếu không có role hoặc userId thì chuyển hướng về login
-  if (!role || !userId) {
-    console.warn("No role or userId found in Redux store, redirecting to login");
+  const [notificationApi, contextHolder] = notification.useNotification();
+  const [allSchools, setAllSchools] = useState<SchoolVO[]>([]);
+  const [filteredSchools, setFilteredSchools] = useState<SchoolVO[]>([]);
+  const [totalElements, setTotalElements] = useState(0);
+
+  if (!userId) {
+    console.warn("No userId found in Redux store, redirecting to login");
     router.push("/login");
     return null;
   }
 
-  console.log("Role from Redux:", role, "UserId from Redux:", userId);
+  const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
+    notificationApi[type]({
+      message,
+      description,
+      placement: "topRight",
+    });
+  };
 
-  // Gọi API phù hợp dựa trên role
-  const adminQuery = useGetSchoolListQuery(
-      { page, size: pageSize, name: searchText || undefined },
-      { skip: role !== "ROLE_ADMIN" }
-  );
+  const { data, isLoading, error } = useGetSchoolListQuery({
+    page: 1,
+    size: 1000,
+    name: searchText || undefined,
+  });
 
-  const ownerQuery = useGetSchoolListByUserIdQuery(
-      { page, size: pageSize, name: searchText || undefined, userId },
-      { skip: role !== "ROLE_SCHOOL_OWNER" }
-  );
-
-  const { data, isLoading, error } = role === "ROLE_ADMIN" ? adminQuery : ownerQuery;
-
-  // Xử lý lỗi từ API
   useEffect(() => {
     if (error) {
       console.log("API Error:", error);
       if ("status" in error && error.status === 401) {
-        message.error("Session expired. Please log in again.");
+        openNotificationWithIcon("error", "Session Expired", "Please log in again.");
         router.push("/login");
       } else {
-        message.error("Failed to load school list");
+        openNotificationWithIcon("error", "Error", "Failed to load school list.");
       }
     }
   }, [error, router]);
 
-  const schools: SchoolVO[] = data?.data?.content || [];
-  const totalElements = data?.data?.pageable?.totalElements || 0;
+  useEffect(() => {
+    const schools: SchoolVO[] = data?.data?.content || [];
+    console.log("Original schools:", schools);
 
-  const filteredSchools = schools.filter((school) => school.status !== 0);
+    const filtered = schools.filter((school) => school.status !== 0);
+    console.log("Filtered schools:", filtered);
 
-  const tableData = filteredSchools.map((school) => ({
+    setAllSchools(schools);
+    setFilteredSchools(filtered);
+    setTotalElements(filtered.length);
+  }, [data]);
+
+  const tableData = filteredSchools
+  .slice((page - 1) * pageSize, page * pageSize)
+  .map((school) => ({
     key: school.id,
     id: school.id,
     schoolName: school.name,
@@ -106,16 +117,87 @@ export default function SchoolList() {
   }));
 
   const columns = [
-    { title: "School Name", dataIndex: "schoolName", key: "schoolName", width: 180, fixed: true, align: "center" as const },
-    { title: "Address", dataIndex: "address", key: "address", width: 250, align: "center" as const },
-    { title: "Phone No.", dataIndex: "phone", key: "phone", width: 110, align: "center" as const },
-    { title: "Email", dataIndex: "email", key: "email", width: 180, align: "center" as const },
-    { title: "Posted Date", dataIndex: "postedDate", key: "postedDate", width: 100, align: "center" as const },
+    {
+      title: "School Name",
+      dataIndex: "schoolName",
+      key: "schoolName",
+      minWidth: 150,
+      render: (schoolName: string, record: { id: number }) => (
+          <Link href={`/admin/management/school/school-detail/${record.id}`}>
+            <span className="text-blue-500 hover:underline">{schoolName}</span>
+          </Link>
+      ),
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+      minWidth: 200,
+      onCell: (record: { address: string }) => ({
+        onClick: () => {
+          navigator.clipboard
+          .writeText(record.address)
+          .then(() => {
+            openNotificationWithIcon("success", "Success", "Address copied to clipboard!");
+          })
+          .catch(() => {
+            openNotificationWithIcon("error", "Error", "Failed to copy address.");
+          });
+        },
+        style: { cursor: "pointer" },
+      }),
+    },
+    {
+      title: "Phone No.",
+      dataIndex: "phone",
+      key: "phone",
+      minWidth: 100,
+      align: "right" as const,
+      onCell: (record: { phone: string }) => ({
+        onClick: () => {
+          navigator.clipboard
+          .writeText(record.phone)
+          .then(() => {
+            openNotificationWithIcon("success", "Success", "Phone number copied to clipboard!");
+          })
+          .catch(() => {
+            openNotificationWithIcon("error", "Error", "Failed to copy phone number.");
+          });
+        },
+        style: { cursor: "pointer" },
+      }),
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      minWidth: 150,
+      onCell: (record: { email: string }) => ({
+        onClick: () => {
+          navigator.clipboard
+          .writeText(record.email)
+          .then(() => {
+            openNotificationWithIcon("success", "Success", "Email copied to clipboard!");
+          })
+          .catch(() => {
+            openNotificationWithIcon("error", "Error", "Failed to copy email.");
+          });
+        },
+        style: { cursor: "pointer" },
+      }),
+    },
+    {
+      title: "Posted Date",
+      dataIndex: "postedDate",
+      key: "postedDate",
+      minWidth: 100,
+      align: "center" as const,
+    },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: 100,
+      minWidth: 100,
       align: "center" as const,
       render: (status: string) => {
         const colorMap: { [key: string]: string } = {
@@ -133,11 +215,11 @@ export default function SchoolList() {
     {
       title: "Actions",
       key: "action",
-      width: 90,
+      minWidth: 90,
       align: "center" as const,
       render: (_: any, record: { id: number }) => (
           <Space size="middle" className="flex justify-center">
-            <Link href={`/admin/management/school/school-detail/${record.id}`}>
+            <Link href={`/admin/management/school/edit-school/${record.id}`}>
               <Button type="link" icon={<EditOutlined />} />
             </Link>
             <Button type="link" icon={<DeleteOutlined />} danger />
@@ -152,30 +234,31 @@ export default function SchoolList() {
 
   return (
       <div className="pt-2 h-screen">
+        {contextHolder}
         <MyBreadcrumb
             paths={[
-              { label: 'School Management', href: '/admin/management/school/school-list' },
-              { label: 'School List' },
+              { label: "School Management", href: "/admin/management/school/school-list" },
+              { label: "School List" },
             ]}
         />
-        <SchoolManageTitle title={'School List'}/>
-        <div className={'bg-white p-5 rounded-lg'}>
+        <SchoolManageTitle title={"School List"} />
+        <div className="bg-white p-5 rounded-lg h-full">
           <div className="flex justify-between items-center mb-4">
             <Input
                 placeholder="Search by school name"
-                prefix={<SearchOutlined/>}
+                prefix={<SearchOutlined />}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                style={{width: 300}}
+                style={{ maxWidth: "300px", width: "100%" }}
             />
             <Link href="/admin/management/school/add-school">
-              <Button type="primary" icon={<PlusOutlined/>}>
+              <Button type="primary" icon={<PlusOutlined />}>
                 Add School
               </Button>
             </Link>
           </div>
           <Table
-              size={"small"}
+              size="small"
               columns={columns}
               dataSource={tableData}
               loading={isLoading}
@@ -185,11 +268,12 @@ export default function SchoolList() {
                 total: totalElements,
                 onChange: (newPage) => setPage(newPage),
                 position: ["bottomCenter"],
+                responsive: true,
               }}
-              locale={{emptyText: error ? "Error loading data" : "No results found"}}
+              locale={{ emptyText: error ? "Error loading data" : "No results found" }}
               rowClassName={getRowClassName}
-              scroll={{x: 1200, y: 600}}
-              className={'h-full'}
+              scroll={{ x: "" }}
+              className="h-full"
           />
         </div>
       </div>

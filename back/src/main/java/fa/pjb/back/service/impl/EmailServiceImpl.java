@@ -6,6 +6,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -78,7 +80,7 @@ public class EmailServiceImpl implements EmailService {
             // Return a message indicating the success of the email sending
             return "Link password reset sent successfully!";
 
-        // Catch error
+            // Catch error
         } catch (MessagingException | IOException | TemplateException e) {
 
             // Return a message indicating the error
@@ -88,16 +90,16 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public String sendUsernamePassword(String to, String name, String username, String password) {
-        try{
-            Map<String,Object> model = new HashMap<>();
-            model.put("name",name);
+        try {
+            Map<String, Object> model = new HashMap<>();
+            model.put("name", name);
             model.put("username", username);
-            model.put("password",password);
+            model.put("password", password);
 
             //gui mail
-            sendEmailWithTemplate(to, "Username Password", "create-user",model);
+            sendEmailWithTemplate(to, "Username Password", "create-user", model);
             return "send username password successfully!";
-        }catch (MessagingException | IOException | TemplateException e) {
+        } catch (MessagingException | IOException | TemplateException e) {
 
             return "Error while sending email: " + e.getMessage();
         }
@@ -164,4 +166,22 @@ public class EmailServiceImpl implements EmailService {
             return "Error while sending email: " + e.getMessage();
         }
     }
+
+    @Override
+    public String sendSubmitSchool(String to, String schoolName, String username, String detailLink) {
+        try {
+            Map<String, Object> model = new HashMap<>();
+            model.put("schoolName", schoolName);
+            model.put("username", username);
+            model.put("detailsLink", detailLink);
+            //Send email
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Interview schedule title>", "submit-school", model);
+            log.info("send to:"+to+"     with:"+detailLink);
+            return "send username password successfully!";
+        } catch (MessagingException | IOException | TemplateException e) {
+
+            return "Error while sending email: " + e.getMessage();
+        }
+    }
+
 }

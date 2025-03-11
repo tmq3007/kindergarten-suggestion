@@ -1,5 +1,5 @@
-import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
 
 export interface Facility {
     fid: number;
@@ -49,7 +49,7 @@ export type SchoolDTO = {
     // Fee Range
     feeFrom: number;
     feeTo: number;
-    // Facilities and Utilities (Checkbox Groups)
+// Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
     // School introduction
@@ -77,6 +77,7 @@ export type SchoolVO = {
     street: string;
     email: string;
     phone: string;
+    website: string;
     receivingAge: number; // Byte
     educationMethod: number; // Byte
     feeFrom: number; // Integer
@@ -122,6 +123,18 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
 
     return formData;
 };
+
+export interface SchoolCreateDTO extends SchoolDTO{
+    userId: number;
+}
+
+const formatPhoneNumber = (phone: string | undefined): string => {
+    if (phone && phone.startsWith('+84') && /^\+84\d{9,10}$/.test(phone)) {
+        return phone.substring(3);
+    }
+    return 'Invalid phone number';
+};
+
 
 export const schoolApi = createApi({
     reducerPath: "schoolApi",
@@ -280,7 +293,7 @@ export const schoolApi = createApi({
             }),
             invalidatesTags: ["School", "SchoolList"],
         }),
-        
+
         updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, {
             schoolId: number;
             changeSchoolStatusDTO: ChangeSchoolStatusDTO

@@ -19,7 +19,7 @@ public record UserUpdateDTO(
     String dob,
 
     @NotBlank(message = "Phone number cannot be null or empty")
-    @Pattern(regexp = "^0\\d{9}$", message = "Phone number must have 10 digits and start with 0")
+    @Pattern(regexp = "^\\+\\d{1,4}[-\\s]?\\d{4,14}$", message = "Invalid phone format")
     String phone,
 
     @NotBlank(message = "Role cannot be null or empty")

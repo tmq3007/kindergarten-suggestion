@@ -99,7 +99,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
                     .setRole("reader");
             drive.permissions().create(uploadFile.getId(), permission).execute();
 
-            String imageUrl = "https://drive.google.com/thumbnail?id=" + uploadFile.getId();
+            String imageUrl = "https://drive.google.com/thumbnail?id=" + uploadFile.getId()+"&sz=w1000";
             return new ImageVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(), uploadFile.getId(), imageUrl);
         } catch (IOException | GeneralSecurityException e) {
             return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.toString());
