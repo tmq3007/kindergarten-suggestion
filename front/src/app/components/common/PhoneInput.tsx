@@ -130,7 +130,7 @@ const PhoneInput = forwardRef(
           validateStatus={phoneStatus}
           help={phoneHelp}
         >
-          <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+          <div className="flex items-center rounded-lg overflow-hidden">
             <Form.Item hasFeedback={!!triggerCheckPhone} noStyle >
               <Select
                 style={{ width: 120 }}

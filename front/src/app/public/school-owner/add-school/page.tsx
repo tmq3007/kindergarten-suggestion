@@ -12,7 +12,7 @@ const page = () => {
         <>
             <MyBreadcrumb
                 paths={[
-                    { label: 'School Management', href: '/admin/management/school/school-list' },
+                    { label: 'School Management', href: '/school' },
                     { label: 'Add new school' },
                 ]}
             />

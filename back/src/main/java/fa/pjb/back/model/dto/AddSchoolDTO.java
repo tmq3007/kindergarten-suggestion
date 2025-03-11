@@ -10,12 +10,14 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.List;
 import java.util.Set;
 
 
 @ValidFeeRange
 public record AddSchoolDTO(
+        @NotNull
+        Integer userId,
+
         @NotBlank(message = "School name is required")
         String name,
 
@@ -96,7 +98,7 @@ class FeeRangeValidator implements ConstraintValidator<ValidFeeRange, AddSchoolD
     @Override
     public boolean isValid(AddSchoolDTO school, ConstraintValidatorContext context) {
         if (school.feeFrom() != null && school.feeTo() != null) {
-            return school.feeFrom() < school.feeTo();
+            return school.feeFrom() <= school.feeTo();
         }
         return true; // Allow null values
     }

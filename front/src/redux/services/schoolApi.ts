@@ -1,5 +1,5 @@
-import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
 
 export interface Facility {
     fid: number;
@@ -49,7 +49,7 @@ export type SchoolDTO = {
     // Fee Range
     feeFrom: number;
     feeTo: number;
-    // Facilities and Utilities (Checkbox Groups)
+// Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
     // School introduction
@@ -122,6 +122,10 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
 
     return formData;
 };
+
+export interface SchoolCreateDTO extends SchoolDTO{
+    userId: number;
+}
 
 export const schoolApi = createApi({
     reducerPath: "schoolApi",
@@ -280,7 +284,7 @@ export const schoolApi = createApi({
             }),
             invalidatesTags: ["School", "SchoolList"],
         }),
-        
+
         updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, {
             schoolId: number;
             changeSchoolStatusDTO: ChangeSchoolStatusDTO

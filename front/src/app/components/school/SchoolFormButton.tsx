@@ -1,8 +1,8 @@
-import {useSelector} from "react-redux";
-import {RootState} from "@/redux/store";
-import {ROLES} from "@/lib/constants";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { ROLES } from "@/lib/constants";
 import SchoolFormButtonForAdmin from "@/app/components/school/SchoolFormButtonForAdmin";
-import {FormInstance} from "antd/es/form";
+import { FormInstance } from "antd/es/form";
 import SchoolFormButtonForSchoolOwner from "@/app/components/school/SchoolFormButtonForSchoolOwner";
 import {Country} from "@/redux/services/registerApi";
 
@@ -11,6 +11,7 @@ export interface ButtonGroupProps {
     hasCancelButton?: boolean;
     hasSaveButton?: boolean;
     hasCreateSubmitButton?: boolean;
+    hasCreateSaveButton?: boolean;
     hasUpdateSubmitButton?: boolean;
     hasDeleteButton?: boolean;
     hasEditButton?: boolean;
@@ -18,7 +19,8 @@ export interface ButtonGroupProps {
     hasApproveButton?: boolean;
     hasPublishButton?: boolean;
     hasUnpublishButton?: boolean;
-    selectedCountry?: Country;
+    phoneInputRef?: React.RefObject<any>,
+    emailInputRef?: React.RefObject<any>
 }
 
 export default function SchoolFormButton(
@@ -27,6 +29,7 @@ export default function SchoolFormButton(
         hasCancelButton,
         hasSaveButton,
         hasCreateSubmitButton,
+        hasCreateSaveButton,
         hasUpdateSubmitButton,
         hasDeleteButton,
         hasEditButton,
@@ -34,7 +37,8 @@ export default function SchoolFormButton(
         hasApproveButton,
         hasPublishButton,
         hasUnpublishButton,
-        selectedCountry,
+        phoneInputRef,
+        emailInputRef
     }: ButtonGroupProps
 ) {
     const user = useSelector((state: RootState) => state.user);
@@ -44,6 +48,7 @@ export default function SchoolFormButton(
             form={form}
             hasCancelButton={hasCancelButton}
             hasSaveButton={hasSaveButton}
+            hasCreateSaveButton={hasCreateSaveButton}
             hasCreateSubmitButton={hasCreateSubmitButton}
             hasUpdateSubmitButton={hasUpdateSubmitButton}
             hasDeleteButton={hasDeleteButton}
@@ -52,7 +57,8 @@ export default function SchoolFormButton(
             hasApproveButton={hasApproveButton}
             hasPublishButton={hasPublishButton}
             hasUnpublishButton={hasUnpublishButton}
-            selectedCountry={selectedCountry}
+            emailInputRef={emailInputRef}
+            phoneInputRef={phoneInputRef}
         />
     }
     if (role === ROLES.SCHOOL_OWNER) {
@@ -66,7 +72,8 @@ export default function SchoolFormButton(
             hasEditButton={hasEditButton}
             hasPublishButton={hasPublishButton}
             hasUnpublishButton={hasUnpublishButton}
-            selectedCountry={selectedCountry}
+            emailInputRef={emailInputRef}
+            phoneInputRef={phoneInputRef}
         />
     }
 }
