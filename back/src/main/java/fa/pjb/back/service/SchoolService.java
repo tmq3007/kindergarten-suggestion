@@ -1,6 +1,7 @@
 package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
@@ -19,6 +20,10 @@ public interface SchoolService {
     Page<SchoolDetailVO> getSchoolsByUserId(Integer userId, Pageable pageable, String name);
 
     SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image);
+
+    void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
+
+    void updateSchoolStatusBySchoolOwner(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
     boolean checkEmailExists(String email);
 

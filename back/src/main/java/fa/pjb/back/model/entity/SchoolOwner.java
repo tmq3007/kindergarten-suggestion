@@ -15,14 +15,15 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "School_Owner")
+@ToString(exclude = {"user", "school"})
 public class SchoolOwner {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "expected_school", nullable = false)
-    //@Max(value = 255)
+    @Column(name = "expected_school")
+//    @Max(value = 255)
     private String expectedSchool;
 
     @Column(name = "public_permission" )

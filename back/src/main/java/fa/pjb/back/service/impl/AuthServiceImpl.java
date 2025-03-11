@@ -159,6 +159,8 @@ public class AuthServiceImpl implements AuthService {
 
         String username = "";
 
+        log.info("principal: {}", principal);
+
         // Check if principal is an instance of User entity
         if (principal instanceof User user) {
             username = user.getUsername();
