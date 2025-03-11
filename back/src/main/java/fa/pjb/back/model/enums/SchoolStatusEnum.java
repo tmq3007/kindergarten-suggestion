@@ -1,13 +1,13 @@
 package fa.pjb.back.model.enums;
 
 public enum SchoolStatusEnum {
-    SAVED(1),
-    SUBMITTED(2),
-    APPROVED(3),
-    REJECTED(4),
-    PUBLISHED(5),
-    UNPUBLISHED(6),
-    DELETED(7);
+    SAVED(0),
+    SUBMITTED(1),
+    APPROVED(2),
+    REJECTED(3),
+    PUBLISHED(4),
+    UNPUBLISHED(5),
+    DELETED(6);
 
     private final int value;
 

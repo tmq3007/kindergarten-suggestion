@@ -10,7 +10,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.List;
 import java.util.Set;
 
 
@@ -29,8 +28,8 @@ public record AddSchoolDTO(
 
         String website,
 
-        @Min(value = 1, message = "Invalid status")
-        @Max(value = 2, message = "Invalid status")
+        @Min(value = 0, message = "Invalid status")
+        @Max(value = 1, message = "Invalid status")
         int status,
 
         // Address Fields

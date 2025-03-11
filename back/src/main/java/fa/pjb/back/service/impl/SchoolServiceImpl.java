@@ -155,11 +155,6 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         //Send submit emails to admins
-        log.info("new school:"+newSchool.toString());
-        log.info("user: " + user.toString());
-        log.info("newSchool.getStatus() == SUBMITTED.getValue(): " + String.valueOf(newSchool.getStatus() == SUBMITTED.getValue()));
-        log.info("user.getRole() == ERole.ROLE_SCHOOL_OWNER: "+ String.valueOf(user.getRole() == ERole.ROLE_SCHOOL_OWNER));
-
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
             //TODO:Fix this to email
             emailService.sendSubmitSchool("nguyendatrip123@gmail.com", newSchool.getName(), user.getUsername(), schoolDetailedLink + newSchool.getId());

@@ -216,7 +216,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 )}
                 {hasCreateSaveButton && (
                     <Button htmlType="button" onClick={() => {
-                        addSchoolHandle(1);
+                        addSchoolHandle(0);
                     }} variant="outlined" color="primary" loading={isCreating}
                     >
                         Save
@@ -231,7 +231,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 )}
                 {hasCreateSubmitButton && (
                     <Button htmlType="button" type="primary" onClick={() => {
-                        addSchoolHandle(2);
+                        addSchoolHandle(1);
                     }}
                         loading={isCreating}>
                         Submit

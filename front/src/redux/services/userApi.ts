@@ -1,5 +1,5 @@
-import {createApi} from "@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
 
 export type UserDetailDTO = {
     id: number;
@@ -23,37 +23,77 @@ export type UserUpdateDTO = {
     status: string;
 };
 
+export type UserVO = {
+    id: string;
+    fullname: string;
+    email: string;
+    phoneNo: string;
+    dob: string;
+    address: string;
+    role: string;
+    status: string;
+};
+
+export type Pageable = {
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+};
+
 export const userApi = createApi({
     reducerPath: "userApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ['UserDetail'],
+    tagTypes: ["User", "UserDetail"],
     endpoints: (build) => ({
+        getUserList: build.query<
+            ApiResponse<{ content: UserVO[]; pageable: Pageable }>,
+            { page?: number; size?: number; role?: string; email?: string; name?: string; phone?: string }
+        >({
+            query: ({ page = 1, size, role, email, name, phone }) => ({
+                url: `/user`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(role && { role }),
+                    ...(email && { email }),
+                    ...(name && { name }),
+                    ...(phone && { phone }),
+                },
+            }),
+            providesTags: ["User"],
+        }),
+
         getUserDetail: build.query<ApiResponse<UserDetailDTO>, number>({
             query: (userId) => ({
                 url: `/user/detail?userId=${userId}`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: ['UserDetail'],
+            providesTags: ["UserDetail"],
         }),
+
         updateUser: build.mutation<ApiResponse<UserDetailDTO>, UserUpdateDTO>({
             query: (userUpdateDTO) => ({
                 url: '/user/update',
                 method: 'POST',
                 body: userUpdateDTO,
             }),
-            invalidatesTags: ['UserDetail'],
+            invalidatesTags: ["UserDetail", "User"],
         }),
+
         toggleUserStatus: build.mutation<ApiResponse<UserDetailDTO>, number>({
             query: (userId) => ({
                 url: `/user/toggle?userId=${userId}`,
                 method: 'PUT',
             }),
-            invalidatesTags: ['UserDetail'],
+            invalidatesTags: ["UserDetail", "User"],
         }),
     }),
 });
 
 export const {
+    useGetUserListQuery,
     useGetUserDetailQuery,
     useUpdateUserMutation,
     useToggleUserStatusMutation

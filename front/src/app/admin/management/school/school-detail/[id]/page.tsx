@@ -3,12 +3,12 @@
 import {Form, message} from "antd";
 import {useParams, useRouter} from "next/navigation";
 import React, {useEffect} from "react";
-import {useApproveSchoolMutation, useGetSchoolByIdQuery,} from "@/redux/services/schoolListApi";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import {SCHOOL_STATUS, SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
+import {useApproveSchoolMutation, useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
 
 export default function SchoolDetail() {
     const params = useParams();

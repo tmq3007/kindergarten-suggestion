@@ -13,8 +13,7 @@ import {
 import {useSelector} from 'react-redux';
 import {RootState} from '@/redux/store';
 import dayjs from 'dayjs';
-import {useGetCountriesQuery} from '@/redux/services/registerApi';
-import {Country} from '@/redux/services/types';
+import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
 import {useGetProvincesQuery, useGetDistrictsQuery, useGetWardsQuery} from '@/redux/services/addressApi';
 import {ROLES} from '@/lib/constants';
 import {unauthorized} from 'next/navigation';
