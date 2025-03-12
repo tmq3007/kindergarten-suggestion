@@ -117,9 +117,4 @@ public class School {
     @JoinColumn(name = "ref_id")
     private School draft;
 
-//    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private List<SchoolOwner> schoolOwners;
-
-
-
 }

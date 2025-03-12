@@ -38,9 +38,17 @@ const useAuthRedirect = (
                 })
                     .then(() => {
                         const accessToken = data.data.accessToken;
+                        const hasSchool = data.data.hasSchool;
+                        const hasDraft = data.data.hasDraft;
                         try {
                             const decoded = jwtDecode<JwtPayload>(accessToken);
-                            dispatch(updateUser({username: decoded.sub, id: decoded.id, role: decoded.role}));
+                            dispatch(updateUser({
+                                username: decoded.sub,
+                                id: decoded.id,
+                                role: decoded.role,
+                                hasSchool,
+                                hasDraft
+                            }));
                         } catch (e) {
                             messageApi.error("Failed to decode token.", 1);
                         }

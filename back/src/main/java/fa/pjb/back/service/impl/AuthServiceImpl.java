@@ -11,6 +11,8 @@ import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.dto.ResetPasswordDTO;
+import fa.pjb.back.model.entity.School;
+import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
@@ -93,10 +95,19 @@ public class AuthServiceImpl implements AuthService {
         // Refresh Token: save to Redis
         String refreshToken = jwtHelper.generateRefreshToken(userDetails, userId, userRole);
         tokenService.saveTokenInRedis("REFRESH_TOKEN", userDetails.getUsername(), refreshToken, REFRESH_TOKEN_EXP);
-
+        User sysUser = (User) userDetails;
+        SchoolOwner schoolOwner = sysUser.getSchoolOwner();
+        School school = null;
+        School draft = null;
+        if(schoolOwner != null){
+            school = schoolOwner.getSchool();
+            draft = school.getDraft();
+        }
         return LoginVO.builder()
                 .accessToken(accessToken)
                 .csrfToken(csrfToken)
+                .hasSchool(school != null)
+                .hasDraft(draft != null)
                 .build();
     }
 
@@ -205,7 +216,7 @@ public class AuthServiceImpl implements AuthService {
         String username = httpRequestHelper.extractJwtTokenFromCookie(request, "FORGOT_PASSWORD_USERNAME");
 
         // Check if forgot_password_token or username is missing
-        if(forgot_password_token == null || username == null) {
+        if (forgot_password_token == null || username == null) {
             throw new MissingDataException("Forgot Password Token or Username has been missing through communication");
         }
 
