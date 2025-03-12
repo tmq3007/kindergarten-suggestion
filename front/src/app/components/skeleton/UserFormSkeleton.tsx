@@ -1,6 +1,6 @@
 import { Breadcrumb, Tabs, Skeleton, Typography } from 'antd';
 import Link from 'next/link';
-import ProfileSidebar from "@/app/public/view-account/ProfileSideBar";
+import ProfileSidebar from "@/app/components/user/ProfileSideBar";
 import React from "react";
 import ProfileSideBarSkeleton from "@/app/components/skeleton/ProfileSideBarSkeleton";
 

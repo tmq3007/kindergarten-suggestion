@@ -1,8 +1,8 @@
 "use client";
 
-import { Form, message } from "antd";
-import { useParams, useRouter, forbidden } from "next/navigation";
-import React, { useEffect } from "react";
+import {Form, message} from "antd";
+import {forbidden, useParams, useRouter} from "next/navigation";
+import React, {useEffect} from "react";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
@@ -10,13 +10,13 @@ import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
+    ROLES,
     SCHOOL_STATUS,
     SCHOOL_STATUS_OPTIONS
 } from "@/lib/constants";
-import { useApproveSchoolMutation, useGetSchoolByIdQuery } from "@/redux/services/schoolApi";
-import { RootState } from '@/redux/store';
-import { ROLES } from '@/lib/constants';
-import { useSelector } from "react-redux";
+import {useApproveSchoolMutation, useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
+import {RootState} from '@/redux/store';
+import {useSelector} from "react-redux";
 
 // Hàm xử lý số điện thoại
 const formatPhoneNumber = (phone: string | undefined): string => {
@@ -34,7 +34,7 @@ export default function SchoolDetail() {
     const params = useParams();
     const schoolId = Number(params.id as string);
     const router = useRouter();
-    const { data, isError, isLoading } = useGetSchoolByIdQuery(schoolId);
+    const {data, isError, isLoading} = useGetSchoolByIdQuery(schoolId);
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
@@ -69,19 +69,12 @@ export default function SchoolDetail() {
             });
 
             const facilityValues: string[] = school.facilities?.map((facility) => String(facility.fid)) || [];
-            form.setFieldsValue({ facilities: facilityValues });
+            form.setFieldsValue({facilities: facilityValues});
 
             const utilityValues: string[] = school.utilities?.map((utility) => String(utility.uid)) || [];
-            form.setFieldsValue({ utilities: utilityValues });
+            form.setFieldsValue({utilities: utilityValues});
         }
     }, [school, form]);
-
-    useEffect(() => {
-        if (isError) {
-            message.error("Failed to load school details");
-            router.push("/admin/management/school/school-list");
-        }
-    }, [isError, router]);
 
     const handleDelete = async () => {
         try {
@@ -161,7 +154,7 @@ export default function SchoolDetail() {
             const values = await form.validateFields();
             const response = await fetch(`http://localhost:8080/api/school/${schoolId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(values),
             });
             if (response.ok) {
@@ -185,12 +178,12 @@ export default function SchoolDetail() {
             <div className="pt-2">
                 <MyBreadcrumb
                     paths={[
-                        { label: "School Management", href: "/admin/management/school/school-list" },
-                        { label: "School Detail" },
+                        {label: "School Management", href: "/admin/management/school/school-list"},
+                        {label: "School Detail"},
                     ]}
                 />
-                <SchoolManageTitle title={"School details"} />
-                <SchoolFormSkeleton />
+                <SchoolManageTitle title={"School details"}/>
+                <SchoolFormSkeleton/>
             </div>
         );
     }
@@ -203,11 +196,11 @@ export default function SchoolDetail() {
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    { label: "School Management", href: "/admin/management/school/school-list" },
-                    { label: "School Detail" },
+                    {label: "School Management", href: "/admin/management/school/school-list"},
+                    {label: "School Detail"},
                 ]}
             />
-            <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!} />
+            <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
 
             <div className="read-only-form email-locked">
                 <SchoolForm
