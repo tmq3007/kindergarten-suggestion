@@ -87,7 +87,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     return (
         <Fragment>
             {contextHolder}
-            <Layout hasSider>
+            <Layout>
                 <ConfigProvider
                     theme={{
                         components: {
@@ -224,7 +224,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         </Link>
                     </Header>
                     <Content
-                        className='rounded-lg h-screen'
+                        className='rounded-lg'
                         style={{
                             padding: 15,
                             minHeight: 280,

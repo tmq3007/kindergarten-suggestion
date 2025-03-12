@@ -1,12 +1,13 @@
 "use client";
 
-import { Form, message } from "antd";
-import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import {Form, message} from "antd";
+import {useRouter} from "next/navigation";
+import React, {useEffect} from "react";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
+import closedImg from '@public/closed.png'
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
@@ -14,9 +15,11 @@ import {
     SCHOOL_STATUS_OPTIONS,
     ROLES,
 } from "@/lib/constants";
-import { useApproveSchoolMutation, useGetSchoolByUserIdQuery } from "@/redux/services/schoolApi";
-import { useSelector } from "react-redux";
-import { RootState } from '@/redux/store';
+import {useApproveSchoolMutation, useGetSchoolByUserIdQuery} from "@/redux/services/schoolApi";
+import {useSelector} from "react-redux";
+import {RootState} from '@/redux/store';
+import Image from "next/image";
+import {formatPhoneNumber} from "@/lib/phoneUtils";
 
 export default function SchoolDetail() {
     const router = useRouter();
@@ -33,7 +36,7 @@ export default function SchoolDetail() {
     }
 
     // Sử dụng useGetSchoolByUserIdQuery để lấy một trường học duy nhất
-    const { data, isError, isLoading } = useGetSchoolByUserIdQuery({
+    const {data, isError, isLoading} = useGetSchoolByUserIdQuery({
         name: undefined,
     });
 
@@ -59,7 +62,7 @@ export default function SchoolDetail() {
                 ward: school.ward || "",
                 street: school.street || "",
                 email: school.email || "",
-                phone: school.phone || "",
+                phone: formatPhoneNumber(school.phone),
                 website: school.website || "",
                 receivingAge: validReceivingAge,
                 educationMethod: validEducationMethod,
@@ -70,10 +73,10 @@ export default function SchoolDetail() {
             });
 
             const facilityValues: string[] = school.facilities?.map((facility) => String(facility.fid)) || [];
-            form.setFieldsValue({ facilities: facilityValues });
+            form.setFieldsValue({facilities: facilityValues});
 
             const utilityValues: string[] = school.utilities?.map((utility) => String(utility.uid)) || [];
-            form.setFieldsValue({ utilities: utilityValues });
+            form.setFieldsValue({utilities: utilityValues});
         }
     }, [school, form]);
 
@@ -88,7 +91,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}`, {
                 method: "DELETE",
-                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
             });
             if (response.ok) {
                 message.success("School deleted successfully");
@@ -106,7 +109,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}/reject`, {
                 method: "PUT",
-                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
             });
             if (response.ok) {
                 message.success("School rejected successfully");
@@ -134,7 +137,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}/publish`, {
                 method: "PUT",
-                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
             });
             if (response.ok) {
                 message.success("School published successfully");
@@ -152,7 +155,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}/unpublish`, {
                 method: "PUT",
-                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
             });
             if (response.ok) {
                 message.success("School unpublished successfully");
@@ -193,29 +196,33 @@ export default function SchoolDetail() {
             <div className="pt-2">
                 <MyBreadcrumb
                     paths={[
-                        { label: "School Management", href: "/admin/management/school/school-list" },
-                        { label: "School Detail" },
+                        {label: "School Management", href: "/admin/management/school/school-list"},
+                        {label: "School Detail"},
                     ]}
                 />
-                <SchoolManageTitle title={"School details"} />
-                <SchoolFormSkeleton />
+                <SchoolManageTitle title={"School details"}/>
+                <SchoolFormSkeleton/>
             </div>
         );
     }
 
     if (!school) {
-        return <div>Can’t find any school for this user</div>;
+        return (
+            <>
+                <Image src={closedImg} alt={'school-not-found'}/>
+            </>
+        )
     }
 
     return (
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    { label: "School Management", href: "/admin/management/school/school-list" },
-                    { label: "School Detail" },
+                    {label: "School Management", href: "/admin/management/school/school-list"},
+                    {label: "School Detail"},
                 ]}
             />
-            <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!} />
+            <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
 
             <div className="read-only-form email-locked">
                 <SchoolForm

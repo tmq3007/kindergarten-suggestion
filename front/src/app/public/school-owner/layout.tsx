@@ -12,7 +12,7 @@ import 'react-resizable/css/styles.css';
 import Sider from 'antd/es/layout/Sider';
 import {Content} from 'antd/es/layout/layout';
 
-export default function AdminLayout({children}: { children: React.ReactNode }) {
+export default function SchoolOwnerLayout({children}: { children: React.ReactNode }) {
     const [collapsed, setCollapsed] = useState(false);
     const user = useSelector((state: RootState) => state.user);
     const role = user.role;
@@ -35,7 +35,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
 
     return (
         <Fragment>
-            <Layout className={'h-screen'}>
+            <Layout>
                 <ConfigProvider theme={{
                     components: {
                         Menu: {
@@ -85,7 +85,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         </Resizable>
 
                         <Button
-                            className="absolute top-[50%] -right-4 z-10"
+                            className="absolute top-[30%] -right-4 z-10"
                             type="primary"
                             shape="circle"
                             icon={collapsed ? <RightOutlined/> : <LeftOutlined/>}
@@ -93,7 +93,9 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         />
                     </div>
                 </ConfigProvider>
-                <Content style={{padding: 20, minHeight: 280, paddingTop: 60}}>
+                <Content
+                    style={{padding: 20, minHeight: 280, paddingTop: 90}}
+                >
                     {children}
                 </Content>
             </Layout>
