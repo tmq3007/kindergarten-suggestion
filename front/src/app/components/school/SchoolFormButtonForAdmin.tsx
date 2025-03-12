@@ -1,16 +1,17 @@
-import React, {useEffect, useState} from "react";
-import {useParams, useRouter} from "next/navigation";
-import {Button, message, notification, UploadFile} from "antd";
-import {RootState} from '@/redux/store';
+import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button, message, notification } from "antd";
+import { RootState } from '@/redux/store';
 import {
     SchoolCreateDTO,
-    SchoolDTO,
-    SchoolUpdateDTO,
-    useAddSchoolMutation, useGetSchoolByIdQuery,
-    useUpdateSchoolByAdminMutation, useUpdateSchoolStatusByAdminMutation,
+    useAddSchoolMutation,
+    useGetSchoolByIdQuery,
+    useUpdateSchoolByAdminMutation,
+    useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
-import {useSelector} from "react-redux";
-import {ButtonGroupProps} from "./SchoolFormButton";
+import { useSelector } from "react-redux";
+import { ButtonGroupProps } from "./SchoolFormButton";
+import {formatErrorMessage, prepareSchoolData} from "@/lib/schoolUtils";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -31,15 +32,14 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const schoolId = params.id;
     const user = useSelector((state: RootState) => state.user);
 
-    const [updateSchoolByAdmin, {isLoading: isUpdating}] = useUpdateSchoolByAdminMutation();
-    const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
+    const [updateSchoolByAdmin, { isLoading: isUpdating }] = useUpdateSchoolByAdminMutation();
+    const [addSchool, { isLoading: isCreating }] = useAddSchoolMutation();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
-    const {refetch: getSchoolByIdRefetch} = useGetSchoolByIdQuery(Number(schoolId));
-    const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
+    const { refetch: getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
+    const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
 
-
-    //Config notifications
+    // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
         api[type]({
             message,
@@ -51,97 +51,93 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             onClose: onClose
         });
     };
-
-    // Function to handle error formatting
-    const formatErrorMessage = (error: unknown): string | React.ReactNode => {
-        let errorMessage: string | React.ReactNode = 'There was an error while adding the school. Please try again.';
-
-        if (error && typeof error === 'object' && 'data' in error) {
-            const errorData = (error as {
-                data?: {
-                    message?: string;
-                    fieldErrors?: { message: string }[];
-                    globalErrors?: { message: string }[];
-                }
-            }).data;
-
-            const allErrorMessages: string[] = [];
-
-            if (errorData?.fieldErrors && errorData.fieldErrors.length > 0) {
-                allErrorMessages.push(...errorData.fieldErrors.map(err => err.message));
-            }
-
-            if (errorData?.globalErrors && errorData.globalErrors.length > 0) {
-                allErrorMessages.push(...errorData.globalErrors.map(err => err.message));
-            }
-
-            if (allErrorMessages.length > 0) {
-                errorMessage = allErrorMessages.map((msg, index) => (
-                    <React.Fragment key={index}>
-                        {'-' + msg}
-                        {index < allErrorMessages.length - 1 && <br/>}
-                    </React.Fragment>
-                ));
-            } else if (errorData?.message) {
-                errorMessage = errorData.message;
-            }
-        } else if (error && typeof error === 'object' && 'message' in error) {
-            errorMessage = (error as { message?: string }).message || errorMessage;
-        } else if (typeof error === 'string') {
-            errorMessage = error;
-        }
-
-        return errorMessage;
-    };
-
-
-    /**
-     * Utility function to prepare school data before submission
-     * - Validates form fields
-     * - Formats phone number correctly
-     * - Extracts uploaded images
-     */
-
-    const prepareSchoolData = async (): Promise<SchoolDTO | SchoolUpdateDTO | null> => {
-        try {
-            // Validate form fields and get values
-            const values = await form.validateFields();
-            // Validate email and phone using refs from SchoolForm
-
-            const isEmailValid = await emailInputRef?.current?.validateEmail();
-            const isPhoneValid = await phoneInputRef?.current?.validatePhone();
-
-            if (!isEmailValid || !isPhoneValid) {
-                console.log('Validation failed');
-                messageApi.error("Email or phone validation failed. Please check your inputs.");
-                return null;
-            }
-            const fileList: File[] = (values.image as UploadFile[] || [])
-                .filter((file) => file.originFileObj)
-                .map((file) => file.originFileObj as File);
-            const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
-            console.log("fileList",fileList)
-            console.log("values.image",values.image)
-            console.log("values.imageList",values.imageList)
-
-
-            // Prepare final data
-            return {
-                ...values,
-                image: fileList,
-                phone: fullPhoneNumber,
-            };
-        } catch (error) {
-            console.error("Form validation failed:", error);
-            return null; // Return null if validation fails
-        }
-    };
+    //
+    // // Function to handle error formatting
+    // const formatErrorMessage = (error: unknown): string | React.ReactNode => {
+    //     let errorMessage: string | React.ReactNode = 'There was an error while adding the school. Please try again.';
+    //
+    //     if (error && typeof error === 'object' && 'data' in error) {
+    //         const errorData = (error as {
+    //             data?: {
+    //                 message?: string;
+    //                 fieldErrors?: { message: string }[];
+    //                 globalErrors?: { message: string }[];
+    //             }
+    //         }).data;
+    //
+    //         const allErrorMessages: string[] = [];
+    //
+    //         if (errorData?.fieldErrors && errorData.fieldErrors.length > 0) {
+    //             allErrorMessages.push(...errorData.fieldErrors.map(err => err.message));
+    //         }
+    //
+    //         if (errorData?.globalErrors && errorData.globalErrors.length > 0) {
+    //             allErrorMessages.push(...errorData.globalErrors.map(err => err.message));
+    //         }
+    //
+    //         if (allErrorMessages.length > 0) {
+    //             errorMessage = allErrorMessages.map((msg, index) => (
+    //                 <React.Fragment key={index}>
+    //                     {'-' + msg}
+    //                     {index < allErrorMessages.length - 1 && <br/>}
+    //                 </React.Fragment>
+    //             ));
+    //         } else if (errorData?.message) {
+    //             errorMessage = errorData.message;
+    //         }
+    //     } else if (error && typeof error === 'object' && 'message' in error) {
+    //         errorMessage = (error as { message?: string }).message || errorMessage;
+    //     } else if (typeof error === 'string') {
+    //         errorMessage = error;
+    //     }
+    //
+    //     return errorMessage;
+    // };
+    //
+    //
+    // /**
+    //  * Utility function to prepare school data before submission
+    //  * - Validates form fields
+    //  * - Formats phone number correctly
+    //  * - Extracts uploaded images
+    //  */
+    //
+    // const prepareSchoolData = async (): Promise<SchoolDTO | SchoolUpdateDTO | null> => {
+    //     try {
+    //         // Validate form fields and get values
+    //         const values = await form.validateFields();
+    //         // Validate email and phone using refs from SchoolForm
+    //
+    //         const isEmailValid = await emailInputRef?.current?.validateEmail();
+    //         const isPhoneValid = await phoneInputRef?.current?.validatePhone();
+    //
+    //         if (!isEmailValid || !isPhoneValid) {
+    //             console.log('Validation failed');
+    //             messageApi.error("Email or phone validation failed. Please check your inputs.");
+    //             return null;
+    //         }
+    //         const fileList: File[] = (values.image as UploadFile[] || [])
+    //             .filter((file) => file.originFileObj)
+    //             .map((file) => file.originFileObj as File);
+    //         const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
+    //
+    //         // Prepare final data
+    //         return {
+    //             ...values,
+    //             image: fileList,
+    //             phone: fullPhoneNumber,
+    //         };
+    //     } catch (error) {
+    //         console.error("Form validation failed:", error);
+    //         return null; // Return null if validation fails
+    //     }
+    // };
 
     /**
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
-        const schoolValue = await prepareSchoolData();
+        const schoolValue = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi); // Sử dụng hàm utility
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
@@ -166,8 +162,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 'Failed to Add School',
                 errorMessage,
                 5,
-                () => {
-                },
+                () => { },
             );
         }
     };
@@ -176,12 +171,10 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
      * Handles school update
      */
     const handleUpdateSubmit = async () => {
-        const schoolData = await prepareSchoolData();
+        const schoolData = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
         try {
-            console.log("submit data",schoolData)
-
-            await updateSchoolByAdmin({id: Number(schoolId), ...schoolData}).unwrap();
+            await updateSchoolByAdmin({ id: Number(schoolId), ...schoolData }).unwrap();
             messageApi.success('School updated successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
@@ -195,48 +188,53 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
     const handlePublish = async () => {
         try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 4}}).unwrap();
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
             messageApi.success('School published successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to publish school. Please try again.");
         }
     };
+
     const handleUnpublish = async () => {
         try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 5}}).unwrap();
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
             messageApi.success('School unpublished successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to unpublish school. Please try again.");
         }
     };
+
     const handleDelete = async () => {
         try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 6}}).unwrap();
-            messageApi.success('School deleted successfully!')
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 6 } }).unwrap();
+            messageApi.success('School deleted successfully!');
         } catch (error) {
             messageApi.error("Failed to delete school. Please try again.");
         }
     };
+
     const handleApprove = async () => {
         try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 2}}).unwrap();
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 2 } }).unwrap();
             messageApi.success('School approved successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to approve school. Please try again.");
         }
     };
+
     const handleReject = async () => {
         try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 3}}).unwrap();
+            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 3 } }).unwrap();
             messageApi.success('School rejected successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
             messageApi.error("Failed to reject school. Please try again.");
         }
     };
+
     const handleEdit = () => {
         router.push(`/admin/management/school/edit-school/${schoolId}`);
     };
@@ -251,22 +249,17 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 </Button>
             )}
             {hasCreateSubmitButton && (
-                <Button htmlType="button" type="primary" onClick={() => {
-                    addSchoolHandle(1);
-                }}
-                        loading={isCreating}>
+                <Button htmlType="button" type="primary" onClick={() => addSchoolHandle(1)} loading={isCreating}>
                     Submit
                 </Button>
             )}
             {hasUpdateSubmitButton && (
-                <Button htmlType="button" type="primary" onClick={handleUpdateSubmit}
-                        loading={isUpdating}>
+                <Button htmlType="button" type="primary" onClick={handleUpdateSubmit} loading={isUpdating}>
                     Submit
                 </Button>
             )}
             {hasDeleteButton && (
-                <Button htmlType="button" onClick={handleDelete}
-                        className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}>
+                <Button htmlType="button" onClick={handleDelete} className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}>
                     Delete
                 </Button>
             )}
@@ -276,26 +269,22 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 </Button>
             )}
             {hasRejectButton && (
-                <Button htmlType="button" onClick={handleReject} loading={isUpdatingStatus}
-                        className={'bg-red-300 text-red-800 border-red-900'}>
+                <Button htmlType="button" onClick={handleReject} loading={isUpdatingStatus} className={'bg-red-300 text-red-800 border-red-900'}>
                     Reject
                 </Button>
             )}
             {hasApproveButton && (
-                <Button htmlType="button" onClick={handleApprove}
-                        className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
+                <Button htmlType="button" onClick={handleApprove} className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
                     Approve
                 </Button>
             )}
             {hasPublishButton && (
-                <Button htmlType="button" onClick={handlePublish} loading={isUpdatingStatus}
-                        className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
+                <Button htmlType="button" onClick={handlePublish} loading={isUpdatingStatus} className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
                     Publish
                 </Button>
             )}
             {hasUnpublishButton && (
-                <Button htmlType="button" onClick={handleUnpublish} loading={isUpdatingStatus}
-                        className={'bg-purple-300 text-purple-800 border-purple-900'}>
+                <Button htmlType="button" onClick={handleUnpublish} loading={isUpdatingStatus} className={'bg-purple-600 hover:!bg-purple-500 text-white hover:!text-white border-none'}>
                     Unpublish
                 </Button>
             )}

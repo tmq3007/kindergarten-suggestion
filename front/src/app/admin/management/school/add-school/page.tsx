@@ -5,9 +5,11 @@ import SchoolForm from '@/app/components/school/SchoolForm';
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import React from "react";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import {useLazyCheckSchoolEmailQuery} from "@/redux/services/schoolApi";
 
 const {Option} = Select;
 const page = () => {
+    const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
     return (
         <>
             <MyBreadcrumb
@@ -18,7 +20,12 @@ const page = () => {
             />
             <SchoolManageTitle title={'Add new school'}/>
             <div className='bg-white pt-1 !mb-10 rounded-lg'>
-                <SchoolForm hasCancelButton={true} hasSaveButton={true} hasCreateSubmitButton={true}/>
+                <SchoolForm
+                    hasCancelButton={true}
+                    hasSaveButton={true}
+                    hasCreateSubmitButton={true}
+                    triggerCheckEmail={triggerCheckEmail}
+                />
             </div>
         </>
     );

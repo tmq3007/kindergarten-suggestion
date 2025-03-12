@@ -4,6 +4,7 @@ import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
  import fa.pjb.back.model.dto.SchoolUpdateDTO;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
@@ -65,19 +67,19 @@ public class SchoolController {
             .build();
     }
 
-    @GetMapping("/by-user/{userId}")
-    public ApiResponse<Page<SchoolDetailVO>> getSchoolsByUserId(
-        @PathVariable Integer userId,
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
+    @GetMapping("/by-user")
+    public ApiResponse<SchoolDetailVO> getSchoolByUserId(
+        @AuthenticationPrincipal User user,
         @RequestParam(required = false) String name) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        return ApiResponse.<Page<SchoolDetailVO>>builder()
+        // Lấy userId trực tiếp từ User entity
+        Integer userId = user.getId();
+        return ApiResponse.<SchoolDetailVO>builder()
             .code(HttpStatus.OK.value())
-            .message("Get schools by user ID successfully.")
-            .data(schoolService.getSchoolsByUserId(userId, pageable, name))
+            .message("Get school by user ID successfully.")
+            .data(schoolService.getSchoolByUserId(userId, name))
             .build();
     }
+
     @GetMapping("/check-email/{email}")
     public ApiResponse<String> checkEmail(@PathVariable String email) {
         return ApiResponse.<String>builder()

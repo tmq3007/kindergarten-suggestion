@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Checkbox, Collapse, Form, Input, InputNumber, Select, UploadFile} from 'antd';
+import {Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile} from 'antd';
 
 import MyEditor from "@/app/components/common/MyEditor";
 import {ExpectedSchool, useLazyCheckSchoolEmailQuery, useSearchExpectedSchoolQuery} from '@/redux/services/schoolApi';
@@ -18,6 +18,7 @@ import DebounceSelect from '../common/DebounceSelect';
 import {useLazySearchUsersQuery} from '@/redux/services/testApi';
 import {ImageUpload} from '../common/ImageUploader';
 import clsx from "clsx";
+import {InboxOutlined} from "@ant-design/icons";
 
 const {Option} = Select;
 const {Panel} = Collapse;
@@ -62,7 +63,8 @@ interface SchoolFormFields {
     hasUnpublishButton?: boolean;
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
-    actionButtons?: React.ReactNode; // Prop để truyền các nút hành động
+    actionButtons?: React.ReactNode;
+    triggerCheckEmail: any;
 }
 
 interface UserValue {
@@ -85,7 +87,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     hasUnpublishButton,
                                                     hideImageUpload = false,
                                                     imageList = [],
-                                                    actionButtons, // Nhận các nút hành động
+                                                    actionButtons,
+                                                    triggerCheckEmail,
                                                 }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
@@ -110,7 +113,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
             setSchoolOptions(
                 schoolData.data.map((expectedSchool: ExpectedSchool) => ({
                     label: expectedSchool.expectedSchool, // Display name in dropdown
-                    value: expectedSchool.expectedSchool,  
+                    value: expectedSchool.expectedSchool,
                 }))
             );
         }

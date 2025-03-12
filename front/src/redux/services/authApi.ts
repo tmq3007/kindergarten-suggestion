@@ -9,6 +9,8 @@ export type LoginDTO = {
 export type LoginVO = {
     accessToken: string,
     csrfToken: string,
+    hasSchool: boolean,
+    hasDraft: boolean,
 }
 
 export type ForgotPasswordDTO = {
