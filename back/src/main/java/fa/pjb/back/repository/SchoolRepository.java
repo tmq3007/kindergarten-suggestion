@@ -21,15 +21,9 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT s FROM School s " +
-      "JOIN SchoolOwner so ON s.id = so.school.id " +
-      "WHERE so.id = :userId " +
-      "AND s.status != 0 " +
-      "AND (:name IS NULL OR s.name LIKE %:name%)")
-  Page<School> findSchoolsByUserId(
-      @Param("userId") Integer userId,
-      @Param("name") String name,
-      Pageable pageable);
+  @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId AND (:name IS NULL OR s.name LIKE %:name%)")
+  Optional<School> findSchoolByUserId(@Param("userId") Integer userId, @Param("name") String name);
+
 
   @Query("SELECT s FROM School s WHERE " +
       "(:name IS NULL OR s.name LIKE %:name%) AND " +

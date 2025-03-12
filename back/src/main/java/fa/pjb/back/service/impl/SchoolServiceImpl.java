@@ -232,9 +232,10 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public Page<SchoolDetailVO> getSchoolsByUserId(Integer userId, Pageable pageable, String name) {
-        Page<School> schoolPage = schoolRepository.findSchoolsByUserId(userId, name, pageable);
-        return schoolPage.map(schoolMapper::toSchoolDetailVO);
+    public SchoolDetailVO getSchoolByUserId(Integer userId, String name) {
+        School school = schoolRepository.findSchoolByUserId(userId, name)
+            .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
+        return schoolMapper.toSchoolDetailVO(school);
     }
 
     /**
