@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import {
-    Button, DatePicker, Form, Input, Select, Space, Typography, notification, Image, Spin, InputProps
+    Button, DatePicker, Form, Input, Select, Space, Typography, notification, Image, Spin
 } from 'antd';
 import { Breadcrumb, Input as AntdInput } from 'antd';
 import Link from "next/link";
@@ -16,10 +16,12 @@ import { motion, Variants } from 'framer-motion';
 
 const { Title } = Typography;
 const { TextArea } = AntdInput; // Importing TextArea from AntdInput
+import { Row, Col } from 'antd';
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 
 const formItemLayout = {
-    labelCol: { xs: { span: 24 }, sm: { span: 8 } },
-    wrapperCol: { xs: { span: 24 }, sm: { span: 16 } },
+    labelCol: { xs: { span: 24 }, sm: { span: 6 } },
+    wrapperCol: { xs: { span: 24 }, sm: { span: 18 } },
 };
 
 // Animation variants for fade-in and slide-up effect with staggered delays
@@ -75,6 +77,7 @@ const CreateUser: React.FC = () => {
                 dispatch(setUser(formattedValues));
                 openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                 form.resetFields();
+                setSelectedRole(undefined);
             } else {
                 openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
             }
@@ -105,191 +108,207 @@ const CreateUser: React.FC = () => {
     };
 
     return (
-        <div className={'h-[100%] p-0'}>
+        <>
             {contextHolder}
-            <Breadcrumb
-                className={'m-0'}
-                items={[
-                    { title: <Link href="/admin/management/user/user-list">User Management</Link> },
-                    { title: 'Add New User' },
+
+            <MyBreadcrumb
+                paths={[
+                    {label: 'User Management', href: '/admin/management/user/user-list'},
+                    {label: 'Add New User'},
                 ]}
             />
-            <Title level={3} className="mb-1 mt-0.5 ml-16">Add New User</Title>
 
+            <Title level={3} className="mt-0.5 ml-16 mb-5">Add New User</Title>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.2 }}
-                className="w-full max-w-[600px] mx-auto mt-3"
+                className="mx-auto p-6 bg-white rounded-lg h-auto shadow-md"
             >
                 <Form
                     {...formItemLayout}
                     form={form}
-                    labelCol={{ flex: '120px' }}
+                    labelCol={{ flex: '150px' }}
                     labelAlign="left"
                     labelWrap
                     onFinish={onFinish}
+                    className="space-y-6 mt-5 h-auto"
                 >
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={0}>
-                        <Form.Item label="User Name" name="username">
-                            <Input placeholder="System Auto Generate" disabled />
-                        </Form.Item>
-                    </motion.div>
+                    <Row gutter={[24, 24]}> {/* Added vertical gutter for spacing between rows */}
+                        <Col xs={24} sm={24} md={24} lg={12}> {/* Single column on xs/md, two columns on lg+ */}
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={0}>
+                                <Form.Item label="User Name" name="username" className={'mb-10'}>
+                                    <Input placeholder="System Auto Generate" disabled />
+                                </Form.Item>
+                            </motion.div>
 
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={1}>
-                        <Form.Item
-                            label="Full Name"
-                            name="fullname"
-                            rules={[
-                                { required: true, message: 'Full name is required!' },
-                                { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: 'Full name must contain at least two words!' },
-                                { max: 50, message: 'Full name must not exceed 50 characters!' }
-                            ]}
-                            hasFeedback
-                        >
-                            <Input />
-                        </Form.Item>
-                    </motion.div>
-
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={2}>
-                        <Form.Item
-                            label="Email"
-                            name="email"
-                            rules={[
-                                { required: true, message: 'Email is required!' },
-                                { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' }
-                            ]}
-                            hasFeedback
-                        >
-                            <Input />
-                        </Form.Item>
-                    </motion.div>
-
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={3}>
-                        <Form.Item
-                            label="Phone No."
-                            name="phone"
-                            rules={[
-                                { required: true, message: 'Phone number is required!' },
-                                { pattern: /^\d{4,14}$/, message: 'Phone number is wrong!' }
-                            ]}
-                        >
-                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                                <Select
-                                    value={selectedCountry?.code || "VN"}
-                                    loading={isLoadingCountry}
-                                    onChange={handleCountryChange}
-                                    style={{ width: 120, borderRight: "1px #ccc" }}
-                                    optionLabelProp="label2"
-                                    showSearch={false}
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={1}>
+                                <Form.Item
+                                    label="Full Name"
+                                    name="fullname"
+                                    rules={[
+                                        { required: true, message: 'Full name is required!' },
+                                        { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: 'Full name must contain at least two words!' },
+                                        { max: 50, message: 'Full name must not exceed 50 characters!' }
+                                    ]}
+                                    hasFeedback
+                                    className={'mb-10'}
                                 >
-                                    {countries?.map((country) => (
-                                        <Select.Option
-                                            key={country.code}
-                                            value={country.code}
-                                            label={country.label}
-                                            label2={
-                                                <span className="flex items-center">
-                                                    <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" preview={false} />
-                                                    {country.code} {country.dialCode}
-                                                </span>
-                                            }
+                                    <Input />
+                                </Form.Item>
+                            </motion.div>
+
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={2}>
+                                <Form.Item
+                                    label="Email"
+                                    name="email"
+                                    rules={[
+                                        { required: true, message: 'Email is required!' },
+                                        { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' }
+                                    ]}
+                                    hasFeedback
+                                    className={'mb-10'}
+                                >
+                                    <Input />
+                                </Form.Item>
+                            </motion.div>
+
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={3}>
+                                <Form.Item
+                                    label="Phone No."
+                                    name="phone"
+                                    rules={[
+                                        { required: true, message: 'Phone number is required!' },
+                                        { pattern: /^\d{4,14}$/, message: 'Phone number is wrong!' }
+                                    ]}
+                                    className={'mb-10'}
+                                >
+                                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                                        <Select
+                                            value={selectedCountry?.code || "VN"}
+                                            loading={isLoadingCountry}
+                                            onChange={handleCountryChange}
+                                            style={{ width: 120, borderRight: "1px #ccc" }}
+                                            optionLabelProp="label2"
+                                            showSearch={false}
                                         >
-                                            <div className="flex items-center">
-                                                <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" />
-                                                {country.dialCode} - {country.label}
-                                            </div>
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                                <Input
-                                    placeholder="Enter your phone number"
-                                    onChange={handlePhoneNumberChange}
-                                    style={{ flex: 1, border: "none", boxShadow: "none" }}
-                                />
-                            </div>
-                        </Form.Item>
-                    </motion.div>
+                                            {countries?.map((country) => (
+                                                <Select.Option
+                                                    key={country.code}
+                                                    value={country.code}
+                                                    label={country.label}
+                                                    label2={
+                                                        <span className="flex items-center">
+                                                            <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" preview={false} />
+                                                            {country.code} {country.dialCode}
+                                                        </span>
+                                                    }
+                                                >
+                                                    <div className="flex items-center">
+                                                        <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" />
+                                                        {country.dialCode} - {country.label}
+                                                    </div>
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                        <Input
+                                            placeholder="Enter your phone number"
+                                            onChange={handlePhoneNumberChange}
+                                            style={{ flex: 1, border: "none", boxShadow: "none" }}
+                                        />
+                                    </div>
+                                </Form.Item>
+                            </motion.div>
 
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={4}>
-                        <Form.Item
-                            label="DOB"
-                            name="dob"
-                            required={true}
-                            rules={[{
-                                validator: (_, value) => {
-                                    if (!value) return Promise.reject('Date of birth is required!');
-                                    if (value.isAfter(dayjs())) return Promise.reject('Date of birth cannot be in the future!');
-                                    return Promise.resolve();
-                                }
-                            }]}
-                        >
-                            <DatePicker disabledDate={(current) => current && current > dayjs().endOf('day')} />
-                        </Form.Item>
-                    </motion.div>
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={4}>
+                                <Form.Item
+                                    label="DOB"
+                                    name="dob"
+                                    required={true}
+                                    rules={[{
+                                        validator: (_, value) => {
+                                            if (!value) return Promise.reject('Date of birth is required!');
+                                            if (value.isAfter(dayjs())) return Promise.reject('Date of birth cannot be in the future!');
+                                            return Promise.resolve();
+                                        }
+                                    }]}
+                                    className={'mb-10'}
+                                >
+                                    <DatePicker disabledDate={(current) => current && current > dayjs().endOf('day')} />
+                                </Form.Item>
+                            </motion.div>
+                        </Col>
 
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={5}>
-                        <Form.Item label="Role" name="role" rules={[{ required: true, message: 'Please select a role!' }]}>
-                            <Select
-                                placeholder="Select a role"
-                                onChange={handleRoleChange} // Track role change
-                                options={[
-                                    { value: 'admin', label: 'Admin' },
-                                    { value: 'school_owner', label: 'School Owner' },
-                                ]}
-                            />
-                        </Form.Item>
-                    </motion.div>
+                        <Col xs={24} sm={24} md={24} lg={12}> {/* Single column on xs/md, two columns on lg+ */}
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={5}>
+                                <Form.Item className={'mb-10'} label="Role" name="role" rules={[{ required: true, message: 'Please select a role!' }]}>
+                                    <Select
+                                        placeholder="Select a role"
+                                        onChange={handleRoleChange} // Track role change
+                                        options={[
+                                            { value: 'admin', label: 'Admin' },
+                                            { value: 'school_owner', label: 'School Owner' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </motion.div>
 
-                    {/* Conditional Expected School TextArea */}
-                    {selectedRole === 'school_owner' && (
-                        <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={6}>
-                            <Form.Item
-                                label="Expected "
-                                name="expectedSchool"
-                                rules={[
-                                    { required: true, message: 'Expected school name is required for School Owner!' },
-                                    { max: 200, message: 'Expected school name must not exceed 200 characters!' }
-                                ]}
-                            >
-                                <TextArea
-                                    rows={4}
-                                    placeholder="Enter the expected school name"
-                                />
-                            </Form.Item>
-                        </motion.div>
-                    )}
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 7 : 6}>
+                                <Form.Item className={'mb-10'} label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
+                                    <Select
+                                        placeholder="Select status"
+                                        options={[
+                                            { value: true, label: 'Active' },
+                                            { value: false, label: 'Inactive' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </motion.div>
 
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 7 : 6}>
-                        <Form.Item label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
-                            <Select
-                                placeholder="Select status"
-                                options={[
-                                    { value: true, label: 'Active' },
-                                    { value: false, label: 'Inactive' },
-                                ]}
-                            />
-                        </Form.Item>
-                    </motion.div>
+                            {/* Conditional Expected School TextArea */}
+                            {selectedRole === 'school_owner' && (
+                                <motion.div className={'mb-10'} variants={fadeInUpVariants} initial="initial" animate="animate" custom={6}>
+                                    <Form.Item
+                                        label="Expected School"
+                                        name="expectedSchool"
+                                        rules={[
+                                            { required: true, message: 'Expected school name is required for School Owner!' },
+                                            { max: 200, message: 'Expected school name must not exceed 200 characters!' }
+                                        ]}
+                                    >
+                                        <TextArea
+                                            rows={4}
+                                            placeholder="Enter the expected school name"
+                                        />
+                                    </Form.Item>
+                                </motion.div>
+                            )}
+                        </Col>
+                    </Row>
 
-                    <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 8 : 7}>
-                        <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
-                            <Space className="absolute bottom-6 top-1">
-                                <Link href={'/admin/management/user/user-list'}>
-                                    <Button type="dashed" htmlType="button">
-                                        Cancel
-                                    </Button>
-                                </Link>
-                                <Button type="primary" htmlType="submit">
-                                    Submit
-                                </Button>
-                            </Space>
-                        </Form.Item>
-                    </motion.div>
+                    <Row justify="center">
+                        <Col>
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 8 : 7}>
+                                <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, auto)', justifyContent: 'center', gap: '10px' }}>
+                                        <Link href={'/admin/management/user/user-list'}>
+                                            <Button type="dashed" htmlType="button">
+                                                Cancel
+                                            </Button>
+                                        </Link>
+                                        <Button type="primary" htmlType="submit">
+                                            Submit
+                                        </Button>
+                                    </div>
+                                </Form.Item>
+                            </motion.div>
+                        </Col>
+                    </Row>
                 </Form>
             </motion.div>
+
             <Spin spinning={spinning} percent={percent} fullscreen />
-        </div>
+        </>
     );
 };
 

@@ -26,7 +26,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ( ) => {
     };
 
     return (
-        <div className="h-full bg-teal-100 bg-opacity-0 p-6 rounded-xl flex flex-col items-center space-y-6">
+        <div className="h-full bg-white bg-opacity-0 p-6 rounded-xl flex flex-col items-center space-y-6">
             {/* Breadcrumb */}
             <div className="w-full">
                 <Breadcrumb
