@@ -61,7 +61,8 @@ interface SchoolFormFields {
     hasUnpublishButton?: boolean;
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
-    actionButtons?: React.ReactNode; // Prop để truyền các nút hành động
+    actionButtons?: React.ReactNode;
+    triggerCheckEmail: any;
 }
 
 const SchoolForm: React.FC<SchoolFormFields> = ({
@@ -79,7 +80,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     hasUnpublishButton,
                                                     hideImageUpload = false,
                                                     imageList = [],
-                                                    actionButtons, // Nhận các nút hành động
+                                                    actionButtons,
+                                                    triggerCheckEmail,
                                                 }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
@@ -87,8 +89,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
-
-    const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
 
     const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => {
         return e?.fileList ?? [];
