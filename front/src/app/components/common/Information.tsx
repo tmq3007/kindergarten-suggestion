@@ -99,15 +99,15 @@ export default function Information() {
                     <h1 className={`${nunito.className} text-center text-2xl font-bold uppercase mt-6 md:mt-0`}>our partners</h1>
                     <div className={'flex justify-evenly w-full lg:w-1/2 m-auto mt-10'}>
                         <div className={'flex flex-col items-center w-1/3'}>
-                            <ReadOutlined className={'text-[30px] md:text-[50px]'}/>
+                            <ReadOutlined className={'text-[30px] md:text-[30px]'}/>
                             Ministry of Education
                         </div>
                         <div className={'flex flex-col items-center w-1/3'}>
-                            <AliwangwangOutlined className={'text-[30px] md:text-[50px]'}/>
+                            <AliwangwangOutlined className={'text-[30px] md:text-[30px]'}/>
                             Education News
                         </div>
                         <div className={'flex flex-col items-center w-1/3'}>
-                            <DiscordOutlined className={'text-[30px] md:text-[50px]'}/>
+                            <DiscordOutlined className={'text-[30px] md:text-[30px]'}/>
                             Kids Center
                         </div>
                     </div>

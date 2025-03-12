@@ -38,7 +38,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
     };
 
     return (
-        <div className="h-full   p-6 rounded-xl flex flex-col items-center space-y-6">
+        <div className="h-full p-6 rounded-xl flex flex-col items-center space-y-6">
             <div className="w-full">
                 <Breadcrumb
                     className="text-black"

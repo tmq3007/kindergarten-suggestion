@@ -1,10 +1,10 @@
-import {Indie_Flower, Nunito} from "next/font/google";
+import {Lato, Nunito} from "next/font/google";
 
 export const nunito = Nunito({
     subsets: ['latin'],
 });
 
-export const indie = Indie_Flower({
+export const lato = Lato({
     subsets: ['latin'],
     weight: '400',
 });

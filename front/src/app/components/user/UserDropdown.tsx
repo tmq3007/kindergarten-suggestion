@@ -84,7 +84,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
             label: (
                 <Link
                     href={"/public/view-account"}
-                    className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300"
+                    className="block hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
                 >
                     My Profiles
                 </Link>
@@ -97,7 +97,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 label: (
                     <Link
                         href="/public/school-owner"
-                        className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300"
+                        className="block hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
                     >
                         As School Owner
                     </Link>
@@ -124,9 +124,9 @@ export default function UserDropdown({username}: UserDropdownProps) {
     // Define keyframes for smoother gradient animation
     const gradientAnimation = {
         backgroundImage: [
-            "linear-gradient(90deg, #00c4cc, #ff007a, #00c4cc)", // Start from left
-            "linear-gradient(90deg, #ff007a, #00c4cc, #ff007a)", // Move to right
-            "linear-gradient(90deg, #00c4cc, #ff007a, #00c4cc)", // Return to start
+            "linear-gradient(90deg, #ffffff, #f0f0f0, #ffffff)",
+            "linear-gradient(90deg, #f0f0f0, #ffffff, #f0f0f0)",
+            "linear-gradient(90deg, #ffffff, #f0f0f0, #ffffff)",
         ],
         opacity: [0.8, 1, 0.8], // Subtle blinking effect for smoothness
     };
@@ -138,13 +138,13 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 <Dropdown
                     className="text-blue-500 z-0"
                     menu={menuProps}
-                    trigger={["click"]}
+                    trigger={["hover"]}
                     open={isDropdownVisible}
                     onOpenChange={(open) => setIsDropdownVisible(open)}
                 >
                     <div onClick={() => setIsDropdownVisible(true)}>
                         <Space>
-                            <UserOutlined className="text-black text-sm md:text-2xl"/>
+                            <UserOutlined className="text-white text-sm md:text-2xl"/>
                             <motion.span
                                 className="text-sm md:text-lg hover:cursor-pointer font-bold"
                                 style={{
@@ -169,7 +169,11 @@ export default function UserDropdown({username}: UserDropdownProps) {
                             >
                                 {`Welcome! ${username}`}
                             </motion.span>
-                            <DownOutlined/>
+                            <DownOutlined
+                                className={`text-white transition-transform duration-300 ${
+                                    isDropdownVisible ? "rotate-180" : "rotate-0"
+                                }`}
+                            />
                         </Space>
                     </div>
                 </Dropdown>
