@@ -23,6 +23,7 @@ import NoData from "../NoData";
 import {useParams} from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -175,11 +176,7 @@ const RatingsDashboard = () => {
     };
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Spin size="large" tip="Loading reviews..." />
-            </div>
-        );
+        return <RatingSkeleton/>;
     }
 
     if (error) {
