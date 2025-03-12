@@ -9,25 +9,33 @@ import Link from "next/link";
 import {motion} from "framer-motion";
 import {RootState} from "@/redux/store";
 import {ROLES} from "@/lib/constants";
+import {lato} from "@/lib/fonts";
 
 interface UserDropdownProps {
     username: string;
 }
 
 export default function UserDropdown({username}: UserDropdownProps) {
+    const user = useSelector((state: RootState) => state.user);
     const [messageApi, contextHolder] = message.useMessage();
     const role = useSelector((state: RootState) => state.user?.role);
     const dispatch = useDispatch();
     const modalContainerRef = useRef<HTMLDivElement>(null);
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+    const [isAddSchoolModalVisible, setIsAddSchoolModalVisible] = useState(false);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const router = useRouter();
     const [logout] = useLogoutMutation();
     const processed = useRef(false);
 
     // Function to open Modal and close Dropdown
-    const showModal = () => {
-        setIsModalVisible(true);
+    const showLogoutModal = () => {
+        setIsLogoutModalVisible(true);
+        setIsDropdownVisible(false);
+    };
+
+    const showAddSchoolModal = () => {
+        setIsAddSchoolModalVisible(true);
         setIsDropdownVisible(false);
     };
 
@@ -35,7 +43,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
     const handleLogout = async () => {
         try {
             messageApi.success("Logging out...");
-            setIsModalVisible(false);
+            setIsLogoutModalVisible(false);
 
             const result = await logout(undefined).unwrap();
 
@@ -56,10 +64,27 @@ export default function UserDropdown({username}: UserDropdownProps) {
     };
 
     // Handle cancel action in Modal
-    const handleCancel = () => {
-        setIsModalVisible(false);
+    const handleLogoutCancel = () => {
+        setIsLogoutModalVisible(false);
     };
 
+    const handleAsSchoolOwner = () => {
+        console.log(user)
+        if (user.hasSchool) {
+            router.push('/public/school-owner');
+        } else {
+            setIsAddSchoolModalVisible(true);
+        }
+    }
+
+    const handleAddSchoolCancel = () => {
+        setIsAddSchoolModalVisible(false);
+    };
+
+    const handleAddSchoolOk = () => {
+        router.push('/public/school-owner/add-school')
+        setIsAddSchoolModalVisible(false)
+    }
     // Define items for the Dropdown menu
     const items: MenuProps["items"] = [
         {
@@ -95,12 +120,12 @@ export default function UserDropdown({username}: UserDropdownProps) {
         ...(role === ROLES.SCHOOL_OWNER ? [
             {
                 label: (
-                    <Link
-                        href="/public/school-owner"
-                        className="block hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
+                    <div
+                        className="hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
+                        onClick={handleAsSchoolOwner}
                     >
                         As School Owner
-                    </Link>
+                    </div>
                 ),
                 key: "4",
             },
@@ -109,7 +134,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
         {
             label: (
                 <div
-                    onClick={showModal}
+                    onClick={showLogoutModal}
                     className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300"
                 >
                     Logout
@@ -180,10 +205,10 @@ export default function UserDropdown({username}: UserDropdownProps) {
 
                 <Modal
                     title="Are you leaving?"
-                    open={isModalVisible}
-                    onCancel={() => setIsModalVisible(false)}
+                    open={isLogoutModalVisible}
+                    onCancel={handleLogoutCancel}
                     footer={[
-                        <Button key="cancel" onClick={() => setIsModalVisible(false)}>
+                        <Button key="cancel" onClick={handleLogoutCancel}>
                             Cancel
                         </Button>,
                         <Button key="logout" type="primary" danger onClick={handleLogout}>
@@ -194,6 +219,16 @@ export default function UserDropdown({username}: UserDropdownProps) {
                     getContainer={() => modalContainerRef.current || document.body}
                 >
                     <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
+                </Modal>
+
+                <Modal title={<div className={`${lato.className} !font-bold text-custom text-2xl`}>You are not managing
+                    any school yet</div>}
+                       open={isAddSchoolModalVisible}
+                       onOk={handleAddSchoolOk}
+                       onCancel={handleAddSchoolCancel}
+                       getContainer={false}
+                >
+                    <p className={'pt-5'}> Would you like to add a new school?</p>
                 </Modal>
             </div>
         </>

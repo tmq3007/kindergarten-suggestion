@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Checkbox, Collapse, Form, Input, InputNumber, Select, UploadFile} from 'antd';
+import {Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile} from 'antd';
 
 import MyEditor from "@/app/components/common/MyEditor";
 import {useLazyCheckSchoolEmailQuery} from '@/redux/services/schoolApi';
@@ -16,6 +16,7 @@ import AddressInput from '../common/AddressInput';
 import EmailInput from '../common/EmailInput';
 import {ImageUpload} from '../common/ImageUploader';
 import clsx from "clsx";
+import {InboxOutlined} from "@ant-design/icons";
 
 const {Option} = Select;
 const {Panel} = Collapse;
@@ -92,8 +93,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => {
         return e?.fileList ?? [];
     };
-
-
 
     // Log imageList để kiểm tra dữ liệu
     useEffect(() => {
@@ -283,9 +282,48 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 isReadOnly={isReadOnly}
                             />
                         </Form.Item>
-                        <Form.Item label="School image" name="image" valuePropName="fileList"
-                                   getValueFromEvent={(e) => e?.fileList || []}>
-                            <ImageUpload form={form} fieldName="image" maxCount={10} accept="image/*" maxSizeMB={5}/>
+                        <Form.Item label="School image">
+                            {hideImageUpload ? (
+                                <div className="grid grid-cols-3 gap-4">
+                                    {imageList.length > 0 ? (
+                                        imageList.map((image, index) => (
+                                            <div key={index} className="relative">
+                                                <img
+                                                    src={image.url}
+                                                    alt={image.filename}
+                                                    className="w-full h-32 object-cover rounded-md"
+                                                />
+                                                <p className="text-center text-sm mt-1 truncate">{image.filename}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No images available</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <Form.Item
+                                    name="image"
+                                    valuePropName="fileList"
+                                    getValueFromEvent={normFile}
+                                    noStyle
+                                >
+                                    <Upload.Dragger
+                                        name="schoolImage"
+                                        listType="picture"
+                                        beforeUpload={() => false}
+                                        maxCount={10}
+                                        accept="image/*"
+                                    >
+                                        <p className="ant-upload-drag-icon">
+                                            <InboxOutlined />
+                                        </p>
+                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                        <p className="ant-upload-text">
+                                            Upload pictures of format <strong>jpg, jpeg, png</strong> only. Maximum size: <strong>5MB</strong>
+                                        </p>
+                                    </Upload.Dragger>
+                                </Form.Item>
+                            )}
                         </Form.Item>
                     </div>
                 </div>

@@ -12,4 +12,6 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     Optional<SchoolOwner> findByUserId(Integer userId);
 
     List<SchoolOwner> findAllBySchoolId(Integer schoolID);
+
+
 }

@@ -111,7 +111,7 @@ const AddressInput: React.FC<AddressInputProps> = ({isReadOnly, form, onAddressC
                     loading={isLoadingDistrict}
                     placeholder="Select district"
                     onChange={onDistrictChange}
-                    disabled={!selectedProvinceCode} // Disable until province is selected
+                    disabled={!isReadOnly && !selectedProvinceCode} // Disable until province is selected
                     className={isReadOnly ? "pointer-events-none" : ""}
                     suffixIcon={!isReadOnly}
                 >
@@ -131,7 +131,7 @@ const AddressInput: React.FC<AddressInputProps> = ({isReadOnly, form, onAddressC
                     loading={isLoadingWard}
                     placeholder="Select ward"
                     onChange={onWardChange}
-                    disabled={!selectedDistrictCode} // Disable until district is selected
+                    disabled={!isReadOnly && !selectedDistrictCode} // Disable until district is selected
                     className={isReadOnly ? "pointer-events-none" : ""}
                     suffixIcon={!isReadOnly}
                 >
