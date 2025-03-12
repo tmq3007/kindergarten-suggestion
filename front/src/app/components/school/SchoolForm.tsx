@@ -88,8 +88,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     hideImageUpload = false,
                                                     imageList = [],
                                                     actionButtons,
-                                                    triggerCheckEmail,
-                                                }) => {
+                                               }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);

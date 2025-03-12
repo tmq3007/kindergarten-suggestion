@@ -15,6 +15,8 @@ const mockFeedback = [
     { id: 3, name: "Alice Brown", rating: 3 },
     { id: 4, name: "Bob Johnson", rating: 2 },
     { id: 5, name: "Charlie White", rating: 5 },
+    { id: 6, name: "Charlie White", rating: 5 },
+    { id: 7, name: "Charlie White", rating: 5 },
 ];
 
 const RatingSkeleton = () => {
@@ -74,7 +76,7 @@ const RatingSkeleton = () => {
                 title="Recent Feedback"
                 extra={
                     <Select mode="multiple" placeholder="Filter by rating" className="w-48" disabled>
-                        {[1, 2, 3, 4, 5].map((star) => (
+                        {[1, 2, 3, 4, 5,6,7].map((star) => (
                             <Select.Option key={star} value={star}>
                                 {star} Star
                             </Select.Option>
@@ -89,10 +91,10 @@ const RatingSkeleton = () => {
                             <List.Item>
                                 <List.Item.Meta
                                     avatar={<Skeleton.Avatar active />}
-                                    title={<Skeleton.Input active className="w-48" />}
+                                    title={<Skeleton.Input active className="w-full" />}
                                     description={
                                         <div className="flex items-center gap-2">
-                                            <Skeleton.Input active className="w-24" />
+                                            <Skeleton.Input active className="w-16" />
                                             <div className="flex">
                                                 {[...Array(5)].map((_, i) => (
                                                     <StarFilled key={i} className={i < item.rating ? "text-yellow-500 text-sm" : "text-gray-300 text-sm"} />

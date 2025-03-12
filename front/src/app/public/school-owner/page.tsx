@@ -231,25 +231,18 @@ export default function SchoolDetail() {
                     hideImageUpload={true}
                     imageList={school.imageList || []}
                     hasCancelButton={false}
-                    hasDeleteButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
+                    hasDeleteButton={school.status === SCHOOL_STATUS.Submitted ||
                         school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasEditButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
+                        school.status === SCHOOL_STATUS.Unpublished}
+                    hasEditButton={school.status === SCHOOL_STATUS.Submitted ||
                         school.status === SCHOOL_STATUS.Approved ||
                         school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
+                        school.status === SCHOOL_STATUS.Unpublished}
                     hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
                     hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
-                    hasPublishButton={
-                        school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
-                />
+                    hasPublishButton={school.status === SCHOOL_STATUS.Approved ||
+                        school.status === SCHOOL_STATUS.Unpublished}
+                    hasUnpublishButton={school.status === SCHOOL_STATUS.Published} triggerCheckEmail={undefined}                />
             </div>
         </div>
     );
