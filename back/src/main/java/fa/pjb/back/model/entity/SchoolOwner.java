@@ -18,7 +18,8 @@ import java.time.LocalDate;
 @ToString(exclude = {"user", "school"})
 public class SchoolOwner {
     @Id
-    @Column(name = "user_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Integer id;
 
     @Column(name = "expected_school")
@@ -28,7 +29,7 @@ public class SchoolOwner {
     @Column(name = "public_permission" )
     private Boolean publicPermission;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

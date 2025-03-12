@@ -1,8 +1,7 @@
-
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button, message, notification, UploadFile } from "antd";
-import { RootState } from '@/redux/store';
+import React, {useEffect, useState} from "react";
+import {useParams, useRouter} from "next/navigation";
+import {Button, message, notification, UploadFile} from "antd";
+import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
     SchoolDTO,
@@ -10,37 +9,34 @@ import {
     useAddSchoolMutation, useGetSchoolByIdQuery,
     useUpdateSchoolByAdminMutation, useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
-import { useSelector } from "react-redux";
-import { ButtonGroupProps } from "./SchoolFormButton";
+import {useSelector} from "react-redux";
+import {ButtonGroupProps} from "./SchoolFormButton";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
-    form,
-    hasCancelButton,
-    hasSaveButton,
-    hasCreateSubmitButton,
-    hasUpdateSubmitButton,
-    hasDeleteButton,
-    hasEditButton,
-    hasRejectButton,
-    hasApproveButton,
-    hasPublishButton,
-    hasUnpublishButton,
-    emailInputRef,
-    phoneInputRef
-}) => {
+                                                                  form,
+                                                                  hasCancelButton,
+                                                                  hasCreateSubmitButton,
+                                                                  hasUpdateSubmitButton,
+                                                                  hasDeleteButton,
+                                                                  hasEditButton,
+                                                                  hasRejectButton,
+                                                                  hasApproveButton,
+                                                                  hasPublishButton,
+                                                                  hasUnpublishButton,
+                                                                  emailInputRef,
+                                                                  phoneInputRef
+                                                              }) => {
     const router = useRouter();
     const params = useParams();
     const schoolId = params.id;
     const user = useSelector((state: RootState) => state.user);
 
-    const [updateSchoolByAdmin, { isLoading: isUpdating }] = useUpdateSchoolByAdminMutation();
-    const [addSchool, { isLoading: isCreating }] = useAddSchoolMutation();
+    const [updateSchoolByAdmin, {isLoading: isUpdating}] = useUpdateSchoolByAdminMutation();
+    const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
-    const { refetch: getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
-    const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
-
-
+    const {refetch: getSchoolByIdRefetch} = useGetSchoolByIdQuery(Number(schoolId));
+    const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
 
 
     //Config notifications
@@ -83,7 +79,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 errorMessage = allErrorMessages.map((msg, index) => (
                     <React.Fragment key={index}>
                         {'-' + msg}
-                        {index < allErrorMessages.length - 1 && <br />}
+                        {index < allErrorMessages.length - 1 && <br/>}
                     </React.Fragment>
                 ));
             } else if (errorData?.message) {
@@ -166,7 +162,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 'Failed to Add School',
                 errorMessage,
                 5,
-                () => { },
+                () => {
+                },
             );
         }
     };
@@ -178,7 +175,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         const schoolData = await prepareSchoolData();
         if (!schoolData) return;
         try {
-            await updateSchoolByAdmin({ id: Number(schoolId), ...schoolData }).unwrap();
+            await updateSchoolByAdmin({id: Number(schoolId), ...schoolData}).unwrap();
             messageApi.success('School updated successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
@@ -192,7 +189,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
     const handlePublish = async () => {
         try {
-            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
+            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 4}}).unwrap();
             messageApi.success('School published successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
@@ -201,7 +198,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     };
     const handleUnpublish = async () => {
         try {
-            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
+            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 5}}).unwrap();
             messageApi.success('School unpublished successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
@@ -210,7 +207,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     };
     const handleDelete = async () => {
         try {
-            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 6 } }).unwrap();
+            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 6}}).unwrap();
             messageApi.success('School deleted successfully!')
         } catch (error) {
             messageApi.error("Failed to delete school. Please try again.");
@@ -218,7 +215,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     };
     const handleApprove = async () => {
         try {
-            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 2 } }).unwrap();
+            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 2}}).unwrap();
             messageApi.success('School approved successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
@@ -227,7 +224,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     };
     const handleReject = async () => {
         try {
-            await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 3 } }).unwrap();
+            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 3}}).unwrap();
             messageApi.success('School rejected successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
@@ -243,63 +240,56 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             {messageContextHolder} {/* Render message context */}
             {notificationContextHolder} {/* Render notification context */}
             {hasCancelButton && (
-                <Button htmlType="button" color="danger" onClick={handleCancel} >
+                <Button htmlType="button" color="danger" onClick={handleCancel}>
                     Cancel
-                </Button>
-            )}
-            {hasSaveButton && (
-                <Button htmlType="button" onClick={() => {
-                }} variant="outlined" color="primary"
-                >
-                    Save
                 </Button>
             )}
             {hasCreateSubmitButton && (
                 <Button htmlType="button" type="primary" onClick={() => {
                     addSchoolHandle(1);
                 }}
-                    loading={isCreating}>
+                        loading={isCreating}>
                     Submit
                 </Button>
             )}
             {hasUpdateSubmitButton && (
-                <Button htmlType="button" onClick={handleUpdateSubmit}
-                    className={'bg-blue-300 text-blue-800 border-blue-900'} loading={isUpdating}>
+                <Button htmlType="button" type="primary" onClick={handleUpdateSubmit}
+                        loading={isUpdating}>
                     Submit
                 </Button>
             )}
             {hasDeleteButton && (
                 <Button htmlType="button" onClick={handleDelete}
-                    className={'bg-orange-300 text-orange-800 border-orange-900'}>
+                        className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}>
                     Delete
                 </Button>
             )}
             {hasEditButton && (
-                <Button htmlType="button" onClick={handleEdit} className={'bg-blue-300 text-blue-800 border-blue-900'}>
+                <Button type={'primary'} htmlType="button" onClick={handleEdit}>
                     Edit
                 </Button>
             )}
             {hasRejectButton && (
                 <Button htmlType="button" onClick={handleReject} loading={isUpdatingStatus}
-                    className={'bg-red-300 text-red-800 border-red-900'}>
+                        className={'bg-red-300 text-red-800 border-red-900'}>
                     Reject
                 </Button>
             )}
             {hasApproveButton && (
                 <Button htmlType="button" onClick={handleApprove}
-                    className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
+                        className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
                     Approve
                 </Button>
             )}
             {hasPublishButton && (
                 <Button htmlType="button" onClick={handlePublish} loading={isUpdatingStatus}
-                    className={'bg-green-300 text-green-800 border-green-900'}>
+                        className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
                     Publish
                 </Button>
             )}
             {hasUnpublishButton && (
                 <Button htmlType="button" onClick={handleUnpublish} loading={isUpdatingStatus}
-                    className={'bg-purple-300 text-purple-800 border-purple-900'}>
+                        className={'bg-purple-300 text-purple-800 border-purple-900'}>
                     Unpublish
                 </Button>
             )}

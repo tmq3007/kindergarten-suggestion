@@ -8,7 +8,7 @@ import {useDispatch} from "react-redux";
 import {setPreviousPage} from "@/redux/features/authSlice";
 import {LoginDTO, LoginVO} from "@/redux/services/authApi";
 import useAuthRedirect from "@/lib/useAuthRedirect";
-import {indie, nunito} from "@/lib/fonts";
+import {lato, nunito} from "@/lib/fonts";
 
 type FieldType = {
     email: string;
@@ -60,7 +60,7 @@ const AdminLoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error
                 onFinishFailed={onFinishFailed}
                 autoComplete="off"
             >
-                <p className={`${indie.className} text-center text-4xl font-bold pb-6`}>Login into your account</p>
+                <p className={`${lato.className} text-center text-4xl font-bold pb-6`}>Login into your account</p>
                 <Form.Item<FieldType>
                     name="email"
                     rules={[{required: true, message: 'Please input your email!'}]}
@@ -87,8 +87,7 @@ const AdminLoginForm: React.FC<LoginFormProps> = ({login, isLoading, data, error
 
                 <Form.Item label={null} wrapperCol={{span: 24}} className="text-center">
                     <Button
-                        className={"w-1/3 font-bold bg-cyan-500"}
-                        type="primary"
+                        className={"w-1/3 font-bold bg-custom hover:!bg-custom-700 text-white hover:!text-white border-none"}
                         htmlType="submit"
                         loading={isLoading} // Show loading when submitting
                     >

@@ -1,14 +1,34 @@
 "use client";
 
 import {Form, message} from "antd";
-import {useParams, useRouter} from "next/navigation";
+import {forbidden, useParams, useRouter} from "next/navigation";
 import React, {useEffect} from "react";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
-import {SCHOOL_STATUS, SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
+import {
+    CHILD_RECEIVING_AGE_OPTIONS,
+    EDUCATION_METHOD_OPTIONS,
+    ROLES,
+    SCHOOL_STATUS,
+    SCHOOL_STATUS_OPTIONS
+} from "@/lib/constants";
 import {useApproveSchoolMutation, useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
+import {RootState} from '@/redux/store';
+import {useSelector} from "react-redux";
+
+// Hàm xử lý số điện thoại
+const formatPhoneNumber = (phone: string | undefined): string => {
+    if (!phone) return "";
+    if (phone.startsWith("+84")) {
+        return phone.substring(3);
+    }
+    if (phone.startsWith("0")) {
+        return phone.substring(1);
+    }
+    return phone;
+};
 
 export default function SchoolDetail() {
     const params = useParams();
@@ -18,23 +38,30 @@ export default function SchoolDetail() {
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
+    const user = useSelector((state: RootState) => state.user);
+    const role = useSelector((state: RootState) => state.user?.role);
 
     const [approveSchool] = useApproveSchoolMutation();
 
     useEffect(() => {
         if (school) {
-            console.log('school.imageList in SchoolDetail:', school.imageList); // Log để kiểm tra dữ liệu
+            console.log('school.imageList in SchoolDetail:', school.imageList);
+
+            const validEducationMethod = EDUCATION_METHOD_OPTIONS.find(opt => opt.value === String(school.educationMethod))?.value || "0";
+            const validReceivingAge = CHILD_RECEIVING_AGE_OPTIONS.find(opt => opt.value === String(school.receivingAge))?.value || "0";
+
             form.setFieldsValue({
                 name: school.name || "",
-                schoolType: school.schoolType != null ? school.schoolType : 0,
+                schoolType: school.schoolType != null ? String(school.schoolType) : "0",
                 province: school.province || "",
                 district: school.district || "",
                 ward: school.ward || "",
                 street: school.street || "",
                 email: school.email || "",
-                phone: school.phone || "",
-                receivingAge: school.receivingAge != null ? school.receivingAge : 0,
-                educationMethod: school.educationMethod != null ? school.educationMethod : 0,
+                phone: formatPhoneNumber(school.phone), // Xử lý số điện thoại
+                website: school.website || "",
+                receivingAge: validReceivingAge,
+                educationMethod: validEducationMethod,
                 feeFrom: school.feeFrom || 0,
                 feeTo: school.feeTo || 0,
                 description: school.description || "",
@@ -48,13 +75,6 @@ export default function SchoolDetail() {
             form.setFieldsValue({utilities: utilityValues});
         }
     }, [school, form]);
-
-    useEffect(() => {
-        if (isError) {
-            message.error("Failed to load school details");
-            router.push("/admin/management/school/school-list");
-        }
-    }, [isError, router]);
 
     const handleDelete = async () => {
         try {
@@ -131,7 +151,6 @@ export default function SchoolDetail() {
 
     const handleSave = async () => {
         try {
-            // Thêm logic lưu form nếu cần (giả định gọi API để lưu)
             const values = await form.validateFields();
             const response = await fetch(`http://localhost:8080/api/school/${schoolId}`, {
                 method: "PUT",
@@ -149,16 +168,21 @@ export default function SchoolDetail() {
         }
     };
 
+    // Kiểm tra role Admin và status Saved
+    if (role === ROLES.ADMIN && school?.status === SCHOOL_STATUS.Saved) {
+        forbidden();
+    }
+
     if (isLoading) {
         return (
             <div className="pt-2">
                 <MyBreadcrumb
                     paths={[
-                        {label: 'School Management', href: '/admin/management/school/school-list'},
-                        {label: 'Add new school'},
+                        {label: "School Management", href: "/admin/management/school/school-list"},
+                        {label: "School Detail"},
                     ]}
                 />
-                <SchoolManageTitle title={'School details'}/>
+                <SchoolManageTitle title={"School details"}/>
                 <SchoolFormSkeleton/>
             </div>
         );
@@ -172,62 +196,39 @@ export default function SchoolDetail() {
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    {label: 'School Management', href: '/admin/management/school/school-list'},
-                    {label: 'Add new school'},
+                    {label: "School Management", href: "/admin/management/school/school-list"},
+                    {label: "School Detail"},
                 ]}
             />
-            <SchoolManageTitle title={'School details'} schoolStatus={schoolStatus!}/>
+            <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
 
-            <div className="read-only-form">
+            <div className="read-only-form email-locked">
                 <SchoolForm
+                    isReadOnly={true}
                     form={form}
                     hideImageUpload={true}
                     imageList={school.imageList || []}
                     hasCancelButton={false}
-                    hasDeleteButton={school.status === SCHOOL_STATUS.Submitted ||
+                    hasDeleteButton={
+                        school.status === SCHOOL_STATUS.Submitted ||
                         school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished}
-
-                    hasEditButton={school.status === SCHOOL_STATUS.Submitted ||
+                        school.status === SCHOOL_STATUS.Unpublished
+                    }
+                    hasEditButton={
+                        school.status === SCHOOL_STATUS.Submitted ||
                         school.status === SCHOOL_STATUS.Approved ||
                         school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished}
-
+                        school.status === SCHOOL_STATUS.Unpublished
+                    }
                     hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
-
                     hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
-
-                    hasPublishButton={school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Unpublished}
-
+                    hasPublishButton={
+                        school.status === SCHOOL_STATUS.Approved ||
+                        school.status === SCHOOL_STATUS.Unpublished
+                    }
                     hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
                 />
             </div>
-
-            <style jsx>{`
-                .read-only-form :global(.ant-input),
-                .read-only-form :global(.ant-select),
-                .read-only-form :global(.ant-checkbox),
-                .read-only-form :global(.ant-upload),
-                .read-only-form :global(.ant-input-number) {
-                    pointer-events: none;
-                    background-color: #f5f5f5;
-                }
-
-                .read-only-form :global(.ant-select-selector) {
-                    background-color: #f5f5f5 !important;
-                }
-
-                .read-only-form :global(.ant-checkbox-input) {
-                    pointer-events: none;
-                }
-
-                .read-only-form :global(a) {
-                    pointer-events: none;
-                    color: #999 !important;
-                    cursor: not-allowed;
-                }
-            `}</style>
         </div>
     );
 }

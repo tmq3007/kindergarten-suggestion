@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Checkbox, Collapse, Form, Image, Input, InputNumber, Select, Upload, UploadFile } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import React, {useEffect, useRef, useState} from 'react';
+import {Checkbox, Collapse, Form, Input, InputNumber, Select, UploadFile} from 'antd';
 
 import MyEditor from "@/app/components/common/MyEditor";
-import { useLazyCheckSchoolEmailQuery } from '@/redux/services/schoolApi';
+import {useLazyCheckSchoolEmailQuery} from '@/redux/services/schoolApi';
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
@@ -18,9 +17,11 @@ import EmailInput from '../common/EmailInput';
 import { ImageUpload } from '../common/ImageUploader';
 import DebounceSelect from '../common/DebounceSelect';
 import { useLazySearchUsersQuery } from '@/redux/services/testApi';
+import {ImageUpload} from '../common/ImageUploader';
+import clsx from "clsx";
 
-const { Option } = Select;
-const { Panel } = Collapse;
+const {Option} = Select;
+const {Panel} = Collapse;
 
 interface FieldType {
     name: string;
@@ -45,13 +46,10 @@ interface FieldType {
     description?: string; // School introduction
     // File Upload
     image?: UploadFile[];
-
-    //Selected School Owner
-    //TODO: Change to number[]
-    schoolOwners?: any[]
 }
 
 interface SchoolFormFields {
+    isReadOnly?: boolean;
     form?: any;
     hasCancelButton?: boolean;
     hasSaveButton?: boolean;
@@ -73,21 +71,22 @@ interface UserValue {
     value: string;
 }
 const SchoolForm: React.FC<SchoolFormFields> = ({
-    form: externalForm,
-    hasCancelButton,
-    hasSaveButton,
-    hasCreateSubmitButton,
-    hasUpdateSubmitButton,
-    hasDeleteButton,
-    hasEditButton,
-    hasRejectButton,
-    hasApproveButton,
-    hasPublishButton,
-    hasUnpublishButton,
-    hideImageUpload = false,
-    imageList = [],
-    actionButtons, // Nhận các nút hành động
-}) => {
+                                                    isReadOnly,
+                                                    form: externalForm,
+                                                    hasCancelButton,
+                                                    hasSaveButton,
+                                                    hasCreateSubmitButton,
+                                                    hasUpdateSubmitButton,
+                                                    hasDeleteButton,
+                                                    hasEditButton,
+                                                    hasRejectButton,
+                                                    hasApproveButton,
+                                                    hasPublishButton,
+                                                    hasUnpublishButton,
+                                                    hideImageUpload = false,
+                                                    imageList = [],
+                                                    actionButtons, // Nhận các nút hành động
+                                                }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
@@ -109,7 +108,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
             <Form<FieldType>
                 size='middle'
                 form={form}
-                labelCol={{ span: 6, className: 'font-bold' }}
+                labelCol={{span: 6, className: 'font-bold'}}
                 labelAlign='left'
                 labelWrap
                 layout="horizontal"
@@ -120,44 +119,65 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="name"
                             label="School Name"
-                            rules={[{ required: true, message: 'Please enter school name' }]}
+                            rules={[{required: true, message: 'Please enter school name'}]}
                         >
-                            <Input placeholder="Enter School Name here..." />
+                            <Input placeholder="Enter School Name here..." readOnly={isReadOnly}/>
                         </Form.Item>
 
                         <Form.Item
                             name="schoolType"
                             label="School Type"
-                            rules={[{ required: true, message: 'Please select school type' }]}
+                            rules={[{required: true, message: 'Please select school type'}]}
                         >
-                            <Select placeholder="Select a type..." options={SCHOOL_TYPE_OPTIONS} />
+                            <Select
+                                placeholder="Select a type..."
+                                options={SCHOOL_TYPE_OPTIONS}
+                                className={isReadOnly ? "pointer-events-none" : ""}
+                                suffixIcon={!isReadOnly}
+                            />
                         </Form.Item>
 
                         <AddressInput
+                            isReadOnly={isReadOnly}
                             form={form}
                         />
+
                         <EmailInput
+                            isReadOnly={isReadOnly}
                             ref={emailInputRef} // Add this line
                             triggerCheckEmail={triggerCheckEmail}
                         />
                         <PhoneInput
+                            isReadOnly={isReadOnly}
                             ref={phoneInputRef}
                             onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                         />
+
+
                         <Form.Item
                             name="receivingAge"
                             label="Child receiving age"
-                            rules={[{ required: true, message: 'Please select age range' }]}
+                            rules={[{required: true, message: 'Please select age range'}]}
                         >
-                            <Select placeholder="Select a category..." options={CHILD_RECEIVING_AGE_OPTIONS} />
+                            <Select
+                                placeholder="Select a category..."
+                                options={CHILD_RECEIVING_AGE_OPTIONS}
+                                className={isReadOnly ? "pointer-events-none" : ""}
+                                suffixIcon={!isReadOnly}
+                            />
                         </Form.Item>
 
                         <Form.Item
                             name="educationMethod"
                             label="Education method"
-                            rules={[{ required: true, message: 'Please select education method' }]}
+                            rules={[{required: true, message: 'Please select education method'}]}
                         >
-                            <Select placeholder="Select a category..." options={EDUCATION_METHOD_OPTIONS} />
+                            <Select
+                                placeholder="Select a category..."
+                                options={EDUCATION_METHOD_OPTIONS}
+                                className={isReadOnly ? "pointer-events-none" : ""}
+                                suffixIcon={!isReadOnly}
+                            />
                         </Form.Item>
 
                         <Form.Item label="Fee/Month (VND)" required className='mb-0'>
@@ -165,7 +185,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 <Form.Item
                                     name="feeFrom"
                                     label="From"
-                                    rules={[{ required: true, message: "Please select fee from" }]}
+                                    rules={[{required: true, message: "Please select fee from"}]}
                                 >
                                     <InputNumber
                                         placeholder="From"
@@ -175,10 +195,11 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         onChange={(value) => {
                                             const feeTo = form.getFieldValue("feeTo");
                                             if (feeTo !== undefined && value !== null && value > feeTo) {
-                                                form.setFieldsValue({ feeTo: value });
+                                                form.setFieldsValue({feeTo: value});
                                             }
-                                            form.setFieldsValue({ feeFrom: value });
+                                            form.setFieldsValue({feeFrom: value});
                                         }}
+                                        readOnly={isReadOnly}
                                     />
                                 </Form.Item>
                                 <Form.Item
@@ -186,8 +207,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     label="To"
                                     dependencies={["feeFrom"]}
                                     rules={[
-                                        { required: true, message: "Please select fee to" },
-                                        ({ getFieldValue }) => ({
+                                        {required: true, message: "Please select fee to"},
+                                        ({getFieldValue}) => ({
                                             validator(_, value) {
                                                 const feeFrom = getFieldValue("feeFrom");
                                                 if (!value || feeFrom <= value) {
@@ -203,7 +224,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         className="w-full"
                                         min={form.getFieldValue("feeFrom") || 0}
                                         step={100000}
-                                        onChange={(value) => form.setFieldsValue({ feeTo: value })}
+                                        onChange={(value) => form.setFieldsValue({feeTo: value})}
+                                        readOnly={isReadOnly}
                                     />
                                 </Form.Item>
                             </div>
@@ -231,7 +253,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             name="website"
                             label="School Website"
                         >
-                            <Input placeholder="Enter School Website here..." />
+                            <Input placeholder="Enter School Website here..." readOnly={isReadOnly}/>
                         </Form.Item>
                     </div>
                     <div>
@@ -239,7 +261,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             <Checkbox.Group
                                 options={FACILITY_OPTIONS}
                                 value={facilities}
-                                className="grid grid-cols-3 gap-2 custom-add-school-select"
+                                className={clsx(
+                                    "grid grid-cols-3 gap-2 custom-add-school-select",
+                                    {"pointer-events-none": isReadOnly}
+                                )}
                             />
                         </Form.Item>
 
@@ -247,7 +272,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             <Checkbox.Group
                                 options={UTILITY_OPTIONS}
                                 value={utilities}
-                                className="grid grid-cols-3 gap-2 custom-add-school-select"
+                                className={clsx(
+                                    "grid grid-cols-3 gap-2 custom-add-school-select",
+                                    {"pointer-events-none": isReadOnly}
+                                )}
                             />
                         </Form.Item>
                         <style>{`
@@ -272,16 +300,19 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         >
                             <MyEditor
                                 description={form.getFieldValue("description") || undefined}
-                                onChange={(value) => form.setFieldsValue({ description: value })}
+                                onChange={(value) => form.setFieldsValue({description: value})}
+                                isReadOnly={isReadOnly}
                             />
                         </Form.Item>
-                        <Form.Item label="School image" name="image" valuePropName="fileList" getValueFromEvent={(e) => e?.fileList || []}>
-                            <ImageUpload form={form} fieldName="image" maxCount={10} accept="image/*" maxSizeMB={5} />
+                        <Form.Item label="School image" name="image" valuePropName="fileList"
+                                   getValueFromEvent={(e) => e?.fileList || []}>
+                            <ImageUpload form={form} fieldName="image" maxCount={10} accept="image/*" maxSizeMB={5}/>
                         </Form.Item>
                     </div>
                 </div>
+
                 {/* Thêm Form.Item cho các nút ở đáy form */}
-                <Form.Item style={{ textAlign: 'center', marginTop: '16px' }}>
+                <Form.Item style={{textAlign: 'center', marginTop: '16px'}}>
                     {actionButtons}
                     <SchoolFormButton
                         form={form}

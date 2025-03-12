@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, FormProps, Select} from 'antd';
+import {Button, FormProps, Input, Select} from 'antd';
 import Search, {SearchProps} from "antd/es/input/Search";
 import Title from "antd/lib/typography/Title";
 import {nunito} from "@/lib/fonts";
@@ -50,14 +50,10 @@ export default function SchoolSearchForm() {
             <label
                 className={'block text-center text-xl my-3'}
                 htmlFor={'name-search'}>Search by school name</label>
-            <Search
-                id={'name-search'}
-                placeholder="Enter a school name"
-                allowClear
-                enterButton="Search"
-                size="large"
-                onSearch={onSearch}
-            />
+            <Compact className="w-full flex">
+                <Input placeholder="Enter a school name"/>
+                <Button className="w-1/6 h-[42px] bg-custom text-[16px] text-white rounded-lg">Search</Button>
+            </Compact>
             <div className={`${nunito.className} text-center text-2xl font-bold mt-6`}>OR</div>
             <label
                 className={'block text-center text-xl my-3'}
@@ -76,15 +72,13 @@ export default function SchoolSearchForm() {
                     options={districtOptions}
                     disabled={provinceCode === -1}
                 />
-                <Button className="w-1/6 h-[42px] bg-blue-600 text-[16px] text-white">Search</Button>
+                <Button className="w-1/6 h-[42px] bg-custom text-[16px] text-white rounded-lg">Search</Button>
             </Compact>
 
 
-            <p className={'italic mt-6'}>NOTE: The inclusion of a school in this search does NOT constitute an
+            <p className={'italic mt-10'}>NOTE: The inclusion of a school in this search does NOT constitute an
                 endorsement of the school and
                 should NOT be used to infer the accreditation status of the school.</p>
-
-
         </div>
     );
 }

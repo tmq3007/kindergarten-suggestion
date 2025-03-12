@@ -7,7 +7,7 @@ import {Button, Form, FormProps, Input, message, Space} from "antd";
 import {useRouter} from "next/navigation";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
-import {indie, nunito} from "@/lib/fonts";
+import {lato, nunito} from "@/lib/fonts";
 
 
 type FieldType = {
@@ -82,7 +82,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotPassword, i
                 autoComplete="off"
             >
 
-                    <p className={`${indie.className} text-center text-4xl font-bold pb-6`}>Forgot Password</p>
+                    <p className={`${lato.className} text-center text-4xl font-bold pb-6`}>Forgot Password</p>
 
                     <p className={'text-gray-400 text-center mx-20 mb-5'}>
                         Please enter your email address and we'll send you a link to reset your password
@@ -106,16 +106,14 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotPassword, i
                     <Space className={'flex flex-col md:flex-row justify-center'}>
 
                             <Button
-                                className={'block w-80 md:w-36 mx-4 font-bold bg-white text-cyan-500 border border-cyan-500 hover:bg-cyan-500 hover:text-white transition'}
-                                type="primary"
+                                className={'block w-80 md:w-36 mx-4 font-bold bg-white text-custom border border-custom hover:!border-custom-500 hover:!text-custom-500 transition'}
                                 onClick={handleCancel}
                             >
                                 Cancel
                             </Button>
 
                         <Button
-                            className={'block w-80 md:w-36 mx-4 font-bold bg-cyan-500 '}
-                            type="primary"
+                            className={'block w-80 md:w-36 mx-4 font-bold bg-custom hover:!bg-custom-700 text-white hover:!text-white border-none'}
                             htmlType="submit"
                             loading={isLoading} // Show loading when submitting
                         >
