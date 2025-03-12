@@ -77,6 +77,7 @@ const CreateUser: React.FC = () => {
                 dispatch(setUser(formattedValues));
                 openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                 form.resetFields();
+                setSelectedRole(undefined);
             } else {
                 openNotificationWithIcon('error', 'User creation failed!', 'An unexpected error occurred.');
             }
@@ -122,7 +123,7 @@ const CreateUser: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.2 }}
-                className="mx-auto p-6 bg-white rounded-lg h-[550px] shadow-md"
+                className="mx-auto p-6 bg-white rounded-lg h-auto shadow-md"
             >
                 <Form
                     {...formItemLayout}
