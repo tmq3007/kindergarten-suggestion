@@ -183,36 +183,13 @@ export const schoolApi = createApi({
         }),
 
         // Lấy danh sách trường học theo userId
-        getSchoolListByUserId: build.query<
-            ApiResponse<{ content: SchoolVO[]; pageable: Pageable }>,
-            {
-                page?: number;
-                size?: number;
-                name?: string;
-                userId: number;
-            }
-        >({
-            query: ({page = 1, size, name, userId}) => ({
-                url: `/school/by-user/${userId}`,
+        getSchoolByUserId: build.query<ApiResponse<SchoolVO>, { name?: string }>({
+            query: ({ name }) => ({
+                url: `/school/by-user`,
                 method: "GET",
-                params: {
-                    page,
-                    size,
-                    ...(name && {name}),
-                },
+                params: name ? { name } : undefined,
             }),
-            transformResponse: (
-                response: ApiResponse<{ content: SchoolVO[]; pageable: Pageable; totalElements: number }>
-            ) => ({
-                ...response,
-                data: {
-                    ...response.data,
-                    pageable: {
-                        ...response.data.pageable,
-                        totalElements: response.data.totalElements,
-                    },
-                },
-            }),
+            providesTags: ["School"],
         }),
 
         // Get school detail by ID
@@ -317,7 +294,7 @@ export const {
     useUpdateSchoolStatusByAdminMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation,
     useGetSchoolListQuery,
-    useGetSchoolListByUserIdQuery,
+    useGetSchoolByUserIdQuery,
     useGetSchoolByIdQuery,
     useApproveSchoolMutation,
 } = schoolApi;

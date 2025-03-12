@@ -17,18 +17,7 @@ import {
 import {useApproveSchoolMutation, useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
 import {RootState} from '@/redux/store';
 import {useSelector} from "react-redux";
-
-// Hàm xử lý số điện thoại
-const formatPhoneNumber = (phone: string | undefined): string => {
-    if (!phone) return "";
-    if (phone.startsWith("+84")) {
-        return phone.substring(3);
-    }
-    if (phone.startsWith("0")) {
-        return phone.substring(1);
-    }
-    return phone;
-};
+import {formatPhoneNumber} from "@/lib/phoneUtils";
 
 export default function SchoolDetail() {
     const params = useParams();
@@ -58,7 +47,7 @@ export default function SchoolDetail() {
                 ward: school.ward || "",
                 street: school.street || "",
                 email: school.email || "",
-                phone: formatPhoneNumber(school.phone), // Xử lý số điện thoại
+                phone: formatPhoneNumber(school.phone),
                 website: school.website || "",
                 receivingAge: validReceivingAge,
                 educationMethod: validEducationMethod,
@@ -75,98 +64,6 @@ export default function SchoolDetail() {
             form.setFieldsValue({utilities: utilityValues});
         }
     }, [school, form]);
-
-    const handleDelete = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${schoolId}`, {
-                method: "DELETE",
-            });
-            if (response.ok) {
-                message.success("School deleted successfully");
-                router.push("/admin/management/school/school-list");
-            } else {
-                message.error("Failed to delete school");
-            }
-        } catch (error) {
-            message.error("Error deleting school");
-        }
-    };
-
-    const handleReject = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${schoolId}/reject`, {
-                method: "PUT",
-            });
-            if (response.ok) {
-                message.success("School rejected successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to reject school");
-            }
-        } catch (error) {
-            message.error("Error rejecting school");
-        }
-    };
-
-    const handleApprove = async () => {
-        try {
-            await approveSchool(schoolId).unwrap();
-            message.success("School approved successfully");
-        } catch (error) {
-            message.error("Error approving school");
-        }
-    };
-
-    const handlePublish = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${schoolId}/publish`, {
-                method: "PUT",
-            });
-            if (response.ok) {
-                message.success("School published successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to publish school");
-            }
-        } catch (error) {
-            message.error("Error publishing school");
-        }
-    };
-
-    const handleUnpublish = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${schoolId}/unpublish`, {
-                method: "PUT",
-            });
-            if (response.ok) {
-                message.success("School unpublished successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to unpublish school");
-            }
-        } catch (error) {
-            message.error("Error unpublishing school");
-        }
-    };
-
-    const handleSave = async () => {
-        try {
-            const values = await form.validateFields();
-            const response = await fetch(`http://localhost:8080/api/school/${schoolId}`, {
-                method: "PUT",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(values),
-            });
-            if (response.ok) {
-                message.success("School saved successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to save school");
-            }
-        } catch (error) {
-            message.error("Error saving school");
-        }
-    };
 
     // Kiểm tra role Admin và status Saved
     if (role === ROLES.ADMIN && school?.status === SCHOOL_STATUS.Saved) {

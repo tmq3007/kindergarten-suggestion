@@ -11,10 +11,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: Props) {
     return (
-        <div className={'overflow-hidden'}>
+        <>
             <Header/>
             {children}
             <Footer/>
-        </div>
+        </>
     );
 };

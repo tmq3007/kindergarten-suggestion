@@ -250,7 +250,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     <Button
                         htmlType="button"
                         onClick={handleDelete}
-                        className={'bg-orange-300 text-orange-800 border-orange-900'}
+                        className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}
                     >
                         Delete
                     </Button>
@@ -258,8 +258,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasEditButton &&
                     <Button
                         htmlType="button"
+                        type={'primary'}
                         onClick={handleEdit}
-                        className={'bg-blue-300 text-blue-800 border-blue-900'}
                     >
                         Edit
                     </Button>
@@ -268,7 +268,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     <Button
                         htmlType="button"
                         onClick={handlePublish}
-                        className={'bg-green-300 text-green-800 border-green-900'}
+                        className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}
                     >
                         Publish
                     </Button>
