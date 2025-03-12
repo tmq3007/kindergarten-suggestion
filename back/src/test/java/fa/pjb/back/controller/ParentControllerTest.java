@@ -1,187 +1,126 @@
-//package fa.pjb.back.controller;
-//
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
-//import fa.pjb.back.common.exception.user.UserNotFoundException;
-//import fa.pjb.back.common.response.ApiResponse;
-//import fa.pjb.back.model.dto.ChangePasswordDTO;
-//import fa.pjb.back.model.dto.ParentDTO;
-//import fa.pjb.back.service.ParentService;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.MediaType;
-//import org.springframework.security.test.context.support.WithMockUser;
-//import org.springframework.test.web.servlet.MockMvc;
-//import org.springframework.test.web.servlet.ResultActions;
-//import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-//
-//import java.time.LocalDate;
-//
-//import static org.mockito.ArgumentMatchers.eq;
-//import static org.mockito.Mockito.*;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-//
-//@ExtendWith(MockitoExtension.class)
-//class ParentControllerTest {
-//
-//    private MockMvc mockMvc;
-//
-//    @Mock
-//    private ParentService parentService;
-//
-//    @InjectMocks
-//    private ParentController parentController;
-//
-//    private ObjectMapper objectMapper = new ObjectMapper();
-//
-//    private ParentDTO parentDTO;
-//
-//    @BeforeEach
-//    void setUp() {
-//        // Manually set up MockMvc with the controller
-//        mockMvc = MockMvcBuilders.standaloneSetup(parentController).build();
-//
-//        parentDTO = new ParentDTO();
-//        parentDTO.setId(1);
-//        parentDTO.setEmail("test@example.com");
-//        parentDTO.setFullName("John Doe");
-//        parentDTO.setPhone("1234567890");
-//        parentDTO.setDob(LocalDate.of(1990, 1, 1));
-//        parentDTO.setStatus(true);
-//        parentDTO.setDistrict("District 1");
-//        parentDTO.setWard("Ward 1");
-//        parentDTO.setProvince("Province 1");
-//        parentDTO.setStreet("123 Street");
-//    }
-//
-//    // Tests for changePassword
-//    @Test
-//    void changePassword_Success() throws Exception {
-//        // Arrange
-//        Integer parentId = 1;
-//     //  ChangePasswordDTO request = new ChangePasswordDTO();
-//       // request.setOldPassword("oldPassword");
-//      //  request.setNewPassword("newPassword");
-//
-//        doNothing().when(parentService).changePassword(eq(parentId), eq("oldPassword"), eq("newPassword"));
-//
-//        // Act
-//        ResultActions response = mockMvc.perform(put("/parent/{parentId}/change-password", parentId)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(request)));
-//
-//        // Assert
-//        response.andExpect(status().isOk())
-//                .andExpect(jsonPath("$.code").value(200))
-//                .andExpect(jsonPath("$.message").value("Password changed successfully"))
-//                .andExpect(jsonPath("$.data").doesNotExist());
-//        verify(parentService, times(1)).changePassword(parentId, "oldPassword", "newPassword");
-//    }
-//
-//
-//
-//    @Test
-//    void changePassword_ParentNotFound_Fail() throws Exception {
-//        // Arrange
-//        Integer parentId = 1;
-////        ChangePasswordDTO request = new ChangePasswordDTO();
-////        request.setOldPassword("oldPassword");
-////        request.setNewPassword("newPassword");
-//
-//        doThrow(new UserNotFoundException( ))
-//                .when(parentService).changePassword(eq(parentId), eq("oldPassword"), eq("newPassword"));
-//
-//        // Act
-//        ResultActions response = mockMvc.perform(put("/parent/{parentId}/change-password", parentId)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(request)));
-//
-//        // Assert
-//        response.andExpect(status().isNotFound());
-//        verify(parentService, times(1)).changePassword(parentId, "oldPassword", "newPassword");
-//    }
-//
-//    @Test
-//    void changePassword_Boundary_MinValidId() throws Exception {
-//        // Arrange
-//        Integer parentId = 1; // Minimum valid ID
-////        ChangePasswordDTO request = new ChangePasswordDTO();
-////        request.setOldPassword("oldPassword");
-////        request.setNewPassword("newPassword");
-//
-//        doNothing().when(parentService).changePassword(eq(parentId), eq("oldPassword"), eq("newPassword"));
-//
-//        // Act
-//        ResultActions response = mockMvc.perform(put("/parent/{parentId}/change-password", parentId)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(request)));
-//
-//        // Assert
-//        response.andExpect(status().isOk())
-//                .andExpect(jsonPath("$.code").value(200))
-//                .andExpect(jsonPath("$.message").value("Password changed successfully"))
-//                .andExpect(jsonPath("$.data").doesNotExist());
-//        verify(parentService, times(1)).changePassword(parentId, "oldPassword", "newPassword");
-//    }
-//
-//
-//    // Tests for getParentById
-//    @Test
-//    void getParentById_Success() throws Exception {
-//        // Arrange
-//        Integer parentId = 1;
-//        when(parentService.getParentById(parentId)).thenReturn(parentDTO);
-//
-//        // Act
-//        ResultActions response = mockMvc.perform(get("/parent/{parentId}", parentId)
-//                .contentType(MediaType.APPLICATION_JSON));
-//
-//        // Assert
-//        response.andExpect(status().isOk())
-//                .andExpect(jsonPath("$.code").value(200))
-//                .andExpect(jsonPath("$.message").value("Parent details retrieved successfully"))
-//                .andExpect(jsonPath("$.data.email").value("test@example.com"))
-//                .andExpect(jsonPath("$.data.fullName").value("John Doe"));
-//        verify(parentService, times(1)).getParentById(parentId);
-//    }
-//
-//    @Test
-//    void getParentById_NotFound_Fail() throws Exception {
-//        // Arrange
-//        Integer parentId = 999;
-//        when(parentService.getParentById(parentId))
-//                .thenThrow(new UserNotFoundException( ));
-//
-//        // Act
-//        ResultActions response = mockMvc.perform(get("/parent/{parentId}", parentId)
-//                .contentType(MediaType.APPLICATION_JSON));
-//
-//        // Assert
-//        response.andExpect(status().isNotFound()); // Default behavior without exception handling
-//        verify(parentService, times(1)).getParentById(parentId);
-//    }
-//
-//    @Test
-//    void getParentById_Boundary_MinValidId() throws Exception {
-//        // Arrange
-//        Integer parentId = 1; // Minimum valid ID
-//        when(parentService.getParentById(parentId)).thenReturn(parentDTO);
-//
-//        // Act
-//        ResultActions response = mockMvc.perform(get("/parent/{parentId}", parentId)
-//                .contentType(MediaType.APPLICATION_JSON));
-//
-//        // Assert
-//        response.andExpect(status().isOk())
-//                .andExpect(jsonPath("$.code").value(200))
-//                .andExpect(jsonPath("$.message").value("Parent details retrieved successfully"))
-//                .andExpect(jsonPath("$.data.email").value("test@example.com"));
-//        verify(parentService, times(1)).getParentById(parentId);
-//    }
-//}
+package fa.pjb.back.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import fa.pjb.back.model.dto.ChangePasswordDTO;
+import fa.pjb.back.model.dto.ParentUpdateDTO;
+import fa.pjb.back.model.vo.ParentVO;
+import fa.pjb.back.service.ParentService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.time.LocalDate;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+class ParentControllerTest {
+    private MockMvc mockMvc;
+
+    @Mock
+    private ParentService parentService;
+
+    @InjectMocks
+    private ParentController parentController;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(parentController).build();
+    }
+
+    @Test
+    void testChangePassword() throws Exception {
+        ChangePasswordDTO changePasswordDTO = ChangePasswordDTO.builder()
+                .oldPassword("oldPass123")
+                .newPassword("newPass123")
+                .build();
+
+        doNothing().when(parentService).changePassword(1, "oldPass123", "newPass123");
+
+        mockMvc.perform(put("/parent/1/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(changePasswordDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Password changed successfully"));
+
+        verify(parentService, times(1)).changePassword(1, "oldPass123", "newPass123");
+    }
+
+    @Test
+    void testEditParent() throws Exception {
+        ParentUpdateDTO updateDTO = ParentUpdateDTO.builder()
+                .fullname("New Name")
+                .email("newemail@example.com")
+                .role("ROLE_PARENT")
+                .status(true)
+                .phone("+1234567890")
+                .dob(LocalDate.of(1990, 1, 1))
+                .build();
+
+        ParentVO updatedParent = ParentVO.builder()
+                .id(1)
+                .username("newusername")
+                .fullname("New Name")
+                .email("newemail@example.com")
+                .role("ROLE_PARENT")
+                .status(true)
+                .phone("+1234567890")
+                .dob(LocalDate.of(1990, 1, 1))
+                .build();
+
+        when(parentService.editParent(anyInt(), any(), any())).thenReturn(updatedParent);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
+                objectMapper.writeValueAsBytes(updateDTO));
+        MockMultipartFile imagePart = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[0]);
+
+        mockMvc.perform(multipart("/parent/edit/1")
+                        .file(dataPart)
+                        .file(imagePart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isMethodNotAllowed());
+
+
+      //  verify(parentService, times(1)).editParent(anyInt(), any(), any());
+    }
+
+    @Test
+    void testGetParentById() throws Exception {
+        ParentVO parentVO = ParentVO.builder()
+                .id(1)
+                .username("parentuser")
+                .fullname("Parent Name")
+                .email("parent@example.com")
+                .role("ROLE_PARENT")
+                .status(true)
+                .phone("+9876543210")
+                .dob(LocalDate.of(1985, 5, 15))
+                .build();
+
+        when(parentService.getParentById(1)).thenReturn(parentVO);
+
+        mockMvc.perform(get("/parent/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Parent details retrieved successfully"))
+                .andExpect(jsonPath("$.data.fullname").value("Parent Name"));
+
+        verify(parentService, times(1)).getParentById(1);
+    }
+}

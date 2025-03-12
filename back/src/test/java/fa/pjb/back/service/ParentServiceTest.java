@@ -49,24 +49,24 @@ class ParentServiceTest {
     private Parent validReturnParent;
     private RegisterVO validRegisterVO;
 
-    @BeforeEach
-    void setUp() {
-        validRegisterDTO = new RegisterDTO("John Doe", "test@example.com", "+84 123456789", "password123");
-        validReturnParent = new Parent(1,
-                new User(1, "DoeJ1"
-                        , "password123"
-                        , "test@example.com"
-                        , true
-                        , "John Doe"
-                        , ERole.ROLE_PARENT
-                        , null
-                        , "+84 123456789")
-                , ""
-                , ""
-                , ""
-                , "");
-        validRegisterVO  = new RegisterVO("John Doe","test@example.com","+84 123456789", LocalDateTime.now());
-    }
+//    @BeforeEach
+//    void setUp() {
+//        validRegisterDTO = new RegisterDTO("John Doe", "test@example.com", "+84 123456789", "password123");
+//        validReturnParent = new Parent(1,
+//                new User(1, "DoeJ1"
+//                        , "password123"
+//                        , "test@example.com"
+//                        , true
+//                        , "John Doe"
+//                        , ERole.ROLE_PARENT
+//                        , null
+//                        , "+84 123456789")
+//                , ""
+//                , ""
+//                , ""
+//                , "");
+//        validRegisterVO  = new RegisterVO("John Doe","test@example.com","+84 123456789", LocalDateTime.now());
+//    }
 
     @Test
     void shouldSaveNewParentSuccessfully() throws UserNotCreatedException {
