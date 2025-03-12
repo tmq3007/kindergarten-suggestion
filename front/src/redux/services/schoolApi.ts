@@ -1,90 +1,94 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
+import{createApi}from"@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth }from "@/redux/services/config/baseQuery";
 
 export interface Facility {
-    fid: number;
-    name: string;
+fid: number;
+name: string;
 }
 
 export interface Utility {
-    uid: number;
-    name: string;
+uid: number;
+name: string;
 }
 
 export type SchoolDetailVO = {
-    status: number;
-    name: string;
-    schoolType: number;
-    district: string;
-    ward: string;
-    province: string;
-    street: string;
-    email: string;
-    phone: string;
-    receivingAge: number;
-    educationMethod: number;
-    feeFrom: number;
-    feeTo: number;
-    description: string;
-    website: string;
-    facilities: Facility[];
-    utilities: Utility[];
-    posted_date: Date | null;
+fileList: any;
+status: number;
+name: string;
+schoolType: number;
+district: string;
+ward: string;
+province: string;
+street: string;
+email: string;
+phone: string;
+receivingAge: number;
+educationMethod: number;
+feeFrom: number;
+feeTo: number;
+description: string;
+website: string;
+facilities: Facility[];
+utilities: Utility[];
+posted_date: Date | null;
+imageList: MediaVO[];
 };
 
 export type SchoolDTO = {
-    name: string;
-    schoolType: number;
-    website?: string;
-    status: number;
-    // Address Fields
-    province: string;
-    district: string;
-    ward: string;
-    street?: string;
-    email: string;
-    phone: string;
-    receivingAge: number;
-    educationMethod: number;
-    // Fee Range
-    feeFrom: number;
-    feeTo: number;
+name: string;
+schoolType: number;
+website?: string;
+status: number;
+// Address Fields
+province: string;
+district: string;
+ward: string;
+street?: string;
+email: string;
+phone: string;
+receivingAge: number;
+educationMethod: number;
+// Fee Range
+feeFrom: number;
+feeTo: number;
 // Facilities and Utilities (Checkbox Groups)
-    facilities?: number[];
-    utilities?: number[];
-    // School introduction
-    description?: string;
-    // File Upload
-    image?: File[];
+facilities?: number[];
+utilities?: number[];
+// School introduction
+description?: string;
+// File Upload
+image?: File[];
+
+schoolOwners?: number[]
 }
 
 export type ChangeSchoolStatusDTO = {
-    status: number;
+status: number;
 }
 
 export interface SchoolUpdateDTO extends SchoolDTO {
-    id: number;
+id: number;
 }
 
 export type SchoolVO = {
-    id: number;
-    status: number; // Byte in Java == number in TS
-    name: string;
-    schoolType: number; // Byte
-    district: string;
-    ward: string;
-    province: string;
-    street: string;
-    email: string;
-    phone: string;
-    website: string;
-    receivingAge: number; // Byte
-    educationMethod: number; // Byte
-    feeFrom: number; // Integer
-    feeTo: number; // Integer
-    description: string;
-    posted_date: string; // Date in Java => string (ISO format) in TS
-    facilities?: { fid: number }[]; // Add facilities (assuming this structure)
+id: number;
+status: number; // Byte in Java = = number in TS
+name: string;
+schoolType: number; // Byte
+district: string;
+ward: string;
+province: string;
+street: string;
+email: string;
+phone: string;
+website: string;
+receivingAge: number; // Byte
+educationMethod: number; // Byte
+feeFrom: number; // Integer
+feeTo: number; // Integer
+description: string;
+posted_date: string; // Date in Java = > string (ISO format) in TS
+facilities?: {fid: number}[]; // Add facilities(assuming this structure)
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
 };
@@ -101,6 +105,10 @@ export type Pageable = {
     totalElements: number;
     totalPages: number;
 };
+
+export type ExpectedSchool = {
+    expectedSchool: string
+}
 
 // Utility function to handle FormData creation
 const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData => {
@@ -125,7 +133,10 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
 };
 
 export interface SchoolCreateDTO extends SchoolDTO{
-    userId: number;
+    userId: number,
+    
+    //TODO: Change to number[]
+    schoolOwners?: any[];
 }
 
 const formatPhoneNumber = (phone: string | undefined): string => {
@@ -282,6 +293,12 @@ export const schoolApi = createApi({
             }),
             invalidatesTags: ["School"],
         }),
+
+        searchExpectedSchool: build.query<ApiResponse<ExpectedSchool[]>, void>({
+            query: () => ({
+                url: "school/search-expected-school"
+            }),
+        }),
     }),
 });
 
@@ -297,4 +314,5 @@ export const {
     useGetSchoolByUserIdQuery,
     useGetSchoolByIdQuery,
     useApproveSchoolMutation,
+    useSearchExpectedSchoolQuery,
 } = schoolApi;

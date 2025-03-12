@@ -13,9 +13,8 @@ import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.mapper.SchoolMapper;
-import fa.pjb.back.model.vo.ImageVO;
-import fa.pjb.back.model.vo.SchoolDetailVO;
-import fa.pjb.back.model.vo.SchoolListVO;
+import fa.pjb.back.model.mapper.SchoolOwnerProjection;
+import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
@@ -35,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
@@ -189,7 +189,14 @@ public class SchoolServiceImpl implements SchoolService {
 
         // Process and update images if new images are uploaded
         if (images != null && !images.isEmpty()) {
-            mediaRepository.deleteAllBySchool(school); // Remove old images
+            List<Media> media = mediaRepository.getAllBySchool(school); // Get old images
+            log.info(media.toString());
+
+            for (Media m : media){
+                ImageVO temp = imageService.deleteUploadedImage(m.getCloudId());
+                log.info(temp.toString());
+            }
+            mediaRepository.deleteAllBySchool(school);
 
             // Validate and upload new images
             for (MultipartFile file : images) {
@@ -221,6 +228,25 @@ public class SchoolServiceImpl implements SchoolService {
         // Save the updated school data
         schoolRepository.save(school);
         return schoolMapper.toSchoolDetailVO(school);
+    }
+
+    @Override
+    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwners(searchParam, ERole.ROLE_SCHOOL_OWNER);
+
+        // Convert projection to VO
+        return projections.stream()
+                .map(projection -> new SchoolOwnerVO(
+                        projection.getId(),
+                        projection.getUsername(),
+                        projection.getEmail(),
+                        projection.getExpectedSchool()
+                ))
+                .toList();
+    }
+
+    public List<ExpectedSchoolVO> findAllDistinctExpectedSchools() {
+        return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
     }
 
 
@@ -405,4 +431,6 @@ public class SchoolServiceImpl implements SchoolService {
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
     }
+
+
 }

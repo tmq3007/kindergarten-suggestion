@@ -10,6 +10,7 @@ import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import {SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
 import clsx from "clsx";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import {formatPhoneNumber} from "@/lib/phoneUtils";
 
 interface Facility {
     fid: number;
@@ -31,11 +32,12 @@ export default function EditSchool() {
 
     useEffect(() => {
         if (school) {
-            console.log("Loaded school data:", school); // Debugging
+            console.log("Loaded school data:", school);
+            console.log("Raw imageList:", school.imageList);
 
-            // Convert facilities to an array of values
-            const facilityValues: string[] = school.facilities?.map((f: Facility) => String(f.fid)) || [];
-            const utilityValues: string[] = school.utilities?.map((u: Utility) => String(u.uid)) || [];
+            const facilityValues = school.facilities?.map(f => String(f.fid)) || [];
+            const utilityValues = school.utilities?.map(u => String(u.uid)) || [];
+
             form.setFieldsValue({
                 name: school.name || '',
                 schoolType: String(school.schoolType),
@@ -44,16 +46,20 @@ export default function EditSchool() {
                 ward: school.ward || '',
                 street: school.street || '',
                 email: school.email || '',
-                phone: school.phone || '',
+                phone: formatPhoneNumber(school.phone),
                 receivingAge: String(school.receivingAge),
                 educationMethod: String(school.educationMethod),
                 feeFrom: school.feeFrom || 0,
                 feeTo: school.feeTo || 0,
-                facilities: facilityValues, // 🟢 Auto-check facilities
-                utilities: utilityValues, // 🟢 Auto-check utilities
+                facilities: facilityValues,
+                utilities: utilityValues,
                 description: school.description || '',
-                website: school.website || ''
+                website: school.website || '',
+                image: school.imageList || []
             });
+            const formValues = form.getFieldsValue();
+            console.log("form values: ",formValues)
+
         }
     }, [school, form, schoolStatus]);
 
@@ -76,7 +82,12 @@ export default function EditSchool() {
                 ]}
             />
             <SchoolManageTitle title={'Edit School'} schoolStatus={schoolStatus!}/>
-            <SchoolForm form={form} hasCancelButton={true} hasUpdateSubmitButton={true}/>
+            <SchoolForm
+                form={form}
+                hasCancelButton={true}
+                hasUpdateSubmitButton={true}
+                triggerCheckEmail={null}
+            />
         </>
     );
 }
