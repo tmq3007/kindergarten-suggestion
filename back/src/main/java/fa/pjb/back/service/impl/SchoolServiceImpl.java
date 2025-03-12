@@ -345,6 +345,8 @@ public class SchoolServiceImpl implements SchoolService {
 
         Boolean publicPermission;
 
+        int ownedSchoolID;
+
         // Check if principal is an instance of User entity
         if (principal instanceof User user) {
 
@@ -352,8 +354,14 @@ public class SchoolServiceImpl implements SchoolService {
 
             publicPermission = schoolOwnerRepository.findById(user.getId()).orElseThrow().getPublicPermission();
 
+            ownedSchoolID = schoolOwnerRepository.findById(user.getId()).orElseThrow().getSchool().getId();
+
         } else {
             throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
+        if(ownedSchoolID != schoolID) {
+            throw new AuthenticationFailedException("You do not own this school");
         }
 
         switch (changeSchoolStatusDTO.status()) {

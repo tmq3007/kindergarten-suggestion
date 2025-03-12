@@ -35,7 +35,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
-    const { refetch: getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
+    const { refetch : getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
     const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
     const [activeButton, setActiveButton] = useState<string | null>(null);
 
