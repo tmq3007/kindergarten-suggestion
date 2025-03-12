@@ -227,11 +227,11 @@ const Profile = () => {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
             }}
-            className="min-h-screen mt-14 bg-gray-100">
+            className="min-h-screen container mt-14  bg-gray-100">
             {contextHolder}
-            <div className="container h-screen mx-auto mt-10 px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="container mx-auto mt-10  px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Sidebar Column */}
-                <div className="col-span-1 h-2/3 my-auto">
+                <div className="col-span-1  ">
                     <div className=" bg-white rounded-lg shadow-md p-6 h-full">
                         <ProfileSidebar
                             fullname={parentData?.data?.fullname}
@@ -247,7 +247,7 @@ const Profile = () => {
                 </div>
 
                 {/* Main Content Column */}
-                <div className="h-2/3 my-auto col-span-1 md:col-span-2  bg-white rounded-lg shadow-md p-4">
+                <div className=" h-full my-auto col-span-1 md:col-span-2  bg-white rounded-lg shadow-md p-4">
                     <Tabs
                         defaultActiveKey="1"
                         type="card"
