@@ -10,6 +10,7 @@ import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import {SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
 import clsx from "clsx";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import {formatPhoneNumber} from "@/lib/phoneUtils";
 
 interface Facility {
     fid: number;
@@ -44,7 +45,7 @@ export default function EditSchool() {
                 ward: school.ward || '',
                 street: school.street || '',
                 email: school.email || '',
-                phone: school.phone || '',
+                phone: formatPhoneNumber(school.phone),
                 receivingAge: String(school.receivingAge),
                 educationMethod: String(school.educationMethod),
                 feeFrom: school.feeFrom || 0,
@@ -76,7 +77,12 @@ export default function EditSchool() {
                 ]}
             />
             <SchoolManageTitle title={'Edit School'} schoolStatus={schoolStatus!}/>
-            <SchoolForm form={form} hasCancelButton={true} hasUpdateSubmitButton={true}/>
+            <SchoolForm
+                form={form}
+                hasCancelButton={true}
+                hasUpdateSubmitButton={true}
+                triggerCheckEmail={null}
+            />
         </>
     );
 }
