@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Checkbox, Collapse, Form, Input, InputNumber, Select, UploadFile} from 'antd';
 
 import MyEditor from "@/app/components/common/MyEditor";
-import {useLazyCheckSchoolEmailQuery} from '@/redux/services/schoolApi';
+import {ExpectedSchool, useLazyCheckSchoolEmailQuery, useSearchExpectedSchoolQuery} from '@/redux/services/schoolApi';
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
@@ -14,16 +14,15 @@ import SchoolFormButton from "@/app/components/school/SchoolFormButton";
 import PhoneInput from '../common/PhoneInput';
 import AddressInput from '../common/AddressInput';
 import EmailInput from '../common/EmailInput';
-import { ImageUpload } from '../common/ImageUploader';
 import DebounceSelect from '../common/DebounceSelect';
-import { useLazySearchUsersQuery } from '@/redux/services/testApi';
+import {useLazySearchUsersQuery} from '@/redux/services/testApi';
 import {ImageUpload} from '../common/ImageUploader';
 import clsx from "clsx";
 
 const {Option} = Select;
 const {Panel} = Collapse;
 
-interface FieldType {
+interface SchoolFieldType {
     name: string;
     schoolType: number;
     website?: string;
@@ -70,6 +69,7 @@ interface UserValue {
     label: string;
     value: string;
 }
+
 const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     isReadOnly,
                                                     form: externalForm,
@@ -91,13 +91,32 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
 
-    const [facilities, setFacilities] = useState<string[]>([]);
-    const [utilities, setUtilities] = useState<string[]>([]);
-    const [value, setValue] = useState<UserValue[]>([]);
 
 
     const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
     const [triggerSearchUsers, searchUsersResult] = useLazySearchUsersQuery(); // Get the full tuple
+
+    const [facilities, setFacilities] = useState<string[]>([]);
+    const [utilities, setUtilities] = useState<string[]>([]);
+    const [value, setValue] = useState<UserValue[]>([]);
+
+    const [schoolOptions, setSchoolOptions] = useState<{ label: string; value: string }[]>([]);
+
+    // Lazy load schools when component mounts
+    const { data: schoolData, error, isLoading } = useSearchExpectedSchoolQuery();
+
+    useEffect(() => {
+        if (schoolData?.data) {
+            setSchoolOptions(
+                schoolData.data.map((expectedSchool: ExpectedSchool) => ({
+                    label: expectedSchool.expectedSchool, // Display name in dropdown
+                    value: expectedSchool.expectedSchool,  
+                }))
+            );
+        }
+    }, [schoolData]);
+
+
     // Log imageList để kiểm tra dữ liệu
     useEffect(() => {
         console.log('imageList:', imageList);
@@ -105,7 +124,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     return (
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
-            <Form<FieldType>
+            <Form<SchoolFieldType>
                 size='middle'
                 form={form}
                 labelCol={{span: 6, className: 'font-bold'}}
@@ -121,7 +140,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             label="School Name"
                             rules={[{required: true, message: 'Please enter school name'}]}
                         >
-                            <Input placeholder="Enter School Name here..." readOnly={isReadOnly}/>
+                            <Select
+                                showSearch
+                                placeholder="Search and select a school..."
+                                options={schoolOptions}
+                                filterOption={(input, option) =>
+                                    !!(option && option.label.toLowerCase().includes(input.toLowerCase()))
+                                }
+                                disabled={isReadOnly}
+                            />
                         </Form.Item>
 
                         <Form.Item
@@ -150,7 +177,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <PhoneInput
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
-                            onPhoneChange={(phone) => form.setFieldsValue({ phone })}
+                            onPhoneChange={(phone) => form.setFieldsValue({phone})}
                         />
 
 
@@ -233,20 +260,20 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="schoolOwners"
                             label="School Owners"
-                            rules={[{ required: true, message: 'Please select a school owner' }]}
+                            // rules={[{required: true, message: 'Please select a school owner'}]}
                         >
                             <DebounceSelect
                                 mode='multiple'
                                 queryResult={[triggerSearchUsers, searchUsersResult]}
                                 placeholder="Search for a school owner..."
-                                style={{ width: '100%' }}
+                                style={{width: '100%'}}
                                 transformData={(response) =>
                                     response?.results?.map((user: any) => ({
                                         label: `${user.name.first} ${user.name.last}`,
                                         value: user.login.username,
                                     })) || []
                                 }
-                                onChange={(newValue) => form.setFieldsValue({ schoolOwners: newValue })}
+                                onChange={(newValue) => form.setFieldsValue({schoolOwners: newValue})}
                             />
                         </Form.Item>
                         <Form.Item
@@ -330,7 +357,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         phoneInputRef={phoneInputRef}
                     />
                 </Form.Item>
-
             </Form>
         </div>
     );

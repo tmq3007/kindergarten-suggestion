@@ -18,8 +18,4 @@ public class SchoolOwnerController {
     @Autowired
     private SchoolService schoolService;
 
-    @GetMapping("/search")
-    public List<SchoolOwnerVO> searchSchoolOwners(@RequestParam("q") String searchParam) {
-        return schoolService.findSchoolOwnerForAddSchool(searchParam);
-    }
 }

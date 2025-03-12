@@ -120,6 +120,10 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 .filter((file) => file.originFileObj)
                 .map((file) => file.originFileObj as File);
             const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
+            console.log("fileList",fileList)
+            console.log("values.image",values.image)
+            console.log("values.imageList",values.imageList)
+
 
             // Prepare final data
             return {
@@ -175,6 +179,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         const schoolData = await prepareSchoolData();
         if (!schoolData) return;
         try {
+            console.log("submit data",schoolData)
+
             await updateSchoolByAdmin({id: Number(schoolId), ...schoolData}).unwrap();
             messageApi.success('School updated successfully!');
             getSchoolByIdRefetch();

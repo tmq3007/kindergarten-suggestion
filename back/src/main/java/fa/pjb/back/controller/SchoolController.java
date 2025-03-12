@@ -4,8 +4,10 @@ import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
  import fa.pjb.back.model.dto.SchoolUpdateDTO;
+import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
+import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import jakarta.validation.Valid;
@@ -20,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -33,6 +36,7 @@ import java.util.List;
 public class SchoolController {
     private final SchoolService schoolService;
     private final GGDriveImageService imageService;
+    private final RestClient.Builder builder;
 
     @GetMapping("/{schoolId}")
     public ApiResponse<SchoolDetailVO> getSchoolInfo(@PathVariable Integer schoolId) {
@@ -135,5 +139,18 @@ public class SchoolController {
                 .build();
     }
 
+    @GetMapping("/get-so-list")
+    public List<SchoolOwnerVO> searchSchoolOwnersFOrAddSchool(@RequestParam("q") String searchParam) {
+        return schoolService.findSchoolOwnerForAddSchool(searchParam);
+    }
+
+    @GetMapping("/search-expected-school")
+    public ApiResponse<List<ExpectedSchoolVO>> searchExpectedSchoolForAddSchool() {
+        return ApiResponse.<List<ExpectedSchoolVO>>builder()
+                .code(200)
+                .message("Success")
+                .data(schoolService.findAllDistinctExpectedSchools())
+                .build();
+    }
 
 }

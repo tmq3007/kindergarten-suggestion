@@ -1,0 +1,57 @@
+@startuml
+
+actor FE
+participant ParentController
+participant RegisterDTO
+participant ParentService
+participant UserService
+participant ParentRepository
+participant EmailAlreadyExistedException
+
+FE -> ParentController : Register
+
+alt [Email existed]
+    activate ParentController
+    ParentController -> ParentService : saveNewParent()
+    activate ParentService
+    ParentService -> RegisterDTO : getEmail()
+    activate RegisterDTO
+    RegisterDTO --> ParentService : return email
+    deactivate RegisterDTO
+    ParentService -> UserService : checkEmailExisted()
+    activate UserService
+    UserService --> ParentService : return true
+    deactivate UserService
+    ParentService -> EmailAlreadyExistedException : Throw exception
+    activate EmailAlreadyExistedException
+    deactivate ParentService
+    EmailAlreadyExistedException --> ParentController : response status code
+    deactivate EmailAlreadyExistedException
+
+else
+
+    ParentController -> ParentService : saveNewParent()
+    activate ParentService
+    ParentService -> RegisterDTO : getEmail()
+    activate RegisterDTO
+    RegisterDTO --> ParentService : return email
+    deactivate RegisterDTO
+    ParentService -> UserService : checkEmailExisted()
+    activate UserService
+    UserService --> ParentService : return false
+    deactivate UserService
+    ParentService -> ParentRepository : executeQuery()
+    activate ParentRepository
+    ParentRepository --> ParentService : response result
+    deactivate ParentRepository
+    ParentService --> ParentController : response result
+    deactivate ParentService
+
+end
+
+ParentController --> FE : response result
+
+deactivate ParentController
+
+
+@enduml

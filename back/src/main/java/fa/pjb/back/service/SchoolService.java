@@ -2,8 +2,8 @@ package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.dto.SchoolOwnerDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
+import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
@@ -34,4 +34,6 @@ public interface SchoolService {
     SchoolDetailVO updateSchoolByAdmin(SchoolUpdateDTO schoolDTO, List<MultipartFile> images);
 
     List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam);
+
+    List<ExpectedSchoolVO> findAllDistinctExpectedSchools();
 }

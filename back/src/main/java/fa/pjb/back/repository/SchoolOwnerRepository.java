@@ -3,6 +3,7 @@ package fa.pjb.back.repository;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
+import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,5 +31,8 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
                 AND so.school.id IS NULL
             """)
     List<SchoolOwnerProjection> searchSchoolOwners(@Param("searchParam") String searchParam, @Param("role") ERole role);
+
+
+    List<ExpectedSchoolVO> findDistinctByExpectedSchoolIsNotNull();
 
 }

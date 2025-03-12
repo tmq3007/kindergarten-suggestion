@@ -14,10 +14,7 @@ import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
-import fa.pjb.back.model.vo.ImageVO;
-import fa.pjb.back.model.vo.SchoolDetailVO;
-import fa.pjb.back.model.vo.SchoolListVO;
-import fa.pjb.back.model.vo.SchoolOwnerVO;
+import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
@@ -192,7 +189,14 @@ public class SchoolServiceImpl implements SchoolService {
 
         // Process and update images if new images are uploaded
         if (images != null && !images.isEmpty()) {
-            mediaRepository.deleteAllBySchool(school); // Remove old images
+            List<Media> media = mediaRepository.getAllBySchool(school); // Get old images
+            log.info(media.toString());
+
+            for (Media m : media){
+                ImageVO temp = imageService.deleteUploadedImage(m.getCloudId());
+                log.info(temp.toString());
+            }
+            mediaRepository.deleteAllBySchool(school);
 
             // Validate and upload new images
             for (MultipartFile file : images) {
@@ -239,6 +243,10 @@ public class SchoolServiceImpl implements SchoolService {
                         projection.getExpectedSchool()
                 ))
                 .toList();
+    }
+
+    public List<ExpectedSchoolVO> findAllDistinctExpectedSchools() {
+        return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
     }
 
 
