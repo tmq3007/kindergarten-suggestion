@@ -192,7 +192,7 @@ public class SchoolServiceImpl implements SchoolService {
             List<Media> media = mediaRepository.getAllBySchool(school); // Get old images
             log.info(media.toString());
 
-            for (Media m : media){
+            for (Media m : media) {
                 ImageVO temp = imageService.deleteUploadedImage(m.getCloudId());
                 log.info(temp.toString());
             }
@@ -231,22 +231,31 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam) {
-        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwners(searchParam, ERole.ROLE_SCHOOL_OWNER);
-
+    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwnersByExpectedSchool(expectedSchool);
         // Convert projection to VO
         return projections.stream()
                 .map(projection -> new SchoolOwnerVO(
                         projection.getId(),
+                        projection.getFullname(),
                         projection.getUsername(),
                         projection.getEmail(),
+                        projection.getPhone(),
                         projection.getExpectedSchool()
                 ))
                 .toList();
     }
 
-    public List<ExpectedSchoolVO> findAllDistinctExpectedSchools() {
-        return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
+    @Override
+    public List<ExpectedSchoolVO> findAllDistinctExpectedSchoolsByRole(Integer id) {
+        User user = userRepository.findById(id).get();
+        if (user.getRole() == ERole.ROLE_ADMIN) {
+            return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
+        }else if(user.getRole() == ERole.ROLE_SCHOOL_OWNER){
+            return schoolOwnerRepository.getExpectedSchoolByUserId(id);
+        }else{
+            throw new AuthenticationFailedException("Something went wrong! Cannot find role");
+        }
     }
 
 
@@ -260,7 +269,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId, String name) {
         School school = schoolRepository.findSchoolByUserId(userId, name)
-            .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         return schoolMapper.toSchoolDetailVO(school);
     }
 

@@ -4,11 +4,11 @@ import { Upload, UploadFile, UploadProps, notification, Image, FormInstance } fr
 import { InboxOutlined, PlusOutlined } from '@ant-design/icons';
 
 interface ImageUploadProps {
-  form: FormInstance; // Form instance to update directly
-  fieldName?: string; // Name of the field to update (defaults to 'image')
+  form: FormInstance;
+  fieldName?: string;
   maxCount?: number;
   accept?: string;
-  maxSizeMB?: number; // Maximum file size in MB
+  maxSizeMB?: number;
 }
 
 const uploadButton = (
@@ -31,18 +31,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   // Sync internal state with form field value
   useEffect(() => {
-      const currentFiles = form.getFieldValue(fieldName) || [];
+    const currentFiles = form.getFieldValue(fieldName) || [];
+    const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
+      uid: file.cloudId || file.uid || `${Date.now()}`, // Ensure unique UID
+      name: file.filename || file.name || `Image-${file.cloudId || file.uid || Date.now()}`,
+      status: 'done', // Assume done unless new upload
+      url: file.url,
+      originFileObj: file.originFileObj, // Preserve if present
+    }));
 
-      // Convert existing image data into UploadFile format
-      const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
-          uid: file.cloudId, // Unique identifier
-          name: file.filename || `Image-${file.cloudId}`, // Use filename or generate one
-          status: 'done', // Mark as uploaded
-          url: file.url, // Image URL
-      }));
-
-      setFileList(formattedFiles);
-
+    setFileList(formattedFiles);
+    console.log("file List 2:", formattedFiles);
   }, [form, fieldName]);
 
   const getBase64 = (file: File): Promise<string> =>
@@ -63,7 +62,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
     setFileList(newFileList);
-    form.setFieldsValue({ [fieldName]: newFileList }); // Update form directly
+    form.setFieldsValue({ [fieldName]: newFileList }); // Update form with current list
+    console.log("file List 1:", newFileList);
   };
 
   const beforeUpload = (file: File) => {
@@ -75,7 +75,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       });
       return Upload.LIST_IGNORE;
     }
-    return false; // Prevent automatic upload since we handle it manually
+    return false; // Prevent automatic upload
   };
 
   return (
@@ -138,13 +138,13 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         />
       )}
       <style jsx global>{`
-        .custom-upload-dragger .ant-upload-list-picture-card {
-          display: flex !important;
-          justify-content: center !important;
-          flex-wrap: wrap !important;
-          padding-top: 16px !important;
-        }
-      `}</style>
+                .custom-upload-dragger .ant-upload-list-picture-card {
+                    display: flex !important;
+                    justify-content: center !important;
+                    flex-wrap: wrap !important;
+                    padding-top: 16px !important;
+                }
+            `}</style>
     </>
   );
 };

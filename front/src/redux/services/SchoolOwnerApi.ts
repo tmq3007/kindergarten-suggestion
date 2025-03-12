@@ -3,5 +3,5 @@ export type SchoolOwnerVO = {
     fullname: string;
     username: string;
     email: string;
-    phoneNo: string;
+    phone: string;
 };

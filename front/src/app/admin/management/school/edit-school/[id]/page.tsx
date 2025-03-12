@@ -2,7 +2,7 @@
 import {useParams} from "next/navigation";
 import {nunito} from "@/lib/fonts";
 import {Badge, Form} from "antd";
-import {useGetSchoolQuery} from "@/redux/services/schoolApi";
+import {useGetSchoolQuery, useLazyCheckSchoolEmailQuery} from "@/redux/services/schoolApi";
 import React, {useEffect} from "react";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import SchoolForm from "@/app/components/school/SchoolForm";
@@ -29,6 +29,7 @@ export default function EditSchool() {
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
+    const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
 
     useEffect(() => {
         if (school) {
@@ -86,7 +87,7 @@ export default function EditSchool() {
                 form={form}
                 hasCancelButton={true}
                 hasUpdateSubmitButton={true}
-                triggerCheckEmail={null}
+                triggerCheckEmail={triggerCheckEmail}
             />
         </>
     );

@@ -65,15 +65,15 @@ export const prepareSchoolData = async (
             messageApi.error("Email or phone validation failed. Please check your inputs.");
             return null;
         }
-        const fileList: File[] = (values.image as UploadFile[] || [])
-            .filter((file) => file.originFileObj)
-            .map((file) => file.originFileObj as File);
+        console.log("values.image in process data:",values.image)
+        // const fileList: File[] = (values.image as UploadFile[] || [])
+        //     .filter((file) => file.originFileObj)
+        //     .map((file) => file.originFileObj as File);
         const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
 
         // Prepare final data
         return {
             ...values,
-            image: fileList,
             phone: fullPhoneNumber,
         };
     } catch (error) {

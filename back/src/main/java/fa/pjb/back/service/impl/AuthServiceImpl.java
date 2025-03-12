@@ -101,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
         School draft = null;
         if(schoolOwner != null){
             school = schoolOwner.getSchool();
-            draft = school.getDraft();
+            draft = school!=null?school.getDraft():null;
         }
         return LoginVO.builder()
                 .accessToken(accessToken)
