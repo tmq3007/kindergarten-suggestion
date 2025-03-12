@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile} from 'antd';
 
 import MyEditor from "@/app/components/common/MyEditor";
-import {useLazyCheckSchoolEmailQuery} from '@/redux/services/schoolApi';
+import {ExpectedSchool, useLazyCheckSchoolEmailQuery, useSearchExpectedSchoolQuery} from '@/redux/services/schoolApi';
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
@@ -14,6 +14,8 @@ import SchoolFormButton from "@/app/components/school/SchoolFormButton";
 import PhoneInput from '../common/PhoneInput';
 import AddressInput from '../common/AddressInput';
 import EmailInput from '../common/EmailInput';
+import DebounceSelect from '../common/DebounceSelect';
+import {useLazySearchUsersQuery} from '@/redux/services/testApi';
 import {ImageUpload} from '../common/ImageUploader';
 import clsx from "clsx";
 import {InboxOutlined} from "@ant-design/icons";
@@ -21,7 +23,7 @@ import {InboxOutlined} from "@ant-design/icons";
 const {Option} = Select;
 const {Panel} = Collapse;
 
-interface FieldType {
+interface SchoolFieldType {
     name: string;
     schoolType: number;
     website?: string;
@@ -65,6 +67,11 @@ interface SchoolFormFields {
     triggerCheckEmail: any;
 }
 
+interface UserValue {
+    label: string;
+    value: string;
+}
+
 const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     isReadOnly,
                                                     form: externalForm,
@@ -87,12 +94,31 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
 
+
+
+    const [triggerCheckEmail] = useLazyCheckSchoolEmailQuery();
+    const [triggerSearchUsers, searchUsersResult] = useLazySearchUsersQuery(); // Get the full tuple
+
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
+    const [value, setValue] = useState<UserValue[]>([]);
 
-    const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => {
-        return e?.fileList ?? [];
-    };
+    const [schoolOptions, setSchoolOptions] = useState<{ label: string; value: string }[]>([]);
+
+    // Lazy load schools when component mounts
+    const { data: schoolData, error, isLoading } = useSearchExpectedSchoolQuery();
+
+    useEffect(() => {
+        if (schoolData?.data) {
+            setSchoolOptions(
+                schoolData.data.map((expectedSchool: ExpectedSchool) => ({
+                    label: expectedSchool.expectedSchool, // Display name in dropdown
+                    value: expectedSchool.expectedSchool,
+                }))
+            );
+        }
+    }, [schoolData]);
+
 
     // Log imageList để kiểm tra dữ liệu
     useEffect(() => {
@@ -101,7 +127,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     return (
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
-            <Form<FieldType>
+            <Form<SchoolFieldType>
                 size='middle'
                 form={form}
                 labelCol={{span: 6, className: 'font-bold'}}
@@ -117,7 +143,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             label="School Name"
                             rules={[{required: true, message: 'Please enter school name'}]}
                         >
-                            <Input placeholder="Enter School Name here..." readOnly={isReadOnly}/>
+                            <Select
+                                showSearch
+                                placeholder="Search and select a school..."
+                                options={schoolOptions}
+                                filterOption={(input, option) =>
+                                    !!(option && option.label.toLowerCase().includes(input.toLowerCase()))
+                                }
+                                disabled={isReadOnly}
+                            />
                         </Form.Item>
 
                         <Form.Item
@@ -146,7 +180,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <PhoneInput
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
-                            onPhoneChange={(phone) => form.setFieldsValue({ phone })}
+                            onPhoneChange={(phone) => form.setFieldsValue({phone})}
                         />
 
 
@@ -176,7 +210,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             />
                         </Form.Item>
 
-                        <Form.Item label="Fee/Month (VND)" required>
+                        <Form.Item label="Fee/Month (VND)" required className='mb-0'>
                             <div className="grid grid-cols-2 gap-4">
                                 <Form.Item
                                     name="feeFrom"
@@ -226,7 +260,25 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 </Form.Item>
                             </div>
                         </Form.Item>
-
+                        <Form.Item
+                            name="schoolOwners"
+                            label="School Owners"
+                            // rules={[{required: true, message: 'Please select a school owner'}]}
+                        >
+                            <DebounceSelect
+                                mode='multiple'
+                                queryResult={[triggerSearchUsers, searchUsersResult]}
+                                placeholder="Search for a school owner..."
+                                style={{width: '100%'}}
+                                transformData={(response) =>
+                                    response?.results?.map((user: any) => ({
+                                        label: `${user.name.first} ${user.name.last}`,
+                                        value: user.login.username,
+                                    })) || []
+                                }
+                                onChange={(newValue) => form.setFieldsValue({schoolOwners: newValue})}
+                            />
+                        </Form.Item>
                         <Form.Item
                             name="website"
                             label="School Website"
@@ -282,48 +334,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 isReadOnly={isReadOnly}
                             />
                         </Form.Item>
-                        <Form.Item label="School image">
-                            {hideImageUpload ? (
-                                <div className="grid grid-cols-3 gap-4">
-                                    {imageList.length > 0 ? (
-                                        imageList.map((image, index) => (
-                                            <div key={index} className="relative">
-                                                <img
-                                                    src={image.url}
-                                                    alt={image.filename}
-                                                    className="w-full h-32 object-cover rounded-md"
-                                                />
-                                                <p className="text-center text-sm mt-1 truncate">{image.filename}</p>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p>No images available</p>
-                                    )}
-                                </div>
-                            ) : (
-                                <Form.Item
-                                    name="image"
-                                    valuePropName="fileList"
-                                    getValueFromEvent={normFile}
-                                    noStyle
-                                >
-                                    <Upload.Dragger
-                                        name="schoolImage"
-                                        listType="picture"
-                                        beforeUpload={() => false}
-                                        maxCount={10}
-                                        accept="image/*"
-                                    >
-                                        <p className="ant-upload-drag-icon">
-                                            <InboxOutlined />
-                                        </p>
-                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                        <p className="ant-upload-text">
-                                            Upload pictures of format <strong>jpg, jpeg, png</strong> only. Maximum size: <strong>5MB</strong>
-                                        </p>
-                                    </Upload.Dragger>
-                                </Form.Item>
-                            )}
+                        <Form.Item label="School image" name="image" valuePropName="fileList"
+                                   getValueFromEvent={(e) => e?.fileList || []}>
+                            <ImageUpload form={form} fieldName="image" maxCount={10} accept="image/*" maxSizeMB={5}/>
                         </Form.Item>
                     </div>
                 </div>
@@ -347,7 +360,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         phoneInputRef={phoneInputRef}
                     />
                 </Form.Item>
-
             </Form>
         </div>
     );

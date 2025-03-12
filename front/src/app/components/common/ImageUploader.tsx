@@ -31,8 +31,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   // Sync internal state with form field value
   useEffect(() => {
-    const currentFiles = form.getFieldValue(fieldName) || [];
-    setFileList(currentFiles);
+      const currentFiles = form.getFieldValue(fieldName) || [];
+
+      // Convert existing image data into UploadFile format
+      const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
+          uid: file.cloudId, // Unique identifier
+          name: file.filename || `Image-${file.cloudId}`, // Use filename or generate one
+          status: 'done', // Mark as uploaded
+          url: file.url, // Image URL
+      }));
+
+      setFileList(formattedFiles);
+
   }, [form, fieldName]);
 
   const getBase64 = (file: File): Promise<string> =>
