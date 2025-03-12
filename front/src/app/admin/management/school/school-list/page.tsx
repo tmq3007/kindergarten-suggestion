@@ -126,7 +126,7 @@ export default function SchoolList() {
 
     const columns = [
         {
-            title: "School Name",
+            title: <div className={'text-center'}>School Name</div>,
             dataIndex: "schoolName",
             key: "schoolName",
             minWidth: 150,
@@ -137,7 +137,7 @@ export default function SchoolList() {
             ),
         },
         {
-            title: "Address",
+            title: <div className={'text-center'}>Address</div>,
             dataIndex: "address",
             key: "address",
             minWidth: 200,
@@ -156,10 +156,10 @@ export default function SchoolList() {
             }),
         },
         {
-            title: "Phone No.",
+            title: <div className={'text-center'}>Phone No.</div>,
             dataIndex: "phone",
             key: "phone",
-            minWidth: 100,
+            minWidth: 120,
             align: "right" as const,
             onCell: (record: { phone: string }) => ({
                 onClick: () => {
@@ -176,7 +176,7 @@ export default function SchoolList() {
             }),
         },
         {
-            title: "Email",
+            title: <div className={'text-center'}>Email</div>,
             dataIndex: "email",
             key: "email",
             minWidth: 150,
@@ -195,7 +195,7 @@ export default function SchoolList() {
             }),
         },
         {
-            title: "Posted Date",
+            title: <div className={'text-center'}>Posted Date</div>,
             dataIndex: "postedDate",
             key: "postedDate",
             minWidth: 100,
@@ -221,7 +221,7 @@ export default function SchoolList() {
             },
         },
         {
-            title: "Actions",
+            title: <div className={'text-center'}>Actions</div>,
             key: "action",
             minWidth: 90,
             align: "center" as const,
