@@ -11,39 +11,34 @@ import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
     SCHOOL_STATUS,
-    SCHOOL_STATUS_OPTIONS
+    SCHOOL_STATUS_OPTIONS,
+    ROLES,
 } from "@/lib/constants";
-import { useApproveSchoolMutation, useGetSchoolListByUserIdQuery } from "@/redux/services/schoolApi";
+import { useApproveSchoolMutation, useGetSchoolByUserIdQuery } from "@/redux/services/schoolApi";
 import { useSelector } from "react-redux";
-import {RootState} from '@/redux/store';
-import {ROLES} from '@/lib/constants';
+import { RootState } from '@/redux/store';
 
 export default function SchoolDetail() {
     const router = useRouter();
-    const userId = useSelector((state: RootState) => Number(state.user?.id));
-    const user = useSelector((state: RootState) => state.user);
     const role = useSelector((state: RootState) => state.user?.role);
 
     // Kiểm tra vai trò người dùng
     const unauthorized = () => {
-        message.error("Unauthorized access");
-        router.push("/login"); // Hoặc trang khác tùy yêu cầu
+        router.push("/login");
     };
 
     if (!role || role !== ROLES.SCHOOL_OWNER) {
         unauthorized();
-        return null; // Ngăn render tiếp nếu không có quyền
+        return null;
     }
 
-    // Sử dụng useGetSchoolListByUserIdQuery để lấy danh sách trường theo userId
-    const { data, isError, isLoading } = useGetSchoolListByUserIdQuery({
-        userId: userId!,
-        page: 1, // Trang đầu tiên
-        size: 10, // Kích thước trang, điều chỉnh theo nhu cầu
+    // Sử dụng useGetSchoolByUserIdQuery để lấy một trường học duy nhất
+    const { data, isError, isLoading } = useGetSchoolByUserIdQuery({
+        name: undefined,
     });
 
-    // Lấy trường học đầu tiên từ danh sách (hoặc theo logic khác nếu cần)
-    const school = data?.data?.content[0]; // Giả định lấy trường đầu tiên
+    // Dữ liệu giờ là một SchoolDetailVO trực tiếp
+    const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
 
@@ -85,7 +80,6 @@ export default function SchoolDetail() {
     useEffect(() => {
         if (isError) {
             message.error("Failed to load school details");
-            router.push("/admin/management/school/school-list");
         }
     }, [isError, router]);
 
@@ -94,6 +88,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}`, {
                 method: "DELETE",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             });
             if (response.ok) {
                 message.success("School deleted successfully");
@@ -111,6 +106,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}/reject`, {
                 method: "PUT",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             });
             if (response.ok) {
                 message.success("School rejected successfully");
@@ -138,6 +134,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}/publish`, {
                 method: "PUT",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             });
             if (response.ok) {
                 message.success("School published successfully");
@@ -155,6 +152,7 @@ export default function SchoolDetail() {
         try {
             const response = await fetch(`http://localhost:8080/api/school/${school.id}/unpublish`, {
                 method: "PUT",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             });
             if (response.ok) {
                 message.success("School unpublished successfully");
@@ -173,7 +171,10 @@ export default function SchoolDetail() {
             const values = await form.validateFields();
             const response = await fetch(`http://localhost:8080/api/school/${school.id}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                },
                 body: JSON.stringify(values),
             });
             if (response.ok) {
@@ -193,7 +194,7 @@ export default function SchoolDetail() {
                 <MyBreadcrumb
                     paths={[
                         { label: "School Management", href: "/admin/management/school/school-list" },
-                        { label: "Add new school" },
+                        { label: "School Detail" },
                     ]}
                 />
                 <SchoolManageTitle title={"School details"} />
@@ -211,13 +212,14 @@ export default function SchoolDetail() {
             <MyBreadcrumb
                 paths={[
                     { label: "School Management", href: "/admin/management/school/school-list" },
-                    { label: "Add new school" },
+                    { label: "School Detail" },
                 ]}
             />
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!} />
 
             <div className="read-only-form email-locked">
                 <SchoolForm
+                    isReadOnly={true}
                     form={form}
                     hideImageUpload={true}
                     imageList={school.imageList || []}
@@ -242,44 +244,6 @@ export default function SchoolDetail() {
                     hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
                 />
             </div>
-
-            <style jsx>{`
-                .read-only-form :global(.ant-input),
-                .read-only-form :global(.ant-select),
-                .read-only-form :global(.ant-checkbox),
-                .read-only-form :global(.ant-upload),
-                .read-only-form :global(.ant-input-number),
-                .read-only-form :global(.ant-checkbox-wrapper) {
-                    pointer-events: none !important;
-                }
-
-                .email-locked :global(.ant-form-item:has(> .ant-form-item-label > label[title="Email Address"]) .ant-input) {
-                    pointer-events: none !important;
-                    user-select: none !important;
-                    cursor: not-allowed !important;
-                    background-color: #fff !important;
-                }
-
-                .email-locked :global(.my-editor) {
-                    pointer-events: none !important;
-                    user-select: none !important;
-                    cursor: not-allowed !important;
-                }
-
-                .read-only-form :global(.ant-select-selector) {
-                    background-color: #fff !important;
-                }
-
-                .read-only-form :global(.ant-checkbox-input) {
-                    pointer-events: none !important;
-                }
-
-                .read-only-form :global(a) {
-                    pointer-events: none;
-                    color: #999 !important;
-                    cursor: not-allowed;
-                }
-            `}</style>
         </div>
     );
 }
