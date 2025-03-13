@@ -78,8 +78,10 @@ export const prepareSchoolData = async (form: FormInstance, emailInputRef: any, 
                 return null;
             })
         );
-
+        console.log('before fullPhoneNumber:', phoneInputRef?.current);
         const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
+        console.log('after fullPhoneNumber:', fullPhoneNumber);
+
 
         return {
             ...values,

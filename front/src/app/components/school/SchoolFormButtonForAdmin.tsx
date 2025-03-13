@@ -180,6 +180,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             messageApi.success('School updated successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
+            console.log('err+++++++++=')
+            console.log(error)
             messageApi.error("Failed to update school. Please try again.");
         }
     };

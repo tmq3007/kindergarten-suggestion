@@ -47,6 +47,7 @@ export default function EditSchool() {
                 street: school.street || '',
                 email: school.email || '',
                 phone: formatPhoneNumber(school.phone),
+                contryCode: formatPhoneNumber(school.phone,0),
                 receivingAge: String(school.receivingAge),
                 educationMethod: String(school.educationMethod),
                 feeFrom: school.feeFrom || 0,
@@ -58,7 +59,7 @@ export default function EditSchool() {
                 image: school.imageList || []
             });
             const formValues = form.getFieldsValue();
-            console.log("form values: ",formValues)
+            console.log("=====================form values: ",formValues)
 
         }
     }, [school, form, schoolStatus]);
