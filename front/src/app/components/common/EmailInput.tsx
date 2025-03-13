@@ -1,16 +1,19 @@
-import React, { useState, useImperativeHandle, forwardRef } from "react";
-import { Form, Input } from "antd";
-import { useLazyCheckSchoolEmailQuery, useCheckEditSchoolEmailMutation } from "@/redux/services/schoolApi";
+import React, {forwardRef, useImperativeHandle, useState} from "react";
+import {Form, Input} from "antd";
+import {useCheckEditSchoolEmailMutation} from "@/redux/services/schoolApi";
 
 interface EmailInputProps {
     isReadOnly?: boolean;
-    initialEmail?: string;
     triggerCheckEmail: any; // Check email query for new school
     schoolId?: number; // Truyền vào schoolId khi chỉnh sửa trường
 }
 
-const EmailInput = forwardRef(({ isReadOnly, initialEmail = '', triggerCheckEmail, schoolId }: EmailInputProps, ref) => {
-    const [email, setEmail] = useState(initialEmail);
+const EmailInput = forwardRef(({
+                                   isReadOnly,
+                                   triggerCheckEmail,
+                                   schoolId
+                               }: EmailInputProps, ref) => {
+    const [email, setEmail] = useState('');
     const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
 
@@ -18,7 +21,7 @@ const EmailInput = forwardRef(({ isReadOnly, initialEmail = '', triggerCheckEmai
     const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
 
     const validateEmail = async (): Promise<boolean> => {
-        if (isReadOnly) return true;
+        if (!isReadOnly) return true;
         if (!email) {
             setEmailStatus('error');
             setEmailHelp('Vui lòng nhập email!');
@@ -43,7 +46,7 @@ const EmailInput = forwardRef(({ isReadOnly, initialEmail = '', triggerCheckEmai
             let response;
             if (schoolId) {
                 // Trường hợp EDIT school, chỉ kiểm tra email khác với trường hiện tại
-                response = await triggerCheckEditEmail({ email, schoolId }).unwrap();
+                response = await triggerCheckEditEmail({email, schoolId}).unwrap();
             } else {
                 // Trường hợp ADD school, kiểm tra toàn bộ hệ thống
                 response = await triggerCheckEmail(email).unwrap();
@@ -88,7 +91,7 @@ const EmailInput = forwardRef(({ isReadOnly, initialEmail = '', triggerCheckEmai
             hasFeedback
             validateStatus={emailStatus}
             help={emailHelp}
-            rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
+            rules={[{required: true, message: 'Vui lòng nhập email!'}]}
         >
             <Input
                 placeholder="Nhập email"
