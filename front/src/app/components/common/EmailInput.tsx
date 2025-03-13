@@ -1,19 +1,26 @@
-import React, {forwardRef, useImperativeHandle, useState} from "react";
+import React, {forwardRef, useEffect, useImperativeHandle, useState} from "react";
 import {Form, Input} from "antd";
 import {useCheckEditSchoolEmailMutation} from "@/redux/services/schoolApi";
+import {FormInstance} from "antd/es/form";
 
 interface EmailInputProps {
+    form: FormInstance;
     isReadOnly?: boolean;
     triggerCheckEmail: any; // Check email query for new school
     schoolId?: number; // Truyền vào schoolId khi chỉnh sửa trường
 }
 
 const EmailInput = forwardRef(({
+                                   form,
                                    isReadOnly,
                                    triggerCheckEmail,
                                    schoolId
                                }: EmailInputProps, ref) => {
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState<string>(form.getFieldValue('email') || '');
+
+    useEffect(() => {
+        setEmail(form.getFieldValue('email') || '');
+    }, [form]);
     const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
 
@@ -21,12 +28,16 @@ const EmailInput = forwardRef(({
     const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
 
     const validateEmail = async (): Promise<boolean> => {
-        if (!isReadOnly) return true;
+        // if (!isReadOnly) return true;
+        console.log("888888888888888888888")
+        console.log(form.getFieldValue('email'))
         if (!email) {
+            console.log('email rong')
             setEmailStatus('error');
             setEmailHelp('Vui lòng nhập email!');
             return false;
         }
+        console.log('email: ', email)
         if (email.length > 50) {
             setEmailStatus('error');
             setEmailHelp('Email không được vượt quá 50 ký tự!');

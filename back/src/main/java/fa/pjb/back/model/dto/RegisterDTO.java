@@ -16,7 +16,7 @@ public record RegisterDTO(
         @Pattern(regexp = "^\\+\\d{1,4}[-\\s]?\\d{4,14}$", message = "Invalid phone format")
         String phone,
         @NotBlank(message = "Password cannot be empty")
-        @Length(min = 7,max = 100, message = "Password must be at least 7 characters long")
+        @Length(min = 7,max = 100, message = "Passwoerd must be at least 7 characters long")
         @Pattern(
                 regexp = "^(?=.*[A-Za-z])(?=.*\\d).{7,}$",
                 message = "Password must be at least 7 characters long, contain at least one letter, and one number"
