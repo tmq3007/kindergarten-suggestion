@@ -28,9 +28,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -99,7 +101,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
                     .setRole("reader");
             drive.permissions().create(uploadFile.getId(), permission).execute();
 
-            String imageUrl = "https://drive.google.com/thumbnail?id=" + uploadFile.getId()+"&sz=w1000";
+            String imageUrl = "https://drive.google.com/thumbnail?id=" + uploadFile.getId() + "&sz=w1000";
             return new ImageVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(), uploadFile.getId(), imageUrl);
         } catch (IOException | GeneralSecurityException e) {
             return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.toString());
@@ -114,22 +116,32 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     @Override
     public List<ImageVO> uploadListImages(List<java.io.File> files, String fileNamePrefix, FileFolderEnum fileFolder) {
         List<ImageVO> uploadResults = Collections.synchronizedList(new ArrayList<>());
-        ExecutorService executor = Executors.newFixedThreadPool(10); // Limit to 10 parallel uploads
 
-        List<Future<ImageVO>> futures = new ArrayList<>();
-        for (java.io.File file : files) {
-            futures.add(executor.submit(() -> uploadImage(file, fileNamePrefix, fileFolder)));
-        }
+        // Create list of CompletableFutures for all upload tasks
+        List<CompletableFuture<ImageVO>> futures = files.stream()
+                .map(file -> CompletableFuture.supplyAsync(
+                        () -> uploadImage(file, fileNamePrefix, fileFolder),
+                        Executors.newFixedThreadPool(10) // Limit to 10 parallel uploads
+                ))
+                .toList();
 
-        // Wait for all uploads to complete
-        for (Future<ImageVO> future : futures) {
-            try {
-                uploadResults.add(future.get());
-            } catch (Exception e) {
-                log.error("Error in bulk upload: {}", e.getMessage());
-            }
-        }
-        executor.shutdown(); // Shutdown thread pool
+        // Wait for all futures to complete and collect results
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .whenComplete((result, exception) -> {
+                    if (exception != null) {
+                        log.error("Error in bulk upload: {}", exception.getMessage());
+                    }
+
+                    futures.forEach(future -> {
+                        try {
+                            uploadResults.add(future.get());
+                        } catch (Exception e) {
+                            log.error("Error processing upload result: {}", e.getMessage());
+                        }
+                    });
+                })
+                .join(); // Wait for all operations to complete
+
         return uploadResults;
     }
 

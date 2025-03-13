@@ -63,6 +63,18 @@ export const userApi = createApi({
                 },
             }),
             providesTags: ["User"],
+            transformResponse: (
+                response: ApiResponse<{ content: UserVO[]; pageable: Pageable; totalElements: number }>
+            ) => ({
+                ...response,
+                data: {
+                    ...response.data,
+                    pageable: {
+                        ...response.data.pageable,
+                        totalElements: response.data.totalElements,
+                    },
+                },
+            }),
         }),
 
         getUserDetail: build.query<ApiResponse<UserDetailDTO>, number>({

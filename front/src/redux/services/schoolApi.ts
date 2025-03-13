@@ -116,41 +116,52 @@ export type ExpectedSchool = {
 // Utility function to handle FormData creation
 //TODO: đã lấy đc list metadata ảnh đã gửi về khi edit và gửi về chỉ các ảnh mới upload
 const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData => {
-    console.log("Input schoolData:", schoolData);
-
     const formData = new FormData();
-    const { image, ...schoolDataWithoutImage } = schoolData;
+    const {image, ...schoolDataWithoutImage} = schoolData;
 
-    // Prepare JSON data with all current image metadata
-    const allImagesMetadata = image?.map(file => ({
-        uid: file.uid,
-        name: file.name,
-        url: file.url || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : undefined),
-        // Include cloudId if your backend uses it
-        cloudId: file.uid.startsWith('-') ? file.uid : undefined, // Assuming negative UIDs are preloaded
-    })) || [];
+    // Append JSON data
+    formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
 
-    const jsonData = {
-        ...schoolDataWithoutImage,
-        images: allImagesMetadata, // Metadata of all current images
-    };
-    formData.append("data", new Blob([JSON.stringify(jsonData)], { type: "application/json" }));
-    console.log("json data:", jsonData)
-    // Append only new images (with originFileObj)
+    // Append images with validation
     if (image && Array.isArray(image)) {
-        image.forEach((file: UploadFile, index: number) => {
-            if (file.originFileObj) {
-                formData.append("image", file.originFileObj);
+        image.forEach((file, index) => {
+            if (file instanceof File) {
+                formData.append("image", file);
+            } else {
+                console.error(`Item ${index} is not a File:`, file);
             }
         });
     }
 
-    console.log("FormData contents:", Array.from(formData.entries()));
+    return formData;
+};
+
+// Utility function to handle FormData creation
+const createSchoolFormAddData = (schoolData: SchoolCreateDTO ): FormData => {
+    const formData = new FormData();
+    const {imageFile, ...schoolDataWithoutImage} = schoolData;
+
+    // Append JSON data
+    formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
+
+    // Append images with validation
+    if (imageFile && Array.isArray(imageFile)) {
+        imageFile.forEach((file, index) => {
+            if (file instanceof File) {
+                formData.append("image", file);
+            } else {
+                console.error(`Item ${index} is not a File:`, file);
+            }
+        });
+    }
+
     return formData;
 };
 
 export interface SchoolCreateDTO extends SchoolDTO {
     userId: number,
+    imageFile?: File[];
+
 }
 
 const formatPhoneNumber = (phone: string | undefined): string => {
@@ -266,9 +277,9 @@ export const schoolApi = createApi({
             keepUnusedDataFor: 0,
         }),
 
-        addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolDTO>({
+        addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({
             query: (schoolDTO) => {
-                const formData = createSchoolFormData(schoolDTO); // Sử dụng hàm utility
+                const formData = createSchoolFormAddData(schoolDTO); // Sử dụng hàm utility
                 return {
                     url: "/school/add",
                     method: "POST",

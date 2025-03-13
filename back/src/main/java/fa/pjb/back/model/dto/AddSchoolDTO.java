@@ -104,7 +104,7 @@ class FeeRangeValidator implements ConstraintValidator<ValidFeeRange, AddSchoolD
         if (school.feeFrom() != null && school.feeTo() != null) {
             return school.feeFrom() <= school.feeTo();
         }
-        return true; // Allow null values
+        return true;
     }
 }
 

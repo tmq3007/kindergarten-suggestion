@@ -61,7 +61,7 @@ public record SchoolUpdateDTO(
         @Size(max = 7, message = "Invalid utilities selection")
         Set<@Min(0) @Max(6) Integer> utilities,
 
-        Set<Integer> schoolOwners,
+//        Set<Integer> schoolOwners,
 
         @Lob
         String description

@@ -34,10 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
@@ -92,7 +90,6 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
-        log.info("School owners from DTO: {}", schoolDTO.schoolOwners());
 
         // Check if email already exists
         if (checkEmailExists(schoolDTO.email())) {
@@ -102,7 +99,7 @@ public class SchoolServiceImpl implements SchoolService {
 //            throw new PhoneExistedException("This phone is already in use");
 //        }
 
-        // Map DTO to School entity (without schoolOwners initially)
+        //  Map DTO to School entity (without schoolOwners initially)
         School school = schoolMapper.toSchool(schoolDTO);
         school.setSchoolOwners(null); // Avoid cascade issues; set later
 
@@ -147,7 +144,7 @@ public class SchoolServiceImpl implements SchoolService {
             schoolOwners.forEach(owner -> owner.setSchool(newSchool));
             newSchool.setSchoolOwners(schoolOwners);
 
-            // Persist the updated SchoolOwners (optional, since cascade might handle it)
+            // Persist the updated SchoolOwners
             schoolOwnerRepository.saveAll(schoolOwners);
         } else {
             newSchool.setSchoolOwners(new HashSet<>());
@@ -170,7 +167,6 @@ public class SchoolServiceImpl implements SchoolService {
                 }
             }
 
-            //Upload images
             try {
                 imageVOList = imageService.uploadListImages(
                         imageService.convertMultiPartFileToFile(image),
@@ -183,21 +179,17 @@ public class SchoolServiceImpl implements SchoolService {
             processAndSaveImages(imageVOList, newSchool);
         }
 
-        // Save the updated School
-        School savedSchool = schoolRepository.save(newSchool);
-
-        // Send submit emails to admins
-        if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && savedSchool.getStatus() == SUBMITTED.getValue()) {
+        // Send submit emails to admins (if applicable)
+        if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
             // TODO: Fix this to send to all admins
-            emailService.sendSubmitSchool(
-                    "nguyendatrip123@gmail.com",
-                    savedSchool.getName(),
+            emailService.sendSubmitEmailToAllAdmin(
+                    newSchool.getName(),
                     user.getUsername(),
-                    schoolDetailedLink + savedSchool.getId()
+                    schoolDetailedLink + newSchool.getId()
             );
         }
 
-        return schoolMapper.toSchoolDetailVO(savedSchool);
+        return schoolMapper.toSchoolDetailVO(newSchool);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

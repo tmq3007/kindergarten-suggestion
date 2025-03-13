@@ -15,11 +15,10 @@ import AddressInput from '../common/AddressInput';
 import EmailInput from '../common/EmailInput';
 import { ImageUpload } from '../common/ImageUploader';
 import clsx from "clsx";
-import { InboxOutlined, MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
+import {  MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { SchoolOwnerVO } from '@/redux/services/SchoolOwnerApi';
-import {formatPhoneNumber} from "@/lib/phoneUtils";
 
 const {Option} = Select;
 const {Panel} = Collapse;
@@ -66,9 +65,10 @@ interface SchoolFormFields {
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
     actionButtons?: React.ReactNode;
-    triggerCheckEmail: any;
+    triggerCheckEmail?: any;
     schoolId?: number;
-    isEdit: boolean
+    isEdit?: boolean;
+    formLoaded?: boolean;
 }
 
 const SchoolForm: React.FC<SchoolFormFields> = ({
@@ -90,6 +90,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     triggerCheckEmail,
                                                     schoolId,
                                                     isEdit,
+                                                    formLoaded = false
                                                 }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
@@ -389,7 +390,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             ? "No owners found"
                                             : "Please select a school first"
                                 }
-                                onChange={(newValue) => form.setFieldsValue({schoolOwners: newValue})}
                             />
                         </Form.Item>
 
@@ -458,6 +458,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 maxSizeMB={5}
                                 hideImageUpload={hideImageUpload}
                                 imageList={imageList}
+                                formLoaded={formLoaded}
                             />
                         </Form.Item>
                     </div>
