@@ -16,7 +16,7 @@ const PhoneInput = forwardRef(
   (
     {
       isReadOnly,
-      initialCountryCode = 'VN',
+      initialCountryCode = '+84',
       onPhoneChange,
       triggerCheckPhone,
     }: PhoneInputProps,
@@ -33,10 +33,10 @@ const PhoneInput = forwardRef(
     // Sync selectedCountry with countries when they load
     useEffect(() => {
       if (countries && !selectedCountry) {
-        const defaultCountry = countries.find((c) => c.code === initialCountryCode);
+        const defaultCountry = countries.find((c) => c.dialCode === initialCountryCode);
         setSelectedCountry(defaultCountry);
       }
-    }, [countries, initialCountryCode]);
+    }, [countries, initialCountryCode, phone]);
 
     const handleCountryChange = async (value: string) => {
       const country = countries?.find((c) => c.code === value);
@@ -192,7 +192,7 @@ const PhoneInput = forwardRef(
                 placeholder="Enter your phone number"
                 value={phone}
                 onChange={handlePhoneNumberChange}
-                onBlur={triggerCheckPhone ? handlePhoneBlur : undefined}
+                onBlur={triggerCheckPhone ? handlePhoneBlur : handlePhoneNumberChange}
                 style={{ flex: 1 }}
                 readOnly={isReadOnly}
               />

@@ -154,5 +154,4 @@ public class SchoolController {
                 .data(schoolService.findAllDistinctExpectedSchoolsByRole(id))
                 .build();
     }
-
 }

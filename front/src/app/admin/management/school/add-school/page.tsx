@@ -25,6 +25,7 @@ const page = () => {
                     hasSaveButton={true}
                     hasCreateSubmitButton={true}
                     triggerCheckEmail={triggerCheckEmail}
+                    isEdit={false}
                 />
             </div>
         </>

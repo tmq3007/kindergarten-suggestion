@@ -34,6 +34,7 @@ export type SchoolDetailVO = {
     utilities: Utility[];
     posted_date: Date | null;
     imageList: MediaVO[];
+    schoolOwners?: SchoolOwnerVO[]
 };
 
 export type SchoolDTO = {
@@ -150,9 +151,6 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
 
 export interface SchoolCreateDTO extends SchoolDTO {
     userId: number,
-
-    //TODO: Change to number[]
-    schoolOwners?: any[];
 }
 
 const formatPhoneNumber = (phone: string | undefined): string => {

@@ -88,6 +88,7 @@ export default function EditSchool() {
                 hasCancelButton={true}
                 hasUpdateSubmitButton={true}
                 triggerCheckEmail={triggerCheckEmail}
+                isEdit={true}
             />
         </>
     );

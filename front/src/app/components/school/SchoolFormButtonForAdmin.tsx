@@ -145,16 +145,16 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             status: addStatus,
         };
         try {
-            // await addSchool(finalValues).unwrap();
+            await addSchool(finalValues).unwrap();
             console.log(finalValues);
-            // form.resetFields();
-            // openNotificationWithIcon(
-            //     'success',
-            //     'School Added Successfully',
-            //     'The school has been added to the system successfully.',
-            //     2,
-            //     () => router.push("/admin/management/school/school-list")
-            // );
+            form.resetFields();
+            openNotificationWithIcon(
+                'success',
+                'School Added Successfully',
+                'The school has been added to the system successfully.',
+                2,
+                () => router.push("/admin/management/school/school-list")
+            );
         } catch (error: unknown) {
             const errorMessage = formatErrorMessage(error);
             openNotificationWithIcon(

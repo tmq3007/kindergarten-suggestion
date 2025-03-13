@@ -25,5 +25,6 @@ public record SchoolDetailVO(
         Set<UtilityVO> utilities,
         List<MediaVO> imageList,
         Date posted_date
+//        Set<SchoolOwnerVO> schoolOwners
 ) {
 }

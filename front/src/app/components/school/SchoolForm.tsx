@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile } from 'antd';
-
 import MyEditor from "@/app/components/common/MyEditor";
 import { ExpectedSchool, useLazyCheckSchoolEmailQuery, useLazySearchSchoolOwnersForAddSchoolQuery, useSearchExpectedSchoolQuery } from '@/redux/services/schoolApi';
 import {
@@ -17,9 +16,9 @@ import EmailInput from '../common/EmailInput';
 import { ImageUpload } from '../common/ImageUploader';
 import clsx from "clsx";
 import { InboxOutlined, MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
-import { SchoolOwnerVO } from '@/redux/services/SchoolOwnerApi';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import { SchoolOwnerVO } from '@/redux/services/SchoolOwnerApi';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -29,7 +28,6 @@ interface SchoolFieldType {
     schoolType: number;
     website?: string;
     status: number;
-    // Address Fields
     province: string;
     district: string;
     ward: string;
@@ -38,15 +36,13 @@ interface SchoolFieldType {
     phone: string;
     receivingAge: number;
     educationMethod: number;
-    // Fee Range
     feeFrom: number;
     feeTo: number;
-    // Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
-    description?: string; // School introduction
-    // File Upload
+    description?: string;
     image?: UploadFile[];
+    schoolOwners?: string[]; // Changed to string[] to match Select values
 }
 
 interface SchoolFormFields {
@@ -66,6 +62,7 @@ interface SchoolFormFields {
     imageList?: { url: string; filename: string }[];
     actionButtons?: React.ReactNode;
     triggerCheckEmail: any;
+    isEdit: boolean
 }
 
 const SchoolForm: React.FC<SchoolFormFields> = ({
@@ -84,24 +81,20 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     hideImageUpload = false,
     actionButtons,
     triggerCheckEmail,
+    isEdit,
 }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
     const user = useSelector((state: RootState) => state.user);
 
-
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
-
     const [schoolOptions, setSchoolOptions] = useState<{ label: string; value: string }[]>([]);
     const [ownerOptions, setOwnerOptions] = useState<{ label: React.ReactNode; value: string; owner: SchoolOwnerVO }[]>([]);
 
-    // Lazy load schools when component mounts
-    const { data: expectedSchoolData, error: expectedSchoolerror, isLoading: isLoadingExpectedSchool } = useSearchExpectedSchoolQuery({id: Number(user.id)});
+    const { data: expectedSchoolData, error: expectedSchoolError, isLoading: isLoadingExpectedSchool } = useSearchExpectedSchoolQuery({ id: Number(user.id) });
     const [triggerSearchSchoolOwners, searchSchoolOwnersResult] = useLazySearchSchoolOwnersForAddSchoolQuery();
-
-
     const schoolNameValue = Form.useWatch('name', form);
 
     // Custom render for owner options
@@ -122,17 +115,17 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
             </div>
         </div>
     );
-
-    // Custom render for selected tags (icon and username only)
+    // Custom render for selected tags (disable close for logged-in user)
     const renderOwnerTag = (props: any) => {
         const { label, value, closable, onClose } = props;
         const owner = ownerOptions.find((opt) => opt.value === value)?.owner;
+        const isCurrentUser = owner?.userId === Number(user.id); // Compare with userId
 
         return (
             <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1 mr-1 mb-1">
                 <UserOutlined className="text-blue-500 mr-1" />
-                <span>{owner?.username || 'Unknown'}</span>
-                {closable && (
+                <span>{owner?.username || 'Unknown'} {isCurrentUser && '(You)'}</span>
+                {!isCurrentUser && closable && (
                     <span
                         className="ml-1 cursor-pointer text-gray-500 hover:text-red-500"
                         onClick={onClose}
@@ -146,27 +139,41 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     // Handle school name change and fetch owners
     const handleSchoolNameChange = async (schoolName: string) => {
-        // Clear previous owner options and form field
-        setOwnerOptions([]);
-        form.setFieldsValue({ schoolOwners: undefined });
-        if (schoolName && !isReadOnly) {
-            try {
-                const result = await triggerSearchSchoolOwners(schoolName).unwrap();
-                const owners = result?.data?.map((owner: SchoolOwnerVO) => ({
-                    label: renderOwnerOption(owner),
-                    value: owner.id,
-                    owner: owner,
-                })) || [];
-                setOwnerOptions(owners);
-            } catch (error) {
-                console.error('Error fetching school owners:', error);
-                setOwnerOptions([]);
+        if (!schoolName || isReadOnly) {
+            setOwnerOptions([]);
+            return;
+        }
+
+        try {
+            const result = await triggerSearchSchoolOwners(schoolName).unwrap();
+            const owners = result?.data?.map((owner: SchoolOwnerVO) => ({
+                label: renderOwnerOption(owner),
+                value: String(owner.id), // Use owner.id as string
+                owner: owner,
+            })) || [];
+            setOwnerOptions(owners);
+
+            // Auto-select logged-in user if in list
+            const currentOwners = form.getFieldValue('schoolOwners') || [];
+            const userOwnerId = owners.find(owner => owner.owner.userId === Number(user.id))?.value;
+            if (userOwnerId && !currentOwners.includes(userOwnerId)) {
+                form.setFieldsValue({ schoolOwners: [...currentOwners, userOwnerId] });
             }
-        } else {
+        } catch (error) {
+            console.error('Error fetching school owners:', error);
             setOwnerOptions([]);
         }
     };
 
+    const handleOwnersChange = (selectedOwners: string[]) => {
+        const userOwnerId = ownerOptions.find(opt => opt.owner.userId === Number(user.id))?.value;
+        if (userOwnerId && !selectedOwners.includes(userOwnerId) && ownerOptions.some(opt => opt.owner.userId === Number(user.id))) {
+            // Prevent deselection of logged-in user
+            form.setFieldsValue({ schoolOwners: [...selectedOwners, userOwnerId] });
+        } else {
+            form.setFieldsValue({ schoolOwners: selectedOwners });
+        }
+    };
     useEffect(() => {
         handleSchoolNameChange(schoolNameValue);
     }, [schoolNameValue]);
@@ -175,12 +182,13 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
         if (expectedSchoolData?.data) {
             setSchoolOptions(
                 expectedSchoolData.data.map((expectedSchool: ExpectedSchool) => ({
-                    label: expectedSchool.expectedSchool, // Display name in dropdown
+                    label: expectedSchool.expectedSchool,
                     value: expectedSchool.expectedSchool,
                 }))
             );
         }
     }, [expectedSchoolData]);
+
     return (
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form<SchoolFieldType>
@@ -200,7 +208,24 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             label="School Name"
                             rules={[{ required: true, message: 'Please enter school name' }]}
                         >
-                            <Select
+                            {isEdit ? (
+                                <Input
+                                    placeholder="Enter school name..."
+                                    readOnly={isReadOnly}
+                                />
+                            ) : (
+                                <Select
+                                    showSearch
+                                    placeholder="Search and select a school..."
+                                    options={schoolOptions}
+                                    loading={isLoadingExpectedSchool}
+                                    filterOption={(input, option) =>
+                                        !!(option && option.label.toLowerCase().includes(input.toLowerCase()))
+                                    }
+                                    disabled={isReadOnly}
+                                />
+                            )}
+                            {/* <Select
                                 showSearch
                                 placeholder="Search and select a school..."
                                 options={schoolOptions}
@@ -209,7 +234,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     !!(option && option.label.toLowerCase().includes(input.toLowerCase()))
                                 }
                                 disabled={isReadOnly}
-                            />
+                            /> */}
                         </Form.Item>
 
                         <Form.Item
@@ -225,22 +250,13 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             />
                         </Form.Item>
 
-                        <AddressInput
-                            isReadOnly={isReadOnly}
-                            form={form}
-                        />
-
-                        <EmailInput
-                            isReadOnly={isReadOnly}
-                            ref={emailInputRef} // Add this line
-                            triggerCheckEmail={triggerCheckEmail}
-                        />
+                        <AddressInput isReadOnly={isReadOnly} form={form} />
+                        <EmailInput isReadOnly={isReadOnly} ref={emailInputRef} triggerCheckEmail={triggerCheckEmail} />
                         <PhoneInput
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
                             onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                         />
-
 
                         <Form.Item
                             name="receivingAge"
@@ -318,16 +334,17 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 </Form.Item>
                             </div>
                         </Form.Item>
+
                         <Form.Item
                             name="schoolOwners"
                             label="School Owners"
-                            // rules={[{ required: true, message: 'Please select a school owner' }]}
                         >
                             <Select
                                 showSearch
                                 mode='multiple'
                                 placeholder="Select school owners..."
                                 options={ownerOptions}
+                                onChange={handleOwnersChange}
                                 loading={searchSchoolOwnersResult.isFetching}
                                 disabled={isReadOnly || !schoolNameValue}
                                 tagRender={renderOwnerTag}
@@ -352,6 +369,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 }
                             />
                         </Form.Item>
+
                         <Form.Item
                             name="website"
                             label="School Website"
@@ -386,12 +404,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 display: flex;
                                 align-items: center;
                             }
-
                             .custom-add-school-select .ant-checkbox-inner {
                                 width: 24px !important;
                                 height: 24px !important;
                             }
-
                             .custom-add-school-select .ant-checkbox-input {
                                 transform: scale(2);
                             }
@@ -407,14 +423,18 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 isReadOnly={isReadOnly}
                             />
                         </Form.Item>
-                        <Form.Item label="School image" name="image" valuePropName="fileList"
-                            getValueFromEvent={(e) => e?.fileList || []}>
+
+                        <Form.Item
+                            label="School image"
+                            name="image"
+                            valuePropName="fileList"
+                            getValueFromEvent={(e) => e?.fileList || []}
+                        >
                             <ImageUpload form={form} fieldName="image" maxCount={10} accept="image/*" maxSizeMB={5} />
                         </Form.Item>
                     </div>
                 </div>
 
-                {/* Thêm Form.Item cho các nút ở đáy form */}
                 <Form.Item style={{ textAlign: 'center', marginTop: '16px' }}>
                     {actionButtons}
                     <SchoolFormButton

@@ -18,7 +18,7 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     List<SchoolOwner> findAllBySchoolId(Integer schoolID);
 
     @Query("""
-    SELECT so.id AS id, u.username AS username, u.email AS email, so.expectedSchool AS expectedSchool, u.fullname AS fullname, u.phone AS phone
+    SELECT so.id AS id,so.user.id AS userId, u.username AS username, u.email AS email, so.expectedSchool AS expectedSchool, u.fullname AS fullname, u.phone AS phone
     FROM SchoolOwner so
     JOIN so.user u
     WHERE (:expectedSchool IS NULL OR so.expectedSchool = :expectedSchool)

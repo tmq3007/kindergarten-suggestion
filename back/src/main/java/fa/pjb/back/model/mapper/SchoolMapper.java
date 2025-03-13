@@ -2,10 +2,7 @@ package fa.pjb.back.model.mapper;
 
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
-import fa.pjb.back.model.entity.Facility;
-import fa.pjb.back.model.entity.Media;
-import fa.pjb.back.model.entity.School;
-import fa.pjb.back.model.entity.Utility;
+import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.vo.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,6 +26,8 @@ public interface SchoolMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "facilities", source = "facilities", qualifiedByName = "mapFacilityIds")
     @Mapping(target = "utilities", source = "utilities", qualifiedByName = "mapUtilityIds")
+    @Mapping(target = "schoolOwners" , source = "schoolOwners", qualifiedByName = "mapSchoolOwnerIds")
+
     School toSchool(AddSchoolDTO schoolDTO);
 
     // Convert List<Integer> to Set<Facility>
@@ -43,7 +42,18 @@ public interface SchoolMapper {
                 })
                 .collect(Collectors.toSet());
     }
-
+    // Convert Set<String> to Set<SchoolOwner>
+    @Named("mapSchoolOwnerIds")
+    default Set<SchoolOwner> mapSchoolOwnerIds(Set<Integer> schoolOwnerIds) {
+        if (schoolOwnerIds == null) return null;
+        return schoolOwnerIds.stream()
+                .map(id -> {
+                    SchoolOwner schoolOwner = new SchoolOwner();
+                    schoolOwner.setId(id); // Assuming SchoolOwner.id is Integer
+                    return schoolOwner;
+                })
+                .collect(Collectors.toSet());
+    }
     // Convert List<Integer> to Set<Utility>
     @Named("mapUtilityIds")
     default Set<Utility> mapUtilityIds(Set<Integer> utilityIds) {
