@@ -42,9 +42,9 @@ class LoginTest {
     }
 
     /**
-     * ✅ Trường hợp bình thường (Normal Case)
-     * Mô tả: Đăng nhập thành công với email và mật khẩu hợp lệ.
-     * Kỳ vọng: Trả về HTTP 200 OK, kèm accessToken và csrfToken.
+     * Normal Case
+     * Description: Successful login with valid email and password.
+     * Expected: Returns HTTP 200 OK with accessToken and csrfToken.
      */
     @Test
     void loginByAdmin_Success() throws Exception {
@@ -71,9 +71,9 @@ class LoginTest {
     }
 
     /**
-     * ❌ Trường hợp bất thường (Abnormal Case)
-     * Mô tả: Đăng nhập thất bại khi email rỗng.
-     * Kỳ vọng: Trả về HTTP 400 Bad Request.
+     * Abnormal Case
+     * Description: Login fails when email is empty.
+     * Expected: Returns HTTP 400 Bad Request.
      */
     @Test
     void loginByAdmin_Fail_EmptyEmail() throws Exception {
@@ -90,9 +90,9 @@ class LoginTest {
     }
 
     /**
-     * ⚠️ Trường hợp biên (Boundary Case)
-     * Mô tả: Email ngắn nhất hợp lệ và mật khẩu có đúng 7 ký tự.
-     * Kỳ vọng: Trả về HTTP 200 OK.
+     * Boundary Case
+     * Description: Login with the shortest valid email and a password of exactly 7 characters.
+     * Expected: Returns HTTP 200 OK.
      */
     @Test
     void loginByAdmin_Boundary_MinValidEmailAndPassword() throws Exception {
@@ -118,9 +118,9 @@ class LoginTest {
     }
 
     /**
-     * ⚠️ Trường hợp cận biên (Near-Boundary Case)
-     * Mô tả: Email thiếu phần mở rộng và mật khẩu dưới 7 ký tự.
-     * Kỳ vọng: Trả về HTTP 400 Bad Request.
+     * Near-Boundary Case
+     * Description: Login with an email missing the domain extension and a password shorter than 7 characters.
+     * Expected: Returns HTTP 400 Bad Request.
      */
     @Test
     void loginByAdmin_NearBoundary_InvalidEmailAndShortPassword() throws Exception {
@@ -137,9 +137,9 @@ class LoginTest {
     }
 
     /**
-     * ⚠️ Trường hợp xa biên (Far-Boundary Case)
-     * Mô tả: Email không hợp lệ (chỉ có một ký tự) và mật khẩu cực ngắn.
-     * Kỳ vọng: Trả về HTTP 400 Bad Request.
+     * Far-Boundary Case
+     * Description: Login with an invalid email (only one character) and a very short password.
+     * Expected: Returns HTTP 400 Bad Request.
      */
     @Test
     void loginByAdmin_FarBoundary_VeryShortEmailAndPassword() throws Exception {
@@ -156,9 +156,9 @@ class LoginTest {
     }
 
     /**
-     * ⚠️ Trường hợp xa biên (Far-Boundary Case)
-     * Mô tả: Email rất dài nhưng hợp lệ, mật khẩu cũng rất dài.
-     * Kỳ vọng: Trả về HTTP 200 OK.
+     * Far-Boundary Case
+     * Description: Login with a very long but valid email and a very long password.
+     * Expected: Returns HTTP 200 OK.
      */
     @Test
     void loginByAdmin_FarBoundary_VeryLongEmailAndPassword() throws Exception {

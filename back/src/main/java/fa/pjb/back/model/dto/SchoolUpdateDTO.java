@@ -2,9 +2,11 @@ package fa.pjb.back.model.dto;
 
 import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 
 import java.util.Set;
 
+@Builder
 public record SchoolUpdateDTO(
         Integer id,
         @NotBlank(message = "School name is required")

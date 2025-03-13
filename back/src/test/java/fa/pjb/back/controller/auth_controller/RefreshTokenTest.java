@@ -40,9 +40,9 @@ class RefreshTokenTest {
     }
 
     /**
-     * ✅ Trường hợp bình thường (Normal Case)
-     * Mô tả: Làm mới token thành công với CSRF token và Access token hợp lệ.
-     * Kỳ vọng: Trả về HTTP 200 OK, kèm accessToken và csrfToken mới.
+     * Normal Case
+     * Description: Refresh token successfully with valid CSRF token and Access token.
+     * Expected: Returns HTTP 200 OK with new accessToken and csrfToken.
      */
     @Test
     void refreshToken_Success() throws Exception {
@@ -67,9 +67,9 @@ class RefreshTokenTest {
     }
 
     /**
-     * ❌ Trường hợp bất thường (Abnormal Case)
-     * Mô tả: CSRF token trong header không khớp với CSRF token trong cookie.
-     * Kỳ vọng: Trả về HTTP 401 Unauthorized.
+     * Abnormal Case
+     * Description: CSRF token in the header does not match the CSRF token in the cookie.
+     * Expected: Returns HTTP 401 Unauthorized.
      */
     @Test
     void refreshToken_Fail_CsrfTokenMismatch() throws Exception {
@@ -85,9 +85,9 @@ class RefreshTokenTest {
     }
 
     /**
-     * ⚠️ Trường hợp biên (Boundary Case)
-     * Mô tả: CSRF token hợp lệ nhưng Access token rỗng.
-     * Kỳ vọng: Trả về HTTP 401 Unauthorized.
+     * Boundary Case
+     * Description: CSRF token is valid, but Access token is empty.
+     * Expected: Returns HTTP 401 Unauthorized.
      */
     @Test
     void refreshToken_Boundary_EmptyAccessToken() throws Exception {
@@ -103,9 +103,9 @@ class RefreshTokenTest {
     }
 
     /**
-     * ⚠️ Trường hợp cận biên (Near-Boundary Case)
-     * Mô tả: CSRF token trong header và cookie khớp nhưng Access token không hợp lệ.
-     * Kỳ vọng: Trả về HTTP 401 Unauthorized.
+     * Near-Boundary Case
+     * Description: CSRF token in the header and cookie matches, but Access token is invalid.
+     * Expected: Returns HTTP 401 Unauthorized.
      */
     @Test
     void refreshToken_NearBoundary_InvalidAccessToken() throws Exception {
@@ -121,9 +121,9 @@ class RefreshTokenTest {
     }
 
     /**
-     * ⚠️ Trường hợp xa biên (Far-Boundary Case)
-     * Mô tả: Không có CSRF token trong cookie lẫn header, Access token hợp lệ.
-     * Kỳ vọng: Trả về HTTP 401 Unauthorized.
+     * Far-Boundary Case
+     * Description: No CSRF token in both the cookie and header, but Access token is valid.
+     * Expected: Returns HTTP 401 Unauthorized.
      */
     @Test
     void refreshToken_FarBoundary_MissingCsrfToken() throws Exception {
