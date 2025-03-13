@@ -47,6 +47,7 @@ export default function EditSchool() {
                 street: school.street || '',
                 email: school.email || '',
                 phone: formatPhoneNumber(school.phone),
+                contryCode: formatPhoneNumber(school.phone,0),
                 receivingAge: String(school.receivingAge),
                 educationMethod: String(school.educationMethod),
                 feeFrom: school.feeFrom || 0,

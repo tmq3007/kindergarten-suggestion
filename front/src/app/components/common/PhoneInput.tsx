@@ -1,7 +1,6 @@
-import React, {useState, useEffect, useImperativeHandle, forwardRef} from 'react';
-import {Form, Input, Select} from 'antd';
+import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
+import {Form, Image, Input, Select} from 'antd';
 import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
-import {Image} from 'antd';
 import countriesKeepZero from '@/lib/countriesKeepZero';
 import {FormInstance} from "antd/es/form";
 
@@ -18,7 +17,7 @@ const PhoneInput = forwardRef((
         {
             form,
             isReadOnly,
-            initialCountryCode = 'VN',
+            initialCountryCode = '+84',
             onPhoneChange,
             triggerCheckPhone,
         }: PhoneInputProps,
@@ -35,7 +34,10 @@ const PhoneInput = forwardRef((
         // Sync selectedCountry with countries when they load
         useEffect(() => {
             if (countries && !selectedCountry) {
-                const defaultCountry = countries.find((c) => c.code === initialCountryCode);
+                console.log("initialCountryCode", initialCountryCode);
+                console.log(form.getFieldValue('phone'))
+                const defaultCountry = countries.find((c) => c.dialCode === initialCountryCode);
+                setPhone(form.getFieldValue('phone'));
                 setSelectedCountry(defaultCountry);
             }
         }, [countries, initialCountryCode]);
@@ -231,5 +233,3 @@ const PhoneInput = forwardRef((
 PhoneInput.displayName = 'PhoneInput';
 
 export default PhoneInput;
-
-// origin
