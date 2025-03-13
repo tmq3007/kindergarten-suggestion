@@ -20,7 +20,7 @@ const EmailInput = forwardRef(({
 
     useEffect(() => {
         setEmail(form.getFieldValue('email') || '');
-    }, [form]);
+    }, [form, form.getFieldValue('email')]);
     const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
 
@@ -28,9 +28,6 @@ const EmailInput = forwardRef(({
     const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
 
     const validateEmail = async (): Promise<boolean> => {
-        // if (!isReadOnly) return true;
-        console.log("888888888888888888888")
-        console.log(form.getFieldValue('email'))
         if (!email) {
             console.log('email rong')
             setEmailStatus('error');

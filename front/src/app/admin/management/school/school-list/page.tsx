@@ -1,6 +1,6 @@
 "use client";
 
-import {Input, Button, Table, Tag, Space, notification} from "antd";
+import {Input, Button, Table, Tag, Space, notification, ConfigProvider} from "antd";
 import {SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined} from "@ant-design/icons";
 import Link from "next/link";
 import React, {useState, useEffect} from "react";
@@ -84,7 +84,7 @@ export default function SchoolList() {
     };
 
     //get all school list
-    const { data, isLoading, error } = useGetSchoolListQuery({
+    const {data, isLoading, error} = useGetSchoolListQuery({
         page: 1,
         size: 1000,
         name: searchText || undefined,
@@ -254,38 +254,46 @@ export default function SchoolList() {
                 ]}
             />
             <SchoolManageTitle title={"School List"}/>
-            <div className="bg-white p-5 rounded-lg h-screen">
+            <div className="bg-white px-2 py-5 rounded">
                 <div className="flex justify-between items-center mb-4">
                     <Input
                         placeholder="Search by school name"
-                        prefix={<SearchOutlined />}
+                        prefix={<SearchOutlined/>}
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                         style={{maxWidth: "300px", width: "100%"}}
                     />
                     <Link href="/admin/management/school/add-school">
-                        <Button type="primary" icon={<PlusOutlined />}>
+                        <Button type="primary" icon={<PlusOutlined/>}>
                             Add School
                         </Button>
                     </Link>
                 </div>
-                <Table
-                    size="small"
-                    columns={columns}
-                    dataSource={tableData}
-                    loading={isLoading}
-                    scroll={{ x: "max-content" }}
-                    pagination={{
-                        current: page,
-                        pageSize,
-                        total: totalElements,
-                        onChange: (newPage) => setPage(newPage),
-                        position: ["bottomCenter"],
-                        responsive: true,
+                <ConfigProvider
+                    theme={{
+                        token: {
+                            borderRadiusLG: 0,
+                        },
                     }}
-                    locale={{ emptyText: error ? "Error loading data" : "No results found" }}
-                    rowClassName={getRowClassName}
-                />
+                >
+                    <Table
+                        size="small"
+                        columns={columns}
+                        dataSource={tableData}
+                        loading={isLoading}
+                        scroll={{x: "max-content"}}
+                        pagination={{
+                            current: page,
+                            pageSize,
+                            total: totalElements,
+                            onChange: (newPage) => setPage(newPage),
+                            position: ["bottomCenter"],
+                            responsive: true,
+                        }}
+                        locale={{emptyText: error ? "Error loading data" : "No results found"}}
+                        rowClassName={getRowClassName}
+                    />
+                </ConfigProvider>
             </div>
         </div>
     );
