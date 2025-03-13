@@ -74,6 +74,8 @@ const useAuthRedirect = (
                     messageApi.error('Email or password is wrong.', 1);
                 } else if (code == 1200) {
                     messageApi.error('Access Denied.', 1);
+                } else if (code == 1003) {
+                    messageApi.error('User not found.', 1);
                 } else {
                     messageApi.error('Something went wrong. Try again later!', 1);
                 }
