@@ -123,7 +123,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     }, [schoolData]);
 
 
-    // Log imageList để kiểm tra dữ liệu
+    // Log imageList to check list
     useEffect(() => {
         console.log('imageList:', imageList);
     }, [imageList]);

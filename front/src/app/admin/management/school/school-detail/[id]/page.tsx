@@ -37,6 +37,7 @@ export default function SchoolDetail() {
         if (school) {
             console.log('school.imageList in SchoolDetail:', school.imageList);
 
+            //assign value in string for education and receiving age
             const validEducationMethod = EDUCATION_METHOD_OPTIONS.find(opt => opt.value === String(school.educationMethod))?.value || "0";
             const validReceivingAge = CHILD_RECEIVING_AGE_OPTIONS.find(opt => opt.value === String(school.receivingAge))?.value || "0";
 
@@ -58,6 +59,7 @@ export default function SchoolDetail() {
                 status: school.status || 0,
             });
 
+            //mapping facilities and utilities
             const facilityValues: string[] = school.facilities?.map((facility) => String(facility.fid)) || [];
             form.setFieldsValue({ facilities: facilityValues });
 
@@ -66,7 +68,7 @@ export default function SchoolDetail() {
         }
     }, [school, form]);
 
-    // Kiểm tra role Admin và status Saved
+    // Check role and status
     if (role === ROLES.ADMIN && school?.status === SCHOOL_STATUS.Saved) {
         forbidden();
     }
@@ -100,7 +102,7 @@ export default function SchoolDetail() {
             />
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!} />
 
-            {/* Dòng chữ "View Rating & Feedback" được căn sang bên phải */}
+            {/*View Rating and Feedback Link*/}
             <div className="my-4 flex justify-end">
                 <Link href={`/admin/management/school/rating-feedback/${schoolId}`} className="text-blue-500 hover:underline">
                     View Rating & Feedback
@@ -132,7 +134,8 @@ export default function SchoolDetail() {
                         school.status === SCHOOL_STATUS.Unpublished
                     }
                     hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
-                />
+
+                    triggerCheckEmail={undefined}/>
             </div>
         </div>
     );

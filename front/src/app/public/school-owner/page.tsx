@@ -25,7 +25,7 @@ export default function SchoolDetail() {
     const router = useRouter();
     const role = useSelector((state: RootState) => state.user?.role);
 
-    // Kiểm tra vai trò người dùng
+    //Check role usẻ
     const unauthorized = () => {
         router.push("/login");
     };
@@ -35,12 +35,11 @@ export default function SchoolDetail() {
         return null;
     }
 
-    // Sử dụng useGetSchoolByUserIdQuery để lấy một trường học duy nhất
+    //get school by user id
     const {data, isError, isLoading} = useGetSchoolByUserIdQuery({
         name: undefined,
     });
 
-    // Dữ liệu giờ là một SchoolDetailVO trực tiếp
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
@@ -85,111 +84,6 @@ export default function SchoolDetail() {
             message.error("Failed to load school details");
         }
     }, [isError, router]);
-
-    const handleDelete = async () => {
-        if (!school?.id) return;
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${school.id}`, {
-                method: "DELETE",
-                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
-            });
-            if (response.ok) {
-                message.success("School deleted successfully");
-                router.push("/admin/management/school/school-list");
-            } else {
-                message.error("Failed to delete school");
-            }
-        } catch (error) {
-            message.error("Error deleting school");
-        }
-    };
-
-    const handleReject = async () => {
-        if (!school?.id) return;
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${school.id}/reject`, {
-                method: "PUT",
-                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
-            });
-            if (response.ok) {
-                message.success("School rejected successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to reject school");
-            }
-        } catch (error) {
-            message.error("Error rejecting school");
-        }
-    };
-
-    const handleApprove = async () => {
-        if (!school?.id) return;
-        try {
-            await approveSchool(school.id).unwrap();
-            message.success("School approved successfully");
-        } catch (error) {
-            message.error("Error approving school");
-        }
-    };
-
-    const handlePublish = async () => {
-        if (!school?.id) return;
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${school.id}/publish`, {
-                method: "PUT",
-                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
-            });
-            if (response.ok) {
-                message.success("School published successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to publish school");
-            }
-        } catch (error) {
-            message.error("Error publishing school");
-        }
-    };
-
-    const handleUnpublish = async () => {
-        if (!school?.id) return;
-        try {
-            const response = await fetch(`http://localhost:8080/api/school/${school.id}/unpublish`, {
-                method: "PUT",
-                headers: {"Authorization": `Bearer ${localStorage.getItem("token")}`},
-            });
-            if (response.ok) {
-                message.success("School unpublished successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to unpublish school");
-            }
-        } catch (error) {
-            message.error("Error unpublishing school");
-        }
-    };
-
-    const handleSave = async () => {
-        if (!school?.id) return;
-        try {
-            const values = await form.validateFields();
-            const response = await fetch(`http://localhost:8080/api/school/${school.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify(values),
-            });
-            if (response.ok) {
-                message.success("School saved successfully");
-                router.refresh();
-            } else {
-                message.error("Failed to save school");
-            }
-        } catch (error) {
-            message.error("Error saving school");
-        }
-    };
 
     if (isLoading) {
         return (
@@ -249,6 +143,8 @@ export default function SchoolDetail() {
                         school.status === SCHOOL_STATUS.Unpublished
                     }
                     hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
+
+                    triggerCheckEmail={undefined}
                 />
             </div>
         </div>

@@ -30,6 +30,7 @@ interface SchoolVO {
     posted_date: string;
 }
 
+//handle status type
 const getStatusText = (status: number) => {
     switch (status) {
         case 0:
@@ -65,12 +66,14 @@ export default function SchoolList() {
     const [filteredSchools, setFilteredSchools] = useState<SchoolVO[]>([]);
     const [totalElements, setTotalElements] = useState(0);
 
+    //check login
     if (!userId) {
         console.warn("No userId found in Redux store, redirecting to login");
         router.push("/login");
         return null;
     }
 
+    //show out notification
     const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
         notificationApi[type]({
             message,
@@ -79,6 +82,7 @@ export default function SchoolList() {
         });
     };
 
+    //get all school list
     const { data, isLoading, error } = useGetSchoolListQuery({
         page: 1,
         size: 1000,
@@ -97,11 +101,12 @@ export default function SchoolList() {
         }
     }, [error, router]);
 
+    //filter school list (admin can't view saved school status = 0 & 6)
     useEffect(() => {
         const schools: SchoolVO[] = data?.data?.content || [];
         console.log("Original schools:", schools);
 
-        const filtered = schools.filter((school) => school.status !== 0);
+        const filtered = schools.filter((school) => school.status !== 0 && school.status !== 6);
         console.log("Filtered schools:", filtered);
 
         setAllSchools(schools);
@@ -137,7 +142,7 @@ export default function SchoolList() {
             title: <div className={'text-center'}>Address</div>,
             dataIndex: "address",
             key: "address",
-            ellipsis: true, // Cắt ngắn nội dung nếu quá dài
+            ellipsis: true,
             onCell: (record: { address: string }) => ({
                 onClick: () => {
                     navigator.clipboard
@@ -262,7 +267,7 @@ export default function SchoolList() {
                     columns={columns}
                     dataSource={tableData}
                     loading={isLoading}
-                    scroll={{ x: "max-content" }} // Bật cuộn ngang trên màn hình nhỏ
+                    scroll={{ x: "max-content" }}
                     pagination={{
                         current: page,
                         pageSize,
