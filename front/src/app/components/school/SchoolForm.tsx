@@ -65,7 +65,7 @@ interface SchoolFormFields {
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
     actionButtons?: React.ReactNode;
-    triggerCheckEmail: any;
+    triggerCheckEmail?: any;
     schoolId?: number;
 }
 
