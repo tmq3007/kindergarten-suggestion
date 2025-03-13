@@ -34,7 +34,7 @@ export default function Header() {
                 ease: "easeInOut",
                 opacity: { duration: 2, ease: "easeInOut" },
             }}
-            className="fixed w-full top-0 bg-custom text-white shadow-md z-10">
+            className="fixed w-full top-0 bg-custom text-white shadow-md z-50">
             <div className="flex items-center justify-between md:px-8 py-3">
                 {/* Logo */}
                 <div className="flex items-center">
