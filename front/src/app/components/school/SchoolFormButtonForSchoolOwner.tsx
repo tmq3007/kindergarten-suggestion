@@ -26,7 +26,6 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
 ) => {
     const router = useRouter();
     const params = useParams();
-    const schoolId = params.id;
     const user = useSelector((state: RootState) => state.user);
 
     const [updateSchoolStatusBySchoolOwner, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusBySchoolOwnerMutation();
@@ -34,6 +33,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
 
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
+    const [activeButton, setActiveButton] = useState<string | null>(null);
 
     //Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number) => {
@@ -159,7 +159,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 5
             );
         }
-    };
+    }
     const handleSave = () => {
 
     };
@@ -177,16 +177,18 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     };
 
     const handlePublish = async () => {
+        setActiveButton("publish");
         try {
-            await updateSchoolStatusBySchoolOwner({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
+            await updateSchoolStatusBySchoolOwner( { status: 4 } ).unwrap();
             messageApi.success('School published successfully!')
         } catch (error) {
             messageApi.error("Failed to publish school. Please try again.");
         }
     };
     const handleUnpublish = async () => {
+        setActiveButton("unpublish");
         try {
-            await updateSchoolStatusBySchoolOwner({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
+            await updateSchoolStatusBySchoolOwner( { status: 5 } ).unwrap();
             messageApi.success('School unpublished successfully!')
         } catch (error) {
             messageApi.error("Failed to unpublish school. Please try again.");
@@ -194,11 +196,12 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     };
 
     const handleDelete = async () => {
+        setActiveButton("delete");
         try {
-            await updateSchoolStatusBySchoolOwner({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
-            messageApi.success('School unpublished successfully!')
+            await updateSchoolStatusBySchoolOwner( { status: 6 } ).unwrap();
+            messageApi.success('School deleted successfully!')
         } catch (error) {
-            messageApi.error("Failed to unpublish school. Please try again.");
+            messageApi.error("Failed to delete school. Please try again.");
         }
     };
 
@@ -249,7 +252,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasDeleteButton &&
                     <Button
                         htmlType="button"
-                        onClick={handleDelete}
+                        onClick={handleDelete} loading={isUpdatingStatus && activeButton === "delete"}
                         className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}
                     >
                         Delete
@@ -267,7 +270,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasPublishButton &&
                     <Button
                         htmlType="button"
-                        onClick={handlePublish}
+                        onClick={handlePublish} loading={isUpdatingStatus && activeButton === "publish"}
                         className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}
                     >
                         Publish
@@ -276,7 +279,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasUnpublishButton &&
                     <Button
                         htmlType="button"
-                        onClick={handleUnpublish}
+                        onClick={handleUnpublish} loading={isUpdatingStatus && activeButton === "unpublish"}
                         className={'bg-purple-300 text-purple-800 border-purple-900'}
                     >
                         Unpublish

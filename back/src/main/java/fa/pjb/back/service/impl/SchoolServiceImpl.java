@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
@@ -157,7 +158,7 @@ public class SchoolServiceImpl implements SchoolService {
         //Send submit emails to admins
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
             //TODO:Fix this to email
-            emailService.sendSubmitSchool("nguyendatrip123@gmail.com", newSchool.getName(), user.getUsername(), schoolDetailedLink + newSchool.getId());
+            emailService.sendSubmitSchool("nguyendatrip123@gmail.com", newSchool.getName(), user.getUsername(), schoolDetailedLink);
         }
         return schoolMapper.toSchoolDetailVO(newSchool);
     }
@@ -242,7 +243,7 @@ public class SchoolServiceImpl implements SchoolService {
      * Updates the status of a school based on the provided status code.
      **/
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     @Transactional
     public void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
@@ -269,7 +270,7 @@ public class SchoolServiceImpl implements SchoolService {
                 // Change to "Approved" status if current status is "Submitted"
                 if (school.getStatus() == 1) {
                     school.setStatus(changeSchoolStatusDTO.status());
-                    emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink + schoolID);
+                    emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink);
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -298,7 +299,7 @@ public class SchoolServiceImpl implements SchoolService {
                         so.setPublicPermission(true);
                         schoolOwnerRepository.saveAndFlush(so);
                     }
-                    emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                    emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink);
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -335,10 +336,7 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
     @Transactional
-    public void updateSchoolStatusBySchoolOwner(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
-        // Retrieve the school entity by ID, or throw an exception if not found
-        School school = schoolRepository.findById(schoolID)
-                .orElseThrow(SchoolNotFoundException::new);
+    public void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -353,17 +351,16 @@ public class SchoolServiceImpl implements SchoolService {
 
             username = user.getUsername();
 
-            publicPermission = schoolOwnerRepository.findById(user.getId()).orElseThrow().getPublicPermission();
+            publicPermission = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getPublicPermission();
 
-            ownedSchoolID = schoolOwnerRepository.findById(user.getId()).orElseThrow().getSchool().getId();
+            ownedSchoolID = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getSchool().getId();
 
         } else {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
 
-        if(ownedSchoolID != schoolID) {
-            throw new AuthenticationFailedException("You do not own this school");
-        }
+        School school = schoolRepository.findById(ownedSchoolID)
+                .orElseThrow(SchoolNotFoundException::new);
 
         switch (changeSchoolStatusDTO.status()) {
 
@@ -374,7 +371,7 @@ public class SchoolServiceImpl implements SchoolService {
                     // Change to "Published" status if current status is "Approved" or "Unpublished"
                     if (school.getStatus() == 2 || school.getStatus() == 5) {
                         school.setStatus(changeSchoolStatusDTO.status());
-                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink);
                     } else {
                         throw new InappropriateSchoolStatusException();
                     }

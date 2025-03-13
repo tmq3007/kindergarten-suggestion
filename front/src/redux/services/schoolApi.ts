@@ -271,16 +271,13 @@ export const schoolApi = createApi({
             invalidatesTags: ["School", "SchoolList"],
         }),
 
-        updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, {
-            schoolId: number;
-            changeSchoolStatusDTO: ChangeSchoolStatusDTO
-        }>({
-            query: ({schoolId, changeSchoolStatusDTO}) => ({
-                url: `/school/change-status/by-school-owner/${schoolId}`,
+        updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, ChangeSchoolStatusDTO>({
+            query: (changeSchoolStatusDTO) => ({
+                url: `/school/change-status/by-school-owner`,
                 method: 'PUT',
                 body: changeSchoolStatusDTO,
             }),
-            invalidatesTags: ["School"],
+            invalidatesTags: ["School", "SchoolList"],
         }),
     }),
 });
