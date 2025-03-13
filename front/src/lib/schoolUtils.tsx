@@ -2,7 +2,6 @@
 import {FormInstance} from "antd/es/form";
 import {UploadFile} from "antd";
 import {SchoolDTO, SchoolUpdateDTO} from "@/redux/services/schoolApi";
-import {message} from "antd";
 import React from "react";
 
 export const formatErrorMessage = (error: unknown): string | React.ReactNode => {
@@ -46,38 +45,49 @@ export const formatErrorMessage = (error: unknown): string | React.ReactNode => 
     return errorMessage;
 };
 
-export const prepareSchoolData = async (
-    form: FormInstance,
-    emailInputRef: React.RefObject<any>,
-    phoneInputRef: React.RefObject<any>,
-    messageApi: any
-): Promise<SchoolDTO | SchoolUpdateDTO | null> => {
+const convertUrlToFile = async (fileUrl: string, fileName: string = "image.jpg") => {
+
+    // Dùng proxy API để lấy ảnh từ Google Drive
+    const proxyUrl = `/api/image?url=${encodeURIComponent(fileUrl)}`;
+
     try {
-        // Validate form fields and get values
+        const response = await fetch(proxyUrl);
+        const blob = await response.blob();
+        return new File([blob], fileName, { type: blob.type });
+    } catch (error) {
+        console.error("❌ Lỗi khi tải ảnh qua proxy:", error);
+        return null;
+    }
+};
+
+
+export const prepareSchoolData = async (form: FormInstance, emailInputRef: any, phoneInputRef: any, messageApi: any) => {
+    try {
         const values = await form.validateFields();
-        // Validate email and phone using refs from SchoolForm
 
-        const isEmailValid = await emailInputRef?.current?.validateEmail();
-        const isPhoneValid = await phoneInputRef?.current?.validatePhone();
+        const fileList: UploadFile[] = form.getFieldValue('image') || [];
 
-        if (!isEmailValid || !isPhoneValid) {
-            console.log('Validation failed');
-            messageApi.error("Email or phone validation failed. Please check your inputs.");
-            return null;
-        }
-        const fileList: File[] = (values.image as UploadFile[] || [])
-            .filter((file) => file.originFileObj)
-            .map((file) => file.originFileObj as File);
+        // Chuyển tất cả ảnh thành File
+        const imagesToSend = await Promise.all(
+            fileList.map(async (file) => {
+                if (file.originFileObj) {
+                    return file.originFileObj; // Ảnh mới upload
+                } else if (file.url) {
+                    return await convertUrlToFile(file.url, file.name || "image.jpg"); // Ảnh từ database
+                }
+                return null;
+            })
+        );
+
         const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
 
-        // Prepare final data
         return {
             ...values,
-            image: fileList,
+            image: imagesToSend.filter(Boolean), // Loại bỏ giá trị null
             phone: fullPhoneNumber,
         };
     } catch (error) {
-        console.error("Form validation failed:", error);
-        return null; // Return null if validation fails
+        console.error("❌ Form validation failed:", error);
+        return null;
     }
 };

@@ -88,6 +88,20 @@ public class SchoolController {
                 .data(String.valueOf(schoolService.checkEmailExists(email)))
                 .build();
     }
+
+    @PostMapping("/check-editing-email")
+    public ApiResponse<String> checkEmailEdit(
+            @RequestParam String email,
+            @RequestParam Integer schoolId
+    ) {
+        log.info("++++++++++++++++++++++++++++++++");
+        return ApiResponse.<String>builder()
+                .code(HttpStatus.OK.value())
+                .message("Email checked!")
+                .data(String.valueOf(schoolService.checkEditingEmailExists(email, schoolId)))
+                .build();
+    }
+
     @GetMapping("/check-phone/{phone}")
     public ApiResponse<String> checkPhone(@PathVariable String phone) {
         return ApiResponse.<String>builder()

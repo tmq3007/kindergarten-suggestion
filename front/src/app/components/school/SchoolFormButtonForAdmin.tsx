@@ -172,6 +172,8 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
      */
     const handleUpdateSubmit = async () => {
         const schoolData = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi);
+        console.log('📌 Dữ liệu trường học trước khi gửi:', schoolData);
+        console.log('📸 Danh sách ảnh gửi lên:', schoolData?.image);  // In ra danh sách ảnh gửi đi
         if (!schoolData) return;
         try {
             await updateSchoolByAdmin({ id: Number(schoolId), ...schoolData }).unwrap();

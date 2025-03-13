@@ -314,7 +314,7 @@ export const {
     useAddSchoolMutation,
     useLazyCheckSchoolEmailQuery,
     useLazyCheckSchoolPhoneQuery,
-    useCheckEditSchoolEmailMutation,
+    useCheckEditSchoolEmailMutation
     useUpdateSchoolByAdminMutation,
     useUpdateSchoolStatusByAdminMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation,

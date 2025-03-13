@@ -19,6 +19,7 @@ import fa.pjb.back.repository.*;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.SchoolService;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -93,9 +94,6 @@ public class SchoolServiceImpl implements SchoolService {
         if (checkEmailExists(schoolDTO.email())) {
             throw new EmailAlreadyExistedException("This email is already in used");
         }
-//        if (checkPhoneExists(schoolDTO.phone())) {
-//            throw new PhoneExistedException("This phone is already in used");
-//        }
         School school = schoolMapper.toSchool(schoolDTO);
         List<ImageVO> imageVOList = null;
         if (schoolDTO.facilities() != null) {
@@ -163,8 +161,8 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Override
     @Transactional
+    @Override
     public SchoolDetailVO updateSchoolByAdmin(SchoolUpdateDTO schoolDTO, List<MultipartFile> images) {
         // Check if the school exists
         School school = schoolRepository.findById(schoolDTO.id())
@@ -187,18 +185,29 @@ public class SchoolServiceImpl implements SchoolService {
         }
         school.setUtilities(existingUtilities);
 
-        // Process and update images if new images are uploaded
-        if (images != null && !images.isEmpty()) {
-            List<Media> media = mediaRepository.getAllBySchool(school); // Get old images
-            log.info(media.toString());
-
-            for (Media m : media){
-                ImageVO temp = imageService.deleteUploadedImage(m.getCloudId());
-                log.info(temp.toString());
+        // ✅ Bước 1: Xóa tất cả ảnh cũ
+        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+        if (!oldMedias.isEmpty()) {
+            for (Media media : oldMedias) {
+                // Xóa ảnh khỏi Google Drive
+                ImageVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
+                log.info("🗑 Deleted Image from Google Drive: {}", deleteResponse);
             }
-            mediaRepository.deleteAllBySchool(school);
 
-            // Validate and upload new images
+            // Xóa ảnh khỏi database bằng cách cập nhật danh sách ảnh về rỗng
+            school.getImages().clear();
+            schoolRepository.save(school);
+
+            // Xóa ảnh khỏi database bằng repository
+            mediaRepository.deleteAllBySchool(school);
+            log.info("🗑 Deleted all images from database for School ID={}", school.getId());
+        }
+
+        // ✅ Bước 2: Xử lý ảnh mới nếu có
+        if (images != null && !images.isEmpty()) {
+            log.info("📥 Uploading new images...");
+
+            // Kiểm tra định dạng và dung lượng file
             for (MultipartFile file : images) {
                 if (file.getSize() > MAX_FILE_SIZE) {
                     throw new InvalidFileFormatException("File cannot exceed 5MB");
@@ -230,6 +239,7 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(school);
     }
 
+
     @Override
     public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam) {
         List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwners(searchParam, ERole.ROLE_SCHOOL_OWNER);
@@ -260,7 +270,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId, String name) {
         School school = schoolRepository.findSchoolByUserId(userId, name)
-            .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         return schoolMapper.toSchoolDetailVO(school);
     }
 
@@ -425,6 +435,11 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkEmailExists(String email) {
         return schoolRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean checkEditingEmailExists(String email, Integer schoolId) {
+        return schoolRepository.existsByEmailExcept(email, schoolId);
     }
 
     @Override
