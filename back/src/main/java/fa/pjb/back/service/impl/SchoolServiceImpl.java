@@ -1,23 +1,24 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
-import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
-import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
 import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
-import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
+import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,16 +26,18 @@ import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
@@ -167,6 +170,7 @@ public class SchoolServiceImpl implements SchoolService {
                 }
             }
 
+            //Upload images
             try {
                 imageVOList = imageService.uploadListImages(
                         imageService.convertMultiPartFileToFile(image),
@@ -197,42 +201,41 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Override
     @Transactional
+    @Override
     public SchoolDetailVO updateSchoolByAdmin(SchoolUpdateDTO schoolDTO, List<MultipartFile> images) {
         // Check if the school exists
         School school = schoolRepository.findById(schoolDTO.id())
                 .orElseThrow(SchoolNotFoundException::new);
-
         // Update entity fields from DTO
         schoolMapper.updateSchoolFromDto(schoolDTO, school);
-
         // Update facilities
         Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
         if (existingFacilities.size() != schoolDTO.facilities().size()) {
             throw new InvalidDataException("Some facilities do not exist in the database");
         }
         school.setFacilities(existingFacilities);
-
         // Update utilities
         Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
         if (existingUtilities.size() != schoolDTO.utilities().size()) {
             throw new InvalidDataException("Some utilities do not exist in the database");
         }
         school.setUtilities(existingUtilities);
-
-        // Process and update images if new images are uploaded
-        if (images != null && !images.isEmpty()) {
-            List<Media> media = mediaRepository.getAllBySchool(school); // Get old images
-            log.info(media.toString());
-
-            for (Media m : media) {
-                ImageVO temp = imageService.deleteUploadedImage(m.getCloudId());
-                log.info(temp.toString());
+        // Delete old images
+        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+        if (!oldMedias.isEmpty()) {
+            for (Media media : oldMedias) {
+                // Delete images from Google Drive
+                ImageVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
+                log.info("🗑 Deleted Image from Google Drive: {}", deleteResponse);
             }
+            school.getImages().clear();
+            schoolRepository.save(school);
             mediaRepository.deleteAllBySchool(school);
-
-            // Validate and upload new images
+        }
+        // Handle new uploaded images
+        if (images != null && !images.isEmpty()) {
+            // Check format & size of file
             for (MultipartFile file : images) {
                 if (file.getSize() > MAX_FILE_SIZE) {
                     throw new InvalidFileFormatException("File cannot exceed 5MB");
@@ -246,7 +249,6 @@ public class SchoolServiceImpl implements SchoolService {
                     throw new UploadFileException("Error processing file: " + e.getMessage());
                 }
             }
-
             try {
                 List<ImageVO> imageVOList = imageService.uploadListImages(
                         imageService.convertMultiPartFileToFile(images),
@@ -258,11 +260,11 @@ public class SchoolServiceImpl implements SchoolService {
                 throw new UploadFileException("Error uploading images: " + e.getMessage());
             }
         }
-
         // Save the updated school data
         schoolRepository.save(school);
         return schoolMapper.toSchoolDetailVO(school);
     }
+
 
     @Override
     public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool) {
@@ -312,7 +314,7 @@ public class SchoolServiceImpl implements SchoolService {
      * Updates the status of a school based on the provided status code.
      **/
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     @Transactional
     public void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
@@ -339,7 +341,7 @@ public class SchoolServiceImpl implements SchoolService {
                 // Change to "Approved" status if current status is "Submitted"
                 if (school.getStatus() == 1) {
                     school.setStatus(changeSchoolStatusDTO.status());
-                    emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink + schoolID);
+                    emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink);
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -368,7 +370,7 @@ public class SchoolServiceImpl implements SchoolService {
                         so.setPublicPermission(true);
                         schoolOwnerRepository.saveAndFlush(so);
                     }
-                    emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                    emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink);
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -405,10 +407,7 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
     @Transactional
-    public void updateSchoolStatusBySchoolOwner(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
-        // Retrieve the school entity by ID, or throw an exception if not found
-        School school = schoolRepository.findById(schoolID)
-                .orElseThrow(SchoolNotFoundException::new);
+    public void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -416,16 +415,23 @@ public class SchoolServiceImpl implements SchoolService {
 
         Boolean publicPermission;
 
+        int ownedSchoolID;
+
         // Check if principal is an instance of User entity
         if (principal instanceof User user) {
 
             username = user.getUsername();
 
-            publicPermission = schoolOwnerRepository.findById(user.getId()).orElseThrow().getPublicPermission();
+            publicPermission = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getPublicPermission();
+
+            ownedSchoolID = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getSchool().getId();
 
         } else {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
+
+        School school = schoolRepository.findById(ownedSchoolID)
+                .orElseThrow(SchoolNotFoundException::new);
 
         switch (changeSchoolStatusDTO.status()) {
 
@@ -436,7 +442,7 @@ public class SchoolServiceImpl implements SchoolService {
                     // Change to "Published" status if current status is "Approved" or "Unpublished"
                     if (school.getStatus() == 2 || school.getStatus() == 5) {
                         school.setStatus(changeSchoolStatusDTO.status());
-                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink + schoolID);
+                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink);
                     } else {
                         throw new InappropriateSchoolStatusException();
                     }
@@ -469,6 +475,11 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkEmailExists(String email) {
         return schoolRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean checkEditingEmailExists(String email, Integer schoolId) {
+        return schoolRepository.existsByEmailExcept(email, schoolId);
     }
 
     @Override

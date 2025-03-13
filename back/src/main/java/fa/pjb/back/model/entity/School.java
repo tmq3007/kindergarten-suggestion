@@ -98,7 +98,7 @@ public class School {
     @ColumnDefault("CURRENT_DATE")
     private LocalDate postedDate;
 
-    @OneToMany(mappedBy = "school",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "school",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> images;
 
     @ManyToMany

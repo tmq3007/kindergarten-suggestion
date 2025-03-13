@@ -19,15 +19,17 @@ import { InboxOutlined, MailOutlined, PhoneOutlined, UserOutlined } from "@ant-d
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { SchoolOwnerVO } from '@/redux/services/SchoolOwnerApi';
+import {formatPhoneNumber} from "@/lib/phoneUtils";
 
-const { Option } = Select;
-const { Panel } = Collapse;
+const {Option} = Select;
+const {Panel} = Collapse;
 
 interface SchoolFieldType {
     name: string;
     schoolType: number;
     website?: string;
     status: number;
+    // Address Fields
     province: string;
     district: string;
     ward: string;
@@ -36,11 +38,14 @@ interface SchoolFieldType {
     phone: string;
     receivingAge: number;
     educationMethod: number;
+    // Fee Range
     feeFrom: number;
     feeTo: number;
+    // Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
-    description?: string;
+    description?: string; // School introduction
+    // File Upload
     image?: UploadFile[];
     schoolOwners?: string[]; // Changed to string[] to match Select values
 }
@@ -62,27 +67,30 @@ interface SchoolFormFields {
     imageList?: { url: string; filename: string }[];
     actionButtons?: React.ReactNode;
     triggerCheckEmail: any;
+    schoolId?: number;
     isEdit: boolean
 }
 
 const SchoolForm: React.FC<SchoolFormFields> = ({
-    isReadOnly,
-    form: externalForm,
-    hasCancelButton,
-    hasSaveButton,
-    hasCreateSubmitButton,
-    hasUpdateSubmitButton,
-    hasDeleteButton,
-    hasEditButton,
-    hasRejectButton,
-    hasApproveButton,
-    hasPublishButton,
-    hasUnpublishButton,
-    hideImageUpload = false,
-    actionButtons,
-    triggerCheckEmail,
-    isEdit,
-}) => {
+                                                    isReadOnly,
+                                                    form: externalForm,
+                                                    hasCancelButton,
+                                                    hasSaveButton,
+                                                    hasCreateSubmitButton,
+                                                    hasUpdateSubmitButton,
+                                                    hasDeleteButton,
+                                                    hasEditButton,
+                                                    hasRejectButton,
+                                                    hasApproveButton,
+                                                    hasPublishButton,
+                                                    hasUnpublishButton,
+                                                    hideImageUpload = false,
+                                                    imageList = [],
+                                                    actionButtons,
+                                                    triggerCheckEmail,
+                                                    schoolId,
+                                                    isEdit,
+                                                }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
@@ -90,6 +98,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
+
     const [schoolOptions, setSchoolOptions] = useState<{ label: string; value: string }[]>([]);
     const [ownerOptions, setOwnerOptions] = useState<{ label: React.ReactNode; value: string; owner: SchoolOwnerVO }[]>([]);
 
@@ -250,12 +259,23 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             />
                         </Form.Item>
 
-                        <AddressInput isReadOnly={isReadOnly} form={form} />
-                        <EmailInput isReadOnly={isReadOnly} ref={emailInputRef} triggerCheckEmail={triggerCheckEmail} />
+                        <AddressInput
+                            isReadOnly={isReadOnly}
+                            form={form}
+                        />
+
+                        <EmailInput
+                            isReadOnly={isReadOnly}
+                            ref={emailInputRef}
+                            triggerCheckEmail={triggerCheckEmail}
+                            schoolId={schoolId}
+                        />
                         <PhoneInput
+                            onPhoneChange={(phone) => form.setFieldsValue({phone})}
+                            initialCountryCode={isEdit ? (externalForm.countryCode || '+84') : undefined}
+                            form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
-                            onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                         />
 
                         <Form.Item
@@ -274,7 +294,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="educationMethod"
                             label="Education method"
-                            rules={[{ required: true, message: 'Please select education method' }]}
+                            rules={[{required: true, message: 'Please select education method'}]}
                         >
                             <Select
                                 placeholder="Select a category..."
@@ -289,7 +309,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 <Form.Item
                                     name="feeFrom"
                                     label="From"
-                                    rules={[{ required: true, message: "Please select fee from" }]}
+                                    rules={[{required: true, message: "Please select fee from"}]}
                                 >
                                     <InputNumber
                                         placeholder="From"
@@ -299,9 +319,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         onChange={(value) => {
                                             const feeTo = form.getFieldValue("feeTo");
                                             if (feeTo !== undefined && value !== null && value > feeTo) {
-                                                form.setFieldsValue({ feeTo: value });
+                                                form.setFieldsValue({feeTo: value});
                                             }
-                                            form.setFieldsValue({ feeFrom: value });
+                                            form.setFieldsValue({feeFrom: value});
                                         }}
                                         readOnly={isReadOnly}
                                     />
@@ -311,8 +331,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     label="To"
                                     dependencies={["feeFrom"]}
                                     rules={[
-                                        { required: true, message: "Please select fee to" },
-                                        ({ getFieldValue }) => ({
+                                        {required: true, message: "Please select fee to"},
+                                        ({getFieldValue}) => ({
                                             validator(_, value) {
                                                 const feeFrom = getFieldValue("feeFrom");
                                                 if (!value || feeFrom <= value) {
@@ -326,9 +346,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     <InputNumber
                                         placeholder="To"
                                         className="w-full"
+
                                         min={form.getFieldValue("feeFrom") || 0}
                                         step={100000}
-                                        onChange={(value) => form.setFieldsValue({ feeTo: value })}
+                                        onChange={(value) => form.setFieldsValue({feeTo: value})}
                                         readOnly={isReadOnly}
                                     />
                                 </Form.Item>
@@ -338,6 +359,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="schoolOwners"
                             label="School Owners"
+                            // rules={[{required: true, message: 'Please select a school owner'}]}
                         >
                             <Select
                                 showSearch
@@ -367,6 +389,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             ? "No owners found"
                                             : "Please select a school first"
                                 }
+                                onChange={(newValue) => form.setFieldsValue({schoolOwners: newValue})}
                             />
                         </Form.Item>
 
@@ -384,7 +407,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 value={facilities}
                                 className={clsx(
                                     "grid grid-cols-3 gap-2 custom-add-school-select",
-                                    { "pointer-events-none": isReadOnly }
+                                    {"pointer-events-none": isReadOnly}
                                 )}
                             />
                         </Form.Item>
@@ -395,7 +418,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 value={utilities}
                                 className={clsx(
                                     "grid grid-cols-3 gap-2 custom-add-school-select",
-                                    { "pointer-events-none": isReadOnly }
+                                    {"pointer-events-none": isReadOnly}
                                 )}
                             />
                         </Form.Item>
@@ -404,10 +427,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 display: flex;
                                 align-items: center;
                             }
+
                             .custom-add-school-select .ant-checkbox-inner {
                                 width: 24px !important;
                                 height: 24px !important;
                             }
+
                             .custom-add-school-select .ant-checkbox-input {
                                 transform: scale(2);
                             }
@@ -419,22 +444,26 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         >
                             <MyEditor
                                 description={form.getFieldValue("description") || undefined}
-                                onChange={(value) => form.setFieldsValue({ description: value })}
+                                onChange={(value) => form.setFieldsValue({description: value})}
                                 isReadOnly={isReadOnly}
                             />
                         </Form.Item>
-
-                        <Form.Item
-                            label="School image"
-                            name="image"
-                            valuePropName="fileList"
-                            getValueFromEvent={(e) => e?.fileList || []}
-                        >
-                            <ImageUpload form={form} fieldName="image" maxCount={10} accept="image/*" maxSizeMB={5} />
+                        <Form.Item label="School image" name="image" valuePropName="fileList"
+                                   getValueFromEvent={(e) => e?.fileList || []}>
+                            <ImageUpload
+                                form={form}
+                                fieldName="image"
+                                maxCount={10}
+                                accept="image/*"
+                                maxSizeMB={5}
+                                hideImageUpload={hideImageUpload}
+                                imageList={imageList}
+                            />
                         </Form.Item>
                     </div>
                 </div>
 
+                {/* Thêm Form.Item cho các nút ở đáy form */}
                 <Form.Item style={{ textAlign: 'center', marginTop: '16px' }}>
                     {actionButtons}
                     <SchoolFormButton

@@ -1,10 +1,10 @@
 'use client';
 
 import { Image, Select } from 'antd';
-import SchoolForm from '@/app/components/school/SchoolForm';
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import React from "react";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import SchoolForm from "@/app/components/school/SchoolForm";
 import { useLazyCheckSchoolEmailQuery } from '@/redux/services/schoolApi';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';

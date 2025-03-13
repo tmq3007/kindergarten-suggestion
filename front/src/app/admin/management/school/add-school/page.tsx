@@ -21,6 +21,7 @@ const page = () => {
             <SchoolManageTitle title={'Add new school'}/>
             <div className='bg-white pt-1 !mb-10 rounded-lg'>
                 <SchoolForm
+                    isEdit={false}
                     hasCancelButton={true}
                     hasSaveButton={true}
                     hasCreateSubmitButton={true}

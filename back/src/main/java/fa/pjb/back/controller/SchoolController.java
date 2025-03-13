@@ -84,6 +84,20 @@ public class SchoolController {
                 .data(String.valueOf(schoolService.checkEmailExists(email)))
                 .build();
     }
+
+    @PostMapping("/check-editing-email")
+    public ApiResponse<String> checkEmailEdit(
+            @RequestParam String email,
+            @RequestParam Integer schoolId
+    ) {
+        log.info("++++++++++++++++++++++++++++++++");
+        return ApiResponse.<String>builder()
+                .code(HttpStatus.OK.value())
+                .message("Email checked!")
+                .data(String.valueOf(schoolService.checkEditingEmailExists(email, schoolId)))
+                .build();
+    }
+
     @GetMapping("/check-phone/{phone}")
     public ApiResponse<String> checkPhone(@PathVariable String phone) {
         return ApiResponse.<String>builder()
@@ -126,10 +140,10 @@ public class SchoolController {
                 .build();
     }
 
-    @PutMapping("/change-status/by-school-owner/{schoolId}")
-    public ApiResponse<?> updateSchoolStatusBySchoolOwner(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+    @PutMapping("/change-status/by-school-owner")
+    public ApiResponse<?> updateSchoolStatusBySchoolOwner(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
-        schoolService.updateSchoolStatusBySchoolOwner(schoolId, changeSchoolStatusDTO);
+        schoolService.updateSchoolStatusBySchoolOwner(changeSchoolStatusDTO);
 
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())

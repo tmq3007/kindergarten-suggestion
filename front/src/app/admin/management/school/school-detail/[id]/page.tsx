@@ -1,10 +1,9 @@
 "use client";
 
-import { Form, message } from "antd";
-import { forbidden, useParams, useRouter } from "next/navigation";
+import {Form} from "antd";
+import {forbidden, useParams, useRouter} from "next/navigation";
 import Link from "next/link";
-import React, { useEffect } from "react";
-import SchoolForm from "@/app/components/school/SchoolForm";
+import React, {useEffect} from "react";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
@@ -19,6 +18,7 @@ import {useApproveSchoolMutation, useGetSchoolByIdQuery} from "@/redux/services/
 import {RootState} from '@/redux/store';
 import {useSelector} from "react-redux";
 import {formatPhoneNumber} from "@/lib/phoneUtils";
+import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 
 export default function SchoolDetail() {
     const params = useParams();
@@ -37,6 +37,7 @@ export default function SchoolDetail() {
         if (school) {
             console.log('school.imageList in SchoolDetail:', school.imageList);
 
+            //assign value in string for education and receiving age
             const validEducationMethod = EDUCATION_METHOD_OPTIONS.find(opt => opt.value === String(school.educationMethod))?.value || "0";
             const validReceivingAge = CHILD_RECEIVING_AGE_OPTIONS.find(opt => opt.value === String(school.receivingAge))?.value || "0";
 
@@ -58,6 +59,7 @@ export default function SchoolDetail() {
                 status: school.status || 0,
             });
 
+            //mapping facilities and utilities
             const facilityValues: string[] = school.facilities?.map((facility) => String(facility.fid)) || [];
             form.setFieldsValue({ facilities: facilityValues });
 
@@ -66,7 +68,7 @@ export default function SchoolDetail() {
         }
     }, [school, form]);
 
-    // Kiểm tra role Admin và status Saved
+    // Check role and status
     if (role === ROLES.ADMIN && school?.status === SCHOOL_STATUS.Saved) {
         forbidden();
     }
@@ -100,7 +102,7 @@ export default function SchoolDetail() {
             />
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!} />
 
-            {/* Dòng chữ "View Rating & Feedback" được căn sang bên phải */}
+            {/*View Rating and Feedback Link*/}
             <div className="my-4 flex justify-end">
                 <Link href={`/admin/management/school/rating-feedback/${schoolId}`} className="text-blue-500 hover:underline">
                     View Rating & Feedback
@@ -108,31 +110,7 @@ export default function SchoolDetail() {
             </div>
 
             <div className="read-only-form email-locked">
-                <SchoolForm
-                    isReadOnly={true}
-                    form={form}
-                    hideImageUpload={true}
-                    imageList={school.imageList || []}
-                    hasCancelButton={false}
-                    hasDeleteButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
-                        school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasEditButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
-                        school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
-                    hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
-                    hasPublishButton={
-                        school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
-                />
+                <SchoolFormWrapper form={form} school={school}/>
             </div>
         </div>
     );

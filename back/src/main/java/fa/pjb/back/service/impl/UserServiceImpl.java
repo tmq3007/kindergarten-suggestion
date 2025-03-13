@@ -182,22 +182,7 @@ public class UserServiceImpl implements UserService {
                 .dob(userCreateDTO.dob())
                 .email(userCreateDTO.email())
                 .build();
-        if(Objects.equals(userCreateDTO.role(), "ROLE_PARENT")) {
-            user.setRole(ERole.ROLE_PARENT);
-
-            // Create new Parent
-            Parent newParent = Parent.builder()
-                    .user(user)
-                     .district("")
-                    .ward("")
-                    .province("")
-                    .street("")
-                    .media(null)
-                    .build();
-
-            // Save Parent to database
-            parentRepository.save(newParent);
-        } else if(Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
+       if(Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
             user.setRole(ERole.ROLE_SCHOOL_OWNER);
 
             // Create SchoolOwner

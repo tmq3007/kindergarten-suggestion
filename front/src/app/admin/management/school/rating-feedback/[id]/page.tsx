@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, List, Typography, Avatar, Breadcrumb, Button, Spin, DatePicker, Select } from "antd";
+import { Card, List, Typography, Avatar, Button, DatePicker, Select } from "antd";
 import { StarFilled, SyncOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
     Cell,
@@ -20,12 +19,13 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 import { ReviewVO, useGetReviewBySchoolIdQuery } from "@/redux/services/reviewApi";
 import NoData from "../NoData";
-import {useParams} from "next/navigation";
+import { useParams } from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
 
 const { RangePicker } = DatePicker;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface ApiError {
     data: {
@@ -39,11 +39,15 @@ interface ReviewWithDayjs extends Omit<ReviewVO, "receiveDate"> {
     receiveDate: Dayjs;
 }
 
+interface EnhancedReview extends ReviewWithDayjs {
+    reviewAverage: number;
+}
+
 const RatingsDashboard = () => {
     const params = useParams();
     const schoolId = Number(params.id as string);
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
-    const [filteredReviews, setFilteredReviews] = useState<ReviewWithDayjs[]>([]);
+    const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
 
     // Memoize query parameters for the API call
@@ -58,15 +62,27 @@ const RatingsDashboard = () => {
 
     const { data, isLoading, error, refetch } = useGetReviewBySchoolIdQuery(queryParams);
 
-    // Transform reviews data to use Dayjs for receiveDate
-    const reviews: ReviewWithDayjs[] = useMemo(
+    // Transform reviews data to use Dayjs for receiveDate and calculate reviewAverage
+    const reviews: EnhancedReview[] = useMemo(
         () =>
             data?.data?.map((review) => ({
                 ...review,
                 receiveDate: dayjs(review.receiveDate).isValid() ? dayjs(review.receiveDate) : dayjs(),
+                reviewAverage: (
+                    (review.learningProgram || 0) +
+                    (review.facilitiesAndUtilities || 0) +
+                    (review.extracurricularActivities || 0) +
+                    (review.teacherAndStaff || 0) +
+                    (review.hygieneAndNutrition || 0)
+                ) / 5,
             })) || [],
         [data]
     );
+
+    // Sort reviews by reviewAverage in descending order
+    const sortedReviews = useMemo(() => {
+        return [...reviews].sort((a, b) => b.reviewAverage - a.reviewAverage);
+    }, [reviews]);
 
     // Handle date range change
     const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
@@ -160,43 +176,42 @@ const RatingsDashboard = () => {
 
     // Update filtered reviews when reviews change
     useEffect(() => {
-        setFilteredReviews(reviews);
-    }, [reviews]);
+        setFilteredReviews(sortedReviews);
+    }, [sortedReviews]);
 
     // Filter reviews by rating
     const filterFeedbackByRate = (selectedRates: string[]) => {
         setFilteredReviews(
             selectedRates.length === 0
-                ? reviews
-                : reviews.filter((review) => {
-                    return metrics.totalAverage >= parseFloat(selectedRates[0])  ;
+                ? sortedReviews // If no rates selected, show all sorted reviews
+                : sortedReviews.filter((review) => {
+                    const reviewRating = Math.round(review.reviewAverage);
+                    return selectedRates.includes(reviewRating.toString());
                 })
         );
     };
 
+    // Limit displayed reviews based on showAll state
+    const displayedReviews = showAll ? filteredReviews : filteredReviews.slice(0, 5);
+
     if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Spin size="large" tip="Loading reviews..." />
-            </div>
-        );
+        return <RatingSkeleton />;
     }
 
     if (error) {
         const errorData = (error as ApiError)?.data;
         if (errorData?.code === "1300" && errorData?.message === "Review not found") {
             return (
-
                 <div className="min-h-screen bg-gray-50 p-6">
                     <MyBreadcrumb
                         paths={[
-                            { label: 'School Management', href: '/admin/management/school/school-list' },
-                            { label: 'School List', href: '/admin/management/school/school-list' },
-                            { label: 'School Detail', href:`/admin/management/school/school-detail/${schoolId}` },
-                            { label: 'Ratings & Feedback'},
+                            { label: "School Management", href: "/admin/management/school/school-list" },
+                            { label: "School List", href: "/admin/management/school/school-list" },
+                            { label: "School Detail", href: `/admin/management/school/school-detail/${schoolId}` },
+                            { label: "Ratings & Feedback" },
                         ]}
                     />
-                    <SchoolManageTitle title={'Ratings & Feedback'}/>
+                    <SchoolManageTitle title={"Ratings & Feedback"} />
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -218,19 +233,17 @@ const RatingsDashboard = () => {
         );
     }
 
-    const displayedReviews = showAll ? filteredReviews : filteredReviews.slice(0, 5);
-
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <MyBreadcrumb
                 paths={[
-                    { label: 'School Management', href: '/admin/management/school/school-list' },
-                    { label: 'School List', href: '/admin/management/school/school-list' },
-                    { label: 'School Detail', href:`/admin/management/school/school-detail/${schoolId}` },
-                    { label: 'Ratings & Feedback'},
+                    { label: "School Management", href: "/admin/management/school/school-list" },
+                    { label: "School List", href: "/admin/management/school/school-list" },
+                    { label: "School Detail", href: `/admin/management/school/school-detail/${schoolId}` },
+                    { label: "Ratings & Feedback" },
                 ]}
             />
-            <SchoolManageTitle title={'Ratings & Feedback'}/>
+            <SchoolManageTitle title={"Ratings & Feedback"} />
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -339,14 +352,18 @@ const RatingsDashboard = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     whileHover={{
-                                        scale: 1.01,  // Tăng scale hơn một chút để cảm giác nổi bật hơn
-                                       boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",  // Tạo bóng để làm nổi bật
-                                        transition: { duration: 0.3, ease: "easeInOut" } // Mượt mà hơn khi hover
+                                        scale: 1.01,
+                                        boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
+                                        transition: { duration: 0.3, ease: "easeInOut" },
                                     }}
                                 >
-                                    <List.Item className={'!px-3'}>
+                                    <List.Item className="!px-3">
                                         <List.Item.Meta
-                                            avatar={<Avatar src={item.parentImage}  className="bg-blue-500">{item.parentImage || "A"}</Avatar>}
+                                            avatar={
+                                                <Avatar src={item.parentImage} className="bg-blue-500">
+                                                    {item.parentImage || "A"}
+                                                </Avatar>
+                                            }
                                             title={
                                                 <div className="flex justify-between items-center">
                                                     <Text strong>{item.feedback || "No feedback provided"}</Text>
@@ -361,7 +378,7 @@ const RatingsDashboard = () => {
                                                 <div className="flex items-center gap-2">
                                                     <Text type="secondary">{item.parentName || "Anonymous"}</Text>
                                                     <div className="flex">
-                                                        {[...Array(Math.floor(metrics.totalAverage || 0))].map((_, i) => (
+                                                        {[...Array(Math.floor(item.reviewAverage || 0))].map((_, i) => (
                                                             <StarFilled key={i} className="text-yellow-400 text-sm" />
                                                         ))}
                                                     </div>

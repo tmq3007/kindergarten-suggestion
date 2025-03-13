@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -114,7 +115,7 @@ class ReviewServiceImplTest {
         List<Review> reviews = List.of(testReview);
         List<ReviewVO> expectedVOs = List.of(testReviewVO);
 
-        when(reviewRepository.getTop4RecentFiveStarFeedbacks()).thenReturn(reviews);
+        when(reviewRepository.getTop4RecentFiveStarFeedbacks(Pageable.ofSize(4))).thenReturn(reviews);
         when(reviewMapper.toReviewVOList(reviews)).thenReturn(expectedVOs);
 
         // Act
@@ -124,20 +125,20 @@ class ReviewServiceImplTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(expectedVOs, result);
-        verify(reviewRepository).getTop4RecentFiveStarFeedbacks();
+        verify(reviewRepository).getTop4RecentFiveStarFeedbacks(Pageable.ofSize(4));
         verify(reviewMapper).toReviewVOList(reviews);
     }
 
     @Test
     void getTop4RecentFiveStarFeedbacks_emptyResult_throwsException() {
         // Arrange
-        when(reviewRepository.getTop4RecentFiveStarFeedbacks())
+        when(reviewRepository.getTop4RecentFiveStarFeedbacks(Pageable.ofSize(4)))
                 .thenReturn(Collections.emptyList());
 
         // Act & Assert
         assertThrows(ReviewNotFoundException.class, () ->
                 reviewService.getTop4RecentFiveStarFeedbacks());
-        verify(reviewRepository).getTop4RecentFiveStarFeedbacks();
+        verify(reviewRepository).getTop4RecentFiveStarFeedbacks(Pageable.ofSize(4));
         verifyNoInteractions(reviewMapper);
     }
 }

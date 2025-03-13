@@ -28,6 +28,7 @@ import ProfileSidebar from "@/app/components/user/ProfileSideBar";
 import UserFormSkeleton from "@/app/components/skeleton/UserFormSkeleton";
 import background from "@public/background2.jpg";
 import {handleDistrictChange, handleProvinceChange, handleWardChange} from "@/lib/addressUtils";
+import { div } from 'framer-motion/client';
 
 const {Option} = Select;
 const {TabPane} = Tabs;
@@ -229,7 +230,7 @@ const Profile = () => {
             }}
             className="min-h-screen container mt-14  bg-gray-100">
             {contextHolder}
-            <div className="container mx-auto mt-10  px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="container mx-auto mt-10  px-4 py-14 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Sidebar Column */}
                 <div className="col-span-1  ">
                     <div className=" bg-white rounded-lg shadow-md p-6 h-full">

@@ -30,6 +30,7 @@ interface SchoolVO {
     posted_date: string;
 }
 
+//handle status type
 const getStatusText = (status: number) => {
     switch (status) {
         case 0:
@@ -57,7 +58,6 @@ export default function SchoolList() {
     const pageSize = 10;
     const router = useRouter();
 
-    // Lấy role và userId từ Redux store
     const role = useSelector((state: RootState) => state.user?.role);
     const userIdString = useSelector((state: RootState) => state.user?.id);
     const userId = userIdString ? parseInt(userIdString as string) : null;
@@ -67,12 +67,14 @@ export default function SchoolList() {
     const [filteredSchools, setFilteredSchools] = useState<SchoolVO[]>([]);
     const [totalElements, setTotalElements] = useState(0);
 
+    //check login
     if (!userId) {
         console.warn("No userId found in Redux store, redirecting to login");
         router.push("/login");
         return null;
     }
 
+    //show out notification
     const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
         notificationApi[type]({
             message,
@@ -81,7 +83,8 @@ export default function SchoolList() {
         });
     };
 
-    const {data, isLoading, error} = useGetSchoolListQuery({
+    //get all school list
+    const { data, isLoading, error } = useGetSchoolListQuery({
         page: 1,
         size: 1000,
         name: searchText || undefined,
@@ -99,11 +102,12 @@ export default function SchoolList() {
         }
     }, [error, router]);
 
+    //filter school list (admin can't view saved school status = 0 & 6)
     useEffect(() => {
         const schools: SchoolVO[] = data?.data?.content || [];
         console.log("Original schools:", schools);
 
-        const filtered = schools.filter((school) => school.status !== 0);
+        const filtered = schools.filter((school) => school.status !== 0 && school.status !== 6);
         console.log("Filtered schools:", filtered);
 
         setAllSchools(schools);
@@ -250,17 +254,17 @@ export default function SchoolList() {
                 ]}
             />
             <SchoolManageTitle title={"School List"}/>
-            <div className="bg-white p-5 rounded-lg">
+            <div className="bg-white p-5 rounded-lg h-screen">
                 <div className="flex justify-between items-center mb-4">
                     <Input
                         placeholder="Search by school name"
-                        prefix={<SearchOutlined/>}
+                        prefix={<SearchOutlined />}
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                         style={{maxWidth: "300px", width: "100%"}}
                     />
                     <Link href="/admin/management/school/add-school">
-                        <Button type="primary" icon={<PlusOutlined/>}>
+                        <Button type="primary" icon={<PlusOutlined />}>
                             Add School
                         </Button>
                     </Link>
@@ -270,6 +274,7 @@ export default function SchoolList() {
                     columns={columns}
                     dataSource={tableData}
                     loading={isLoading}
+                    scroll={{ x: "max-content" }}
                     pagination={{
                         current: page,
                         pageSize,
@@ -278,7 +283,7 @@ export default function SchoolList() {
                         position: ["bottomCenter"],
                         responsive: true,
                     }}
-                    locale={{emptyText: error ? "Error loading data" : "No results found"}}
+                    locale={{ emptyText: error ? "Error loading data" : "No results found" }}
                     rowClassName={getRowClassName}
                 />
             </div>

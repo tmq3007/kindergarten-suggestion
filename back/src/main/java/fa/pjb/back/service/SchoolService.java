@@ -25,9 +25,11 @@ public interface SchoolService {
 
     void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
-    void updateSchoolStatusBySchoolOwner(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
+    void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
     boolean checkEmailExists(String email);
+
+    boolean checkEditingEmailExists(String email, Integer schoolId);
 
     boolean checkPhoneExists(String phone);
 

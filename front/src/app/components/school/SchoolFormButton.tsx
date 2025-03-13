@@ -1,10 +1,10 @@
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { ROLES } from "@/lib/constants";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
+import {ROLES} from "@/lib/constants";
 import SchoolFormButtonForAdmin from "@/app/components/school/SchoolFormButtonForAdmin";
-import { FormInstance } from "antd/es/form";
+import {FormInstance} from "antd/es/form";
 import SchoolFormButtonForSchoolOwner from "@/app/components/school/SchoolFormButtonForSchoolOwner";
-import {Country} from "@/redux/services/registerApi";
+import React from "react";
 
 export interface ButtonGroupProps {
     form: FormInstance;
