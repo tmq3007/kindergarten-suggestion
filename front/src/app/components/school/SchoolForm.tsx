@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile} from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile, Image } from 'antd';
 
 import MyEditor from "@/app/components/common/MyEditor";
 import {ExpectedSchool, useLazyCheckSchoolEmailQuery, useSearchExpectedSchoolQuery} from '@/redux/services/schoolApi';
@@ -21,8 +21,8 @@ import clsx from "clsx";
 import {InboxOutlined} from "@ant-design/icons";
 import {formatPhoneNumber} from "@/lib/phoneUtils";
 
-const {Option} = Select;
-const {Panel} = Collapse;
+const { Option } = Select;
+const { Panel } = Collapse;
 
 interface SchoolFieldType {
     name: string;
@@ -191,7 +191,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="receivingAge"
                             label="Child receiving age"
-                            rules={[{required: true, message: 'Please select age range'}]}
+                            rules={[{ required: true, message: 'Please select age range' }]}
                         >
                             <Select
                                 placeholder="Select a category..."
@@ -204,7 +204,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="educationMethod"
                             label="Education method"
-                            rules={[{required: true, message: 'Please select education method'}]}
+                            rules={[{ required: true, message: 'Please select education method' }]}
                         >
                             <Select
                                 placeholder="Select a category..."
@@ -219,7 +219,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 <Form.Item
                                     name="feeFrom"
                                     label="From"
-                                    rules={[{required: true, message: "Please select fee from"}]}
+                                    rules={[{ required: true, message: "Please select fee from" }]}
                                 >
                                     <InputNumber
                                         placeholder="From"
@@ -229,9 +229,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         onChange={(value) => {
                                             const feeTo = form.getFieldValue("feeTo");
                                             if (feeTo !== undefined && value !== null && value > feeTo) {
-                                                form.setFieldsValue({feeTo: value});
+                                                form.setFieldsValue({ feeTo: value });
                                             }
-                                            form.setFieldsValue({feeFrom: value});
+                                            form.setFieldsValue({ feeFrom: value });
                                         }}
                                         readOnly={isReadOnly}
                                     />
@@ -241,8 +241,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     label="To"
                                     dependencies={["feeFrom"]}
                                     rules={[
-                                        {required: true, message: "Please select fee to"},
-                                        ({getFieldValue}) => ({
+                                        { required: true, message: "Please select fee to" },
+                                        ({ getFieldValue }) => ({
                                             validator(_, value) {
                                                 const feeFrom = getFieldValue("feeFrom");
                                                 if (!value || feeFrom <= value) {
@@ -259,7 +259,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
                                         min={form.getFieldValue("feeFrom") || 0}
                                         step={100000}
-                                        onChange={(value) => form.setFieldsValue({feeTo: value})}
+                                        onChange={(value) => form.setFieldsValue({ feeTo: value })}
                                         readOnly={isReadOnly}
                                     />
                                 </Form.Item>
@@ -288,7 +288,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             name="website"
                             label="School Website"
                         >
-                            <Input placeholder="Enter School Website here..." readOnly={isReadOnly}/>
+                            <Input placeholder="Enter School Website here..." readOnly={isReadOnly} />
                         </Form.Item>
                     </div>
                     <div>
@@ -298,7 +298,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 value={facilities}
                                 className={clsx(
                                     "grid grid-cols-3 gap-2 custom-add-school-select",
-                                    {"pointer-events-none": isReadOnly}
+                                    { "pointer-events-none": isReadOnly }
                                 )}
                             />
                         </Form.Item>
@@ -309,7 +309,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 value={utilities}
                                 className={clsx(
                                     "grid grid-cols-3 gap-2 custom-add-school-select",
-                                    {"pointer-events-none": isReadOnly}
+                                    { "pointer-events-none": isReadOnly }
                                 )}
                             />
                         </Form.Item>
@@ -335,7 +335,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         >
                             <MyEditor
                                 description={form.getFieldValue("description") || undefined}
-                                onChange={(value) => form.setFieldsValue({description: value})}
+                                onChange={(value) => form.setFieldsValue({ description: value })}
                                 isReadOnly={isReadOnly}
                             />
                         </Form.Item>
@@ -355,7 +355,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                 </div>
 
                 {/* Thêm Form.Item cho các nút ở đáy form */}
-                <Form.Item style={{textAlign: 'center', marginTop: '16px'}}>
+                <Form.Item style={{ textAlign: 'center', marginTop: '16px' }}>
                     {actionButtons}
                     <SchoolFormButton
                         form={form}

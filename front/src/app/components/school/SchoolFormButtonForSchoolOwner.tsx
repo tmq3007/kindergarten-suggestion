@@ -138,28 +138,28 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             {messageContextHolder} {/* Render message context */}
             {notificationContextHolder} {/* Render notification context */}
             <div className="flex lg:justify-center space-x-4 justify-end">
-                {hasCancelButton && (
+                {hasCancelButton &&
                     <Button htmlType="button" color="danger" onClick={handleCancel}>
                         Cancel
                     </Button>
-                )}
-                {hasCreateSaveButton && (
+                }
+                {hasCreateSaveButton &&
                     <Button htmlType="button" onClick={() => addSchoolHandle(0)} variant="outlined" color="primary"
                             loading={isCreating}>
                         Save
                     </Button>
-                )}
-                {hasSaveButton && (
+                }
+                {hasSaveButton &&
                     <Button htmlType="button" onClick={handleSave} variant="outlined" color="primary">
                         Save
                     </Button>
-                )}
-                {hasCreateSubmitButton && (
+                }
+                {hasCreateSubmitButton &&
                     <Button htmlType="button" type="primary" onClick={() => addSchoolHandle(1)} loading={isCreating}>
                         Submit
                     </Button>
-                )}
-                {hasUpdateSubmitButton && (
+                }
+                {hasUpdateSubmitButton &&
                     <Button htmlType="button" onClick={handleUpdateSubmit}
                             className={'bg-blue-300 text-blue-800 border-blue-900'}>
                         Submit
@@ -173,8 +173,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     >
                         Delete
                     </Button>
-                )}
-                {hasEditButton && (
+                }
+                {hasEditButton &&
                     <Button htmlType="button" type={'primary'} onClick={handleEdit}>
                         Edit
                     </Button>
@@ -196,7 +196,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     >
                         Unpublish
                     </Button>
-                )}
+                }
             </div>
         </>
     );
