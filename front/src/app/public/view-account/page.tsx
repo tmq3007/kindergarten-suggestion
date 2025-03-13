@@ -235,7 +235,7 @@ const Profile = () => {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
             }}
-            className="min-h-screen container mt-14 bg-gray-100"
+            className="min-h-screen mt-14 bg-gray-100"
         >
             {contextHolder}
             <div className="container mx-auto mt-10 px-4 py-14 grid grid-cols-1 md:grid-cols-3 gap-6">
