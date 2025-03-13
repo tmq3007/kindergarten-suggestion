@@ -65,7 +65,7 @@ interface SchoolFormFields {
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
     actionButtons?: React.ReactNode;
-    triggerCheckEmail: any;
+    triggerCheckEmail?: any;
     schoolId?: number;
 }
 
@@ -108,9 +108,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     // Lazy load schools when component mounts
     const {data: schoolData, error, isLoading} = useSearchExpectedSchoolQuery();
-    const normFile = (e: { fileList: UploadFile[] } | undefined): UploadFile[] => {
-      return e?.fileList ?? [];
-    };
+
     useEffect(() => {
         if (schoolData?.data) {
             setSchoolOptions(
@@ -123,7 +121,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     }, [schoolData]);
 
 
-    // Log imageList to check list
+    // Log imageList để kiểm tra dữ liệu
     useEffect(() => {
         console.log('imageList:', imageList);
     }, [imageList]);
@@ -133,7 +131,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
             <Form<SchoolFieldType>
                 size='middle'
                 form={form}
-                labelCol={{ span: 6, className: 'font-bold' }}
+                labelCol={{span: 6, className: 'font-bold'}}
                 labelAlign='left'
                 labelWrap
                 layout="horizontal"
@@ -144,7 +142,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="name"
                             label="School Name"
-                            rules={[{ required: true, message: 'Please enter school name' }]}
+                            rules={[{required: true, message: 'Please enter school name'}]}
                         >
                             <Select
                                 showSearch
@@ -160,7 +158,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="schoolType"
                             label="School Type"
-                            rules={[{ required: true, message: 'Please select school type' }]}
+                            rules={[{required: true, message: 'Please select school type'}]}
                         >
                             <Select
                                 placeholder="Select a type..."
@@ -183,7 +181,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         />
                         <PhoneInput
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}
-                            initialCountryCode={ externalForm.countryCode ? externalForm.countryCode : '+84'}
+                            initialCountryCode={externalForm.countryCode ? externalForm.countryCode : '+84'}
                             form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
@@ -341,53 +339,17 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 isReadOnly={isReadOnly}
                             />
                         </Form.Item>
-                        <Form.Item label="School image">
-                            {hideImageUpload ? (
-                                <div className="grid grid-cols-3 gap-4">
-                                    {imageList.length > 0 ? (
-                                        <Image.PreviewGroup>
-                                            {imageList.map((image, index) => (
-                                                <Image
-                                                    key={index}
-                                                    src={image.url}
-                                                    alt={image.filename}
-                                                    width={100}
-                                                    height={100}
-                                                    className="object-cover rounded-md"
-                                                    preview={{
-                                                        mask: "View",
-                                                    }}
-                                                />
-                                            ))}
-                                        </Image.PreviewGroup>
-                                    ) : (
-                                        <p>No images available</p>
-                                    )}
-                                </div>
-                            ) : (
-                                <Form.Item
-                                    name="image"
-                                    valuePropName="fileList"
-                                    getValueFromEvent={normFile}
-                                    noStyle
-                                >
-                                    <Upload.Dragger
-                                        name="schoolImage"
-                                        listType="picture"
-                                        beforeUpload={() => false}
-                                        maxCount={10}
-                                        accept="image/*"
-                                    >
-                                        <p className="ant-upload-drag-icon">
-                                            <InboxOutlined />
-                                        </p>
-                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                        <p className="ant-upload-text">
-                                            Upload pictures of format <strong>jpg, jpeg, png</strong> only. Maximum size: <strong>5MB</strong>
-                                        </p>
-                                    </Upload.Dragger>
-                                </Form.Item>
-                            )}
+                        <Form.Item label="School image" name="image" valuePropName="fileList"
+                                   getValueFromEvent={(e) => e?.fileList || []}>
+                            <ImageUpload
+                                form={form}
+                                fieldName="image"
+                                maxCount={10}
+                                accept="image/*"
+                                maxSizeMB={5}
+                                hideImageUpload={hideImageUpload}
+                                imageList={imageList}
+                            />
                         </Form.Item>
                     </div>
                 </div>

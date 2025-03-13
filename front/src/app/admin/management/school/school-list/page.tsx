@@ -1,15 +1,15 @@
 "use client";
 
-import { Input, Button, Table, Tag, Space, notification } from "antd";
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {Input, Button, Table, Tag, Space, notification} from "antd";
+import {SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined} from "@ant-design/icons";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import React, {useState, useEffect} from "react";
+import {useRouter} from "next/navigation";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
-import { useGetSchoolListQuery } from "@/redux/services/schoolApi";
+import {useGetSchoolListQuery} from "@/redux/services/schoolApi";
 
 interface SchoolVO {
     id: number;
@@ -58,6 +58,7 @@ export default function SchoolList() {
     const pageSize = 10;
     const router = useRouter();
 
+    const role = useSelector((state: RootState) => state.user?.role);
     const userIdString = useSelector((state: RootState) => state.user?.id);
     const userId = userIdString ? parseInt(userIdString as string) : null;
 
@@ -115,23 +116,24 @@ export default function SchoolList() {
     }, [data]);
 
     const tableData = filteredSchools
-    .slice((page - 1) * pageSize, page * pageSize)
-    .map((school) => ({
-        key: school.id,
-        id: school.id,
-        schoolName: school.name,
-        address: `${school.street}, ${school.ward}, ${school.district}, ${school.province}`,
-        phone: school.phone,
-        email: school.email,
-        postedDate: school.posted_date ? new Date(school.posted_date).toLocaleDateString() : "N/A",
-        status: getStatusText(school.status),
-    }));
+        .slice((page - 1) * pageSize, page * pageSize)
+        .map((school) => ({
+            key: school.id,
+            id: school.id,
+            schoolName: school.name,
+            address: `${school.street}, ${school.ward}, ${school.district}, ${school.province}`,
+            phone: school.phone,
+            email: school.email,
+            postedDate: school.posted_date ? new Date(school.posted_date).toLocaleDateString() : "N/A",
+            status: getStatusText(school.status),
+        }));
 
     const columns = [
         {
             title: <div className={'text-center'}>School Name</div>,
             dataIndex: "schoolName",
             key: "schoolName",
+            minWidth: 150,
             render: (schoolName: string, record: { id: number }) => (
                 <Link href={`/admin/management/school/school-detail/${record.id}`}>
                     <span className="text-blue-500 hover:underline">{schoolName}</span>
@@ -142,68 +144,72 @@ export default function SchoolList() {
             title: <div className={'text-center'}>Address</div>,
             dataIndex: "address",
             key: "address",
-            ellipsis: true,
+            minWidth: 200,
             onCell: (record: { address: string }) => ({
                 onClick: () => {
                     navigator.clipboard
-                    .writeText(record.address)
-                    .then(() => {
-                        openNotificationWithIcon("success", "Success", "Address copied to clipboard!");
-                    })
-                    .catch(() => {
-                        openNotificationWithIcon("error", "Error", "Failed to copy address.");
-                    });
+                        .writeText(record.address)
+                        .then(() => {
+                            openNotificationWithIcon("success", "Success", "Address copied to clipboard!");
+                        })
+                        .catch(() => {
+                            openNotificationWithIcon("error", "Error", "Failed to copy address.");
+                        });
                 },
-                style: { cursor: "pointer" },
+                style: {cursor: "pointer"},
             }),
         },
         {
             title: <div className={'text-center'}>Phone No.</div>,
             dataIndex: "phone",
             key: "phone",
+            minWidth: 120,
             align: "right" as const,
             onCell: (record: { phone: string }) => ({
                 onClick: () => {
                     navigator.clipboard
-                    .writeText(record.phone)
-                    .then(() => {
-                        openNotificationWithIcon("success", "Success", "Phone number copied to clipboard!");
-                    })
-                    .catch(() => {
-                        openNotificationWithIcon("error", "Error", "Failed to copy phone number.");
-                    });
+                        .writeText(record.phone)
+                        .then(() => {
+                            openNotificationWithIcon("success", "Success", "Phone number copied to clipboard!");
+                        })
+                        .catch(() => {
+                            openNotificationWithIcon("error", "Error", "Failed to copy phone number.");
+                        });
                 },
-                style: { cursor: "pointer" },
+                style: {cursor: "pointer"},
             }),
         },
         {
             title: <div className={'text-center'}>Email</div>,
             dataIndex: "email",
             key: "email",
+            minWidth: 150,
             onCell: (record: { email: string }) => ({
                 onClick: () => {
                     navigator.clipboard
-                    .writeText(record.email)
-                    .then(() => {
-                        openNotificationWithIcon("success", "Success", "Email copied to clipboard!");
-                    })
-                    .catch(() => {
-                        openNotificationWithIcon("error", "Error", "Failed to copy email.");
-                    });
+                        .writeText(record.email)
+                        .then(() => {
+                            openNotificationWithIcon("success", "Success", "Email copied to clipboard!");
+                        })
+                        .catch(() => {
+                            openNotificationWithIcon("error", "Error", "Failed to copy email.");
+                        });
                 },
-                style: { cursor: "pointer" },
+                style: {cursor: "pointer"},
             }),
         },
         {
             title: <div className={'text-center'}>Posted Date</div>,
             dataIndex: "postedDate",
             key: "postedDate",
+            minWidth: 100,
             align: "center" as const,
         },
         {
             title: "Status",
             dataIndex: "status",
             key: "status",
+            minWidth: 100,
             align: "center" as const,
             render: (status: string) => {
                 const colorMap: { [key: string]: string } = {
@@ -221,13 +227,14 @@ export default function SchoolList() {
         {
             title: <div className={'text-center'}>Actions</div>,
             key: "action",
+            minWidth: 90,
             align: "center" as const,
             render: (_: any, record: { id: number }) => (
-                <Space size="small" className="justify-center">
+                <Space size="middle" className="flex justify-center">
                     <Link href={`/admin/management/school/edit-school/${record.id}`}>
-                        <Button type="link" icon={<EditOutlined />} />
+                        <Button type="link" icon={<EditOutlined/>}/>
                     </Link>
-                    <Button type="link" icon={<DeleteOutlined />} danger />
+                    <Button type="link" icon={<DeleteOutlined/>} danger/>
                 </Space>
             ),
         },
@@ -238,23 +245,23 @@ export default function SchoolList() {
     };
 
     return (
-        <div className="pt-2 px-4 sm:px-6 lg:px-8">
+        <div className="pt-2">
             {contextHolder}
             <MyBreadcrumb
                 paths={[
-                    { label: "School Management", href: "/admin/management/school/school-list" },
-                    { label: "School List" },
+                    {label: "School Management", href: "/admin/management/school/school-list"},
+                    {label: "School List"},
                 ]}
             />
-            <SchoolManageTitle title={"School List"} />
-            <div className="bg-white p-4 sm:p-5 rounded-lg">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+            <SchoolManageTitle title={"School List"}/>
+            <div className="bg-white p-5 rounded-lg h-screen">
+                <div className="flex justify-between items-center mb-4">
                     <Input
                         placeholder="Search by school name"
                         prefix={<SearchOutlined />}
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        className="max-w-full sm:max-w-[300px]"
+                        style={{maxWidth: "300px", width: "100%"}}
                     />
                     <Link href="/admin/management/school/add-school">
                         <Button type="primary" icon={<PlusOutlined />}>
