@@ -34,8 +34,6 @@ const PhoneInput = forwardRef((
         // Sync selectedCountry with countries when they load
         useEffect(() => {
             if (countries && !selectedCountry) {
-                console.log("initialCountryCode", initialCountryCode);
-                console.log(form.getFieldValue('phone'))
                 const defaultCountry = countries.find((c) => c.dialCode === initialCountryCode);
                 setPhone(form.getFieldValue('phone'));
                 setSelectedCountry(defaultCountry);

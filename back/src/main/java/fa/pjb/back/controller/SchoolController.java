@@ -144,10 +144,10 @@ public class SchoolController {
                 .build();
     }
 
-    @PutMapping("/change-status/by-school-owner/{schoolId}")
-    public ApiResponse<?> updateSchoolStatusBySchoolOwner(@PathVariable Integer schoolId, @Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+    @PutMapping("/change-status/by-school-owner")
+    public ApiResponse<?> updateSchoolStatusBySchoolOwner(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
-        schoolService.updateSchoolStatusBySchoolOwner(schoolId, changeSchoolStatusDTO);
+        schoolService.updateSchoolStatusBySchoolOwner(changeSchoolStatusDTO);
 
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
