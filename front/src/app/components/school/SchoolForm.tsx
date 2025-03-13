@@ -266,6 +266,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         />
 
                         <EmailInput
+                            form={form}
                             isReadOnly={isReadOnly}
                             ref={emailInputRef}
                             triggerCheckEmail={triggerCheckEmail}
