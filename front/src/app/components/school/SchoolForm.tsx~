@@ -93,6 +93,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     schoolId,
                                                 }) => {
     const [form] = Form.useForm(externalForm);
+    const [isPhoneValidated, setIsPhoneValidated] = useState(false);
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
 
@@ -135,10 +136,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                 labelWrap
                 layout="horizontal"
                 className="space-y-6 h-auto"
-                onFinish={(values) => {
-                    console.log("Form Values Submitted:", values);
-                    console.log("Submitted Image List:", values.image);
-                }}
             >
                 <div className='grid grid-cols-1 lg:grid-cols-2 lg:gap-16'>
                     <div>
@@ -183,9 +180,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             schoolId={schoolId}
                         />
                         <PhoneInput
+                            form={form}
                             isReadOnly={isReadOnly}
-                            ref={phoneInputRef}
-                            onPhoneChange={(phone) => form.setFieldsValue({phone})}
+                            triggerCheckPhone={triggerCheckPhone}
+                            setIsPhoneValidated={setIsPhoneValidated}
                         />
 
 

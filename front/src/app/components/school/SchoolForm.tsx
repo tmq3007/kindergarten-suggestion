@@ -179,6 +179,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             schoolId={schoolId}
                         />
                         <PhoneInput
+                            form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}

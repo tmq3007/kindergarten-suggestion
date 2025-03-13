@@ -58,7 +58,7 @@ export default function EditSchool() {
                 image: school.imageList || []
             });
             const formValues = form.getFieldsValue();
-            console.log("form values: ",formValues)
+            console.log("=====================form values: ",formValues)
 
         }
     }, [school, form, schoolStatus]);
