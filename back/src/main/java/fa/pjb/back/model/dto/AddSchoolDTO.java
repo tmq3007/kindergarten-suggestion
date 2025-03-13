@@ -1,5 +1,6 @@
 package fa.pjb.back.model.dto;
 
+import fa.pjb.back.model.vo.SchoolOwnerVO;
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -76,6 +77,9 @@ public record AddSchoolDTO(
         @Size(max = 7, message = "Invalid utilities selection")
         Set<@Min(0) @Max(6) Integer> utilities,
 
+        @NotEmpty
+        Set<Integer> schoolOwners,
+
         String description // School introduction
 
 ) {
@@ -100,7 +104,7 @@ class FeeRangeValidator implements ConstraintValidator<ValidFeeRange, AddSchoolD
         if (school.feeFrom() != null && school.feeTo() != null) {
             return school.feeFrom() <= school.feeTo();
         }
-        return true; // Allow null values
+        return true;
     }
 }
 

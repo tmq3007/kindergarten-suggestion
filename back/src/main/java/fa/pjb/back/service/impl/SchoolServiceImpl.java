@@ -34,10 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
@@ -92,44 +90,75 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
+
+        // Check if email already exists
         if (checkEmailExists(schoolDTO.email())) {
-            throw new EmailAlreadyExistedException("This email is already in used");
+            throw new EmailAlreadyExistedException("This email is already in use");
         }
+//        if (checkPhoneExists(schoolDTO.phone())) {
+//            throw new PhoneExistedException("This phone is already in use");
+//        }
+
+        //  Map DTO to School entity (without schoolOwners initially)
         School school = schoolMapper.toSchool(schoolDTO);
-        List<ImageVO> imageVOList = null;
+        school.setSchoolOwners(null); // Avoid cascade issues; set later
+
+        // Validate facilities
         if (schoolDTO.facilities() != null) {
-            //Get existing facilities from DB
             Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
-            //Validate: Check if all requested fids exist in the database
-            if (existingFacilities.size() != school.getFacilities().size()) {
+            if (existingFacilities.size() != schoolDTO.facilities().size()) {
                 throw new InvalidDataException("Some facilities do not exist in the database");
             }
+            school.setFacilities(existingFacilities);
         }
+
+        // Validate utilities
         if (schoolDTO.utilities() != null) {
-            //Get existing utilities from DB
             Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
-            //Validate: Check if all requested uids exist in the database
-            if (existingUtilities.size() != school.getUtilities().size()) {
+            if (existingUtilities.size() != schoolDTO.utilities().size()) {
                 throw new InvalidDataException("Some utilities do not exist in the database");
             }
+            school.setUtilities(existingUtilities);
         }
-        // If the submit user is admin then auto change status to approved
-        User user = userRepository.findById(schoolDTO.userId()).orElseThrow(() -> new AuthenticationFailedException("Cannot authenticate"));
+
+        // Check user role and adjust status
+        User user = userRepository.findById(schoolDTO.userId())
+                .orElseThrow(() -> new AuthenticationFailedException("Cannot authenticate"));
         if (user.getRole() == ERole.ROLE_ADMIN && schoolDTO.status() == SUBMITTED.getValue()) {
             school.setStatus((byte) APPROVED.getValue());
         }
         school.setPostedDate(LocalDate.now());
+
+        // Save the School to generate its ID
         School newSchool = schoolRepository.save(school);
+
+        // Fetch and update existing SchoolOwners
+        Set<Integer> schoolOwnerIds = schoolDTO.schoolOwners();
+        if (schoolOwnerIds != null && !schoolOwnerIds.isEmpty()) {
+            Set<SchoolOwner> schoolOwners = schoolOwnerIds.stream()
+                    .map(id -> schoolOwnerRepository.findById(id)
+                            .orElseThrow(() -> new IllegalArgumentException("SchoolOwner with ID " + id + " not found")))
+                    .collect(Collectors.toSet());
+
+            // Update SchoolOwners with the new School reference
+            schoolOwners.forEach(owner -> owner.setSchool(newSchool));
+            newSchool.setSchoolOwners(schoolOwners);
+
+            // Persist the updated SchoolOwners
+            schoolOwnerRepository.saveAll(schoolOwners);
+        } else {
+            newSchool.setSchoolOwners(new HashSet<>());
+        }
+
         // Validate and upload images (if provided)
-        if (image != null) {
+        List<ImageVO> imageVOList = null;
+        if (image != null && !image.isEmpty()) {
             for (MultipartFile file : image) {
-                // Check file size
                 if (file.getSize() > MAX_FILE_SIZE) {
                     throw new InvalidFileFormatException("File cannot exceed 5MB");
                 }
-                // Check file type
                 try {
-                    String mimeType = tika.detect(file.getBytes()); // Detect MIME type
+                    String mimeType = tika.detect(file.getBytes());
                     if (!ALLOWED_MIME_TYPES.contains(mimeType)) {
                         throw new InvalidFileFormatException("Invalid file type: " + file.getOriginalFilename() + ". Allowed: JPEG, PNG, GIF.");
                     }
@@ -137,7 +166,7 @@ public class SchoolServiceImpl implements SchoolService {
                     throw new InvalidFileFormatException("Error when processing file");
                 }
             }
-            //Upload images
+
             try {
                 imageVOList = imageService.uploadListImages(
                         imageService.convertMultiPartFileToFile(image),
@@ -145,16 +174,21 @@ public class SchoolServiceImpl implements SchoolService {
                         SCHOOL_IMAGES
                 );
             } catch (IOException e) {
-                throw new UploadFileException("Error while uploading images" + e.getMessage());
+                throw new UploadFileException("Error while uploading images: " + e.getMessage());
             }
             processAndSaveImages(imageVOList, newSchool);
         }
 
-        //Send submit emails to admins
+        // Send submit emails to admins (if applicable)
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
-            //TODO:Fix this to email
-            emailService.sendSubmitSchool("nguyendatrip123@gmail.com", newSchool.getName(), user.getUsername(), schoolDetailedLink);
+            // TODO: Fix this to send to all admins
+            emailService.sendSubmitEmailToAllAdmin(
+                    newSchool.getName(),
+                    user.getUsername(),
+                    schoolDetailedLink + newSchool.getId()
+            );
         }
+
         return schoolMapper.toSchoolDetailVO(newSchool);
     }
 
@@ -225,21 +259,32 @@ public class SchoolServiceImpl implements SchoolService {
 
 
     @Override
-    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam) {
-        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwners(searchParam, ERole.ROLE_SCHOOL_OWNER);
+    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwnersByExpectedSchool(expectedSchool);
         // Convert projection to VO
         return projections.stream()
                 .map(projection -> new SchoolOwnerVO(
                         projection.getId(),
+                        projection.getUserId(),
+                        projection.getFullname(),
                         projection.getUsername(),
                         projection.getEmail(),
+                        projection.getPhone(),
                         projection.getExpectedSchool()
                 ))
                 .toList();
     }
 
-    public List<ExpectedSchoolVO> findAllDistinctExpectedSchools() {
-        return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
+    @Override
+    public List<ExpectedSchoolVO> findAllDistinctExpectedSchoolsByRole(Integer id) {
+        User user = userRepository.findById(id).get();
+        if (user.getRole() == ERole.ROLE_ADMIN) {
+            return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
+        } else if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
+            return schoolOwnerRepository.getExpectedSchoolByUserId(id);
+        } else {
+            throw new AuthenticationFailedException("Something went wrong! Cannot find role");
+        }
     }
 
 

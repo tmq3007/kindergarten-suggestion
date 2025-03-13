@@ -11,13 +11,14 @@ interface ImageUploadProps {
     maxSizeMB?: number; // Maximum file size in MB
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
+    formLoaded?: boolean; // New prop
 }
 
 const uploadButton = (
-    <button style={{border: 0, background: 'none'}} type="button">
-        <PlusOutlined/>
-        <div style={{marginTop: 8}}>Upload</div>
-    </button>
+  <button style={{ border: 0, background: 'none' }} type="button">
+    <PlusOutlined />
+    <div style={{ marginTop: 8 }}>Upload</div>
+  </button>
 );
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -28,6 +29,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                                                             maxSizeMB = 5,
                                                             hideImageUpload,
                                                             imageList = [],
+                                                            formLoaded=false,
                                                         }) => {
     const [fileList, setFileList] = useState<UploadFile[]>(form.getFieldValue(fieldName) || []);
     const [previewImage, setPreviewImage] = useState<string>('');
@@ -36,18 +38,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     // Sync internal state with form field value
     useEffect(() => {
         const currentFiles = form.getFieldValue(fieldName) || [];
-
-        // Convert existing image data into UploadFile format
+        console.log('4. Current image field value in ImageUpload:', currentFiles);
+      
         const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
-            uid: file.cloudId, // Unique identifier
-            name: file.filename || `Image-${file.cloudId}`, // Use filename or generate one
-            status: 'done', // Mark as uploaded
-            url: file.url, // Image URL
+          uid: file.cloudId || file.uid || `${Math.random()}`,
+          name: file.filename || file.name || `Image-${file.cloudId || file.uid || Math.random()}`,
+          status: 'done',
+          url: file.url,
         }));
-
+      
         setFileList(formattedFiles);
-
-    }, [form, fieldName]);
+        console.log('5. FileList set in ImageUpload:', formattedFiles);
+    }, [formLoaded]);
 
     const getBase64 = (file: File): Promise<string> =>
         new Promise((resolve, reject) => {

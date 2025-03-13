@@ -1,7 +1,8 @@
 // schoolUtils.ts
-import {FormInstance} from "antd/es/form";
-import {UploadFile} from "antd";
-import {SchoolDTO, SchoolUpdateDTO} from "@/redux/services/schoolApi";
+import { FormInstance } from "antd/es/form";
+import { UploadFile } from "antd";
+import { SchoolDTO, SchoolUpdateDTO } from "@/redux/services/schoolApi";
+import { message } from "antd";
 import React from "react";
 
 export const formatErrorMessage = (error: unknown): string | React.ReactNode => {
@@ -30,7 +31,7 @@ export const formatErrorMessage = (error: unknown): string | React.ReactNode => 
             errorMessage = allErrorMessages.map((msg, index) => (
                 <React.Fragment key={index}>
                     {'-' + msg}
-                    {index < allErrorMessages.length - 1 && <br/>}
+                    {index < allErrorMessages.length - 1 && <br />}
                 </React.Fragment>
             ));
         } else if (errorData?.message) {
@@ -83,10 +84,17 @@ export const prepareSchoolData = async (form: FormInstance, emailInputRef: any, 
         console.log('after fullPhoneNumber:', fullPhoneNumber);
 
 
+        //TODO:remove this when done
+        let tempSO = values.schoolOwners;
+        if (tempSO === undefined) {
+            tempSO = []; // ✅ Gán lại thành mảng rỗng nếu bị undefined
+        }
+        // Prepare final data
         return {
             ...values,
             image: imagesToSend.filter(Boolean), // Loại bỏ giá trị null
             phone: fullPhoneNumber,
+            schoolOwners: tempSO,
         };
     } catch (error) {
         console.error("❌ Form validation failed:", error);

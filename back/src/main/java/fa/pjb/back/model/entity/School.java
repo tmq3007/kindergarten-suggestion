@@ -117,4 +117,6 @@ public class School {
     @JoinColumn(name = "ref_id")
     private School draft;
 
+    @OneToMany(mappedBy = "school",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<SchoolOwner> schoolOwners;
 }

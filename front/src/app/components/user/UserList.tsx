@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/redux/services/config/baseQuery";
-import { Table, Tag, Space, Pagination, Popconfirm, Result, Button } from "antd";
+import { Table, Tag, Space, Pagination, Popconfirm } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useState } from "react";

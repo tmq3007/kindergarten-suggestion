@@ -35,7 +35,7 @@ public interface SchoolService {
 
     SchoolDetailVO updateSchoolByAdmin(SchoolUpdateDTO schoolDTO, List<MultipartFile> images);
 
-    List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam);
+    List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool);
 
-    List<ExpectedSchoolVO> findAllDistinctExpectedSchools();
+    List<ExpectedSchoolVO> findAllDistinctExpectedSchoolsByRole(Integer id);
 }

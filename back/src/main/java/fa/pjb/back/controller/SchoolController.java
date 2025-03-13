@@ -19,16 +19,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -156,17 +152,20 @@ public class SchoolController {
     }
 
     @GetMapping("/get-so-list")
-    public List<SchoolOwnerVO> searchSchoolOwnersFOrAddSchool(@RequestParam("q") String searchParam) {
-        return schoolService.findSchoolOwnerForAddSchool(searchParam);
-    }
-
-    @GetMapping("/search-expected-school")
-    public ApiResponse<List<ExpectedSchoolVO>> searchExpectedSchoolForAddSchool() {
-        return ApiResponse.<List<ExpectedSchoolVO>>builder()
+    public ApiResponse<List<SchoolOwnerVO>> searchSchoolOwnersForAddSchool(@RequestParam("q") String expectedSchool) {
+        return ApiResponse.<List<SchoolOwnerVO>>builder()
                 .code(200)
                 .message("Success")
-                .data(schoolService.findAllDistinctExpectedSchools())
+                .data(schoolService.findSchoolOwnerForAddSchool(expectedSchool))
                 .build();
     }
 
+    @GetMapping("/search-expected-school/{id}")
+    public ApiResponse<List<ExpectedSchoolVO>> searchExpectedSchoolForAddSchool(@PathVariable Integer id) {
+        return ApiResponse.<List<ExpectedSchoolVO>>builder()
+                .code(200)
+                .message("Success")
+                .data(schoolService.findAllDistinctExpectedSchoolsByRole(id))
+                .build();
+    }
 }
