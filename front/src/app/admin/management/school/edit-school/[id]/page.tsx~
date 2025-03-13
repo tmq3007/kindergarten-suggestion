@@ -87,7 +87,7 @@ export default function EditSchool() {
                 hasCancelButton={true}
                 hasUpdateSubmitButton={true}
                 triggerCheckEmail={null}
-                schoolId={Number(schoolId)}
+                schoolId={schoolId}
             />
         </>
     );
