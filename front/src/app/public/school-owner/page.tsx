@@ -3,23 +3,17 @@
 import {Form, message} from "antd";
 import {useRouter} from "next/navigation";
 import React, {useEffect} from "react";
-import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import closedImg from '@public/closed.png'
-import {
-    CHILD_RECEIVING_AGE_OPTIONS,
-    EDUCATION_METHOD_OPTIONS,
-    SCHOOL_STATUS,
-    SCHOOL_STATUS_OPTIONS,
-    ROLES,
-} from "@/lib/constants";
+import {CHILD_RECEIVING_AGE_OPTIONS, EDUCATION_METHOD_OPTIONS, ROLES, SCHOOL_STATUS_OPTIONS,} from "@/lib/constants";
 import {useApproveSchoolMutation, useGetSchoolByUserIdQuery} from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
 import Image from "next/image";
 import {formatPhoneNumber} from "@/lib/phoneUtils";
+import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 
 export default function SchoolDetail() {
     const router = useRouter();
@@ -225,31 +219,7 @@ export default function SchoolDetail() {
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
 
             <div className="read-only-form email-locked">
-                <SchoolForm
-                    isReadOnly={true}
-                    form={form}
-                    hideImageUpload={true}
-                    imageList={school.imageList || []}
-                    hasCancelButton={false}
-                    hasDeleteButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
-                        school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasEditButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
-                        school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
-                    hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
-                    hasPublishButton={
-                        school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
-                />
+                <SchoolFormWrapper form={form} school={school}/>
             </div>
         </div>
     );

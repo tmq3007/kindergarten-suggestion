@@ -1,11 +1,9 @@
-import {Button, message, notification, UploadFile} from "antd";
-import React, {useState} from "react";
+import {Button, message, notification} from "antd";
+import React from "react";
 import {useParams, useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
 import {
     SchoolCreateDTO,
-    SchoolDTO,
-    SchoolUpdateDTO,
     useAddSchoolMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation
 } from "@/redux/services/schoolApi";
