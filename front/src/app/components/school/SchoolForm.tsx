@@ -67,6 +67,7 @@ interface SchoolFormFields {
     actionButtons?: React.ReactNode;
     triggerCheckEmail: any;
     schoolId?: number;
+    isEdit?: boolean;
 }
 
 interface UserValue {
@@ -92,6 +93,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     actionButtons,
                                                     triggerCheckEmail,
                                                     schoolId,
+                                                    isEdit,
                                                 }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
@@ -181,7 +183,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         />
                         <PhoneInput
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}
-                            initialCountryCode={ externalForm.countryCode ? externalForm.countryCode : '+84'}
+                            initialCountryCode={isEdit ? (externalForm.countryCode || '+84') : undefined}
                             form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}

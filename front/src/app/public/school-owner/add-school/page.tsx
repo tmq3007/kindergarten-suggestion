@@ -8,6 +8,7 @@ import SchoolForm from "@/app/components/school/SchoolForm";
 
 const { Option } = Select;
 const page = () => {
+
     return (
         <>
             <MyBreadcrumb
