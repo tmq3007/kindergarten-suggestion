@@ -90,22 +90,13 @@ const SchoolFormSkeleton: React.FC = () => {
                             </Form.Item>
 
                             <Form.Item label="Fee/Month (VND)" required>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <Form.Item
-                                        name="feeFrom"
-                                        label="From"
-                                        rules={[{required: true}]}
-                                    >
-                                        <Skeleton.Input active className={'!w-full'}/>
-                                    </Form.Item>
-                                    <Form.Item
-                                        name="feeTo"
-                                        label="To"
-                                        rules={[{required: true}]}
-                                    >
-                                        <Skeleton.Input active className={'!w-full'}/>
-                                    </Form.Item>
-                                </div>
+                                <Skeleton.Input active className={'!w-full'}/>
+                            </Form.Item>
+                            <Form.Item
+                                name="owner"
+                                label="School Owner"
+                            >
+                                <Skeleton.Input active className={'!w-full'}/>
                             </Form.Item>
                             <Form.Item
                                 name="website"

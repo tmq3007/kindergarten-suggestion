@@ -19,6 +19,7 @@ import {useLazySearchUsersQuery} from '@/redux/services/testApi';
 import {ImageUpload} from '../common/ImageUploader';
 import clsx from "clsx";
 import {InboxOutlined} from "@ant-design/icons";
+import {formatPhoneNumber} from "@/lib/phoneUtils";
 
 const {Option} = Select;
 const {Panel} = Collapse;
@@ -179,9 +180,11 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             schoolId={schoolId}
                         />
                         <PhoneInput
+                            onPhoneChange={(phone) => form.setFieldsValue({phone})}
+                            initialCountryCode={ externalForm.countryCode ? externalForm.countryCode : '+84'}
+                            form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
-                            onPhoneChange={(phone) => form.setFieldsValue({phone})}
                         />
 
 
@@ -253,6 +256,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     <InputNumber
                                         placeholder="To"
                                         className="w-full"
+
                                         min={form.getFieldValue("feeFrom") || 0}
                                         step={100000}
                                         onChange={(value) => form.setFieldsValue({feeTo: value})}
