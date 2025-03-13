@@ -106,6 +106,7 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
                 />
                 {/* Phone Number */}
                 <PhoneInput
+                    form={form}
                     ref={phoneInputRef}
                     onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                 />
