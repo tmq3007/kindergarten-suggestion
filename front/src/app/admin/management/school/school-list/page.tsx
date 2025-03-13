@@ -250,7 +250,7 @@ export default function SchoolList() {
                 ]}
             />
             <SchoolManageTitle title={"School List"}/>
-            <div className="bg-white p-5 rounded-lg">
+            <div className="bg-white p-5 rounded-lg h-screen">
                 <div className="flex justify-between items-center mb-4">
                     <Input
                         placeholder="Search by school name"

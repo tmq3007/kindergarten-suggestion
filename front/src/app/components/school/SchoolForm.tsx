@@ -181,7 +181,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         />
                         <PhoneInput
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}
-                            initialCountryCode={ externalForm.countryCode ? externalForm.countryCode : '+84'}
+                            initialCountryCode={externalForm.countryCode ? externalForm.countryCode : '+84'}
                             form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
@@ -341,7 +341,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         </Form.Item>
                         <Form.Item label="School image" name="image" valuePropName="fileList"
                                    getValueFromEvent={(e) => e?.fileList || []}>
-                            <ImageUpload form={form} fieldName="image" maxCount={10} accept="image/*" maxSizeMB={5}/>
+                            <ImageUpload
+                                form={form}
+                                fieldName="image"
+                                maxCount={10}
+                                accept="image/*"
+                                maxSizeMB={5}
+                                hideImageUpload={hideImageUpload}
+                                imageList={imageList}
+                            />
                         </Form.Item>
                     </div>
                 </div>
