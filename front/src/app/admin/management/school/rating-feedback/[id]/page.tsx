@@ -338,9 +338,13 @@ const RatingsDashboard = () => {
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.01 }}
+                                    whileHover={{
+                                        scale: 1.01,  // Tăng scale hơn một chút để cảm giác nổi bật hơn
+                                       boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",  // Tạo bóng để làm nổi bật
+                                        transition: { duration: 0.3, ease: "easeInOut" } // Mượt mà hơn khi hover
+                                    }}
                                 >
-                                    <List.Item>
+                                    <List.Item className={'!px-3'}>
                                         <List.Item.Meta
                                             avatar={<Avatar src={item.parentImage}  className="bg-blue-500">{item.parentImage || "A"}</Avatar>}
                                             title={

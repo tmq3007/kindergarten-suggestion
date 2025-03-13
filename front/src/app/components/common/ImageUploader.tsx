@@ -31,8 +31,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   // Sync internal state with form field value
   useEffect(() => {
-    const currentFiles = form.getFieldValue(fieldName) || [];
-    setFileList(currentFiles);
+      const currentFiles = form.getFieldValue(fieldName) || [];
+
+      // Convert existing image data into UploadFile format
+      const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
+          uid: file.cloudId, // Unique identifier
+          name: file.filename || `Image-${file.cloudId}`, // Use filename or generate one
+          status: 'done', // Mark as uploaded
+          url: file.url, // Image URL
+      }));
+
+      setFileList(formattedFiles);
+
   }, [form, fieldName]);
 
   const getBase64 = (file: File): Promise<string> =>
@@ -51,10 +61,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     setPreviewOpen(true);
   };
 
-  const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
-    setFileList(newFileList);
-    form.setFieldsValue({ [fieldName]: newFileList }); // Update form directly
-  };
+    const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
+        console.log("📸 Trước khi cập nhật:", fileList);
+        console.log("📥 Ảnh mới được thêm / cập nhật:", newFileList);
+
+        // Danh sách ảnh sau khi cập nhật (gồm cả ảnh cũ và mới nhưng không giữ ảnh bị xóa)
+        setFileList(newFileList);
+        form.setFieldsValue({ [fieldName]: newFileList });
+
+        console.log("📌 Danh sách ảnh sau khi cập nhật:", newFileList);
+    };
+
 
   const beforeUpload = (file: File) => {
     const isLtMaxSize = file.size / 1024 / 1024 < maxSizeMB;

@@ -1,9 +1,9 @@
 "use client";
 
-import {Form, message} from "antd";
+import {Form} from "antd";
 import {forbidden, useParams, useRouter} from "next/navigation";
+import Link from "next/link";
 import React, {useEffect} from "react";
-import SchoolForm from "@/app/components/school/SchoolForm";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
@@ -18,12 +18,13 @@ import {useApproveSchoolMutation, useGetSchoolByIdQuery} from "@/redux/services/
 import {RootState} from '@/redux/store';
 import {useSelector} from "react-redux";
 import {formatPhoneNumber} from "@/lib/phoneUtils";
+import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 
 export default function SchoolDetail() {
     const params = useParams();
     const schoolId = Number(params.id as string);
     const router = useRouter();
-    const {data, isError, isLoading} = useGetSchoolByIdQuery(schoolId);
+    const { data, isError, isLoading } = useGetSchoolByIdQuery(schoolId);
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
@@ -58,10 +59,10 @@ export default function SchoolDetail() {
             });
 
             const facilityValues: string[] = school.facilities?.map((facility) => String(facility.fid)) || [];
-            form.setFieldsValue({facilities: facilityValues});
+            form.setFieldsValue({ facilities: facilityValues });
 
             const utilityValues: string[] = school.utilities?.map((utility) => String(utility.uid)) || [];
-            form.setFieldsValue({utilities: utilityValues});
+            form.setFieldsValue({ utilities: utilityValues });
         }
     }, [school, form]);
 
@@ -75,12 +76,12 @@ export default function SchoolDetail() {
             <div className="pt-2">
                 <MyBreadcrumb
                     paths={[
-                        {label: "School Management", href: "/admin/management/school/school-list"},
-                        {label: "School Detail"},
+                        { label: "School Management", href: "/admin/management/school/school-list" },
+                        { label: "School Detail" },
                     ]}
                 />
-                <SchoolManageTitle title={"School details"}/>
-                <SchoolFormSkeleton/>
+                <SchoolManageTitle title={"School details"} />
+                <SchoolFormSkeleton />
             </div>
         );
     }
@@ -93,38 +94,21 @@ export default function SchoolDetail() {
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    {label: "School Management", href: "/admin/management/school/school-list"},
-                    {label: "School Detail"},
+                    { label: "School Management", href: "/admin/management/school/school-list" },
+                    { label: "School Detail" },
                 ]}
             />
-            <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
+            <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!} />
+
+            {/* Dòng chữ "View Rating & Feedback" được căn sang bên phải */}
+            <div className="my-4 flex justify-end">
+                <Link href={`/admin/management/school/rating-feedback/${schoolId}`} className="text-blue-500 hover:underline">
+                    View Rating & Feedback
+                </Link>
+            </div>
 
             <div className="read-only-form email-locked">
-                <SchoolForm
-                    isReadOnly={true}
-                    form={form}
-                    hideImageUpload={true}
-                    imageList={school.imageList || []}
-                    hasCancelButton={false}
-                    hasDeleteButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
-                        school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasEditButton={
-                        school.status === SCHOOL_STATUS.Submitted ||
-                        school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Published ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
-                    hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
-                    hasPublishButton={
-                        school.status === SCHOOL_STATUS.Approved ||
-                        school.status === SCHOOL_STATUS.Unpublished
-                    }
-                    hasUnpublishButton={school.status === SCHOOL_STATUS.Published}
-                />
+                <SchoolFormWrapper form={form} school={school}/>
             </div>
         </div>
     );

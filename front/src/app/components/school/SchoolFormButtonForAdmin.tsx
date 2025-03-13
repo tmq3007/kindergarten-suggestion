@@ -1,16 +1,17 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {Button, message, notification, UploadFile} from "antd";
+import {Button, message, notification} from "antd";
 import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
-    SchoolDTO,
-    SchoolUpdateDTO,
-    useAddSchoolMutation, useGetSchoolByIdQuery,
-    useUpdateSchoolByAdminMutation, useUpdateSchoolStatusByAdminMutation,
+    useAddSchoolMutation,
+    useGetSchoolByIdQuery,
+    useUpdateSchoolByAdminMutation,
+    useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {ButtonGroupProps} from "./SchoolFormButton";
+import {formatErrorMessage, prepareSchoolData} from "@/lib/schoolUtils";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -39,8 +40,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
     const [activeButton, setActiveButton] = useState<string | null>(null);
 
-
-    //Config notifications
+    // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
         api[type]({
             message,
@@ -53,92 +53,11 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         });
     };
 
-    // Function to handle error formatting
-    const formatErrorMessage = (error: unknown): string | React.ReactNode => {
-        let errorMessage: string | React.ReactNode = 'There was an error while adding the school. Please try again.';
-
-        if (error && typeof error === 'object' && 'data' in error) {
-            const errorData = (error as {
-                data?: {
-                    message?: string;
-                    fieldErrors?: { message: string }[];
-                    globalErrors?: { message: string }[];
-                }
-            }).data;
-
-            const allErrorMessages: string[] = [];
-
-            if (errorData?.fieldErrors && errorData.fieldErrors.length > 0) {
-                allErrorMessages.push(...errorData.fieldErrors.map(err => err.message));
-            }
-
-            if (errorData?.globalErrors && errorData.globalErrors.length > 0) {
-                allErrorMessages.push(...errorData.globalErrors.map(err => err.message));
-            }
-
-            if (allErrorMessages.length > 0) {
-                errorMessage = allErrorMessages.map((msg, index) => (
-                    <React.Fragment key={index}>
-                        {'-' + msg}
-                        {index < allErrorMessages.length - 1 && <br/>}
-                    </React.Fragment>
-                ));
-            } else if (errorData?.message) {
-                errorMessage = errorData.message;
-            }
-        } else if (error && typeof error === 'object' && 'message' in error) {
-            errorMessage = (error as { message?: string }).message || errorMessage;
-        } else if (typeof error === 'string') {
-            errorMessage = error;
-        }
-
-        return errorMessage;
-    };
-
-
-    /**
-     * Utility function to prepare school data before submission
-     * - Validates form fields
-     * - Formats phone number correctly
-     * - Extracts uploaded images
-     */
-
-    const prepareSchoolData = async (): Promise<SchoolDTO | SchoolUpdateDTO | null> => {
-        try {
-            // Validate form fields and get values
-            const values = await form.validateFields();
-            // Validate email and phone using refs from SchoolForm
-
-            const isEmailValid = await emailInputRef?.current?.validateEmail();
-            const isPhoneValid = await phoneInputRef?.current?.validatePhone();
-
-            if (!isEmailValid || !isPhoneValid) {
-                console.log('Validation failed');
-                messageApi.error("Email or phone validation failed. Please check your inputs.");
-                return null;
-            }
-            const fileList: File[] = (values.image as UploadFile[] || [])
-                .filter((file) => file.originFileObj)
-                .map((file) => file.originFileObj as File);
-            const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
-
-            // Prepare final data
-            return {
-                ...values,
-                image: fileList,
-                phone: fullPhoneNumber,
-            };
-        } catch (error) {
-            console.error("Form validation failed:", error);
-            return null; // Return null if validation fails
-        }
-    };
-
     /**
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
-        const schoolValue = await prepareSchoolData();
+        const schoolValue = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi); // Sử dụng hàm utility
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
@@ -146,16 +65,16 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             status: addStatus,
         };
         try {
-            await addSchool(finalValues).unwrap();
-            // console.log(finalValues);
-            form.resetFields();
-            openNotificationWithIcon(
-                'success',
-                'School Added Successfully',
-                'The school has been added to the system successfully.',
-                2,
-                () => router.push("/admin/management/school/school-list")
-            );
+            // await addSchool(finalValues).unwrap();
+            console.log(finalValues);
+            // form.resetFields();
+            // openNotificationWithIcon(
+            //     'success',
+            //     'School Added Successfully',
+            //     'The school has been added to the system successfully.',
+            //     2,
+            //     () => router.push("/admin/management/school/school-list")
+            // );
         } catch (error: unknown) {
             const errorMessage = formatErrorMessage(error);
             openNotificationWithIcon(
@@ -173,13 +92,14 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
      * Handles school update
      */
     const handleUpdateSubmit = async () => {
-        const schoolData = await prepareSchoolData();
+        const schoolData = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
         try {
             await updateSchoolByAdmin({id: Number(schoolId), ...schoolData}).unwrap();
             messageApi.success('School updated successfully!');
             getSchoolByIdRefetch();
         } catch (error) {
+            console.log(error)
             messageApi.error("Failed to update school. Please try again.");
         }
     };
@@ -198,6 +118,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             messageApi.error("Failed to publish school. Please try again.");
         }
     };
+
     const handleUnpublish = async () => {
         setActiveButton("unpublish");
         try {
@@ -208,15 +129,17 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             messageApi.error("Failed to unpublish school. Please try again.");
         }
     };
+
     const handleDelete = async () => {
         setActiveButton("delete");
         try {
             await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 6}}).unwrap();
-            messageApi.success('School deleted successfully!')
+            messageApi.success('School deleted successfully!');
         } catch (error) {
             messageApi.error("Failed to delete school. Please try again.");
         }
     };
+
     const handleApprove = async () => {
         setActiveButton("approve");
         try {
@@ -227,6 +150,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             messageApi.error("Failed to approve school. Please try again.");
         }
     };
+
     const handleReject = async () => {
         setActiveButton("reject");
         try {
@@ -237,6 +161,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             messageApi.error("Failed to reject school. Please try again.");
         }
     };
+
     const handleEdit = () => {
         router.push(`/admin/management/school/edit-school/${schoolId}`);
     };
@@ -251,22 +176,18 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 </Button>
             )}
             {hasCreateSubmitButton && (
-                <Button htmlType="button" type="primary" onClick={() => {
-                    addSchoolHandle(1);
-                }}
-                        loading={isCreating}>
+                <Button htmlType="button" type="primary" onClick={() => addSchoolHandle(1)} loading={isCreating}>
                     Submit
                 </Button>
             )}
             {hasUpdateSubmitButton && (
-                <Button htmlType="button" type="primary" onClick={handleUpdateSubmit}
-                        loading={isUpdating}>
+                <Button htmlType="button" type="primary" onClick={handleUpdateSubmit} loading={isUpdating}>
                     Submit
                 </Button>
             )}
             {hasDeleteButton && (
                 <Button htmlType="button" onClick={handleDelete} loading={isUpdatingStatus && activeButton === "delete"}
-                        className={'bg-orange-300 text-orange-800 border-orange-900'}>
+                        className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}>
                     Delete
                 </Button>
             )}
@@ -289,13 +210,13 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             )}
             {hasPublishButton && (
                 <Button htmlType="button" onClick={handlePublish} loading={isUpdatingStatus && activeButton === "publish"}
-                        className={'bg-green-300 text-green-800 border-green-900'}>
+                        className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
                     Publish
                 </Button>
             )}
             {hasUnpublishButton && (
                 <Button htmlType="button" onClick={handleUnpublish} loading={isUpdatingStatus && activeButton === "unpublish"}
-                        className={'bg-purple-300 text-purple-800 border-purple-900'}>
+                        className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
                     Unpublish
                 </Button>
             )}

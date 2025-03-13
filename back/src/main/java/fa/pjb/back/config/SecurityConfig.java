@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/parent/register").permitAll()
                                 .requestMatchers("/api/school/review/**").permitAll()
                                 .anyRequest().authenticated()
+//                                .anyRequest().permitAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

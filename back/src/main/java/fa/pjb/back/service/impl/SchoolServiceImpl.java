@@ -1,25 +1,24 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
-import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
-import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.mapper.SchoolMapper;
-import fa.pjb.back.model.vo.ImageVO;
-import fa.pjb.back.model.vo.SchoolDetailVO;
-import fa.pjb.back.model.vo.SchoolListVO;
+import fa.pjb.back.model.mapper.SchoolOwnerProjection;
+import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
-import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.EmailService;
+import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,15 +26,18 @@ import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
@@ -87,16 +89,12 @@ public class SchoolServiceImpl implements SchoolService {
         mediaRepository.saveAll(mediaList);
     }
 
-    //TODO: add school based on user role and id
     @Transactional
     @Override
     public SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
         if (checkEmailExists(schoolDTO.email())) {
             throw new EmailAlreadyExistedException("This email is already in used");
         }
-//        if (checkPhoneExists(schoolDTO.phone())) {
-//            throw new PhoneExistedException("This phone is already in used");
-//        }
         School school = schoolMapper.toSchool(schoolDTO);
         List<ImageVO> imageVOList = null;
         if (schoolDTO.facilities() != null) {
@@ -117,13 +115,11 @@ public class SchoolServiceImpl implements SchoolService {
         }
         // If the submit user is admin then auto change status to approved
         User user = userRepository.findById(schoolDTO.userId()).orElseThrow(() -> new AuthenticationFailedException("Cannot authenticate"));
-
         if (user.getRole() == ERole.ROLE_ADMIN && schoolDTO.status() == SUBMITTED.getValue()) {
             school.setStatus((byte) APPROVED.getValue());
         }
         school.setPostedDate(LocalDate.now());
         School newSchool = schoolRepository.save(school);
-
         // Validate and upload images (if provided)
         if (image != null) {
             for (MultipartFile file : image) {
@@ -141,7 +137,6 @@ public class SchoolServiceImpl implements SchoolService {
                     throw new InvalidFileFormatException("Error when processing file");
                 }
             }
-
             //Upload images
             try {
                 imageVOList = imageService.uploadListImages(
@@ -164,35 +159,41 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Override
     @Transactional
+    @Override
     public SchoolDetailVO updateSchoolByAdmin(SchoolUpdateDTO schoolDTO, List<MultipartFile> images) {
         // Check if the school exists
         School school = schoolRepository.findById(schoolDTO.id())
                 .orElseThrow(SchoolNotFoundException::new);
-
         // Update entity fields from DTO
         schoolMapper.updateSchoolFromDto(schoolDTO, school);
-
         // Update facilities
         Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
         if (existingFacilities.size() != schoolDTO.facilities().size()) {
             throw new InvalidDataException("Some facilities do not exist in the database");
         }
         school.setFacilities(existingFacilities);
-
         // Update utilities
         Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
         if (existingUtilities.size() != schoolDTO.utilities().size()) {
             throw new InvalidDataException("Some utilities do not exist in the database");
         }
         school.setUtilities(existingUtilities);
-
-        // Process and update images if new images are uploaded
+        // Delete old images
+        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+        if (!oldMedias.isEmpty()) {
+            for (Media media : oldMedias) {
+                // Delete images from Google Drive
+                ImageVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
+                log.info("🗑 Deleted Image from Google Drive: {}", deleteResponse);
+            }
+            school.getImages().clear();
+            schoolRepository.save(school);
+            mediaRepository.deleteAllBySchool(school);
+        }
+        // Handle new uploaded images
         if (images != null && !images.isEmpty()) {
-            mediaRepository.deleteAllBySchool(school); // Remove old images
-
-            // Validate and upload new images
+            // Check format & size of file
             for (MultipartFile file : images) {
                 if (file.getSize() > MAX_FILE_SIZE) {
                     throw new InvalidFileFormatException("File cannot exceed 5MB");
@@ -206,7 +207,6 @@ public class SchoolServiceImpl implements SchoolService {
                     throw new UploadFileException("Error processing file: " + e.getMessage());
                 }
             }
-
             try {
                 List<ImageVO> imageVOList = imageService.uploadListImages(
                         imageService.convertMultiPartFileToFile(images),
@@ -218,10 +218,28 @@ public class SchoolServiceImpl implements SchoolService {
                 throw new UploadFileException("Error uploading images: " + e.getMessage());
             }
         }
-
         // Save the updated school data
         schoolRepository.save(school);
         return schoolMapper.toSchoolDetailVO(school);
+    }
+
+
+    @Override
+    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String searchParam) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwners(searchParam, ERole.ROLE_SCHOOL_OWNER);
+        // Convert projection to VO
+        return projections.stream()
+                .map(projection -> new SchoolOwnerVO(
+                        projection.getId(),
+                        projection.getUsername(),
+                        projection.getEmail(),
+                        projection.getExpectedSchool()
+                ))
+                .toList();
+    }
+
+    public List<ExpectedSchoolVO> findAllDistinctExpectedSchools() {
+        return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
     }
 
 
@@ -235,7 +253,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId, String name) {
         School school = schoolRepository.findSchoolByUserId(userId, name)
-            .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         return schoolMapper.toSchoolDetailVO(school);
     }
 
@@ -407,7 +425,14 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
+    public boolean checkEditingEmailExists(String email, Integer schoolId) {
+        return schoolRepository.existsByEmailExcept(email, schoolId);
+    }
+
+    @Override
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
     }
+
+
 }

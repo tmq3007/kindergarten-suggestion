@@ -289,13 +289,16 @@ export const schoolApi = createApi({
             invalidatesTags: ["School", "SchoolList"],
         }),
 
-        updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, ChangeSchoolStatusDTO>({
-            query: (changeSchoolStatusDTO) => ({
-                url: `/school/change-status/by-school-owner`,
+        updateSchoolStatusBySchoolOwner: build.mutation<ApiResponse<void>, {
+            schoolId: number;
+            changeSchoolStatusDTO: ChangeSchoolStatusDTO
+        }>({
+            query: ({schoolId, changeSchoolStatusDTO}) => ({
+                url: `/school/change-status/by-school-owner/${schoolId}`,
                 method: 'PUT',
                 body: changeSchoolStatusDTO,
             }),
-            invalidatesTags: ["School", "SchoolList"],
+            invalidatesTags: ["School"],
         }),
 
         searchExpectedSchool: build.query<ApiResponse<ExpectedSchool[]>, void>({
@@ -311,7 +314,7 @@ export const {
     useAddSchoolMutation,
     useLazyCheckSchoolEmailQuery,
     useLazyCheckSchoolPhoneQuery,
-    useCheckEditSchoolEmailMutation,
+    useCheckEditSchoolEmailMutation
     useUpdateSchoolByAdminMutation,
     useUpdateSchoolStatusByAdminMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation,

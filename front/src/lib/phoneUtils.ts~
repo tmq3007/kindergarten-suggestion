@@ -6,8 +6,8 @@ export const formatPhoneNumber = (phone: string | undefined, i: number = 1): str
     const numberPart = trimmedPhone[1];
     const diaCodePart = trimmedPhone[0].trim();
     if (i == 1) {
-        return numberPart || "";
+        return numberPart || "9999";
     } else {
-        return diaCodePart || "";
+        return diaCodePart || "999";
     }
 };

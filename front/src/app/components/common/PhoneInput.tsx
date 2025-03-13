@@ -1,203 +1,208 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Form, Input, Select } from 'antd';
-import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
-import { Image } from 'antd';
+import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
+import {Form, Image, Input, Select} from 'antd';
+import {Country, useGetCountriesQuery} from '@/redux/services/registerApi';
 import countriesKeepZero from '@/lib/countriesKeepZero';
+import {FormInstance} from "antd/es/form";
 
 interface PhoneInputProps {
-  isReadOnly?: boolean;
-  initialCountryCode?: string;  //Optional initial Country
-  onPhoneChange?: (phone: string) => void; // Optional callback to update form value
-  triggerCheckPhone?: (phone: string) => any; // Optional hook for server-side validation
+    form: FormInstance;
+    isReadOnly?: boolean;
+    initialCountryCode?: string;  //Optional initial Country
+    onPhoneChange?: (phone: string) => void; // Optional callback to update form value
+    triggerCheckPhone?: (phone: string) => any; // Optional hook for server-side validation
 }
 
 // Use forwardRef to allow parent to call methods
-const PhoneInput = forwardRef(
-  (
-    {
-      isReadOnly,
-      initialCountryCode = 'VN',
-      onPhoneChange,
-      triggerCheckPhone,
-    }: PhoneInputProps,
-    ref
-  ) => {
-    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
-    const [phone, setPhone] = useState<string>('');
-    const [phoneStatus, setPhoneStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
-    const [phoneHelp, setPhoneHelp] = useState<string | null>(null);
+const PhoneInput = forwardRef((
+        {
+            form,
+            isReadOnly,
+            initialCountryCode = '+84',
+            onPhoneChange,
+            triggerCheckPhone,
+        }: PhoneInputProps,
+        ref
+    ) => {
+        const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
+        const [phone, setPhone] = useState<string>('');
+        const [phoneStatus, setPhoneStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
+        const [phoneHelp, setPhoneHelp] = useState<string | null>(null);
 
-    // Fetch countries directly within PhoneInput
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
+        // Fetch countries directly within PhoneInput
+        const {data: countries, isLoading: isLoadingCountry} = useGetCountriesQuery();
 
-    // Sync selectedCountry with countries when they load
-    useEffect(() => {
-      if (countries && !selectedCountry) {
-        const defaultCountry = countries.find((c) => c.code === initialCountryCode);
-        setSelectedCountry(defaultCountry);
-      }
-    }, [countries, initialCountryCode]);
+        // Sync selectedCountry with countries when they load
+        useEffect(() => {
+            if (countries && !selectedCountry) {
+                console.log("initialCountryCode", initialCountryCode);
+                console.log(form.getFieldValue('phone'))
+                const defaultCountry = countries.find((c) => c.dialCode === initialCountryCode);
+                setPhone(form.getFieldValue('phone'));
+                setSelectedCountry(defaultCountry);
+            }
+        }, [countries, initialCountryCode]);
 
-    const handleCountryChange = async (value: string) => {
-      const country = countries?.find((c) => c.code === value);
-      if (country) {
-        setSelectedCountry(country);
-        if (triggerCheckPhone) {
-          await validatePhone();
-        }
-      }
-    };
-
-    const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-      setPhone(value);
-      if (onPhoneChange) onPhoneChange(value);
-      setPhoneStatus(''); // Reset status on change
-      setPhoneHelp(null);
-    };
-
-    const validatePhone = async (): Promise<boolean> => {
-      if (!phone) {
-        setPhoneStatus('error');
-        setPhoneHelp('Please input your phone number!');
-        return false;
-      }
-
-      if (phone.length < 9 || phone.length > 15) {
-        setPhoneStatus('error');
-        setPhoneHelp('Phone number must be between 9 and 15 digits!');
-        return false;
-      }
-
-      if (!selectedCountry) {
-        setPhoneStatus('error');
-        setPhoneHelp('Please select a country code!');
-        return false;
-      }
-
-      const formattedPhone = getFormattedPhoneNumber();
-      if (!triggerCheckPhone) {
-        setPhoneStatus('success');
-        setPhoneHelp(null);
-        return true;
-      }
-
-      setPhoneStatus('validating');
-      setPhoneHelp('Checking phone availability...');
-      try {
-        const response = await triggerCheckPhone(formattedPhone).unwrap();
-        if (response.data === 'true') {
-          setPhoneStatus('error');
-          setPhoneHelp('This phone number is already registered!');
-          return false;
-        } else {
-          setPhoneStatus('success');
-          setPhoneHelp(null);
-          return true;
-        }
-      } catch (error) {
-        setPhoneStatus('error');
-        setPhoneHelp('Failed to validate phone number.');
-        return false;
-      }
-    };
-
-    // Internal method to format the phone number
-    const getFormattedPhoneNumber = (): string => {
-      if (!selectedCountry || !phone) return phone;
-      let formattedPhone = phone;
-      if (!countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith('0')) {
-        formattedPhone = formattedPhone.substring(1);
-      }
-      return `${selectedCountry.dialCode} ${formattedPhone}`;
-    };
-
-    // Expose methods to parent via ref
-    useImperativeHandle(ref, () => ({
-      validatePhone,
-      getFormattedPhoneNumber,
-    }));
-
-    const handlePhoneBlur = async () => {
-      if (triggerCheckPhone) {
-        await validatePhone();
-      }
-    };
-
-    return (
-      <div className="phone-input-container">
-        <Form.Item
-          label="Phone Number"
-          required
-          validateStatus={phoneStatus}
-          help={phoneHelp}
-        >
-          <div className="flex items-center rounded-lg overflow-hidden">
-            <Form.Item hasFeedback={!!triggerCheckPhone} noStyle >
-              <Select
-                style={{ width: 120 }}
-                loading={isLoadingCountry}
-                value={selectedCountry?.code}
-                onChange={handleCountryChange}
-                dropdownStyle={{ width: 250 }}
-                optionLabelProp="label2"
-                showSearch
-                filterOption={(input, option) =>
-                  String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+        const handleCountryChange = async (value: string) => {
+            const country = countries?.find((c) => c.code === value);
+            if (country) {
+                setSelectedCountry(country);
+                if (triggerCheckPhone) {
+                    await validatePhone();
                 }
-                className={isReadOnly ? "pointer-events-none" : ""}
-                suffixIcon={!isReadOnly}
-              >
-                {countries?.map((country) => (
-                  <Select.Option
-                    key={country.code}
-                    value={country.code}
-                    label={country.label}
-                    label2={
-                      <span className="flex items-center">
+            }
+        };
+
+        const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            setPhone(value);
+            if (onPhoneChange) onPhoneChange(value);
+            setPhoneStatus(''); // Reset status on change
+            setPhoneHelp(null);
+        };
+
+        const validatePhone = async (): Promise<boolean> => {
+            if(!isReadOnly) return true;
+            if (!phone) {
+                setPhoneStatus('error');
+                setPhoneHelp('Please input your phone number!');
+                return false;
+            }
+
+            if (phone.length < 9 || phone.length > 15) {
+                setPhoneStatus('error');
+                setPhoneHelp('Phone number must be between 9 and 15 digits!');
+                return false;
+            }
+
+            if (!selectedCountry) {
+                setPhoneStatus('error');
+                setPhoneHelp('Please select a country code!');
+                return false;
+            }
+
+            const formattedPhone = getFormattedPhoneNumber();
+            if (!triggerCheckPhone) {
+                setPhoneStatus('success');
+                setPhoneHelp(null);
+                return true;
+            }
+
+            setPhoneStatus('validating');
+            setPhoneHelp('Checking phone availability...');
+            try {
+                const response = await triggerCheckPhone(formattedPhone).unwrap();
+                if (response.data === 'true') {
+                    setPhoneStatus('error');
+                    setPhoneHelp('This phone number is already registered!');
+                    return false;
+                } else {
+                    setPhoneStatus('success');
+                    setPhoneHelp(null);
+                    return true;
+                }
+            } catch (error) {
+                setPhoneStatus('error');
+                setPhoneHelp('Failed to validate phone number.');
+                return false;
+            }
+        };
+
+        // Internal method to format the phone number
+        const getFormattedPhoneNumber = (): string => {
+            if (!selectedCountry || !phone) return phone;
+            let formattedPhone = phone;
+            if (!countriesKeepZero.includes(selectedCountry.dialCode) && formattedPhone.startsWith('0')) {
+                formattedPhone = formattedPhone.substring(1);
+            }
+            return `${selectedCountry.dialCode} ${formattedPhone}`;
+        };
+
+        // Expose methods to parent via ref
+        useImperativeHandle(ref, () => ({
+            validatePhone,
+            getFormattedPhoneNumber,
+        }));
+
+        const handlePhoneBlur = async () => {
+            if (triggerCheckPhone) {
+                await validatePhone();
+            }
+        };
+
+        return (
+            <div className="phone-input-container">
+                <Form.Item
+                    label="Phone Number"
+                    required
+                    validateStatus={phoneStatus}
+                    help={phoneHelp}
+                >
+                    <div className="flex items-center rounded-lg overflow-hidden">
+                        <Form.Item hasFeedback={!!triggerCheckPhone} noStyle>
+                            <Select
+                                style={{width: 120}}
+                                loading={isLoadingCountry}
+                                value={selectedCountry?.code}
+                                onChange={handleCountryChange}
+                                dropdownStyle={{width: 250}}
+                                optionLabelProp="label2"
+                                showSearch
+                                filterOption={(input, option) =>
+                                    String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
+                                className={isReadOnly ? "pointer-events-none" : ""}
+                                suffixIcon={!isReadOnly}
+                            >
+                                {countries?.map((country) => (
+                                    <Select.Option
+                                        key={country.code}
+                                        value={country.code}
+                                        label={country.label}
+                                        label2={
+                                            <span className="flex items-center">
                         <Image
-                          src={country.flag}
-                          alt={country.label}
-                          width={20}
-                          height={14}
-                          className="mr-2 intrinsic"
-                          preview={false}
+                            src={country.flag}
+                            alt={country.label}
+                            width={20}
+                            height={14}
+                            className="mr-2 intrinsic"
+                            preview={false}
                         />
-                        {country.code} {country.dialCode}
+                                                {country.code} {country.dialCode}
                       </span>
-                    }
-                  >
-                    <div className="flex items-center">
-                      <Image
-                        src={country.flag}
-                        alt={country.label}
-                        width={20}
-                        height={14}
-                        className="mr-2 intrinsic"
-                      />
-                      {country.dialCode} - {country.label}
-                    </div>
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="phone"
-              rules={[{ required: true, message: 'Please input your phone number!' }]}
-              hasFeedback={!!triggerCheckPhone}
-              validateStatus={phoneStatus}
-              noStyle
-            >
-              <Input
-                placeholder="Enter your phone number"
-                value={phone}
-                onChange={handlePhoneNumberChange}
-                onBlur={triggerCheckPhone ? handlePhoneBlur : undefined}
-                style={{ flex: 1 }}
-                readOnly={isReadOnly}
-              />
-            </Form.Item>
-            <style>{`
+                                        }
+                                    >
+                                        <div className="flex items-center">
+                                            <Image
+                                                src={country.flag}
+                                                alt={country.label}
+                                                width={20}
+                                                height={14}
+                                                className="mr-2 intrinsic"
+                                            />
+                                            {country.dialCode} - {country.label}
+                                        </div>
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            name="phone"
+                            rules={[{required: true, message: 'Please input your phone number!'}]}
+                            hasFeedback={!!triggerCheckPhone}
+                            validateStatus={phoneStatus}
+                            noStyle
+                        >
+                            <Input
+                                placeholder="Enter your phone number"
+                                value={phone}
+                                onChange={handlePhoneNumberChange}
+                                onBlur={triggerCheckPhone ? handlePhoneBlur : handlePhoneNumberChange}
+                                style={{flex: 1}}
+                                readOnly={isReadOnly}
+                            />
+                        </Form.Item>
+                        <style>{`
         .phone-input-container .ant-form-item-explain {
           color: red !important;
         }
@@ -218,11 +223,11 @@ const PhoneInput = forwardRef(
             border-bottom-left-radius: 0 !important;
           }
       `}</style>
-          </div>
-        </Form.Item>
-      </div>
-    );
-  }
+                    </div>
+                </Form.Item>
+            </div>
+        );
+    }
 );
 
 PhoneInput.displayName = 'PhoneInput';

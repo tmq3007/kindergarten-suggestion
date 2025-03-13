@@ -12,21 +12,21 @@ const transparentTabStyle = {
 
 const UserFormSkeleton = () => {
     return (
-        <div className="min-h-screen mt-14 bg-teal-100 bg-opacity-0">
+        <div className="min-h-screen mt-14 bg-white bg-opacity-0">
             <div className="container mx-auto mt-10 px-4 py-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="col-span-1">
-                        <div className="bg-teal-100 rounded-lg shadow-md p-6 h-full">
+                        <div className="bg-white rounded-lg shadow-md p-6 h-full">
                             <ProfileSideBarSkeleton />
                         </div>
                     </div>
                     <div className="col-span-1 md:col-span-2">
-                        <div className="bg-teal-100 bg-opacity-60 rounded-lg shadow-md p-4 h-full">
+                        <div className="bg-white bg-opacity-0 rounded-lg shadow-md p-4 h-full">
                             <Tabs
                                 defaultActiveKey="1"
                                 type="card"
                                 size="small"
-                                className="h-full bg-teal-100 bg-opacity-0"
+                                className="h-full bg-white bg-opacity-0"
                                 tabBarStyle={{
                                     marginBottom: 0,
                                     color: '#555',

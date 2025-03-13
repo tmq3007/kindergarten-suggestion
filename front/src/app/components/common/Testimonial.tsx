@@ -38,6 +38,7 @@ export default function Testimonial() {
                                     <Avatar
                                         size={{xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100}}
                                         icon={<AntDesignOutlined/>}
+                                        src={r.parentImage}
                                         className="mb-4"
                                     />
                                     <div className={'flex flex-col w-5/6 ml-5'}>
