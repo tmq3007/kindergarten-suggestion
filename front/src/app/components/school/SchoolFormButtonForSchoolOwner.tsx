@@ -1,5 +1,5 @@
-import {Button, message, notification} from "antd";
-import React, { useState } from "react";
+import {Button, message, notification, UploadFile} from "antd";
+import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
 import {
@@ -39,22 +39,61 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const [activeButton, setActiveButton] = useState<string | null>(null);
 
     // Config notifications
-    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number) => {
+    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
         api[type]({
             message,
             description,
             duration: duration,
             placement: 'topRight',
             showProgress: true,
-            pauseOnHover: false
+            pauseOnHover: false,
+            onClose: onClose
         });
+    };
+
+    /**
+     * Utility function to prepare school data before submission
+     * - Validates form fields
+     * - Formats phone number correctly
+     * - Extracts uploaded images
+     */
+
+    const prepareSchoolAddData = async (): Promise<SchoolCreateDTO | null> => {
+        try {
+            // Validate form fields and get values
+            const values = await form.validateFields();
+            // Validate email and phone using refs from SchoolForm
+
+            const isEmailValid = await emailInputRef?.current?.validateEmail();
+            const isPhoneValid = await phoneInputRef?.current?.validatePhone();
+
+            if (!isEmailValid || !isPhoneValid) {
+                console.log('Validation failed');
+                messageApi.error("Email or phone validation failed. Please check your inputs.");
+                return null;
+            }
+            const fileList: File[] = (values.image as UploadFile[] || [])
+                .filter((file) => file.originFileObj)
+                .map((file) => file.originFileObj as File);
+            const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
+
+            // Prepare final data
+            return {
+                ...values,
+                imageFile: fileList,
+                phone: fullPhoneNumber,
+            };
+        } catch (error) {
+            console.error("Form validation failed:", error);
+            return null; // Return null if validation fails
+        }
     };
 
     /**
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
-        const schoolValue = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi); // Sử dụng hàm utility
+        const schoolValue = await prepareSchoolAddData(); // Sử dụng hàm utility
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
@@ -68,17 +107,18 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             openNotificationWithIcon(
                 'success',
                 'School Added Successfully',
-                'The school has been added to the system successfully.',
-                2
+                'The school has been added to the system successfully! Please wait for the admins to review.',
+                2,
+                () => router.push("/public/school-owner")
             );
-            router.push("/school/school-detail");
         } catch (error: unknown) {
-            const errorMessage = formatErrorMessage(error); // Sử dụng hàm utility
+            const errorMessage = formatErrorMessage(error);
             openNotificationWithIcon(
                 'error',
                 'Failed to Add School',
                 errorMessage,
-                5
+                5,
+                () => {},
             );
         }
     };
@@ -102,7 +142,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const handlePublish = async () => {
         setActiveButton("publish");
         try {
-            await updateSchoolStatusBySchoolOwner( { status: 4 } ).unwrap();
+            await updateSchoolStatusBySchoolOwner({status: 4}).unwrap();
             messageApi.success('School published successfully!')
         } catch (error) {
             messageApi.error("Failed to publish school. Please try again.");
@@ -112,7 +152,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const handleUnpublish = async () => {
         setActiveButton("unpublish");
         try {
-            await updateSchoolStatusBySchoolOwner( { status: 5 } ).unwrap();
+            await updateSchoolStatusBySchoolOwner({status: 5}).unwrap();
             messageApi.success('School unpublished successfully!')
         } catch (error) {
             messageApi.error("Failed to unpublish school. Please try again.");
@@ -122,7 +162,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const handleDelete = async () => {
         setActiveButton("delete");
         try {
-            await updateSchoolStatusBySchoolOwner( { status: 6 } ).unwrap();
+            await updateSchoolStatusBySchoolOwner({status: 6}).unwrap();
             messageApi.success('School deleted successfully!')
         } catch (error) {
             messageApi.error("Failed to delete school. Please try again.");

@@ -227,7 +227,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         className='rounded-lg'
                         style={{
                             padding: 15,
-                            minHeight: 280,
+                            minHeight: 800,
                         }}
                     >
                         {children}
