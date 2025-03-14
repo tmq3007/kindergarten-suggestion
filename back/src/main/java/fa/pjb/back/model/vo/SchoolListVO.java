@@ -1,6 +1,6 @@
 package fa.pjb.back.model.vo;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public record SchoolListVO(
         Integer id,
@@ -12,6 +12,6 @@ public record SchoolListVO(
         String street,
         String email,
         String phone,
-        Date posted_date
+        LocalDate postedDate
 ) {
 }

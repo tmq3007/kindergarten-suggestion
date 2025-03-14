@@ -27,7 +27,7 @@ interface SchoolVO {
     feeFrom: number;
     feeTo: number;
     description: string;
-    posted_date: string;
+    postedDate: string;
 }
 
 //handle status type
@@ -106,27 +106,44 @@ export default function SchoolList() {
     useEffect(() => {
         const schools: SchoolVO[] = data?.data?.content || [];
         console.log("Original schools:", schools);
-
         const filtered = schools.filter((school) => school.status !== 0 && school.status !== 6);
-        console.log("Filtered schools:", filtered);
+
+        // Sort by postedDate (newest to oldest)
+        const sorted = [...filtered].sort((a, b) => {
+            const dateA = a.postedDate ? new Date(a.postedDate) : null;
+            const dateB = b.postedDate ? new Date(b.postedDate) : null;
+            if (!dateA && !dateB) return 0;
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateB.getTime() - dateA.getTime();
+        });
+        console.log("Sorted schools:", sorted);
 
         setAllSchools(schools);
-        setFilteredSchools(filtered);
-        setTotalElements(filtered.length);
+        setFilteredSchools(sorted); // Sử dụng sorted thay vì filtered
+        setTotalElements(sorted.length);
     }, [data]);
 
     const tableData = filteredSchools
-        .slice((page - 1) * pageSize, page * pageSize)
-        .map((school) => ({
+    .slice((page - 1) * pageSize, page * pageSize)
+    .map((school) => {
+        return {
             key: school.id,
             id: school.id,
             schoolName: school.name,
             address: `${school.street}, ${school.ward}, ${school.district}, ${school.province}`,
             phone: school.phone,
             email: school.email,
-            postedDate: school.posted_date ? new Date(school.posted_date).toLocaleDateString() : "N/A",
+            postedDate: school.postedDate
+                ? new Date(school.postedDate).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                })
+                : "N/A",
             status: getStatusText(school.status),
-        }));
+        };
+    });
 
     const columns = [
         {
