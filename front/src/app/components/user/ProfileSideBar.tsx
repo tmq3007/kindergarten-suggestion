@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Breadcrumb, Avatar, Typography, Upload, message, Image, Button } from 'antd';
-import Link from 'next/link';
 import { CalendarOutlined, MailOutlined, PhoneOutlined, UserOutlined, EyeOutlined, UploadOutlined } from '@ant-design/icons';
 import { motion } from "framer-motion";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
@@ -17,14 +16,23 @@ interface ProfileSidebarProps {
    dob: string | undefined;
    avatarUrl?: string | undefined;
    onAvatarChange?: (file: File) => void;
+   openNotificationWithIcon: (type: 'success' | 'error', message: string, description: string) => void; // Thêm prop
 }
 
 
-const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone, dob, avatarUrl, onAvatarChange }) => {
+const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
+                                                          fullname,
+                                                          email,
+                                                          phone,
+                                                          dob,
+                                                          avatarUrl,
+                                                          onAvatarChange,
+                                                          openNotificationWithIcon
+                                                      }) => {
    const [avatar, setAvatar] = useState<string | undefined>(avatarUrl);
    const [fileList, setFileList] = useState<any[]>([]);
    const [previewVisible, setPreviewVisible] = useState(false);
-   const [isHovered, setIsHovered] = useState(false); // State để điều khiển hover
+   const [isHovered, setIsHovered] = useState(false);
 
 
    useEffect(() => {
@@ -36,6 +44,23 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
 
    const handleUpload = (info: any) => {
        const file = info.file as File;
+       const allowedFormats = ['image/jpeg', 'image/jpg', "image/png"];
+       const maxSizeMB = 5;
+       const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+
+       if (!allowedFormats.includes(file.type)) {
+           openNotificationWithIcon('error', 'Upload Failed!', 'Only JPG, PNG and JPEG formats are allowed.');
+           return;
+       }
+
+
+       if (file.size > maxSizeBytes) {
+           openNotificationWithIcon('error', 'Upload Failed!', `File size must not exceed ${maxSizeMB}MB.`);
+           return;
+       }
+
+
        if (file) {
            const previewUrl = URL.createObjectURL(file);
            setAvatar(previewUrl);
@@ -43,6 +68,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
            if (onAvatarChange) {
                onAvatarChange(file);
            }
+           openNotificationWithIcon('success', 'Upload Successfully!','Your Avatar is uploaded.');
            message.success(`${file.name} uploaded successfully`);
        }
    };
@@ -74,31 +100,27 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
 
 
            <div className="flex flex-col items-center space-y-3">
-               {/* Container cho Avatar và các nút */}
                <div
                    style={{ position: 'relative', display: 'inline-block' }}
                    onMouseEnter={() => setIsHovered(true)}
                    onMouseLeave={() => setIsHovered(false)}
                >
-                   {/* Avatar */}
                    <Avatar
                        size={150}
                        src={avatar}
                        icon={<UserOutlined />}
                        className="border-4 border-white shadow-lg mx-auto"
                    />
-
-
                    {isHovered && (
                        <div
                            style={{
                                position: 'absolute',
                                top: '50%',
                                left: '50%',
-                               transform: 'translate(-50%, -50%)', // Center the buttons
+                               transform: 'translate(-50%, -50%)',
                                display: 'flex',
                                gap: '8px',
-                               zIndex: 10, // Ensure buttons are above the avatar
+                               zIndex: 10,
                            }}
                        >
                            <Upload
@@ -114,8 +136,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
                                    style={{ backgroundColor: '#1890ff', color: '#fff' }}
                                />
                            </Upload>
-
-
                            {avatar && (
                                <Button
                                    icon={<EyeOutlined />}
@@ -159,7 +179,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
                        <MailOutlined className="mr-2" />
                        Email: {email || 'N/A'}
                    </label>
-                   {/*<p className="text-black font-medium"> </p>*/}
                </div>
                <div className="flex items-center justify-center space-x-2">
                    <label className="text-black font-medium">
@@ -182,3 +201,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
 
 
 export default ProfileSidebar;
+
+
+

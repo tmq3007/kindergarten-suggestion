@@ -1,4 +1,4 @@
-import {Button, message, notification, UploadFile} from "antd";
+import {Button, message, Modal, notification, UploadFile} from "antd";
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
@@ -37,6 +37,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
     const [activeButton, setActiveButton] = useState<string | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
@@ -139,39 +141,66 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         // Handle cancel logic here
     };
 
-    const handlePublish = async () => {
+    const handleConfirmAction = async () => {
+        try {
+            switch (activeButton) {
+                case "publish":
+                    await updateSchoolStatusBySchoolOwner({ status: 4 }).unwrap();
+                    messageApi.success('School published successfully!');
+                    break;
+                case "unpublish":
+                    await updateSchoolStatusBySchoolOwner({ status: 5 }).unwrap();
+                    messageApi.success('School unpublished successfully!');
+                    break;
+                case "delete":
+                    await updateSchoolStatusBySchoolOwner({ status: 6 }).unwrap();
+                    messageApi.success('School deleted successfully!');
+                    break;
+            }
+            setModalVisible(false);
+            setActiveButton(null);
+        } catch (error) {
+            messageApi.error(`Failed to ${activeButton} school. Please try again.`);
+            setModalVisible(false);
+        }
+    };
+ 
+ 
+    const handlePublish = () => {
         setActiveButton("publish");
-        try {
-            await updateSchoolStatusBySchoolOwner({status: 4}).unwrap();
-            messageApi.success('School published successfully!')
-        } catch (error) {
-            messageApi.error("Failed to publish school. Please try again.");
-        }
+        setModalVisible(true);
     };
-
-    const handleUnpublish = async () => {
+ 
+ 
+    const handleUnpublish = () => {
         setActiveButton("unpublish");
-        try {
-            await updateSchoolStatusBySchoolOwner({status: 5}).unwrap();
-            messageApi.success('School unpublished successfully!')
-        } catch (error) {
-            messageApi.error("Failed to unpublish school. Please try again.");
-        }
+        setModalVisible(true);
     };
-
-    const handleDelete = async () => {
+ 
+ 
+    const handleDelete = () => {
         setActiveButton("delete");
-        try {
-            await updateSchoolStatusBySchoolOwner({status: 6}).unwrap();
-            messageApi.success('School deleted successfully!')
-        } catch (error) {
-            messageApi.error("Failed to delete school. Please try again.");
-        }
+        setModalVisible(true);
     };
+ 
 
     const handleEdit = () => {
         // Handle edit logic here
     };
+
+    const getModalContent = () => {
+        switch (activeButton) {
+            case "publish":
+                return { title: "Publish School", desc: "Are you sure you want to publish this school?" };
+            case "unpublish":
+                return { title: "Unpublish School", desc: "Are you sure you want to unpublish this school?" };
+            case "delete":
+                return { title: "Delete School", desc: "Are you sure you want to delete this school?" };
+            default:
+                return { title: "", desc: "" };
+        }
+    };
+ 
 
     return (
         <>
@@ -208,7 +237,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasDeleteButton &&
                     <Button
                         htmlType="button"
-                        onClick={handleDelete} loading={isUpdatingStatus && activeButton === "delete"}
+                        onClick={handleDelete}
                         className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}
                     >
                         Delete
@@ -222,7 +251,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasPublishButton &&
                     <Button
                         htmlType="button"
-                        onClick={handlePublish} loading={isUpdatingStatus && activeButton === "publish"}
+                        onClick={handlePublish}
                         className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}
                     >
                         Publish
@@ -231,12 +260,27 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasUnpublishButton &&
                     <Button
                         htmlType="button"
-                        onClick={handleUnpublish} loading={isUpdatingStatus && activeButton === "unpublish"}
+                        onClick={handleUnpublish}
                         className={'bg-purple-300 text-purple-800 border-purple-900'}
                     >
                         Unpublish
                     </Button>
                 }
+                <Modal
+                   title={getModalContent().title}
+                   open={modalVisible}
+                   onOk={handleConfirmAction}
+                   onCancel={() => {
+                       setModalVisible(false);
+                       setActiveButton(null);
+                   }}
+                   okText="Yes"
+                   cancelText="No, Take me back!"
+                   confirmLoading={isUpdatingStatus}
+               >
+                   <p>{getModalContent().desc}</p>
+               </Modal>
+
             </div>
         </>
     );

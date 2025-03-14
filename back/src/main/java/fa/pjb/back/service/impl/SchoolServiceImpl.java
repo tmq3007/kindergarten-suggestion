@@ -182,7 +182,6 @@ public class SchoolServiceImpl implements SchoolService {
 
         // Send submit emails to admins (if applicable)
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
-            // TODO: Fix this to send to all admins
             emailService.sendSubmitEmailToAllAdmin(
                     newSchool.getName(),
                     user.getUsername(),
