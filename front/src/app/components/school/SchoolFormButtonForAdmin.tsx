@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {Button, message, notification, UploadFile} from "antd";
+import {Button, message, Modal, notification, UploadFile} from "antd";
 import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
@@ -41,6 +41,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const { refetch : getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
     const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
     const [activeButton, setActiveButton] = useState<string | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
@@ -147,62 +148,83 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         router.back();
     };
 
-    const handlePublish = async () => {
+    const handleConfirmAction = async () => {
+        try {
+            switch (activeButton) {
+                case "publish":
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
+                    messageApi.success('School published successfully!');
+                    break;
+                case "unpublish":
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
+                    messageApi.success('School unpublished successfully!');
+                    break;
+                case "delete":
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 6 } }).unwrap();
+                    messageApi.success('School deleted successfully!');
+                    break;
+                case "approve":
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 2 } }).unwrap();
+                    messageApi.success('School approved successfully!');
+                    break;
+                case "reject":
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 3 } }).unwrap();
+                    messageApi.success('School rejected successfully!');
+                    break;
+            }
+            getSchoolByIdRefetch();
+            setModalVisible(false);
+            setActiveButton(null);
+        } catch (error) {
+            messageApi.error(`Failed to ${activeButton} school. Please try again.`);
+            setModalVisible(false);
+        }
+    };
+
+    const handlePublish = () => {
         setActiveButton("publish");
-        try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 4}}).unwrap();
-            messageApi.success('School published successfully!');
-            getSchoolByIdRefetch();
-        } catch (error) {
-            messageApi.error("Failed to publish school. Please try again.");
-        }
+        setModalVisible(true);
     };
 
-    const handleUnpublish = async () => {
+    const handleUnpublish = () => {
         setActiveButton("unpublish");
-        try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 5}}).unwrap();
-            messageApi.success('School unpublished successfully!');
-            getSchoolByIdRefetch();
-        } catch (error) {
-            messageApi.error("Failed to unpublish school. Please try again.");
-        }
+        setModalVisible(true);
     };
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         setActiveButton("delete");
-        try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 6}}).unwrap();
-            messageApi.success('School deleted successfully!');
-        } catch (error) {
-            messageApi.error("Failed to delete school. Please try again.");
-        }
+        setModalVisible(true);
     };
 
-    const handleApprove = async () => {
+    const handleApprove = () => {
         setActiveButton("approve");
-        try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 2}}).unwrap();
-            messageApi.success('School approved successfully!');
-            getSchoolByIdRefetch();
-        } catch (error) {
-            messageApi.error("Failed to approve school. Please try again.");
-        }
+        setModalVisible(true);
     };
 
-    const handleReject = async () => {
+    const handleReject = () => {
         setActiveButton("reject");
-        try {
-            await updateSchoolStatusByAdmin({schoolId: Number(schoolId), changeSchoolStatusDTO: {status: 3}}).unwrap();
-            messageApi.success('School rejected successfully!');
-            getSchoolByIdRefetch();
-        } catch (error) {
-            messageApi.error("Failed to reject school. Please try again.");
-        }
+        setModalVisible(true);
     };
 
     const handleEdit = () => {
         router.push(`/admin/management/school/edit-school/${schoolId}`);
+    };
+
+    const getModalContent = () => {
+        switch (activeButton) {
+            case "publish":
+                return { title: "Publish School", desc: "Are you sure you want to publish this school?" };
+            case "unpublish":
+                return { title: "Unpublish School", desc: "Are you sure you want to unpublish this school?" };
+            case "delete":
+                return { title: "Delete School", desc: "Are you sure you want to delete this school?" };
+            case "approve":
+                return { title: "Approve School", desc: "Are you sure you want to approve this school?" };
+            case "reject":
+                return { title: "Reject School", desc: "Are you sure you want to reject this school?" };
+            default:
+                return { title: "", desc: "" };
+        }
     };
 
     return (
@@ -225,7 +247,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 </Button>
             )}
             {hasDeleteButton && (
-                <Button htmlType="button" onClick={handleDelete} loading={isUpdatingStatus && activeButton === "delete"}
+                <Button htmlType="button" onClick={handleDelete}
                         className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}>
                     Delete
                 </Button>
@@ -236,29 +258,43 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 </Button>
             )}
             {hasRejectButton && (
-                <Button htmlType="button" onClick={handleReject} loading={isUpdatingStatus && activeButton === "reject"}
+                <Button htmlType="button" onClick={handleReject}
                         className={'bg-red-300 text-red-800 border-red-900'}>
                     Reject
                 </Button>
             )}
             {hasApproveButton && (
-                <Button htmlType="button" onClick={handleApprove} loading={isUpdatingStatus && activeButton === "approve"}
+                <Button htmlType="button" onClick={handleApprove}
                         className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
                     Approve
                 </Button>
             )}
             {hasPublishButton && (
-                <Button htmlType="button" onClick={handlePublish} loading={isUpdatingStatus && activeButton === "publish"}
+                <Button htmlType="button" onClick={handlePublish}
                         className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
                     Publish
                 </Button>
             )}
             {hasUnpublishButton && (
-                <Button htmlType="button" onClick={handleUnpublish} loading={isUpdatingStatus && activeButton === "unpublish"}
+                <Button htmlType="button" onClick={handleUnpublish}
                         className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
                     Unpublish
                 </Button>
             )}
+            <Modal
+                title={getModalContent().title}
+                open={modalVisible}
+                onOk={handleConfirmAction}
+                onCancel={() => {
+                    setModalVisible(false);
+                    setActiveButton(null);
+                }}
+                okText="Yes"
+                cancelText="No, Take me back!"
+                confirmLoading={isUpdatingStatus}
+            >
+                <p>{getModalContent().desc}</p>
+            </Modal>
         </div>
     );
 };
