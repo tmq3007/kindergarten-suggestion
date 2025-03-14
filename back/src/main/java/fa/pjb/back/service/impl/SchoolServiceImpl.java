@@ -454,10 +454,12 @@ public class SchoolServiceImpl implements SchoolService {
             }
 
             case 6 -> {
-                if (school.getStatus() == 0 || school.getStatus() == 1) {
+                if (school.getStatus() != 2) {
 
                     school.setStatus(changeSchoolStatusDTO.status());
 
+                } else {
+                    throw new InappropriateSchoolStatusException();
                 }
             }
         }
