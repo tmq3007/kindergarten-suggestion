@@ -47,7 +47,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
     };
 
     return (
-        <div className="h-full p-6 rounded-xl flex flex-col items-center space-y-6">
+        <div className="h-full p-6 rounded-xl flex flex-col items-center space-y-4">
             <div className="w-full">
                 <MyBreadcrumb paths={[
                     { label: 'Home', href: '/public' },
@@ -55,14 +55,14 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
                 ]} />
             </div>
 
-            <motion.h4
+            <motion.h1
                 initial={{ color: "#019376" }}
                 animate={{ color: ["#3f51b5", "#019376"] }}
                 transition={{ duration: 3, repeat: Infinity }}
-                className="text-lg mt-0 font-semibold"
+                className={`text-lg mt-0 !font-bold ${lato.className}`}
             >
                 My Profile
-            </motion.h4>
+            </motion.h1>
 
             <div className="flex flex-col items-center space-y-3">
                 {/* Container cho Avatar và các nút */}
@@ -79,7 +79,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
                         className="border-4 border-white shadow-lg mx-auto"
                     />
 
-                    {/* Hiển thị các nút khi hover */}
                     {isHovered && (
                         <div
                             style={{
@@ -106,7 +105,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
                                 />
                             </Upload>
 
-                            {/* Nút Preview */}
                             {avatar && (
                                 <Button
                                     icon={<EyeOutlined />}
@@ -120,7 +118,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
                     )}
                 </div>
 
-                {/* Hiển thị preview trong modal */}
                 {avatar && (
                     <Image
                         width={0}
@@ -146,9 +143,9 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ fullname, email, phone,
                 <div className="flex items-center justify-center space-x-2">
                     <label className="text-black font-medium">
                         <MailOutlined className="mr-2" />
-                        Email:
+                        Email: {email || 'N/A'}
                     </label>
-                    <p className="text-black font-medium"> {email || 'N/A'}</p>
+                    {/*<p className="text-black font-medium"> </p>*/}
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                     <label className="text-black font-medium">

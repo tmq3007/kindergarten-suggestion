@@ -1,6 +1,8 @@
 import React from 'react';
 import {Skeleton, Typography, Upload} from 'antd';
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import {lato} from "@/lib/fonts";
+import {motion} from "framer-motion";
 
 const {Title} = Typography;
 
@@ -15,9 +17,14 @@ const ProfileSidebar: React.FC = () => {
                 ]}/>
             </div>
 
-            <h4 className="text-lg mt-0 font-semibold">
+            <motion.h1
+                initial={{ color: "#019376" }}
+                animate={{ color: ["#3f51b5", "#019376"] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className={`text-lg mt-0 !font-bold ${lato.className}`}
+            >
                 My Profile
-            </h4>
+            </motion.h1>
 
             <div className="flex flex-col items-center space-y-3">
                 <Upload

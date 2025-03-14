@@ -103,6 +103,7 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
                 <EmailInput
                     ref={emailInputRef}
                     triggerCheckEmail={triggerCheckEmail}
+                    form={form}
                 />
                 {/* Phone Number */}
                 <PhoneInput

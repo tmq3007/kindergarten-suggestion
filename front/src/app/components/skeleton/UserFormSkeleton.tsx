@@ -14,7 +14,7 @@ const transparentTabStyle = {
 
 const UserFormSkeleton = () => {
     return (
-        <div className="min-h-screen mt-14 bg-white bg-opacity-0">
+        <div className="min-h-screen mt-10 bg-white bg-opacity-0">
             <div className="container mx-auto mt-10 px-4 py-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="col-span-1">
@@ -61,14 +61,16 @@ const UserFormSkeleton = () => {
                                                 <Skeleton.Input active={true} className={'!w-full'}/>
                                             </Form.Item>
                                             <Form.Item
-                                                name="province"
-                                                label={<span className="text-black"> Province</span>}
+                                                name="dob"
+                                                label={<span className="text-black"> Date of Birth</span>}
+                                                required={true}
                                             >
                                                <Skeleton.Input active={true} className={'!w-full'}/>
                                             </Form.Item>
                                             <Form.Item
-                                                name="district"
-                                                label={<span className="text-black"> District</span>}
+                                                name="phone"
+                                                label={<span className="text-black"> Phone Number</span>}
+                                                required={true}
                                             >
                                                 <Skeleton.Input active={true} className={'!w-full'}/>
                                             </Form.Item>
@@ -76,35 +78,15 @@ const UserFormSkeleton = () => {
                                         <div className="space-y-6">
                                             <Form.Item
                                                 name="dob"
-                                                label={<span className="text-black">Date of Birth</span>}
+                                                label={<span className="text-black">Address</span>}
                                                 required={true}
                                             >
-                                                <Skeleton.Input active={true} className={'!w-full'}/>
+                                                <Skeleton.Input active={true} className={'!w-full mb-2'}/>
+                                                <Skeleton.Input active={true} className={'!w-full mb-2'}/>
+                                                <Skeleton.Input active={true} className={'!w-full mb-2'}/>
+                                                <Skeleton.Input active={true} className={'!w-full mb-2'}/>
                                             </Form.Item>
-                                            <Form.Item
-                                                name="phone"
-                                                label={<span className="text-black">Phone Number</span>}
-                                                required={true}
-                                            >
-                                                <div>
-                                                    <Form.Item name="phone" noStyle>
-                                                        <Skeleton.Input active={true} className={'!w-full'}/>
-                                                    </Form.Item>
-                                                </div>
-                                            </Form.Item>
-                                            <Form.Item
-                                                name="ward"
-                                                label={<span className="text-black"> Ward</span>}
-                                            >
-                                                <Skeleton.Input active={true} className={'!w-full'}/>
-                                            </Form.Item>
-                                            <Form.Item
-                                                name="street"
-                                                label={<span className="text-black"> Street</span>}
-                                                dependencies={['province', 'district', 'ward']}
-                                            >
-                                                <Skeleton.Input active={true} className={'!w-full'}/>
-                                            </Form.Item>
+
                                         </div>
                                     </div>
                                     <div className="flex justify-center space-x-4">
