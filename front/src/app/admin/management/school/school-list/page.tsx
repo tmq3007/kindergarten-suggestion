@@ -1,6 +1,5 @@
 "use client";
 
-
 import {Input, Button, Table, Tag, Space, notification, ConfigProvider} from "antd";
 import {SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined} from "@ant-design/icons";
 import Link from "next/link";

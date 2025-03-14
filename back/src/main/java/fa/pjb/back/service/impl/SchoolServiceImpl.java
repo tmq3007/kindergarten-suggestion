@@ -219,7 +219,6 @@ public class SchoolServiceImpl implements SchoolService {
             for (Media media : oldMedias) {
                 // Delete images from Google Drive
                 ImageVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
-                log.info("🗑 Deleted Image from Google Drive: {}", deleteResponse);
             }
             school.getImages().clear();
             schoolRepository.save(school);

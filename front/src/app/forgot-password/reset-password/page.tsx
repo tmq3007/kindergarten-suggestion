@@ -11,7 +11,7 @@ export default function Page() {
     const [resetPassword, {data, isLoading, error}] = useResetPasswordMutation();
 
     return (
-        <div className="relative min-h-screen bg-cover bg-center" style={{backgroundImage: `url(${background.src})`}}>
+        <div className="relative overflow-hidden min-h-screen bg-cover bg-center" style={{backgroundImage: `url(${background.src})`}}>
             <div className="absolute inset-0 bg-white opacity-30 mix-blend-overlay"></div>
             {/* Chỉ thêm backdrop-blur khi loading là true */}
             <div className={`${isLoading ?
@@ -22,7 +22,7 @@ export default function Page() {
             <motion.div
                 initial={{opacity: 0, scale: 0}}
                 animate={{opacity: 1, scale: [0, 1.4, 1]}} // Keyframes: 0 -> 1.2 -> 1
-                transition={{duration: 0.8, ease: "easeInOut"}} // Thời gian và kiểu chuyển động
+                transition={{duration: 1.1, ease: "easeInOut"}} // Thời gian và kiểu chuyển động
                 className="flex items-center justify-center min-h-screen w-100">
                 <ResetPasswordForm resetPassword={resetPassword} data={data} isLoading={isLoading} error={error}/>
             </motion.div>

@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: Props) {
     return (
-        <>
+        <div className={'min-h-screen'}>
             {children}
-        </>
+        </div>
     );
 };

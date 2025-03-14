@@ -38,7 +38,7 @@ const PhoneInput = forwardRef((
                 setPhone(form.getFieldValue('phone'));
                 setSelectedCountry(defaultCountry);
             }
-        }, [countries, initialCountryCode]);
+        }, [countries, initialCountryCode, form.getFieldValue('phone')]);
 
         const handleCountryChange = async (value: string) => {
             const country = countries?.find((c) => c.code === value);
@@ -59,7 +59,7 @@ const PhoneInput = forwardRef((
         };
 
         const validatePhone = async (): Promise<boolean> => {
-            if(!isReadOnly) return true;
+            if (!isReadOnly) return true;
             if (!phone) {
                 setPhoneStatus('error');
                 setPhoneHelp('Please input your phone number!');
