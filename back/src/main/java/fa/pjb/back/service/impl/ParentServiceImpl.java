@@ -206,15 +206,15 @@ public class ParentServiceImpl implements ParentService {
         }
         log.info("parentVO: {}", parent);
 
-        // Assuming parent has a Media entity relationship
-        MediaVO mediaVO = parent.getMedia() != null ?
-                new MediaVO(
-                        parent.getMedia().getUrl(),
-                        parent.getMedia().getFilename(),
-                        parent.getMedia().getCloudId()
-                 ) : null;
-        parent.setMedia(mediaMapper.toMedia(mediaVO));
-        log.info("mediaVO: {}", mediaVO);
+//        // Assuming parent has a Media entity relationship
+//        MediaVO mediaVO = parent.getMedia() != null ?
+//                new MediaVO(
+//                        parent.getMedia().getUrl(),
+//                        parent.getMedia().getFilename(),
+//                        parent.getMedia().getCloudId()
+//                 ) : null;
+//        parent.setMedia(mediaMapper.toMedia(mediaVO));
+//        log.info("mediaVO: {}", mediaVO);
         return parentMapper.toParentVO(parent);
     }
 

@@ -188,6 +188,7 @@ const Profile = () => {
                             dob={parentData?.data?.dob}
                             avatarUrl={parentData?.data?.media?.url}
                             onAvatarChange={(file) => setAvatarFile(file)}
+                            openNotificationWithIcon={openNotificationWithIcon}
                         />
                     </div>
                 </div>

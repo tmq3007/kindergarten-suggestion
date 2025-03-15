@@ -32,8 +32,6 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ReviewNotFoundException();
         }
 
-        log.info("image: {}", reviewMapper.toReviewVOList(reviews));
-        log.info("date: {}", reviews.get(0).getReceiveDate().toString());
         return reviewMapper.toReviewVOList(reviews);
     }
 
