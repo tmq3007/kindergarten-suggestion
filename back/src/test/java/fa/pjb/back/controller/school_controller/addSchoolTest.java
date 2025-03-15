@@ -65,7 +65,7 @@ class addSchoolTest {
         );
     }
 
-    // Test Case 1: Successful school creation with images
+    // Normal: Successful school creation with images
     @Test
     void testAddSchool_Success_WithImages() throws Exception {
         // Mock service response
@@ -93,7 +93,7 @@ class addSchoolTest {
                 .andExpect(jsonPath("$.data.email").value("test@example.com"));
     }
 
-    // Test Case 2: Validation failure (missing required fields)
+    // Abnormal: Validation failure (missing required fields)
     @Test
     void testAddSchool_ValidationFailure_MissingFields() throws Exception {
         // Invalid DTO with missing required fields
@@ -121,7 +121,7 @@ class addSchoolTest {
                 .andExpect(jsonPath("$.fieldErrors[?(@.property == 'email')].message").value(hasItem("Email is required")));
     }
 
-    // Test Case 3: Validation failure (invalid fee range)
+    // Abnormal: Validation failure (invalid fee range)
     @Test
     void testAddSchool_ValidationFailure_InvalidFeeRange() throws Exception {
         // Invalid DTO with feeFrom > feeTo
@@ -146,7 +146,7 @@ class addSchoolTest {
                 .andExpect(jsonPath("$.globalErrors[?(@.message == 'Fee From must be less than Fee To')]").exists());
     }
 
-    // Test Case 4: Service throws Exception
+    // Abnormal: Service throws Exception
     @Test
     void testAddSchool_ServiceThrowsIOException() throws Exception {
         // Mock service to throw IOException
@@ -171,6 +171,7 @@ class addSchoolTest {
                 .andExpect(jsonPath("$.message").exists()); // Adjust based on your exception handler
     }
 
+    //Abnormal
     @Test
     void testAddSchool_ValidationFailure_InvalidPhoneFormat() throws Exception {
         // DTO with an invalid phone number (no "+" and too few digits)
@@ -194,7 +195,7 @@ class addSchoolTest {
                 .andExpect(jsonPath("$.message").value("Validation failed for object='data'. Error count: 1"))
                 .andExpect(jsonPath("$.fieldErrors[?(@.property == 'phone')].message").value("Invalid phone format"));
     }
-
+    //Abnormal
     @Test
     void testAddSchool_ValidationFailure_InvalidEmailFormat() throws Exception {
         // DTO with an invalid email (no "@" or domain)
