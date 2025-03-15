@@ -11,7 +11,6 @@ import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import {useGetSchoolListQuery} from "@/redux/services/schoolApi";
 
-
 interface SchoolVO {
    id: number;
    status: number;
@@ -53,7 +52,6 @@ const getStatusText = (status: number) => {
            return "Unknown";
    }
 };
-
 
 export default function SchoolList() {
    const [searchText, setSearchText] = useState("");
@@ -331,6 +329,3 @@ export default function SchoolList() {
        </div>
    );
 }
-
-
-
