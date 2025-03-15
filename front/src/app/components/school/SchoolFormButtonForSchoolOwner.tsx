@@ -145,15 +145,15 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         try {
             switch (activeButton) {
                 case "publish":
-                    await updateSchoolStatusBySchoolOwner({ status: 4 }).unwrap();
+                    await updateSchoolStatusBySchoolOwner({ schoolId: Number(null), status: 4 }).unwrap();
                     messageApi.success('School published successfully!');
                     break;
                 case "unpublish":
-                    await updateSchoolStatusBySchoolOwner({ status: 5 }).unwrap();
+                    await updateSchoolStatusBySchoolOwner({ schoolId: Number(null), status: 5 }).unwrap();
                     messageApi.success('School unpublished successfully!');
                     break;
                 case "delete":
-                    await updateSchoolStatusBySchoolOwner({ status: 6 }).unwrap();
+                    await updateSchoolStatusBySchoolOwner({ schoolId: Number(null), status: 6 }).unwrap();
                     messageApi.success('School deleted successfully!');
                     break;
             }
@@ -164,25 +164,21 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             setModalVisible(false);
         }
     };
- 
- 
+
     const handlePublish = () => {
         setActiveButton("publish");
         setModalVisible(true);
     };
- 
- 
+
     const handleUnpublish = () => {
         setActiveButton("unpublish");
         setModalVisible(true);
     };
- 
- 
+
     const handleDelete = () => {
         setActiveButton("delete");
         setModalVisible(true);
     };
- 
 
     const handleEdit = () => {
         // Handle edit logic here
@@ -200,7 +196,6 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 return { title: "", desc: "" };
         }
     };
- 
 
     return (
         <>

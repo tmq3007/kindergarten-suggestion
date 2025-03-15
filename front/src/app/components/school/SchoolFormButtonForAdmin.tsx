@@ -43,7 +43,6 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
 
-
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
         api[type]({
@@ -153,23 +152,23 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         try {
             switch (activeButton) {
                 case "publish":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 4 } }).unwrap();
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId),  status: 4 }).unwrap();
                     messageApi.success('School published successfully!');
                     break;
                 case "unpublish":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 5 } }).unwrap();
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 5 }).unwrap();
                     messageApi.success('School unpublished successfully!');
                     break;
                 case "delete":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 6 } }).unwrap();
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 6 }).unwrap();
                     messageApi.success('School deleted successfully!');
                     break;
                 case "approve":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 2 } }).unwrap();
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 2 }).unwrap();
                     messageApi.success('School approved successfully!');
                     break;
                 case "reject":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), changeSchoolStatusDTO: { status: 3 } }).unwrap();
+                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 3 }).unwrap();
                     messageApi.success('School rejected successfully!');
                     break;
             }
@@ -181,37 +180,32 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             setModalVisible(false);
         }
     };
- 
- 
+
     const handlePublish = () => {
         setActiveButton("publish");
         setModalVisible(true);
     };
- 
- 
+
     const handleUnpublish = () => {
         setActiveButton("unpublish");
         setModalVisible(true);
     };
- 
- 
+
     const handleDelete = () => {
         setActiveButton("delete");
         setModalVisible(true);
     };
- 
- 
+
     const handleApprove = () => {
         setActiveButton("approve");
         setModalVisible(true);
     };
- 
- 
+
     const handleReject = () => {
         setActiveButton("reject");
         setModalVisible(true);
     };
- 
+
     const handleEdit = () => {
         router.push(`/admin/management/school/edit-school/${schoolId}`);
     };
@@ -232,7 +226,6 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 return { title: "", desc: "" };
         }
     };
- 
 
     return (
         <div className="flex lg:justify-center space-x-4 justify-end">
@@ -288,21 +281,20 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                     Unpublish
                 </Button>
             )}
-             <Modal
-               title={getModalContent().title}
-               open={modalVisible}
-               onOk={handleConfirmAction}
-               onCancel={() => {
-                   setModalVisible(false);
-                   setActiveButton(null);
-               }}
-               okText="Yes"
-               cancelText="No, Take me back!"
-               confirmLoading={isUpdatingStatus}
-           >
-               <p>{getModalContent().desc}</p>
-           </Modal>
-
+            <Modal
+                title={getModalContent().title}
+                open={modalVisible}
+                onOk={handleConfirmAction}
+                onCancel={() => {
+                    setModalVisible(false);
+                    setActiveButton(null);
+                }}
+                okText="Yes"
+                cancelText="No, Take me back!"
+                confirmLoading={isUpdatingStatus}
+            >
+                <p>{getModalContent().desc}</p>
+            </Modal>
         </div>
     );
 };

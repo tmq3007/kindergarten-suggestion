@@ -5,6 +5,7 @@ import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
@@ -308,7 +309,12 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     @Transactional
-    public void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+    public void updateSchoolStatusByAdmin(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+
+        int schoolID = changeSchoolStatusDTO.schoolId();
+
+        Byte preparedStatus = changeSchoolStatusDTO.status();
+
         // Retrieve the school entity by ID, or throw an exception if not found
         School school = schoolRepository.findById(schoolID)
                 .orElseThrow(SchoolNotFoundException::new);
@@ -326,12 +332,12 @@ public class SchoolServiceImpl implements SchoolService {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
 
-        switch (changeSchoolStatusDTO.status()) {
+        switch (preparedStatus) {
 
             case 2 -> {
                 // Change to "Approved" status if current status is "Submitted"
                 if (school.getStatus() == 1) {
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
                     emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink);
                 } else {
                     throw new InappropriateSchoolStatusException();
@@ -341,7 +347,7 @@ public class SchoolServiceImpl implements SchoolService {
             case 3 -> {
                 // Change to "Rejected" status if current status is "Submitted"
                 if (school.getStatus() == 1) {
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
                     emailService.sendSchoolRejectedEmail(school.getEmail(), school.getName());
                 } else {
                     throw new InappropriateSchoolStatusException();
@@ -352,7 +358,7 @@ public class SchoolServiceImpl implements SchoolService {
                 // Change to "Published" status if current status is "Approved"
                 if (school.getStatus() == 2 || school.getStatus() == 5) {
 
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
 
                     // Set public permission to true for all school owners relate to current school
                     List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
@@ -372,7 +378,7 @@ public class SchoolServiceImpl implements SchoolService {
                 //Change to "Unpublished" status if current status is "Published"
                 if (school.getStatus() == 4) {
 
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
 
                     // Set public permission to false for all school owners relate to current school
                     List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
@@ -390,8 +396,11 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 6 -> {
                 // Change to "Deleted" status
-                school.setStatus(changeSchoolStatusDTO.status());
+                school.setStatus(preparedStatus);
             }
+
+            default -> throw new StatusNotExistException("Status does not exist");
+
         }
     }
 
@@ -454,12 +463,17 @@ public class SchoolServiceImpl implements SchoolService {
             }
 
             case 6 -> {
-                if (school.getStatus() == 0 || school.getStatus() == 1) {
+                if (school.getStatus() != 2) {
 
                     school.setStatus(changeSchoolStatusDTO.status());
 
+                } else {
+                    throw new InappropriateSchoolStatusException();
                 }
             }
+
+            default -> throw new StatusNotExistException("Status does not exist");
+
         }
     }
 
