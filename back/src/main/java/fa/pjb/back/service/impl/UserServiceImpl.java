@@ -159,6 +159,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserCreateDTO createUser(UserCreateDTO userCreateDTO) {
+        if (userCreateDTO.email() == null || userCreateDTO.email().isBlank()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
         Optional<User> existingUserEmail = userRepository.findByEmail(userCreateDTO.email());
 
         //Check email exist
