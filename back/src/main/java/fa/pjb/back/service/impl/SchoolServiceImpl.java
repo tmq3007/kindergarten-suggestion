@@ -1,10 +1,10 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
-import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
@@ -46,7 +46,7 @@ import static fa.pjb.back.model.enums.SchoolStatusEnum.SUBMITTED;
 @Service
 public class SchoolServiceImpl implements SchoolService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/gif");
+    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
 
     private final SchoolRepository schoolRepository;
     private final FacilityRepository facilityRepository;
@@ -68,7 +68,32 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(school);
     }
 
-    private void processAndSaveImages(List<ImageVO> imageVOList, School school) {
+    private void processAndSaveImages(List<MultipartFile> image, School school) {
+        List<ImageVO> imageVOList;
+
+        for (MultipartFile file : image) {
+            if (file.getSize() > MAX_FILE_SIZE) {
+                throw new InvalidFileFormatException("File cannot exceed 5MB");
+            }
+            try {
+                String mimeType = tika.detect(file.getBytes());
+                if (!ALLOWED_MIME_TYPES.contains(mimeType)) {
+                    throw new InvalidFileFormatException("Invalid file type: " + file.getOriginalFilename() + ". Allowed: JPEG, PNG, JPG.");
+                }
+            } catch (IOException e) {
+                throw new InvalidFileFormatException("Error when processing file");
+            }
+        }
+
+        try {
+            imageVOList = imageService.uploadListImages(
+                    imageService.convertMultiPartFileToFile(image),
+                    "School_" + school.getId() + "Image_",
+                    SCHOOL_IMAGES
+            );
+        } catch (IOException e) {
+            throw new UploadFileException("Error while uploading images: " + e.getMessage());
+        }
         List<Media> mediaList = new ArrayList<>();
         for (ImageVO imageVO : imageVOList) {
             if (imageVO.status() == 200) {
@@ -90,18 +115,46 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        // Check if principal is an instance of User entity
+        if (!(principal instanceof User user)) {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
+        //  Map DTO to School entity (without schoolOwners initially)
+        School school = prepareSchoolData(schoolDTO, user);
+
+        // Save the School to generate its ID
+        School newSchool = schoolRepository.save(school);
+
+        // Validate and upload images (if provided)
+        if (image != null && !image.isEmpty()) {
+            processAndSaveImages(image, newSchool);
+        }
+
+        // Send submit emails to admins (if applicable)
+        if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
+            emailService.sendSubmitEmailToAllAdmin(
+                    newSchool.getName(),
+                    user.getUsername(),
+                    "http://localhost:3000/admin/management/school/school-detail/" + newSchool.getId()
+            );
+        }
+
+        return schoolMapper.toSchoolDetailVO(newSchool);
+    }
+
+    private School prepareSchoolData(AddSchoolDTO schoolDTO, User user) {
 
         // Check if email already exists
         if (checkEmailExists(schoolDTO.email())) {
             throw new EmailAlreadyExistedException("This email is already in use");
         }
-//        if (checkPhoneExists(schoolDTO.phone())) {
-//            throw new PhoneExistedException("This phone is already in use");
-//        }
 
-        //  Map DTO to School entity (without schoolOwners initially)
         School school = schoolMapper.toSchool(schoolDTO);
-        school.setSchoolOwners(null); // Avoid cascade issues; set later
+
+        school.setPostedDate(LocalDate.now());
 
         // Validate facilities
         if (schoolDTO.facilities() != null) {
@@ -122,74 +175,23 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         // Check user role and adjust status
-        User user = userRepository.findById(schoolDTO.userId())
-                .orElseThrow(() -> new AuthenticationFailedException("Cannot authenticate"));
         if (user.getRole() == ERole.ROLE_ADMIN && schoolDTO.status() == SUBMITTED.getValue()) {
             school.setStatus((byte) APPROVED.getValue());
         }
-        school.setPostedDate(LocalDate.now());
 
-        // Save the School to generate its ID
-        School newSchool = schoolRepository.save(school);
-
-        // Fetch and update existing SchoolOwners
-        Set<Integer> schoolOwnerIds = schoolDTO.schoolOwners();
-        if (schoolOwnerIds != null && !schoolOwnerIds.isEmpty()) {
-            Set<SchoolOwner> schoolOwners = schoolOwnerIds.stream()
-                    .map(id -> schoolOwnerRepository.findById(id)
-                            .orElseThrow(() -> new IllegalArgumentException("SchoolOwner with ID " + id + " not found")))
-                    .collect(Collectors.toSet());
-
-            // Update SchoolOwners with the new School reference
-            schoolOwners.forEach(owner -> owner.setSchool(newSchool));
-            newSchool.setSchoolOwners(schoolOwners);
-
-            // Persist the updated SchoolOwners
-            schoolOwnerRepository.saveAll(schoolOwners);
+        // Update all SchoolOwners with the saved School and batch-save them
+        if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
+            Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
+            if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
+                throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
+            }
+            schoolOwners.forEach(owner -> owner.setSchool(school));
+            school.setSchoolOwners(schoolOwners);
         } else {
-            newSchool.setSchoolOwners(new HashSet<>());
+            school.setSchoolOwners(new HashSet<>());
         }
 
-        // Validate and upload images (if provided)
-        List<ImageVO> imageVOList = null;
-        if (image != null && !image.isEmpty()) {
-            log.info(image.toString());
-            for (MultipartFile file : image) {
-                if (file.getSize() > MAX_FILE_SIZE) {
-                    throw new InvalidFileFormatException("File cannot exceed 5MB");
-                }
-                try {
-                    String mimeType = tika.detect(file.getBytes());
-                    if (!ALLOWED_MIME_TYPES.contains(mimeType)) {
-                        throw new InvalidFileFormatException("Invalid file type: " + file.getOriginalFilename() + ". Allowed: JPEG, PNG, GIF.");
-                    }
-                } catch (IOException e) {
-                    throw new InvalidFileFormatException("Error when processing file");
-                }
-            }
-
-            try {
-                imageVOList = imageService.uploadListImages(
-                        imageService.convertMultiPartFileToFile(image),
-                        "School_" + newSchool.getId() + "Image_",
-                        SCHOOL_IMAGES
-                );
-            } catch (IOException e) {
-                throw new UploadFileException("Error while uploading images: " + e.getMessage());
-            }
-            processAndSaveImages(imageVOList, newSchool);
-        }
-
-        // Send submit emails to admins (if applicable)
-        if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
-            emailService.sendSubmitEmailToAllAdmin(
-                    newSchool.getName(),
-                    user.getUsername(),
-                    "http://localhost:3000/admin/management/school/school-detail/" + newSchool.getId()
-            );
-        }
-
-        return schoolMapper.toSchoolDetailVO(newSchool);
+        return school;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -226,30 +228,7 @@ public class SchoolServiceImpl implements SchoolService {
         }
         // Handle new uploaded images
         if (images != null && !images.isEmpty()) {
-            // Check format & size of file
-            for (MultipartFile file : images) {
-                if (file.getSize() > MAX_FILE_SIZE) {
-                    throw new InvalidFileFormatException("File cannot exceed 5MB");
-                }
-                try {
-                    String mimeType = tika.detect(file.getBytes());
-                    if (!ALLOWED_MIME_TYPES.contains(mimeType)) {
-                        throw new InvalidFileFormatException("Invalid file type: " + file.getOriginalFilename());
-                    }
-                } catch (IOException e) {
-                    throw new UploadFileException("Error processing file: " + e.getMessage());
-                }
-            }
-            try {
-                List<ImageVO> imageVOList = imageService.uploadListImages(
-                        imageService.convertMultiPartFileToFile(images),
-                        "School_" + school.getId() + "_Image_",
-                        SCHOOL_IMAGES
-                );
-                processAndSaveImages(imageVOList, school);
-            } catch (IOException e) {
-                throw new UploadFileException("Error uploading images: " + e.getMessage());
-            }
+            processAndSaveImages(images, school);
         }
         // Save the updated school data
         schoolRepository.save(school);
@@ -309,7 +288,12 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     @Transactional
-    public void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+    public void updateSchoolStatusByAdmin(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
+
+        int schoolID = changeSchoolStatusDTO.schoolId();
+
+        Byte preparedStatus = changeSchoolStatusDTO.status();
+
         // Retrieve the school entity by ID, or throw an exception if not found
         School school = schoolRepository.findById(schoolID)
                 .orElseThrow(SchoolNotFoundException::new);
@@ -327,12 +311,12 @@ public class SchoolServiceImpl implements SchoolService {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
 
-        switch (changeSchoolStatusDTO.status()) {
+        switch (preparedStatus) {
 
             case 2 -> {
                 // Change to "Approved" status if current status is "Submitted"
                 if (school.getStatus() == 1) {
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
                     emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink);
                 } else {
                     throw new InappropriateSchoolStatusException();
@@ -342,7 +326,7 @@ public class SchoolServiceImpl implements SchoolService {
             case 3 -> {
                 // Change to "Rejected" status if current status is "Submitted"
                 if (school.getStatus() == 1) {
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
                     emailService.sendSchoolRejectedEmail(school.getEmail(), school.getName());
                 } else {
                     throw new InappropriateSchoolStatusException();
@@ -353,7 +337,7 @@ public class SchoolServiceImpl implements SchoolService {
                 // Change to "Published" status if current status is "Approved"
                 if (school.getStatus() == 2 || school.getStatus() == 5) {
 
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
 
                     // Set public permission to true for all school owners relate to current school
                     List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
@@ -373,7 +357,7 @@ public class SchoolServiceImpl implements SchoolService {
                 //Change to "Unpublished" status if current status is "Published"
                 if (school.getStatus() == 4) {
 
-                    school.setStatus(changeSchoolStatusDTO.status());
+                    school.setStatus(preparedStatus);
 
                     // Set public permission to false for all school owners relate to current school
                     List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
@@ -391,8 +375,11 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 6 -> {
                 // Change to "Deleted" status
-                school.setStatus(changeSchoolStatusDTO.status());
+                school.setStatus(preparedStatus);
             }
+
+            default -> throw new StatusNotExistException("Status does not exist");
+
         }
     }
 
@@ -455,12 +442,17 @@ public class SchoolServiceImpl implements SchoolService {
             }
 
             case 6 -> {
-                if (school.getStatus() == 0 || school.getStatus() == 1) {
+                if (school.getStatus() != 2) {
 
                     school.setStatus(changeSchoolStatusDTO.status());
 
+                } else {
+                    throw new InappropriateSchoolStatusException();
                 }
             }
+
+            default -> throw new StatusNotExistException("Status does not exist");
+
         }
     }
 

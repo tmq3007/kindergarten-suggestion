@@ -1,21 +1,21 @@
 package fa.pjb.back.model.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum SchoolStatusEnum {
-    SAVED(0),
-    SUBMITTED(1),
-    APPROVED(2),
-    REJECTED(3),
-    PUBLISHED(4),
-    UNPUBLISHED(5),
-    DELETED(6);
+    SAVED((byte) 0),
+    SUBMITTED((byte) 1),
+    APPROVED((byte) 2),
+    REJECTED((byte) 3),
+    PUBLISHED((byte) 4),
+    UNPUBLISHED((byte) 5),
+    DELETED((byte) 6);
 
-    private final int value;
+    private final byte value;
 
-    SchoolStatusEnum(int value) {
+    SchoolStatusEnum(byte value) {
         this.value = value;
     }
 
-    public int getValue() {
-        return value;
-    }
 }

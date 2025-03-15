@@ -1,6 +1,7 @@
-package fa.pjb.back.controller;
+package fa.pjb.back.controller.auth_controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
+import fa.pjb.back.controller.AuthController;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.service.AuthService;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class AuthControllerTest_ForgotPasswordFeature {
+class ForgotPasswordTest {
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 

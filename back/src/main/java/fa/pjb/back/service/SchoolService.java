@@ -23,7 +23,7 @@ public interface SchoolService {
 
     SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image);
 
-    void updateSchoolStatusByAdmin(Integer schoolID, ChangeSchoolStatusDTO changeSchoolStatusDTO);
+    void updateSchoolStatusByAdmin(ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
     void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
