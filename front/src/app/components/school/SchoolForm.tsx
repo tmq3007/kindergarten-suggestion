@@ -55,6 +55,7 @@ interface SchoolFormFields {
     hasCancelButton?: boolean;
     hasSaveButton?: boolean;
     hasCreateSubmitButton?: boolean;
+    hasCreateSaveButton?: boolean;
     hasUpdateSubmitButton?: boolean;
     hasDeleteButton?: boolean;
     hasEditButton?: boolean;
@@ -77,6 +78,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     hasCancelButton,
                                                     hasSaveButton,
                                                     hasCreateSubmitButton,
+                                                    hasCreateSaveButton,
                                                     hasUpdateSubmitButton,
                                                     hasDeleteButton,
                                                     hasEditButton,
@@ -474,6 +476,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         hasSaveButton={hasSaveButton}
                         hasCreateSubmitButton={hasCreateSubmitButton}
                         hasUpdateSubmitButton={hasUpdateSubmitButton}
+                        hasCreateSaveButton={hasCreateSaveButton}
                         hasDeleteButton={hasDeleteButton}
                         hasEditButton={hasEditButton}
                         hasRejectButton={hasRejectButton}
