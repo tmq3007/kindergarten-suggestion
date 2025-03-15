@@ -1,9 +1,12 @@
 package fa.pjb.back.model.vo;
 
+import lombok.Builder;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+@Builder
 public record SchoolDetailVO(
         Integer id,
         Byte status,
@@ -25,5 +28,6 @@ public record SchoolDetailVO(
         Set<UtilityVO> utilities,
         List<MediaVO> imageList,
         Date posted_date
+//        Set<SchoolOwnerVO> schoolOwners
 ) {
 }

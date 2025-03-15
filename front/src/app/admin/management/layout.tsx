@@ -85,9 +85,9 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     };
 
     return (
-        <Fragment>
+        <div className={'min-h-screen'}>
             {contextHolder}
-            <Layout>
+            <Layout className={'min-h-screen'}>
                 <ConfigProvider
                     theme={{
                         components: {
@@ -227,7 +227,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         className='rounded-lg'
                         style={{
                             padding: 15,
-                            minHeight: 280,
+                            minHeight: 800,
                         }}
                     >
                         {children}
@@ -251,6 +251,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                     <p>Are you sure you want to logout? All your unsaved data will be lost.</p>
                 </Modal>
             </Layout>
-        </Fragment>
+        </div>
     );
 }

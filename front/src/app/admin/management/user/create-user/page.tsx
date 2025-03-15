@@ -113,8 +113,8 @@ const CreateUser: React.FC = () => {
 
             <MyBreadcrumb
                 paths={[
-                    {label: 'User Management', href: '/admin/management/user/user-list'},
-                    {label: 'Add New User'},
+                    { label: 'User Management', href: '/admin/management/user/user-list' },
+                    { label: 'Add New User' },
                 ]}
             />
 
@@ -234,7 +234,7 @@ const CreateUser: React.FC = () => {
                                                 if (value.isAfter(dayjs())) {
                                                     return Promise.reject('Date of birth cannot be in the future!');
                                                 }
-                                                 const today = dayjs();
+                                                const today = dayjs();
                                                 const age = today.diff(value, 'year');
                                                 if (age < 18) {
                                                     return Promise.reject('User must be at least 18 years old!');

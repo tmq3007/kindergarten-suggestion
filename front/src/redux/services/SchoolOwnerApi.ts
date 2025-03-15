@@ -1,7 +1,8 @@
 export type SchoolOwnerVO = {
-    id: string;
+    id: number;
+    userId: number,
     fullname: string;
     username: string;
     email: string;
-    phoneNo: string;
+    phone: string;
 };

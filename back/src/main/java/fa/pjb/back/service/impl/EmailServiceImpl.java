@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import freemarker.template.Configuration;
@@ -17,7 +18,12 @@ import jakarta.mail.internet.MimeMessage;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -61,8 +67,8 @@ public class EmailServiceImpl implements EmailService {
     /**
      * Sends an email to the user with a link to reset their password.
      *
-     * @param to      the recipient's email address
-     * @param name    the user's name
+     * @param to        the recipient's email address
+     * @param name      the user's name
      * @param resetLink the link to reset the password
      * @return a message indicating the success or failure of the email sending
      */
@@ -108,23 +114,23 @@ public class EmailServiceImpl implements EmailService {
     /**
      * Sends an email to the user about the school approval.
      *
-     * @param to      the recipient's email address
+     * @param to         the recipient's email address
      * @param schoolName the name of the school
      * @param detailLink the link to the school detail page
      * @return a message indicating the success or failure of the email sending
      */
     @Override
     public String sendSchoolApprovedEmail(String to, String schoolName, String detailLink) {
-        try{
+        try {
             // Create a model to hold the data to be sent in the email
-            Map<String,Object> model = new HashMap<>();
+            Map<String, Object> model = new HashMap<>();
             model.put("schoolName", schoolName);
             model.put("detailsLink", detailLink);
 
             // Send the email with the template
-            sendEmailWithTemplate(to, "School Approved", "approved-school",model);
+            sendEmailWithTemplate(to, "School Approved", "approved-school", model);
             return "send school approved successfully!";
-        }catch (MessagingException | IOException | TemplateException e) {
+        } catch (MessagingException | IOException | TemplateException e) {
 
             // Return an error message if there was a problem sending the email
             return "Error while sending email: " + e.getMessage();
@@ -133,15 +139,15 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public String sendSchoolRejectedEmail(String to, String schoolName) {
-        try{
+        try {
             // Create a model to hold the data to be sent in the email
-            Map<String,Object> model = new HashMap<>();
+            Map<String, Object> model = new HashMap<>();
             model.put("schoolName", schoolName);
 
             // Send the email with the template
-            sendEmailWithTemplate(to, "School Rejected", "rejected-school",model);
+            sendEmailWithTemplate(to, "School Rejected", "rejected-school", model);
             return "send school rejected successfully!";
-        }catch (MessagingException | IOException | TemplateException e) {
+        } catch (MessagingException | IOException | TemplateException e) {
 
             // Return an error message if there was a problem sending the email
             return "Error while sending email: " + e.getMessage();
@@ -150,17 +156,17 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public String sendSchoolPublishedEmail(String to, String schoolName, String username, String detailLink) {
-        try{
+        try {
             // Create a model to hold the data to be sent in the email
-            Map<String,Object> model = new HashMap<>();
+            Map<String, Object> model = new HashMap<>();
             model.put("schoolName", schoolName);
             model.put("username", username);
             model.put("detailsLink", detailLink);
 
             // Send the email with the template
-            sendEmailWithTemplate(to, "School Published", "published-school",model);
+            sendEmailWithTemplate(to, "School Published", "published-school", model);
             return "send school published successfully!";
-        }catch (MessagingException | IOException | TemplateException e) {
+        } catch (MessagingException | IOException | TemplateException e) {
 
             // Return an error message if there was a problem sending the email
             return "Error while sending email: " + e.getMessage();
@@ -168,7 +174,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public String sendSubmitSchool(String to, String schoolName, String username, String detailLink) {
+    public boolean sendSubmitSchool(String to, String schoolName, String username, String detailLink) {
         try {
             Map<String, Object> model = new HashMap<>();
             model.put("schoolName", schoolName);
@@ -176,12 +182,43 @@ public class EmailServiceImpl implements EmailService {
             model.put("detailsLink", detailLink);
             //Send email
             sendEmailWithTemplate(to, "no-reply-email-KTS-system <Interview schedule title>", "submit-school", model);
-            log.info("send to:"+to+"     with:"+detailLink);
-            return "send username password successfully!";
+            return true;
         } catch (MessagingException | IOException | TemplateException e) {
-
-            return "Error while sending email: " + e.getMessage();
+            return false;
         }
+    }
+
+    @Override
+    public CompletableFuture<Boolean> sendSubmitEmailToAllAdmin(String schoolName, String username, String detailLink) {
+        List<String> adminEmails = userRepository.findActiveAdminEmails(ERole.ROLE_ADMIN);
+        if (adminEmails.isEmpty()) {
+            return CompletableFuture.completedFuture(false);
+        }
+        ExecutorService executor = Executors.newFixedThreadPool(Math.min(adminEmails.size(), 10));
+        List<CompletableFuture<Boolean>> emailFutures = adminEmails.stream()
+                .map(adminEmail -> CompletableFuture.supplyAsync(
+                        () -> sendSubmitSchool(adminEmail, schoolName, username, detailLink),
+                        executor
+                ))
+                .toList();
+        return CompletableFuture.allOf(emailFutures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> {
+                    executor.shutdown();
+                    return emailFutures.stream() // True if all succeeded
+                            .allMatch(future -> {
+                                try {
+                                    return future.get(); // Get the boolean result
+                                } catch (Exception e) {
+                                    log.error("Error processing email result: {}", e.getMessage());
+                                    return false;
+                                }
+                            });
+                })
+                .exceptionally(throwable -> { //exception handle
+                    executor.shutdown();
+                    log.error("Error in admin email batch: {}", throwable.getMessage());
+                    return false;
+                });
     }
 
 }

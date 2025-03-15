@@ -101,6 +101,7 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
                 </Form.Item>
                 {/* Email */}
                 <EmailInput
+                    form={form}
                     ref={emailInputRef}
                     triggerCheckEmail={triggerCheckEmail}
                     form={form}

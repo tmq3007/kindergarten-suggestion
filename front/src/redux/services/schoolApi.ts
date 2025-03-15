@@ -1,94 +1,97 @@
-import{createApi}from"@reduxjs/toolkit/query/react";
-import {ApiResponse, baseQueryWithReauth }from "@/redux/services/config/baseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
+import { SchoolOwnerVO } from "./SchoolOwnerApi";
+import { UploadFile } from "antd";
 
 export interface Facility {
-fid: number;
-name: string;
+    fid: number;
+    name: string;
 }
 
 export interface Utility {
-uid: number;
-name: string;
+    uid: number;
+    name: string;
 }
 
 export type SchoolDetailVO = {
-fileList: any;
-status: number;
-name: string;
-schoolType: number;
-district: string;
-ward: string;
-province: string;
-street: string;
-email: string;
-phone: string;
-receivingAge: number;
-educationMethod: number;
-feeFrom: number;
-feeTo: number;
-description: string;
-website: string;
-facilities: Facility[];
-utilities: Utility[];
-posted_date: Date | null;
-imageList: MediaVO[];
+    fileList: any;
+    status: number;
+    name: string;
+    schoolType: number;
+    district: string;
+    ward: string;
+    province: string;
+    street: string;
+    email: string;
+    phone: string;
+    receivingAge: number;
+    educationMethod: number;
+    feeFrom: number;
+    feeTo: number;
+    description: string;
+    website: string;
+    facilities: Facility[];
+    utilities: Utility[];
+    posted_date: Date | null;
+    imageList: MediaVO[];
+    schoolOwners?: SchoolOwnerVO[]
 };
 
 export type SchoolDTO = {
-name: string;
-schoolType: number;
-website?: string;
-status: number;
-// Address Fields
-province: string;
-district: string;
-ward: string;
-street?: string;
-email: string;
-phone: string;
-receivingAge: number;
-educationMethod: number;
-// Fee Range
-feeFrom: number;
-feeTo: number;
-// Facilities and Utilities (Checkbox Groups)
-facilities?: number[];
-utilities?: number[];
-// School introduction
-description?: string;
-// File Upload
-image?: File[];
+    name: string;
+    schoolType: number;
+    website?: string;
+    status: number;
+    // Address Fields
+    province: string;
+    district: string;
+    ward: string;
+    street?: string;
+    email: string;
+    phone: string;
+    receivingAge: number;
+    educationMethod: number;
+    // Fee Range
+    feeFrom: number;
+    feeTo: number;
+    // Facilities and Utilities (Checkbox Groups)
+    facilities?: number[];
+    utilities?: number[];
+    // School introduction
+    description?: string;
+    // File Upload
+    image?: UploadFile[];
 
-schoolOwners?: number[]
+    schoolOwners?: number[]
 }
 
 export type ChangeSchoolStatusDTO = {
-status: number;
+    status: number;
 }
 
 export interface SchoolUpdateDTO extends SchoolDTO {
-id: number;
+    id: number;
 }
 
 export type SchoolVO = {
-id: number;
-status: number; // Byte in Java = = number in TS
-name: string;
-schoolType: number; // Byte
-district: string;
-ward: string;
-province: string;
-street: string;
-email: string;
-phone: string;
-website: string;
-receivingAge: number; // Byte
-educationMethod: number; // Byte
-feeFrom: number; // Integer
-feeTo: number; // Integer
-description: string;
-posted_date: string; // Date in Java = > string (ISO format) in TS
-facilities?: {fid: number}[]; // Add facilities(assuming this structure)
+    id: number;
+    status: number; // Byte in Java = = number in TS
+    name: string;
+    schoolType: number; // Byte
+    district: string;
+    ward: string;
+    province: string;
+    street: string;
+    email: string;
+    phone: string;
+    website: string;
+    receivingAge: number; // Byte
+    educationMethod: number; // Byte
+    feeFrom: number; // Integer
+    feeTo: number; // Integer
+    description: string;
+    postedDate: string; // Date in Java = > string (ISO format) in TS
+    facilities?: { fid: number }[]; // Add facilities(assuming this structure)
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
 };
@@ -111,6 +114,7 @@ export type ExpectedSchool = {
 }
 
 // Utility function to handle FormData creation
+//TODO: đã lấy đc list metadata ảnh đã gửi về khi edit và gửi về chỉ các ảnh mới upload
 const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData => {
     const formData = new FormData();
     const {image, ...schoolDataWithoutImage} = schoolData;
@@ -132,11 +136,32 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
     return formData;
 };
 
-export interface SchoolCreateDTO extends SchoolDTO{
+// Utility function to handle FormData creation
+const createSchoolFormAddData = (schoolData: SchoolCreateDTO ): FormData => {
+    const formData = new FormData();
+    const {imageFile, ...schoolDataWithoutImage} = schoolData;
+
+    // Append JSON data
+    formData.append("data", new Blob([JSON.stringify(schoolDataWithoutImage)], {type: "application/json"}));
+
+    // Append images with validation
+    if (imageFile && Array.isArray(imageFile)) {
+        imageFile.forEach((file, index) => {
+            if (file instanceof File) {
+                formData.append("image", file);
+            } else {
+                console.error(`Item ${index} is not a File:`, file);
+            }
+        });
+    }
+
+    return formData;
+};
+
+export interface SchoolCreateDTO extends SchoolDTO {
     userId: number,
-    
-    //TODO: Change to number[]
-    schoolOwners?: any[];
+    imageFile?: File[];
+
 }
 
 const formatPhoneNumber = (phone: string | undefined): string => {
@@ -165,17 +190,17 @@ export const schoolApi = createApi({
                 phone?: string;
             }
         >({
-            query: ({page = 1, size, name, province, district, email, phone}) => ({
+            query: ({ page = 1, size, name, province, district, email, phone }) => ({
                 url: `/school/all`,
                 method: "GET",
                 params: {
                     page,
                     size,
-                    ...(name && {name}),
-                    ...(province && {province}),
-                    ...(district && {district}),
-                    ...(email && {email}),
-                    ...(phone && {phone}),
+                    ...(name && { name }),
+                    ...(province && { province }),
+                    ...(district && { district }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
                 },
             }),
             transformResponse: (
@@ -252,9 +277,9 @@ export const schoolApi = createApi({
             keepUnusedDataFor: 0,
         }),
 
-        addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolDTO>({
+        addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({
             query: (schoolDTO) => {
-                const formData = createSchoolFormData(schoolDTO); // Sử dụng hàm utility
+                const formData = createSchoolFormAddData(schoolDTO); // Sử dụng hàm utility
                 return {
                     url: "/school/add",
                     method: "POST",
@@ -281,7 +306,7 @@ export const schoolApi = createApi({
             schoolId: number;
             changeSchoolStatusDTO: ChangeSchoolStatusDTO
         }>({
-            query: ({schoolId, changeSchoolStatusDTO}) => ({
+            query: ({ schoolId, changeSchoolStatusDTO }) => ({
                 url: `/school/change-status/by-admin/${schoolId}`,
                 method: 'PUT',
                 body: changeSchoolStatusDTO,
@@ -298,9 +323,18 @@ export const schoolApi = createApi({
             invalidatesTags: ["School", "SchoolList"],
         }),
 
-        searchExpectedSchool: build.query<ApiResponse<ExpectedSchool[]>, void>({
-            query: () => ({
-                url: "school/search-expected-school"
+        searchExpectedSchool: build.query<ApiResponse<ExpectedSchool[]>, { id: number }>({
+            query: ({ id }) => {
+                return {
+                    url: `school/search-expected-school/${id}`,
+                };
+            },
+        }),
+        searchSchoolOwnersForAddSchool: build.query<ApiResponse<SchoolOwnerVO[]>, string>({
+            query: (expectedSchool) => ({
+                url: '/school/get-so-list',
+                method: 'GET',
+                params: { q: expectedSchool },
             }),
         }),
     }),
@@ -320,4 +354,5 @@ export const {
     useGetSchoolByIdQuery,
     useApproveSchoolMutation,
     useSearchExpectedSchoolQuery,
+    useLazySearchSchoolOwnersForAddSchoolQuery,
 } = schoolApi;

@@ -1,0 +1,68 @@
+@startuml
+
+!define ENTITY #ffcc00
+
+actor SO_or_Admin
+participant "SchoolController" as C
+participant ":schoolService" as S
+participant "SchoolRepository" as R
+participant "FacilityRepository" as F
+participant "MediaRepository" as U
+participant "UserRepository" as UR
+participant "EmailService" as E
+participant "ImageService" as I
+
+activate C
+User -> C: POST /add (schoolDTO, images)
+C -> S: addSchool(schoolDTO, images)
+
+activate S
+S -> S: checkEmailExists(schoolDTO.email())
+S -> S: Validate Facilities & Utilities
+S -> UR: findById(schoolDTO.userId())
+activate UR
+UR --> S: Return User
+deactivate UR
+
+deactivate UR
+
+alt User is Admin & Status Submitted
+    S -> S: Set status to Approved
+end
+
+S -> R: save(school)
+activate R
+R --> S: Return saved School
+
+deactivate R
+
+alt Images Provided
+    loop For each image
+        S -> I: Validate and Upload Image
+        activate I
+        I --> S: return result ImageVO
+    deactivate I
+    end
+    S -> S: processAndSaveImages(imageVOList, newSchool)
+    S -> U: save()
+    activate U
+    U --> S:
+    deactivate U
+end
+
+
+alt User is School Owner & Status Submitted
+    S -> E: sendSubmitSchool(email, schoolName, username, schoolDetailedLink)
+    activate E
+    E --> S
+    deactivate E
+end
+
+S -> C: Return SchoolDetailVO
+deactivate S
+
+C -> User: Response with SchoolDetailVO
+
+deactivate C
+
+@enduml

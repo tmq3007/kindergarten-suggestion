@@ -7,11 +7,13 @@ import {SchoolVO} from "@/redux/services/schoolApi";
 interface SchoolFormWrapperProps {
     form: FormInstance;
     school: SchoolVO;
+    isEdit?: boolean;
 }
 
-export default function SchoolFormWrapper({form, school}: SchoolFormWrapperProps) {
+export default function SchoolFormWrapper({form, school,isEdit}: SchoolFormWrapperProps) {
     return (
         <SchoolForm
+            isEdit={isEdit}
             isReadOnly={true}
             form={form}
             hideImageUpload={true}

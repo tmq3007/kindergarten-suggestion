@@ -23,8 +23,8 @@ const page = () => {
                 <SchoolForm
                     isEdit={false}
                     hasCancelButton={true}
-                    hasSaveButton={true}
                     hasCreateSubmitButton={true}
+                    hasCreateSaveButton={true}
                     triggerCheckEmail={triggerCheckEmail}
                 />
             </div>

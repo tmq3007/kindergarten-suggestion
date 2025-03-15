@@ -3,7 +3,7 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
- import fa.pjb.back.model.dto.SchoolUpdateDTO;
+import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
@@ -12,6 +12,9 @@ import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,16 +22,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -43,41 +42,41 @@ public class SchoolController {
     @GetMapping("/{schoolId}")
     public ApiResponse<SchoolDetailVO> getSchoolInfo(@PathVariable Integer schoolId) {
         return ApiResponse.<SchoolDetailVO>builder()
-            .code(HttpStatus.OK.value())
-            .message("Get school information successfully.")
-            .data(schoolService.getSchoolInfo(schoolId))
-            .build();
+                .code(HttpStatus.OK.value())
+                .message("Get school information successfully.")
+                .data(schoolService.getSchoolInfo(schoolId))
+                .build();
     }
 
     @GetMapping("/all")
     public ApiResponse<Page<SchoolListVO>> getAllSchools(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String name,
-        @RequestParam(required = false) String province,
-        @RequestParam(required = false) String district,
-        @RequestParam(required = false) String street,
-        @RequestParam(required = false) String email,
-        @RequestParam(required = false) String phone) {
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String province,
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) String street,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phone) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return ApiResponse.<Page<SchoolListVO>>builder()
-            .code(HttpStatus.OK.value())
-            .message("Get all schools successfully.")
-            .data(schoolService.getAllSchools(name, province, district, street, email, phone, pageable))
-            .build();
+                .code(HttpStatus.OK.value())
+                .message("Get all schools successfully.")
+                .data(schoolService.getAllSchools(name, province, district, street, email, phone, pageable))
+                .build();
     }
 
     @GetMapping("/by-user")
     public ApiResponse<SchoolDetailVO> getSchoolByUserId(
-        @AuthenticationPrincipal User user,
-        @RequestParam(required = false) String name) {
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) String name) {
         // Lấy userId trực tiếp từ User entity
         Integer userId = user.getId();
         return ApiResponse.<SchoolDetailVO>builder()
-            .code(HttpStatus.OK.value())
-            .message("Get school by user ID successfully.")
-            .data(schoolService.getSchoolByUserId(userId, name))
-            .build();
+                .code(HttpStatus.OK.value())
+                .message("Get school by user ID successfully.")
+                .data(schoolService.getSchoolByUserId(userId, name))
+                .build();
     }
 
     @GetMapping("/check-email/{email}")
@@ -91,10 +90,9 @@ public class SchoolController {
 
     @PostMapping("/check-editing-email")
     public ApiResponse<String> checkEmailEdit(
-            @RequestParam String email,
-            @RequestParam Integer schoolId
+            @RequestParam @NotBlank(message = "Email is not blank") @Email(message = "Email is not valid") String email,
+            @RequestParam @NotNull(message = "School ID is not null") Integer schoolId
     ) {
-        log.info("++++++++++++++++++++++++++++++++");
         return ApiResponse.<String>builder()
                 .code(HttpStatus.OK.value())
                 .message("Email checked!")
@@ -118,7 +116,7 @@ public class SchoolController {
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("School Created!")
-                .data(schoolService.addSchool(schoolDTO,images))
+                .data(schoolService.addSchool(schoolDTO, images))
                 .build();
     }
 
@@ -156,17 +154,20 @@ public class SchoolController {
     }
 
     @GetMapping("/get-so-list")
-    public List<SchoolOwnerVO> searchSchoolOwnersFOrAddSchool(@RequestParam("q") String searchParam) {
-        return schoolService.findSchoolOwnerForAddSchool(searchParam);
-    }
-
-    @GetMapping("/search-expected-school")
-    public ApiResponse<List<ExpectedSchoolVO>> searchExpectedSchoolForAddSchool() {
-        return ApiResponse.<List<ExpectedSchoolVO>>builder()
+    public ApiResponse<List<SchoolOwnerVO>> searchSchoolOwnersForAddSchool(@RequestParam("q") String expectedSchool) {
+        return ApiResponse.<List<SchoolOwnerVO>>builder()
                 .code(200)
                 .message("Success")
-                .data(schoolService.findAllDistinctExpectedSchools())
+                .data(schoolService.findSchoolOwnerForAddSchool(expectedSchool))
                 .build();
     }
 
+    @GetMapping("/search-expected-school/{id}")
+    public ApiResponse<List<ExpectedSchoolVO>> searchExpectedSchoolForAddSchool(@PathVariable Integer id) {
+        return ApiResponse.<List<ExpectedSchoolVO>>builder()
+                .code(200)
+                .message("Success")
+                .data(schoolService.findAllDistinctExpectedSchoolsByRole(id))
+                .build();
+    }
 }

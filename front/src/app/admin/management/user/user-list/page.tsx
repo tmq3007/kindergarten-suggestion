@@ -80,7 +80,6 @@ export default function Page() {
     };
 
     return (
-        <>
             <div className="p-5">
                 {/* Breadcrumb navigation */}
                 <MyBreadcrumb
@@ -130,6 +129,5 @@ export default function Page() {
                     />
                 </div>
             </div>
-        </>
     );
 }

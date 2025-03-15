@@ -2,9 +2,11 @@ package fa.pjb.back.model.dto;
 
 import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 
 import java.util.Set;
 
+@Builder
 public record SchoolUpdateDTO(
         Integer id,
         @NotBlank(message = "School name is required")
@@ -60,6 +62,8 @@ public record SchoolUpdateDTO(
 
         @Size(max = 7, message = "Invalid utilities selection")
         Set<@Min(0) @Max(6) Integer> utilities,
+
+//        Set<Integer> schoolOwners,
 
         @Lob
         String description
