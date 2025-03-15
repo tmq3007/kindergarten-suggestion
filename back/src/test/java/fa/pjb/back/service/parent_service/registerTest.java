@@ -7,12 +7,15 @@ import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
+import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import fa.pjb.back.service.impl.ParentServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +25,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -46,24 +52,38 @@ class registerTest {
     private Parent validReturnParent;
     private RegisterVO validRegisterVO;
 
-//    @BeforeEach
-//    void setUp() {
-//        validRegisterDTO = new RegisterDTO("John Doe", "test@example.com", "+84 123456789", "password123");
-//        validReturnParent = new Parent(1,
-//                new User(1, "DoeJ1"
-//                        , "password123"
-//                        , "test@example.com"
-//                        , true
-//                        , "John Doe"
-//                        , ERole.ROLE_PARENT
-//                        , null
-//                        , "+84 123456789")
-//                , ""
-//                , ""
-//                , ""
-//                , "");
-//        validRegisterVO  = new RegisterVO("John Doe","test@example.com","+84 123456789", LocalDateTime.now());
-//    }
+    @BeforeEach
+    void setUp() {
+        validRegisterDTO = new RegisterDTO("John Doe", "test@example.com", "+84 123456789", "password123");
+
+        User user = User.builder()
+                .id(1)
+                .username("DoeJ1")
+                .password("password123")
+                .email("test@example.com")
+                .status(true)
+                .fullname("John Doe")
+                .role(ERole.ROLE_PARENT)
+                .phone("+84 123456789")
+                .dob(LocalDate.now().minusYears(30))
+                .build();
+
+        // Create validReturnParent using builder pattern matching the actual Parent class
+        validReturnParent = Parent.builder()
+                .id(1)
+                .user(user)
+                .district("")
+                .ward("")
+                .province("")
+                .street("")
+                .media(null)
+                .build();
+
+        // Set bidirectional relationship since User has a Parent reference
+        user.setParent(validReturnParent);
+
+        validRegisterVO = new RegisterVO("John Doe", "test@example.com", "+84 123456789", LocalDateTime.now());
+    }
 
     @Test
     void shouldSaveNewParentSuccessfully() throws UserNotCreatedException {
@@ -72,6 +92,7 @@ class registerTest {
         Mockito.when(autoGeneratorHelper.generateUsername(Mockito.any())).thenReturn("DoeJ1");
         Mockito.when(passwordEncoder.encode(Mockito.any())).thenReturn("password123");
         Mockito.when(parentMapper.toRegisterVO(Mockito.any())).thenReturn(validRegisterVO);
+
         RegisterVO result = parentService.saveNewParent(validRegisterDTO);
 
         assertNotNull(result);
