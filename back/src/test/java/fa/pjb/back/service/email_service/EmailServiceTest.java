@@ -1,4 +1,4 @@
-package fa.pjb.back.service;
+package fa.pjb.back.service.email_service;
 
 import fa.pjb.back.service.impl.EmailServiceImpl;
 import freemarker.template.Configuration;

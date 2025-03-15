@@ -27,7 +27,7 @@ public record UserCreateDTO(
         @NotBlank(message = "Role cannot be null or empty")
         String role,
 
-        @NotBlank(message = "Status cannot be null or empty")
+        @NotNull(message = "Status cannot be null or empty")
         Boolean status,
 
         @Size(max = 20, message = "Phone number cannot exceed 20 characters")

@@ -20,7 +20,7 @@ public class ReviewController {
 
     @GetMapping("/{schoolId}")
     public ApiResponse<List<ReviewVO>> getReviews(
-            @PathVariable Integer schoolId,
+            @PathVariable  Integer schoolId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
 
