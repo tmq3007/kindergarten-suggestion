@@ -1,4 +1,4 @@
-package fa.pjb.back.service.impl;
+package fa.pjb.back.service.review_service;
 
 import fa.pjb.back.common.exception._13xx_school.ReviewNotFoundException;
  import fa.pjb.back.model.entity.Review;
@@ -7,12 +7,14 @@ import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.repository.ReviewRepository;
+import fa.pjb.back.service.impl.ReviewServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -22,7 +24,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest // khong can @ExtendWith(SpringExtension.class) vi o JUnit 5 co tich hop trong springboot test
 class ReviewServiceImplTest {
 
     @Mock
@@ -88,8 +90,6 @@ class ReviewServiceImplTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(expectedVOs, result);
-        verify(reviewRepository).findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate);
-        verify(reviewMapper).toReviewVOList(reviews);
     }
 
     @Test

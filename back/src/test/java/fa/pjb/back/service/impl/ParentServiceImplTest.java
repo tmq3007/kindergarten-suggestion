@@ -1,279 +1,462 @@
-//package fa.pjb.back.service.impl;
-//
-//import fa.pjb.back.common.exception.EmailExistException;
-//import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
-//import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
-//import fa.pjb.back.common.exception.user.UserNotFoundException;
-//import fa.pjb.back.model.dto.ParentDTO;
-//import fa.pjb.back.model.entity.Parent;
-//import fa.pjb.back.model.entity.User;
-//import fa.pjb.back.model.enums.ERole;
-//import fa.pjb.back.model.mapper.ParentMapper;
-//import fa.pjb.back.repository.ParentRepository;
-//import fa.pjb.back.repository.UserRepository;
-//import fa.pjb.back.service.EmailService;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//
-//import java.time.LocalDate;
-//import java.util.Optional;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.*;
-//
-//@ExtendWith(MockitoExtension.class)
-//public class ParentServiceImplTest {
-//
-//    @Mock
-//    private UserRepository userRepository;
-//
-//    @Mock
-//    private ParentRepository parentRepository;
-//
-//    @Mock
-//    private ParentMapper parentMapper;
-//
-//    @Mock
-//    private PasswordEncoder passwordEncoder;
-//
-//    @Mock
-//    private EmailService emailService;
-//
-//    @InjectMocks
-//    private ParentServiceImpl parentService;
-//
-//    private ParentDTO parentDTO;
-//    private User user;
-//    private Parent parent;
-//
-//    @BeforeEach
-//    public void setUp() {
-//        parentDTO = new ParentDTO();
-//        parentDTO.setEmail("test@example.com");
-//        parentDTO.setFullName("John Doe");
-//        parentDTO.setPhone("1234567890");
-//        parentDTO.setDob(LocalDate.of(1990, 1, 1));
-//        parentDTO.setStatus(true);
-//        parentDTO.setDistrict("District 1");
-//        parentDTO.setWard("Ward 1");
-//        parentDTO.setProvince("Province 1");
-//        parentDTO.setStreet("123 Street");
-//
-//        user = User.builder()
-//                .id(1)
-//                .email("test@example.com")
-//                .username("JohnD1")
-//                .password("encodedPassword")
-//                .role(ERole.ROLE_PARENT)
-//                .phone("1234567890")
-//                .fullname("John Doe")
-//                .status(true)
-//                .dob(LocalDate.of(1990, 1, 1))
-//                .build();
-//
-//        parent = Parent.builder()
-//                .id(1)
-//                .user(user)
-//                .district("District 1")
-//                .ward("Ward 1")
-//                .province("Province 1")
-//                .street("123 Street")
-//                .build();
-//    }
-//
-//    /**
-//     * ✅ Trường hợp bình thường (Normal Case)
-//     * Mô tả: Tạo parent thành công với dữ liệu hợp lệ.
-//     * Kỳ vọng: Trả về ParentDTO đã tạo, gọi các phương thức lưu và gửi email đúng một lần.
-//     */
-//    @Test
-//    public void testCreateParent_Success() {
-//        // Arrange
-//        when(userRepository.findByEmail(parentDTO.getEmail())).thenReturn(Optional.empty());
-//        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-//        when(userRepository.save(any(User.class))).thenReturn(user);
-//        when(parentRepository.save(any(Parent.class))).thenReturn(parent);
-//        when(parentMapper.toParentDTO(any(Parent.class))).thenReturn(parentDTO);
-//
-//        // Act
-//        ParentDTO result = parentService.createParent(parentDTO);
-//
-//        // Assert
-//        assertNotNull(result);
-//        assertEquals(parentDTO.getEmail(), result.getEmail());
-//        verify(userRepository, times(1)).save(any(User.class));
-//        verify(parentRepository, times(1)).save(any(Parent.class));
-//        verify(emailService, times(1)).sendUsernamePassword(anyString(), anyString(), anyString(), anyString());
-//    }
-//
-//    /**
-//     * ❌ Trường hợp bất thường (Abnormal Case)
-//     * Mô tả: Tạo parent thất bại khi email đã tồn tại.
-//     * Kỳ vọng: Ném ra EmailExistException, không gọi phương thức lưu.
-//     */
-//    @Test
-//    public void testCreateParent_EmailExists_ThrowsException() {
-//        // Arrange
-//        when(userRepository.findByEmail(parentDTO.getEmail())).thenReturn(Optional.of(user));
-//
-//        // Act & Assert
-//        assertThrows(EmailExistException.class, () -> parentService.createParent(parentDTO));
-//        verify(userRepository, never()).save(any(User.class));
-//        verify(parentRepository, never()).save(any(Parent.class));
-//    }
-//
-//    /**
-//     * ❌ Trường hợp bất thường (Abnormal Case)
-//     * Mô tả: Tạo parent thất bại khi ngày sinh nằm trong tương lai.
-//     * Kỳ vọng: Ném ra InvalidDateException, không gọi phương thức lưu.
-//     */
-//    @Test
-//    public void testCreateParent_InvalidDob_ThrowsException() {
-//        // Arrange
-//        parentDTO.setDob(LocalDate.now().plusDays(1)); // Future date
-//
-//        // Act & Assert
-//        assertThrows(InvalidDateException.class, () -> parentService.createParent(parentDTO));
-//        verify(userRepository, never()).save(any(User.class));
-//        verify(parentRepository, never()).save(any(Parent.class));
-//    }
-//
-//    /**
-//     * ⚠️ Trường hợp biên (Boundary Case)
-//     * Mô tả: Tạo parent với ngày sinh là ngày hôm qua (gần nhất trong quá khứ).
-//     * Kỳ vọng: Tạo thành công, trả về ParentDTO hợp lệ.
-//     */
-//    @Test
-//    public void testCreateParent_Boundary_PastDob() {
-//        // Arrange
-//        parentDTO.setDob(LocalDate.now().minusDays(1)); // Yesterday
-//        when(userRepository.findByEmail(parentDTO.getEmail())).thenReturn(Optional.empty());
-//        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-//        when(userRepository.save(any(User.class))).thenReturn(user);
-//        when(parentRepository.save(any(Parent.class))).thenReturn(parent);
-//        when(parentMapper.toParentDTO(any(Parent.class))).thenReturn(parentDTO);
-//
-//        // Act
-//        ParentDTO result = parentService.createParent(parentDTO);
-//
-//        // Assert
-//        assertNotNull(result);
-//        assertEquals(parentDTO.getEmail(), result.getEmail());
-//        verify(userRepository, times(1)).save(any(User.class));
-//        verify(parentRepository, times(1)).save(any(Parent.class));
-//    }
-//
-//    /**
-//     * ✅ Trường hợp bình thường (Normal Case)
-//     * Mô tả: Lấy thông tin parent thành công với ID hợp lệ.
-//     * Kỳ vọng: Trả về ParentDTO tương ứng với parent được tìm thấy.
-//     */
-//    @Test
-//    public void testGetParentById_Success() {
-//        // Arrange
-//        when(parentRepository.findParentById(1)).thenReturn(parent);
-//        when(parentMapper.toParentDTO(parent)).thenReturn(parentDTO);
-//
-//        // Act
-//        ParentDTO result = parentService.getParentById(1);
-//
-//        // Assert
-//        assertNotNull(result);
-//        assertEquals(parentDTO.getEmail(), result.getEmail());
-//        verify(parentRepository, times(1)).findParentById(1);
-//    }
-//
-//    /**
-//     * ❌ Trường hợp bất thường (Abnormal Case)
-//     * Mô tả: Lấy thông tin parent thất bại khi ID không tồn tại.
-//     * Kỳ vọng: Ném ra UserNotFoundException.
-//     */
-//    @Test
-//    public void testGetParentById_NotFound_ThrowsException() {
-//        // Arrange
-//        when(parentRepository.findParentById(1)).thenReturn(null);
-//
-//        // Act & Assert
-//        assertThrows(UserNotFoundException.class, () -> parentService.getParentById(1));
-//        verify(parentRepository, times(1)).findParentById(1);
-//    }
-//
-//    /**
-//     * ✅ Trường hợp bình thường (Normal Case)
-//     * Mô tả: Đổi mật khẩu thành công khi mật khẩu cũ đúng.
-//     * Kỳ vọng: Mật khẩu được cập nhật và lưu vào cơ sở dữ liệu.
-//     */
-//    @Test
-//    public void testChangePassword_Success() {
-//        // Arrange
-//        when(parentRepository.findById(1)).thenReturn(Optional.of(parent));
-//        when(passwordEncoder.matches("oldPassword", user.getPassword())).thenReturn(true);
-//        when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
-//        when(userRepository.save(user)).thenReturn(user);
-//
-//        // Act
-//        parentService.changePassword(1, "oldPassword", "newPassword");
-//
-//        // Assert
-//        verify(userRepository, times(1)).save(user);
-//        assertEquals("newEncodedPassword", user.getPassword());
-//    }
-//
-//    /**
-//     * ❌ Trường hợp bất thường (Abnormal Case)
-//     * Mô tả: Đổi mật khẩu thất bại khi mật khẩu cũ không đúng.
-//     * Kỳ vọng: Ném ra IncorrectPasswordException, không lưu thay đổi.
-//     */
-//    @Test
-//    public void testChangePassword_IncorrectOldPassword_ThrowsException() {
-//        // Arrange
-//        when(parentRepository.findById(1)).thenReturn(Optional.of(parent));
-//        when(passwordEncoder.matches("wrongPassword", user.getPassword())).thenReturn(false);
-//
-//        // Act & Assert
-//        assertThrows(IncorrectPasswordException.class, () -> parentService.changePassword(1, "wrongPassword", "newPassword"));
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    /**
-//     * ❌ Trường hợp bất thường (Abnormal Case)
-//     * Mô tả: Đổi mật khẩu thất bại khi parent không tồn tại.
-//     * Kỳ vọng: Ném ra UserNotFoundException, không lưu thay đổi.
-//     */
-//    @Test
-//    public void testChangePassword_ParentNotFound_ThrowsException() {
-//        // Arrange
-//        when(parentRepository.findById(1)).thenReturn(Optional.empty());
-//
-//        // Act & Assert
-//        assertThrows(UserNotFoundException.class, () -> parentService.changePassword(1, "oldPassword", "newPassword"));
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    /**
-//     * ⚠️ Trường hợp biên (Boundary Case)
-//     * Mô tả: Đổi mật khẩu với parent ID tối thiểu hợp lệ (1).
-//     * Kỳ vọng: Mật khẩu được cập nhật thành công.
-//     */
-//    @Test
-//    public void testChangePassword_Boundary_MinValidId() {
-//        // Arrange
-//        when(parentRepository.findById(1)).thenReturn(Optional.of(parent));
-//        when(passwordEncoder.matches("oldPassword", user.getPassword())).thenReturn(true);
-//        when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
-//        when(userRepository.save(user)).thenReturn(user);
-//
-//        // Act
-//        parentService.changePassword(1, "oldPassword", "newPassword");
-//
-//        // Assert
-//        verify(userRepository, times(1)).save(user);
-//        assertEquals("newEncodedPassword", user.getPassword());
-//    }
-//}
+package fa.pjb.back.service.impl;
+
+ import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+ import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+ import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
+ import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
+ import fa.pjb.back.common.util.AutoGeneratorHelper;
+ import fa.pjb.back.model.dto.ParentUpdateDTO;
+ import fa.pjb.back.model.entity.Parent;
+ import fa.pjb.back.model.entity.User;
+ import fa.pjb.back.model.enums.FileFolderEnum;
+ import fa.pjb.back.model.mapper.ParentMapper;
+ import fa.pjb.back.model.vo.ImageVO;
+ import fa.pjb.back.model.vo.ParentVO;
+import fa.pjb.back.repository.ParentRepository;
+ import fa.pjb.back.repository.UserRepository;
+ import fa.pjb.back.service.GGDriveImageService;
+ import fa.pjb.back.service.UserService;
+ import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+ import org.springframework.mock.web.MockMultipartFile;
+ import org.springframework.security.crypto.password.PasswordEncoder;
+ import org.springframework.web.multipart.MultipartFile;
+
+ import javax.imageio.ImageIO;
+ import java.awt.image.BufferedImage;
+ import java.io.ByteArrayOutputStream;
+ import java.io.File;
+ import java.io.IOException;
+ import java.time.LocalDate;
+ import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+ class ParentServiceImplTest {
+
+    @Mock
+    private ParentRepository parentRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private ParentMapper parentMapper;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private AutoGeneratorHelper autoGeneratorHelper;
+     @Mock
+     private GGDriveImageService ggDriveImageService;
+    @InjectMocks
+    private ParentServiceImpl parentService;
+     MultipartFile mockImage;
+     ParentUpdateDTO parentUpdateDTO;
+     @BeforeEach
+    void setUp() throws IOException {
+        MockitoAnnotations.openMocks(this);
+
+        // Setup dữ liệu mẫu cho ParentUpdateDTO
+         parentUpdateDTO = ParentUpdateDTO.builder()
+                 .fullname("Updated Parent Name")
+                 .email("updated@parent.com")
+                 .phone("+84123456789")
+                 .dob(LocalDate.of(1990, 1, 1))
+                 .district("Updated District")
+                 .province("Updated Province")
+                 .ward("Updated Ward")
+                 .street("123 Updated Street")
+                 .status(true)
+                 .role("ROLE_PARENT")
+                 .build();
+
+        // Tạo ảnh giả lập (JPEG) để test upload
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+        byte[] imageBytes = baos.toByteArray();
+
+        mockImage = new MockMultipartFile("image", "image.jpg", "image/jpeg", imageBytes);
+    }
+
+    /** Normal Case: Lấy ParentVO thành công */
+    @Test
+    void getParentById_Success() {
+        Integer userId = 1;
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).build())
+                .district("District A")
+                .province("Province A")
+                .build();
+
+        ParentVO parentVO = ParentVO.builder()
+                .id(1)
+                .fullname("Test Parent")
+                .email("test@example.com")
+                .build();
+
+        // When: Giả lập repository trả về Parent
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
+
+        // Assert: Kiểm tra kết quả
+        assertNotNull(parentVO);
+        assertEquals("Test Parent", parentVO.fullname());
+        assertEquals("test@example.com", parentVO.email());
+    }
+
+    /** Abnormal Case: userId không tồn tại */
+    @Test
+    void getParentById_UserNotFound() {
+        // Given: Không tìm thấy userId
+        Integer userId = 999;
+
+        // When: Giả lập repository trả về null
+        when(parentRepository.findParentByUserId(userId)).thenReturn(null);
+
+        // Act & Assert: Kiểm tra ngoại lệ
+        assertThrows(UserNotFoundException.class, () -> parentService.getParentById(userId));
+    }
+
+    /** Boundary Case: userId là số âm */
+    @Test
+    void getParentById_NegativeUserId() {
+        // Given: userId âm
+        Integer userId = -1;
+
+        // When: Giả lập repository trả về null
+        when(parentRepository.findParentByUserId(userId)).thenReturn(null);
+
+        // Act & Assert: Kiểm tra ngoại lệ
+        assertThrows(UserNotFoundException.class, () -> parentService.getParentById(userId));
+     }
+
+    /** Boundary Case: userId là null */
+    @Test
+    void getParentById_NullUserId() {
+        // Given: userId null
+        Integer userId = null;
+
+        // Act & Assert: Kiểm tra ngoại lệ UserNotFoundException
+        assertThrows(UserNotFoundException.class, () -> parentService.getParentById(userId));
+     }
+
+    @Test
+    void changePassword_Success() {
+        Integer userId = 1;
+        String oldPassword = "oldPass123";
+        String newPassword = "newPass123";
+        User user = User.builder().id(userId).password("encodedOldPass").build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(oldPassword, "encodedOldPass")).thenReturn(true);
+        when(passwordEncoder.encode(newPassword)).thenReturn("encodedNewPass");
+
+        parentService.changePassword(userId, oldPassword, newPassword);
+
+        assertEquals("encodedNewPass", user.getPassword());
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void changePassword_UserNotFound() {
+        Integer userId = 999;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () ->
+                parentService.changePassword(userId, "oldPass", "newPass"));
+    }
+
+    @Test
+    void changePassword_IncorrectOldPassword() {
+        Integer userId = 1;
+        User user = User.builder().id(userId).password("encodedOldPass").build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongPass", "encodedOldPass")).thenReturn(false);
+        assertThrows(IncorrectPasswordException.class, () ->
+                parentService.changePassword(userId, "wrongPass", "newPass"));
+    }
+
+    @Test
+    void changePassword_NullUserId() {
+        assertThrows(IllegalArgumentException.class, () ->
+                parentService.changePassword(null, "oldPass", "newPass"));
+    }
+
+    @Test
+    void changePassword_NullOldPassword() {
+        Integer userId = 1;
+        User user = User.builder().id(userId).password("encodedOldPass").build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        assertThrows(IllegalArgumentException.class, () ->
+                parentService.changePassword(userId, null, "newPass"));
+    }
+
+    @Test
+    void changePassword_EmptyOldPassword() {
+        Integer userId = 1;
+        User user = User.builder().id(userId).password("encodedOldPass").build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        assertThrows(IllegalArgumentException.class, () ->
+                parentService.changePassword(userId, "", "newPass"));
+    }
+
+    @Test
+    void changePassword_NullNewPassword() {
+        Integer userId = 1;
+        User user = User.builder().id(userId).password("encodedOldPass").build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("oldPass", "encodedOldPass")).thenReturn(true);
+        assertThrows(IllegalArgumentException.class, () ->
+                parentService.changePassword(userId, "oldPass", null));
+    }
+
+    @Test
+    void changePassword_EmptyNewPassword() {
+        Integer userId = 1;
+        User user = User.builder().id(userId).password("encodedOldPass").build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("oldPass", "encodedOldPass")).thenReturn(true);
+        assertThrows(IllegalArgumentException.class, () ->
+                parentService.changePassword(userId, "oldPass", ""));
+    }
+
+
+     /** Normal Case: Cập nhật Parent thành công với ảnh mới */
+     @Test
+     void editParent_Success_WithImage() throws IOException {
+         Integer userId = 1;
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                 .build();
+         ParentVO parentVO = ParentVO.builder()
+                 .id(1)
+                 .fullname("Updated Parent Name")
+                 .email("updated@parent.com")
+                 .build();
+         ImageVO imageVO = ImageVO.builder()
+                 .status(200)
+                 .message("Uploaded successfully")
+                 .size(1024L)
+                 .fileName("image.jpg")
+                 .fileId("fileId123")
+                 .url("https://image.url")
+                 .build();
+
+         // Tạo mockImage bằng mock() thay vì MockMultipartFile
+         MultipartFile mockImage = mock(MultipartFile.class);
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+         when(mockImage.isEmpty()).thenReturn(false);
+         when(mockImage.getSize()).thenReturn(1024L);
+         when(mockImage.getContentType()).thenReturn("image/jpeg");
+         doNothing().when(mockImage).transferTo(any(File.class));
+         when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
+                 .thenReturn(imageVO);
+         when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
+
+         ParentVO result = parentService.editParent(userId, parentUpdateDTO, mockImage);
+
+         assertNotNull(result);
+         assertEquals("Updated Parent Name", result.fullname());
+         assertEquals("updated@parent.com", result.email());
+         verify(parentRepository, times(1)).save(parent);
+         verify(ggDriveImageService, times(1)).uploadImage(any(), any(), any());
+     }
+
+     /** Normal Case: Cập nhật Parent thành công không có ảnh */
+     @Test
+     void editParent_Success_WithoutImage() {
+         Integer userId = 1;
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                 .build();
+         ParentVO parentVO = ParentVO.builder()
+                 .id(1)
+                 .fullname("Updated Parent Name")
+                 .email("updated@parent.com")
+                 .build();
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+         when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
+
+         ParentVO result = parentService.editParent(userId, parentUpdateDTO, null);
+
+         assertNotNull(result);
+         assertEquals("Updated Parent Name", result.fullname());
+         assertEquals("updated@parent.com", result.email());
+         verify(parentRepository, times(1)).save(parent);
+         verify(ggDriveImageService, never()).uploadImage(any(), any(), any());
+     }
+
+     /** Abnormal Case: User không tồn tại */
+     @Test
+     void editParent_UserNotFound() {
+         Integer userId = 999;
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(null);
+
+         assertThrows(UserNotFoundException.class, () ->
+                 parentService.editParent(userId, parentUpdateDTO, null));
+         verify(parentRepository, never()).save(any());
+     }
+
+     /** Abnormal Case: Email đã tồn tại */
+     @Test
+     void editParent_EmailAlreadyExisted() {
+         Integer userId = 1;
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                 .build();
+         User existingUser = User.builder().id(2).email("updated@parent.com").build();
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.of(existingUser));
+
+         assertThrows(EmailAlreadyExistedException.class, () ->
+                 parentService.editParent(userId, parentUpdateDTO, null));
+         verify(parentRepository, never()).save(any());
+     }
+
+     /** Abnormal Case: Ngày sinh không hợp lệ */
+     @Test
+     void editParent_InvalidDob() {
+         Integer userId = 1;
+         ParentUpdateDTO invalidDto = ParentUpdateDTO.builder()
+                 .fullname("Updated Name")
+                 .email("updated@parent.com")
+                 .phone("+84123456789")
+                 .dob(LocalDate.now().plusDays(1)) // Future date
+                 .build();
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").build())
+                 .build();
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+
+         assertThrows(InvalidDateException.class, () ->
+                 parentService.editParent(userId, invalidDto, null));
+         verify(parentRepository, never()).save(any());
+     }
+
+     /** Abnormal Case: Kích thước ảnh vượt quá giới hạn */
+     @Test
+     void editParent_ImageTooLarge() {
+         Integer userId = 1;
+         MultipartFile largeImage = new MockMultipartFile(
+                 "largeImage", "large.jpg", "image/jpeg", new byte[6 * 1024 * 1024] // 6MB file
+         );
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").build())
+                 .build();
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+
+         assertThrows(RuntimeException.class, () ->
+                 parentService.editParent(userId, parentUpdateDTO, largeImage));
+         verify(parentRepository, never()).save(any());
+     }
+
+     /** Abnormal Case: Loại file không hợp lệ */
+     @Test
+     void editParent_InvalidFileType() {
+         Integer userId = 1;
+         MultipartFile invalidImage = new MockMultipartFile(
+                 "invalidFile", "file.txt", "text/plain", "content".getBytes()
+         );
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").build())
+                 .build();
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+
+         assertThrows(RuntimeException.class, () ->
+                 parentService.editParent(userId, parentUpdateDTO, invalidImage));
+         verify(parentRepository, never()).save(any());
+     }
+
+     /** Abnormal Case: Upload ảnh thất bại */
+     @Test
+     void editParent_ImageUploadFailed() throws IOException {
+         Integer userId = 1;
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").build())
+                 .build();
+         ImageVO imageVO = ImageVO.builder()
+                 .status(400)
+                 .message("Upload failed")
+                 .size(0L)
+                 .fileName(null)
+                 .fileId(null)
+                 .url(null)
+                 .build();
+
+         // Tạo mockImage bằng mock() thay vì MockMultipartFile
+         MultipartFile mockImage = mock(MultipartFile.class);
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+         // Sử dụng any(File.class) thay vì (File) any()
+         doNothing().when(mockImage).transferTo(any(File.class));
+         when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
+                 .thenReturn(imageVO);
+
+         assertThrows(RuntimeException.class, () ->
+                 parentService.editParent(userId, parentUpdateDTO, mockImage));
+         verify(parentRepository, never()).save(any());
+     }
+     /** Boundary Case: userId null */
+     @Test
+     void editParent_NullUserId() {
+         assertThrows(UserNotFoundException.class, () ->
+                 parentService.editParent(null, parentUpdateDTO, null));
+     }
+
+
+     /** Boundary Case: Ảnh rỗng */
+     @Test
+     void editParent_EmptyImage() {
+         Integer userId = 1;
+         MultipartFile emptyImage = new MockMultipartFile("empty", "empty.jpg", "image/jpeg", new byte[0]);
+         Parent parent = Parent.builder()
+                 .id(1)
+                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                 .build();
+         ParentVO parentVO = ParentVO.builder()
+                 .id(1)
+                 .fullname("Updated Parent Name")
+                 .email("updated@parent.com")
+                 .build();
+
+         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+         when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
+
+         ParentVO result = parentService.editParent(userId, parentUpdateDTO, emptyImage);
+
+         assertNotNull(result);
+         assertEquals("Updated Parent Name", result.fullname());
+         verify(parentRepository, times(1)).save(parent);
+         verify(ggDriveImageService, never()).uploadImage(any(), any(), any());
+     }
+
+}

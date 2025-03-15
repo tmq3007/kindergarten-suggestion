@@ -3,6 +3,7 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.UserCreateDTO;
 import fa.pjb.back.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class AdminController {
     private final UserService userService;
 
     @PostMapping("/user")
-    public ApiResponse<UserCreateDTO> createUser(@RequestBody UserCreateDTO userCreateDTO) {
+    public ApiResponse<UserCreateDTO> createUser(@RequestBody @Valid UserCreateDTO userCreateDTO) {
         UserCreateDTO createdUser = userService.createUser(userCreateDTO);
         log.info("Received UserDTO: {}", userCreateDTO);
         return ApiResponse.<UserCreateDTO>builder()

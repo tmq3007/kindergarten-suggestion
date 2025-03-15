@@ -206,31 +206,34 @@ public class ParentServiceImpl implements ParentService {
         }
         log.info("parentVO: {}", parent);
 
-        // Assuming parent has a Media entity relationship
-        MediaVO mediaVO = parent.getMedia() != null ?
-                new MediaVO(
-                        parent.getMedia().getUrl(),
-                        parent.getMedia().getFilename(),
-                        parent.getMedia().getCloudId()
-                 ) : null;
-        parent.setMedia(mediaMapper.toMedia(mediaVO));
-        log.info("mediaVO: {}", mediaVO);
         return parentMapper.toParentVO(parent);
     }
 
     @Transactional
-    public void changePassword(Integer parentId, String oldPassword, String newPassword) {
-        Parent parent = parentRepository.findParentByUserId(parentId);
+    public void changePassword(Integer userId, String oldPassword, String newPassword) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
 
-        User user = parent.getUser();
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
         log.info("user: {}", user.getPassword());
 
-        // Check if the old password is correct
+        if (oldPassword == null || oldPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Old password cannot be null or empty");
+        }
+
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new IncorrectPasswordException();
         }
 
-        // Update new password
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("New password cannot be null or empty");
+        }
+
+        // Cập nhật mật khẩu mới
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }

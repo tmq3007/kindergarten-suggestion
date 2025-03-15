@@ -13,6 +13,7 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
+
     @Query("SELECT r FROM Review r " +
             "JOIN FETCH r.school s " +
             "JOIN FETCH r.parent p " +
@@ -25,6 +26,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             @Param("schoolId") Integer schoolId,
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate);
+
 
     @Query("SELECT r FROM Review r " +
             "WHERE (r.learningProgram + r.facilitiesAndUtilities + r.extracurricularActivities + " +
