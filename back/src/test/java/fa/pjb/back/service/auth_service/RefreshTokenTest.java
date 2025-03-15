@@ -1,7 +1,7 @@
 package fa.pjb.back.service.auth_service;
 
-import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.entity.User;
@@ -25,7 +25,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenTest {
@@ -54,6 +55,7 @@ class RefreshTokenTest {
 
     @BeforeEach
     void setUp() {
+        // Initialize mock objects and test data
         request = mock(HttpServletRequest.class);
         user = new User();
         user.setId(1);
@@ -68,6 +70,10 @@ class RefreshTokenTest {
         );
     }
 
+    /**
+     * Test case: Successful token refresh.
+     * Description: Verifies that a new access token and CSRF token are generated when all conditions are met.
+     */
     @Test
     void refresh_Success() {
         // Arrange
@@ -91,6 +97,10 @@ class RefreshTokenTest {
         assertEquals("newCsrfToken", result.csrfToken());
     }
 
+    /**
+     * Test case: Token refresh fails due to CSRF token mismatch.
+     * Description: Verifies that a JwtUnauthorizedException is thrown when the CSRF token in the cookie does not match the one in the header.
+     */
     @Test
     void refresh_Fail_CsrfTokenMismatch() {
         // Arrange
@@ -103,6 +113,10 @@ class RefreshTokenTest {
         assertEquals("Invalid CSRF Token", exception.getMessage());
     }
 
+    /**
+     * Test case: Token refresh fails due to empty access token.
+     * Description: Verifies that a JwtUnauthorizedException is thrown when the access token is empty.
+     */
     @Test
     void refresh_Fail_AccessTokenEmpty() {
         // Arrange
@@ -116,6 +130,10 @@ class RefreshTokenTest {
         assertEquals("Access token is empty", exception.getMessage());
     }
 
+    /**
+     * Test case: Token refresh fails due to invalid access token.
+     * Description: Verifies that a JwtUnauthorizedException is thrown when the access token is invalid.
+     */
     @Test
     void refresh_Fail_InvalidAccessToken() {
         // Arrange
@@ -130,6 +148,10 @@ class RefreshTokenTest {
         assertEquals("Invalid Access Token", exception.getMessage());
     }
 
+    /**
+     * Test case: Token refresh fails due to empty refresh token.
+     * Description: Verifies that a JwtUnauthorizedException is thrown when the refresh token is empty.
+     */
     @Test
     void refresh_Fail_RefreshTokenEmpty() {
         // Arrange
@@ -145,6 +167,10 @@ class RefreshTokenTest {
         assertEquals("Refresh token is empty", exception.getMessage());
     }
 
+    /**
+     * Test case: Token refresh fails due to invalid refresh token.
+     * Description: Verifies that a JwtUnauthorizedException is thrown when the refresh token is invalid.
+     */
     @Test
     void refresh_Fail_InvalidRefreshToken() {
         // Arrange
@@ -163,6 +189,10 @@ class RefreshTokenTest {
         assertEquals("Invalid Refresh Token", exception.getMessage());
     }
 
+    /**
+     * Test case: Token refresh fails due to user not found.
+     * Description: Verifies that a UserNotFoundException is thrown when the user is not found in the repository.
+     */
     @Test
     void refresh_Fail_UserNotFound() {
         // Arrange

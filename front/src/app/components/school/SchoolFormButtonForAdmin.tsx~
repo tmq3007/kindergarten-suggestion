@@ -1,9 +1,11 @@
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {Button, message, Modal, notification} from "antd";
+import {Button, message, Modal, notification, UploadFile} from "antd";
 import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
+    SchoolDTO,
+    SchoolUpdateDTO,
     useAddSchoolMutation,
     useGetSchoolByIdQuery,
     useUpdateSchoolByAdminMutation,
@@ -11,7 +13,7 @@ import {
 } from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {ButtonGroupProps} from "./SchoolFormButton";
-import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/schoolUtils";
+import {formatErrorMessage, prepareSchoolData} from "@/lib/schoolUtils";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -58,7 +60,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
-        const schoolValue = await prepareSchoolAddData(form, emailInputRef, phoneInputRef, messageApi);
+        const schoolValue = await prepareSchoolAddData(); // Sử dụng hàm utility
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
@@ -93,7 +95,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
      * Handles school update
      */
     const handleUpdateSubmit = async () => {
-        const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
+        const schoolData = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
         try {
             await updateSchoolByAdmin({id: Number(schoolId), ...schoolData}).unwrap();
