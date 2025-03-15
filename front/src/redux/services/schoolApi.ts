@@ -66,6 +66,7 @@ export type SchoolDTO = {
 }
 
 export type ChangeSchoolStatusDTO = {
+    schoolId: number;
     status: number;
 }
 
@@ -302,12 +303,9 @@ export const schoolApi = createApi({
             invalidatesTags: ["School"],
         }),
 
-        updateSchoolStatusByAdmin: build.mutation<ApiResponse<void>, {
-            schoolId: number;
-            changeSchoolStatusDTO: ChangeSchoolStatusDTO
-        }>({
-            query: ({ schoolId, changeSchoolStatusDTO }) => ({
-                url: `/school/change-status/by-admin/${schoolId}`,
+        updateSchoolStatusByAdmin: build.mutation<ApiResponse<void>, ChangeSchoolStatusDTO>({
+            query: (changeSchoolStatusDTO) => ({
+                url: `/school/change-status/by-admin`,
                 method: 'PUT',
                 body: changeSchoolStatusDTO,
             }),
