@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -190,7 +189,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public CompletableFuture<Boolean> sendSubmitEmailToAllAdmin(String schoolName, String username, String detailLink) {
-        List<String> adminEmails = userRepository.findActiveAdminEmails(ERole.ROLE_ADMIN);
+        List<String> adminEmails = userRepository.findActiveUserEmailsByRole(ERole.ROLE_ADMIN);
         if (adminEmails.isEmpty()) {
             return CompletableFuture.completedFuture(false);
         }

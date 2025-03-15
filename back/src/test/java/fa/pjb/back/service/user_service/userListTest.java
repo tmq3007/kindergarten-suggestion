@@ -1,4 +1,4 @@
-package fa.pjb.back.service;
+package fa.pjb.back.service.user_service;
 
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
@@ -26,7 +26,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class UserServiceTest {
+class userListTest {
 
     @Mock
     private UserRepository userRepository;
