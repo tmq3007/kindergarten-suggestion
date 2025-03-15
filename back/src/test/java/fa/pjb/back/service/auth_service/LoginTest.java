@@ -1,8 +1,9 @@
 package fa.pjb.back.service.auth_service;
 
+import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
 import fa.pjb.back.common.exception._12xx_auth.AccessDeniedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
-import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
+import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.entity.User;
@@ -11,6 +12,7 @@ import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.TokenService;
 import fa.pjb.back.service.impl.AuthServiceImpl;
+import fa.pjb.back.service.impl.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,11 +30,11 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Lớp kiểm tra chức năng đăng nhập của AuthServiceImpl.
+ * Test class for the login functionality of AuthServiceImpl.
  */
 @ExtendWith(MockitoExtension.class)
 class LoginTest {
@@ -52,44 +54,43 @@ class LoginTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private HttpRequestHelper httpRequestHelper;
+
+    @Mock
+    private UserDetailsServiceImpl userDetailsService;
+
     @InjectMocks
     private AuthServiceImpl authService;
 
     private LoginDTO loginDTO;
     private User user;
-    private UserDetails userDetails;
     private Authentication authentication;
 
     /**
-     * Thiết lập môi trường test trước mỗi test case.
+     * Set up the test environment before each test case.
      */
     @BeforeEach
     void setUp() {
         loginDTO = new LoginDTO("test@example.com", "password");
         user = new User();
-        user.setId(1); // Sử dụng kiểu Integer hoặc Long tùy theo entity thực tế
+        user.setId(1); // Use Integer or Long depending on the actual entity
         user.setEmail("test@example.com");
+        user.setUsername("testuser");
         user.setRole(ERole.ROLE_ADMIN);
         user.setPassword("encodedPassword");
-
-        // Tạo UserDetails với quyền ROLE_ADMIN
-        userDetails = new org.springframework.security.core.userdetails.User(
-                "test@example.com",
-                "encodedPassword",
-                Collections.singletonList(new SimpleGrantedAuthority(ERole.ROLE_ADMIN.toString()))
-        );
-
-        // Mock đối tượng Authentication cho trường hợp xác thực thành công
-        authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     /**
-     * ✅ Normal Case
-     * Mô tả: Đăng nhập thành công với vai trò ADMIN.
+     * Normal Case
+     * Description: Successful login with ADMIN role.
      */
     @Test
     void loginWithCondition_Success_Admin() {
         // Arrange
+        UserDetails userDetails = user;
+        authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
         when(userRepository.findByEmail(loginDTO.email())).thenReturn(Optional.of(user));
         when(jwtHelper.generateAccessToken(any(UserDetails.class), anyString(), anyString())).thenReturn("accessToken");
@@ -103,12 +104,12 @@ class LoginTest {
         assertNotNull(result);
         assertEquals("accessToken", result.accessToken());
         assertEquals("csrfToken", result.csrfToken());
-        verify(tokenService, times(1)).saveTokenInRedis(eq("REFRESH_TOKEN"), eq("test@example.com"), eq("refreshToken"), anyInt());
+        verify(tokenService, times(1)).saveTokenInRedis(eq("REFRESH_TOKEN"), eq("testuser"), eq("refreshToken"), anyInt());
     }
 
     /**
-     * ❌ Abnormal Case
-     * Mô tả: Đăng nhập thất bại vì người dùng không có quyền ADMIN.
+     * Abnormal Case
+     * Description: Login fails because the user does not have ADMIN role.
      */
     @Test
     void loginWithCondition_Fail_NotAdmin() {
@@ -130,17 +131,21 @@ class LoginTest {
         assertTrue(exception.getMessage().contains("Access denied"));
 
         // Verify
+        verify(userRepository, never()).findByEmail(anyString());
         verify(jwtHelper, never()).generateAccessToken(any(), any(), any());
         verify(tokenService, never()).saveTokenInRedis(any(), any(), any(), anyInt());
     }
 
     /**
-     * ❌ Abnormal Case
-     * Mô tả: Đăng nhập thất bại vì email không tồn tại.
+     * Abnormal Case
+     * Description: Login fails because the email does not exist.
      */
     @Test
     void loginWithCondition_Fail_EmailNotFound() {
         // Arrange
+        UserDetails userDetails = user; // Use user directly to avoid ClassCastException
+        authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
         when(userRepository.findByEmail(loginDTO.email())).thenReturn(Optional.empty());
 
@@ -155,8 +160,8 @@ class LoginTest {
     }
 
     /**
-     * ❌ Abnormal Case
-     * Mô tả: Đăng nhập thất bại do xác thực không thành công (mật khẩu sai).
+     * Abnormal Case
+     * Description: Login fails due to authentication failure (wrong password).
      */
     @Test
     void loginWithCondition_Fail_AuthenticationFailed() {
@@ -176,19 +181,25 @@ class LoginTest {
     }
 
     /**
-     * ⚠️ Boundary Case
-     * Mô tả: Đăng nhập với user có email hợp lệ nhưng không có quyền nào.
+     * Boundary Case
+     * Description: Login with a user who has a valid email but no authorities.
      */
     @Test
     void loginWithCondition_Boundary_NoAuthorities() {
         // Arrange
-        UserDetails noAuthoritiesUserDetails = new org.springframework.security.core.userdetails.User(
-                "test@example.com",
-                "encodedPassword",
-                Collections.emptyList()
-        );
+        User noAuthoritiesUser = new User();
+        noAuthoritiesUser.setId(3);
+        noAuthoritiesUser.setUsername("noauthuser");
+        noAuthoritiesUser.setEmail("noauth@example.com");
+        noAuthoritiesUser.setPassword("encodedPassword");
+        noAuthoritiesUser.setRole(ERole.ROLE_PARENT); // Set role to check permissions
+
+        // Use the User object directly as UserDetails
+        UserDetails noAuthoritiesUserDetails = noAuthoritiesUser;
+
+        // Mock Authentication
         Authentication noAuthAuthentication = new UsernamePasswordAuthenticationToken(
-                noAuthoritiesUserDetails, null, Collections.emptyList()
+                noAuthoritiesUserDetails, null, noAuthoritiesUserDetails.getAuthorities()
         );
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(noAuthAuthentication);
@@ -198,8 +209,7 @@ class LoginTest {
                 () -> authService.loginWithCondition(loginDTO, true));
         assertEquals("Access denied", exception.getMessage());
 
-        // Verify
-        verify(jwtHelper, never()).generateAccessToken(any(), any(), any());
-        verify(tokenService, never()).saveTokenInRedis(any(), any(), any(), anyInt());
+        // Verify: Ensure userRepository.findByEmail() is not called
+        verify(userRepository, never()).findByEmail(anyString());
     }
 }

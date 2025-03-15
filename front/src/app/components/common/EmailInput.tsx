@@ -7,7 +7,7 @@ interface EmailInputProps {
     form: FormInstance;
     isReadOnly?: boolean;
     triggerCheckEmail: any; // Check email query for new school
-    schoolId?: number; // Truyền vào schoolId khi chỉnh sửa trường
+    schoolId?: number; // Inject schoolId when editing school
 }
 
 const EmailInput = forwardRef(({
@@ -24,45 +24,45 @@ const EmailInput = forwardRef(({
     const [emailStatus, setEmailStatus] = useState<'' | 'validating' | 'success' | 'error'>('');
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
 
-    // API kiểm tra email khi chỉnh sửa (chỉ check email khác với trường hiện tại)
+    // API checking email when editing
     const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
 
     const validateEmail = async (): Promise<boolean> => {
         if (!email) {
-            console.log('email rong')
             setEmailStatus('error');
-            setEmailHelp('Vui lòng nhập email!');
+            setEmailHelp('Please enter your email!');
             return false;
         }
         console.log('email: ', email)
         if (email.length > 50) {
             setEmailStatus('error');
-            setEmailHelp('Email không được vượt quá 50 ký tự!');
+            setEmailHelp('Email don’t exceed 50 characters!');
             return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setEmailStatus('error');
-            setEmailHelp('Vui lòng nhập email hợp lệ!');
+            setEmailHelp('Please enter a valid email!');
             return false;
         }
 
         setEmailStatus('validating');
-        setEmailHelp('Đang kiểm tra email...');
+        setEmailHelp('Checking email...');
 
         try {
             let response;
             if (schoolId) {
-                // Trường hợp EDIT school, chỉ kiểm tra email khác với trường hiện tại
+                // In case of EDITING a school,
+                // only need to validate the email if it is different from the current email in the database
                 response = await triggerCheckEditEmail({email, schoolId}).unwrap();
             } else {
-                // Trường hợp ADD school, kiểm tra toàn bộ hệ thống
+                // In case of ADD school, check all emails
                 response = await triggerCheckEmail(email).unwrap();
             }
 
             if (response && response.data === "true") {
                 setEmailStatus('error');
-                setEmailHelp('Email này đã được sử dụng!');
+                setEmailHelp('This email is already in use!');
                 return false;
             } else {
                 setEmailStatus('success');
@@ -70,9 +70,8 @@ const EmailInput = forwardRef(({
                 return true;
             }
         } catch (error) {
-            console.error("Lỗi API kiểm tra email:", error);
             setEmailStatus('error');
-            setEmailHelp('Không thể kiểm tra email. Vui lòng thử lại sau.');
+            setEmailHelp('Cannot check email. Try again later!');
             return false;
         }
     };
@@ -99,10 +98,10 @@ const EmailInput = forwardRef(({
             hasFeedback
             validateStatus={emailStatus}
             help={emailHelp}
-            rules={[{required: true, message: 'Vui lòng nhập email!'}]}
+            rules={[{required: true, message: 'Please enter your email!'}]}
         >
             <Input
-                placeholder="Nhập email"
+                placeholder="Enter email"
                 value={email}
                 onChange={handleEmailChange}
                 onBlur={handleEmailBlur}
