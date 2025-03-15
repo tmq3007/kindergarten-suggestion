@@ -2,12 +2,12 @@
 
 !define ENTITY #ffcc00
 
-actor User
+actor SO_or_Admin
 participant "SchoolController" as C
-participant "SchoolService" as S
+participant ":schoolService" as S
 participant "SchoolRepository" as R
 participant "FacilityRepository" as F
-participant "UtilityRepository" as U
+participant "MediaRepository" as U
 participant "UserRepository" as UR
 participant "EmailService" as E
 participant "ImageService" as I
@@ -44,17 +44,23 @@ alt Images Provided
     deactivate I
     end
     S -> S: processAndSaveImages(imageVOList, newSchool)
+    S -> U: save()
+    activate U
+    U --> S:
+    deactivate U
 end
 
-deactivate S
 
 alt User is School Owner & Status Submitted
     S -> E: sendSubmitSchool(email, schoolName, username, schoolDetailedLink)
     activate E
+    E --> S
     deactivate E
 end
 
 S -> C: Return SchoolDetailVO
+deactivate S
+
 C -> User: Response with SchoolDetailVO
 
 deactivate C

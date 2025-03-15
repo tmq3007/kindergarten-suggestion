@@ -89,10 +89,10 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
             <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} size="small"
                 dataSource={users} pagination={false} loading={isFetching} scroll={{
                     x: "max-content",
-                    y: pageSize > 15 ? 600 : undefined // Set height only when needed
+                    y: pageSize > 15 ? 600 : undefined// Set height only when needed
                 }} />
             <div className="flex justify-between items-center px-4 py-3">
-                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} pageSizeOptions={[15, 30, 50, 100]} />
+                <Pagination current={current} total={totalElements} pageSize={pageSize} onChange={handlePageChange} pageSizeOptions={[10, 30, 50, 100]} />
             </div>
         </div>
     );

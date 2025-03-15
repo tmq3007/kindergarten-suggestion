@@ -154,6 +154,7 @@ public class SchoolServiceImpl implements SchoolService {
         // Validate and upload images (if provided)
         List<ImageVO> imageVOList = null;
         if (image != null && !image.isEmpty()) {
+            log.info(image.toString());
             for (MultipartFile file : image) {
                 if (file.getSize() > MAX_FILE_SIZE) {
                     throw new InvalidFileFormatException("File cannot exceed 5MB");
@@ -182,11 +183,10 @@ public class SchoolServiceImpl implements SchoolService {
 
         // Send submit emails to admins (if applicable)
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
-            // TODO: Fix this to send to all admins
             emailService.sendSubmitEmailToAllAdmin(
                     newSchool.getName(),
                     user.getUsername(),
-                    schoolDetailedLink + newSchool.getId()
+                    "http://localhost:3000/admin/management/school/school-detail/" + newSchool.getId()
             );
         }
 

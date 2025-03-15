@@ -91,7 +91,7 @@ export type SchoolVO = {
     feeFrom: number; // Integer
     feeTo: number; // Integer
     description: string;
-    posted_date: string; // Date in Java = > string (ISO format) in TS
+    postedDate: string; // Date in Java = > string (ISO format) in TS
     facilities?: { fid: number }[]; // Add facilities(assuming this structure)
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];

@@ -1,5 +1,5 @@
-import {Button, message, Modal, notification} from "antd";
-import React, { useState } from "react";
+import {Button, message, Modal, notification, UploadFile} from "antd";
+import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
 import {
@@ -39,23 +39,63 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
 
+
     // Config notifications
-    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number) => {
+    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
         api[type]({
             message,
             description,
             duration: duration,
             placement: 'topRight',
             showProgress: true,
-            pauseOnHover: false
+            pauseOnHover: false,
+            onClose: onClose
         });
+    };
+
+    /**
+     * Utility function to prepare school data before submission
+     * - Validates form fields
+     * - Formats phone number correctly
+     * - Extracts uploaded images
+     */
+
+    const prepareSchoolAddData = async (): Promise<SchoolCreateDTO | null> => {
+        try {
+            // Validate form fields and get values
+            const values = await form.validateFields();
+            // Validate email and phone using refs from SchoolForm
+
+            const isEmailValid = await emailInputRef?.current?.validateEmail();
+            const isPhoneValid = await phoneInputRef?.current?.validatePhone();
+
+            if (!isEmailValid || !isPhoneValid) {
+                console.log('Validation failed');
+                messageApi.error("Email or phone validation failed. Please check your inputs.");
+                return null;
+            }
+            const fileList: File[] = (values.image as UploadFile[] || [])
+                .filter((file) => file.originFileObj)
+                .map((file) => file.originFileObj as File);
+            const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
+
+            // Prepare final data
+            return {
+                ...values,
+                imageFile: fileList,
+                phone: fullPhoneNumber,
+            };
+        } catch (error) {
+            console.error("Form validation failed:", error);
+            return null; // Return null if validation fails
+        }
     };
 
     /**
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
-        const schoolValue = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi); // Sử dụng hàm utility
+        const schoolValue = await prepareSchoolAddData(); // Sử dụng hàm utility
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
@@ -69,17 +109,18 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             openNotificationWithIcon(
                 'success',
                 'School Added Successfully',
-                'The school has been added to the system successfully.',
-                2
+                'The school has been added to the system successfully! Please wait for the admins to review.',
+                2,
+                () => router.push("/public/school-owner")
             );
-            router.push("/school/school-detail");
         } catch (error: unknown) {
-            const errorMessage = formatErrorMessage(error); // Sử dụng hàm utility
+            const errorMessage = formatErrorMessage(error);
             openNotificationWithIcon(
                 'error',
                 'Failed to Add School',
                 errorMessage,
-                5
+                5,
+                () => {},
             );
         }
     };
@@ -191,7 +232,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasDeleteButton &&
                     <Button
                         htmlType="button"
-                        onClick={handleDelete} loading={isUpdatingStatus && activeButton === "delete"}
+                        onClick={handleDelete}
                         className={'bg-red-600 hover:!bg-red-500 text-white hover:!text-white border-none'}
                     >
                         Delete
@@ -205,7 +246,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasPublishButton &&
                     <Button
                         htmlType="button"
-                        onClick={handlePublish} loading={isUpdatingStatus && activeButton === "publish"}
+                        onClick={handlePublish}
                         className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}
                     >
                         Publish
@@ -214,26 +255,27 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasUnpublishButton &&
                     <Button
                         htmlType="button"
-                        onClick={handleUnpublish} loading={isUpdatingStatus && activeButton === "unpublish"}
+                        onClick={handleUnpublish}
                         className={'bg-purple-300 text-purple-800 border-purple-900'}
                     >
                         Unpublish
                     </Button>
                 }
                 <Modal
-                    title={getModalContent().title}
-                    open={modalVisible}
-                    onOk={handleConfirmAction}
-                    onCancel={() => {
-                        setModalVisible(false);
-                        setActiveButton(null);
-                    }}
-                    okText="Yes"
-                    cancelText="No, Take me back!"
-                    confirmLoading={isUpdatingStatus}
-                >
-                    <p>{getModalContent().desc}</p>
-                </Modal>
+                   title={getModalContent().title}
+                   open={modalVisible}
+                   onOk={handleConfirmAction}
+                   onCancel={() => {
+                       setModalVisible(false);
+                       setActiveButton(null);
+                   }}
+                   okText="Yes"
+                   cancelText="No, Take me back!"
+                   confirmLoading={isUpdatingStatus}
+               >
+                   <p>{getModalContent().desc}</p>
+               </Modal>
+
             </div>
         </>
     );
