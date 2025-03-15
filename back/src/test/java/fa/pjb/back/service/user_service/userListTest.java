@@ -1,4 +1,4 @@
-package fa.pjb.back.service;
+package fa.pjb.back.service.user_service;
 
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.entity.User;
@@ -17,7 +17,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class UserServiceTest {
+class userListTest {
 
     @Mock
     private UserRepository userRepository;

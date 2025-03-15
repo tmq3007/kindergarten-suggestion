@@ -1,6 +1,6 @@
-package fa.pjb.back.controller;
+package fa.pjb.back.controller.user_controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import fa.pjb.back.controller.UserController;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.service.UserService;
 import org.mockito.InjectMocks;
@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
-class UserControllerTest {
+class getUsersTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -195,7 +195,7 @@ class UserControllerTest {
     @Test
     void testGetAllUsers_BoundaryInvalidPageSize() throws Exception {
         mockMvc.perform(get("/api/user")
-                        .param("size", "51")
+                        .param("size", "101")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.globalErrors[0].message").value("Page size exceeds the maximum limit"));

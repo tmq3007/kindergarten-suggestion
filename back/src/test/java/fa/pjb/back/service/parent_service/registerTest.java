@@ -1,4 +1,4 @@
-package fa.pjb.back.service;
+package fa.pjb.back.service.parent_service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,13 +7,12 @@ import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
-import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
+import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.UserService;
 import fa.pjb.back.service.impl.ParentServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,11 +23,9 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDateTime;
-
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-class ParentServiceTest {
+class registerTest {
 
     @Mock
     private ParentRepository parentRepository;

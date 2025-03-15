@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Integer> {
@@ -29,4 +30,6 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     List<ExpectedSchoolVO> findDistinctByExpectedSchoolIsNotNull();
 
     List<ExpectedSchoolVO> getExpectedSchoolByUserId(Integer id);
+
+    Set<SchoolOwner> findAllByIdIn(Set<Integer> ids);
 }
