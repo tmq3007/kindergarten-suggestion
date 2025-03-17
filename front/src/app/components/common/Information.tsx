@@ -31,13 +31,13 @@ export default function Information() {
                         <Card className={'md:h-[350px]'}>
                             <Space className={'flex justify-center text-xl'}>
                                 <GlobalOutlined/>
-                                <p className={'font-medium'}>Our School Networks</p>
+                                <p className={'font-medium text-lg'}>Our School Networks</p>
                             </Space>
                             <div className={'text-center my-4'}>
                                 <p>800 +</p>
                                 <p>Preschools and Kindergarten</p>
                             </div>
-                            <p>Search for a preschool for your child based on basic criteria as: quality, reviews of
+                            <p className={'text-justify'}>Search for a preschool for your child based on basic criteria as: quality, reviews of
                                 other
                                 parents, location, tuition fees,...</p>
                         </Card>
@@ -53,13 +53,13 @@ export default function Information() {
                         <Card className={'md:h-[350px]'}>
                             <Space className={'flex justify-center text-xl'}>
                                 <TeamOutlined/>
-                                <p className={'font-medium'}>Parent Community</p>
+                                <p className={'font-medium text-lg'}>Parent Community</p>
                             </Space>
                             <div className={'text-center my-4'}>
                                 <p>1500 +</p>
                                 <p>School profiles of parents and kids</p>
                             </div>
-                            <p>Close connection with to parents through multiple channels including email, chat and
+                            <p className={'text-justify'}>Close connection with to parents through multiple channels including email, chat and
                                 phone
                                 calls. Get feedback from parents to provide a comprehensive view</p>
                         </Card>
@@ -75,13 +75,13 @@ export default function Information() {
                         <Card className={'md:h-[350px]'}>
                             <Space className={'flex justify-center text-xl'}>
                                 <BulbOutlined/>
-                                <p className={'font-medium'}>Special Consultations</p>
+                                <p className={'font-medium text-lg'}>Special Consultations</p>
                             </Space>
                             <div className={'text-center my-4'}>
                                 <p>30 +</p>
                                 <p>Consultants with 5-10 years of experience in education</p>
                             </div>
-                            <p>Our consultant with deep knowledge on pre-school education will help parents to choose
+                            <p className={'text-justify'}>Our consultant with deep knowledge on pre-school education will help parents to choose
                                 the
                                 right school for their children</p>
                         </Card>

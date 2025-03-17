@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Divider, Form, FormProps, Input, message} from 'antd';
 import Link from "next/link";
 import {LoginDTO, useLoginByParentMutation} from "@/redux/services/authApi";
-import useAuthRedirect from "@/lib/useAuthRedirect";
+import useAuthRedirect from "@/lib/hook/useAuthRedirect";
 import {useDispatch} from "react-redux";
 import {setPreviousPage} from "@/redux/features/authSlice";
 

@@ -1,18 +1,15 @@
-'use client';
-import {useParams} from 'next/navigation';
-import {useGetSchoolQuery} from '@/redux/services/schoolApi';
-import React from 'react';
-import SchoolFormSkeleton from '@/app/components/skeleton/SchoolFormSkeleton';
-import SchoolForm from '@/app/components/school/SchoolForm';
-import MyBreadcrumb from '@/app/components/common/MyBreadcrumb';
-import SchoolManageTitle from '@/app/components/school/SchoolManageTitle';
+'use client'
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import SchoolForm from "@/app/components/school/SchoolForm";
+import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 import useSchoolForm from "@/lib/hook/useSchoolForm";
+import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
+import React from "react";
 
 export default function EditSchool() {
-    const params = useParams();
-    const schoolId = params.id;
-    const {data, isLoading} = useGetSchoolQuery(Number(schoolId));
-    const {form, formLoaded, schoolStatus, school} = useSchoolForm({
+    const {data, isLoading} = useGetSchoolOfSchoolOwnerQuery();
+    const { form, formLoaded, schoolStatus, school } = useSchoolForm({
         data: data?.data,
         isLoading,
     });
@@ -35,14 +32,13 @@ export default function EditSchool() {
                     {label: 'Edit school'},
                 ]}
             />
-            <SchoolManageTitle title={'Edit School'} schoolStatus={schoolStatus!}/>
+            <SchoolManageTitle title={'Edit School'}/>
             <SchoolForm
-                form={form}
+                form={form}//
                 hasCancelButton={true}
                 hasUpdateSubmitButton={true}
                 isEdit={true}
                 triggerCheckEmail={null}
-                schoolId={Number(schoolId)}
                 formLoaded={formLoaded} // Pass to SchoolForm
             />
         </>
