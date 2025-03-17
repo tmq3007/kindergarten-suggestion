@@ -293,7 +293,7 @@ const CreateUser: React.FC = () => {
                                         name="business_registration_number"
                                         rules={[
                                             { required: true, message: 'Business Registration Number is required for School Owner!' },
-                                            { min: 200,max:10, message: 'Business Registration Number must have 10 characters!' }
+                                            { min: 10,max:10, message: 'Business Registration Number must have 10 characters!' }
                                         ]}
                                     >
                                         <Input
@@ -339,7 +339,7 @@ const CreateUser: React.FC = () => {
                                             form={form}
                                             fieldName="image"
                                             maxCount={10}
-                                            accept="image/*"
+                                            accept="image/*,.pdf"
                                             maxSizeMB={5}
                                             hideImageUpload={false}
                                             imageList={[{ url: '', filename: '' }]}
