@@ -11,7 +11,7 @@ import {
 } from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {ButtonGroupProps} from "./SchoolFormButton";
-import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/schoolUtils";
+import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,

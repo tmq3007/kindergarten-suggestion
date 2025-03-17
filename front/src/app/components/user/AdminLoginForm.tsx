@@ -7,7 +7,7 @@ import {ApiResponse} from "@/redux/services/config/baseQuery";
 import {useDispatch} from "react-redux";
 import {setPreviousPage} from "@/redux/features/authSlice";
 import {LoginDTO, LoginVO} from "@/redux/services/authApi";
-import useAuthRedirect from "@/lib/useAuthRedirect";
+import useAuthRedirect from "@/lib/hook/useAuthRedirect";
 import {lato, nunito} from "@/lib/fonts";
 
 type FieldType = {

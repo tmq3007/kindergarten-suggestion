@@ -7,14 +7,15 @@ import {persistReducer} from 'redux-persist';
 import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/es/constants";
 import apiMiddlewares from "@/redux/middleware/apiMiddleware";
 import {authApi} from "@/redux/services/authApi";
-import { registerApi } from "./services/registerApi";
+import {registerApi} from "./services/registerApi";
 import {addressApi} from "@/redux/services/addressApi";
 import {parentApi} from "@/redux/services/parentApi";
 import {userApi} from "@/redux/services/userApi";
 import {adminApi} from "@/redux/services/adminApi";
 import {reviewApi} from "@/redux/services/reviewApi";
 import {schoolApi} from "@/redux/services/schoolApi";
-import { testApi } from "./services/testApi";
+import {testApi} from "./services/testApi";
+import {schoolOwnerApi} from "@/redux/services/schoolOwnerApi";
 
 
 // Create a rootReducer that includes reducers for managing the API and state management.
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
     [reviewApi.reducerPath]: reviewApi.reducer,
     [schoolApi.reducerPath]: schoolApi.reducer,
     [testApi.reducerPath]: testApi.reducer,
+    [schoolOwnerApi.reducerPath]: schoolOwnerApi.reducer,
     // Reducers managing state
     counter: counterReducer,
     auth: authReducer,
