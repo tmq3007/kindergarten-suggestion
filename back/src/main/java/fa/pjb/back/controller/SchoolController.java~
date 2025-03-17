@@ -67,6 +67,19 @@ public class SchoolController {
                 .build();
     }
 
+    @GetMapping("/by-user")
+    public ApiResponse<SchoolDetailVO> getSchoolByUserId(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) String name) {
+        // Lấy userId trực tiếp từ User entity
+        Integer userId = user.getId();
+        return ApiResponse.<SchoolDetailVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get school by user ID successfully.")
+                .data(schoolService.getSchoolByUserId(userId, name))
+                .build();
+    }
+
     @GetMapping("/check-email/{email}")
     public ApiResponse<String> checkEmail(@PathVariable String email) {
         return ApiResponse.<String>builder()

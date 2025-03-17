@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
-import { SchoolOwnerVO } from "./SchoolOwnerApi";
+import { SchoolOwnerVO } from "./schoolOwnerApi";
 import { UploadFile } from "antd";
 
 export interface Facility {
@@ -115,7 +115,6 @@ export type ExpectedSchool = {
 }
 
 // Utility function to handle FormData creation
-//TODO: đã lấy đc list metadata ảnh đã gửi về khi edit và gửi về chỉ các ảnh mới upload
 const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData => {
     const formData = new FormData();
     const {image, ...schoolDataWithoutImage} = schoolData;
@@ -217,16 +216,6 @@ export const schoolApi = createApi({
                 },
             }),
             providesTags: ["SchoolList"],
-        }),
-
-        // Lấy danh sách trường học theo userId
-        getSchoolByUserId: build.query<ApiResponse<SchoolVO>, { name?: string }>({
-            query: ({ name }) => ({
-                url: `/school/by-user`,
-                method: "GET",
-                params: name ? { name } : undefined,
-            }),
-            providesTags: ["School"],
         }),
 
         // Get school detail by ID
@@ -348,7 +337,6 @@ export const {
     useUpdateSchoolStatusByAdminMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation,
     useGetSchoolListQuery,
-    useGetSchoolByUserIdQuery,
     useGetSchoolByIdQuery,
     useApproveSchoolMutation,
     useSearchExpectedSchoolQuery,

@@ -9,7 +9,7 @@ import {
 } from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
-import {formatErrorMessage, prepareSchoolAddData} from "@/lib/schoolUtils";
+import {formatErrorMessage, prepareSchoolAddData} from "@/lib/util/schoolUtils";
 
 const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     {
@@ -151,7 +151,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     };
 
     const handleEdit = () => {
-        // Handle edit logic here
+        router.push('/public/school-owner/edit-school');
     };
 
     const getModalContent = () => {
