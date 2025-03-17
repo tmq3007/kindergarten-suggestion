@@ -9,7 +9,7 @@ import {
 } from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
-import {formatErrorMessage, prepareSchoolData} from "@/lib/schoolUtils";
+import {formatErrorMessage, prepareSchoolAddData} from "@/lib/schoolUtils";
 
 const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     {
@@ -53,49 +53,18 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         });
     };
 
-    /**
+    /*
      * Utility function to prepare school data before submission
      * - Validates form fields
      * - Formats phone number correctly
      * - Extracts uploaded images
      */
 
-    const prepareSchoolAddData = async (): Promise<SchoolCreateDTO | null> => {
-        try {
-            // Validate form fields and get values
-            const values = await form.validateFields();
-            // Validate email and phone using refs from SchoolForm
-
-            const isEmailValid = await emailInputRef?.current?.validateEmail();
-            const isPhoneValid = await phoneInputRef?.current?.validatePhone();
-
-            if (!isEmailValid || !isPhoneValid) {
-                console.log('Validation failed');
-                messageApi.error("Email or phone validation failed. Please check your inputs.");
-                return null;
-            }
-            const fileList: File[] = (values.image as UploadFile[] || [])
-                .filter((file) => file.originFileObj)
-                .map((file) => file.originFileObj as File);
-            const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
-
-            // Prepare final data
-            return {
-                ...values,
-                imageFile: fileList,
-                phone: fullPhoneNumber,
-            };
-        } catch (error) {
-            console.error("Form validation failed:", error);
-            return null; // Return null if validation fails
-        }
-    };
-
     /**
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
-        const schoolValue = await prepareSchoolAddData(); // Sử dụng hàm utility
+        const schoolValue = await prepareSchoolAddData(form, emailInputRef, phoneInputRef, messageApi); // Sử dụng hàm utility
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
@@ -120,7 +89,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'Failed to Add School',
                 errorMessage,
                 5,
-                () => {},
+                () => {
+                },
             );
         }
     };
@@ -145,15 +115,15 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         try {
             switch (activeButton) {
                 case "publish":
-                    await updateSchoolStatusBySchoolOwner({ schoolId: Number(null), status: 4 }).unwrap();
+                    await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 4}).unwrap();
                     messageApi.success('School published successfully!');
                     break;
                 case "unpublish":
-                    await updateSchoolStatusBySchoolOwner({ schoolId: Number(null), status: 5 }).unwrap();
+                    await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 5}).unwrap();
                     messageApi.success('School unpublished successfully!');
                     break;
                 case "delete":
-                    await updateSchoolStatusBySchoolOwner({ schoolId: Number(null), status: 6 }).unwrap();
+                    await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 6}).unwrap();
                     messageApi.success('School deleted successfully!');
                     break;
             }
@@ -187,13 +157,13 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const getModalContent = () => {
         switch (activeButton) {
             case "publish":
-                return { title: "Publish School", desc: "Are you sure you want to publish this school?" };
+                return {title: "Publish School", desc: "Are you sure you want to publish this school?"};
             case "unpublish":
-                return { title: "Unpublish School", desc: "Are you sure you want to unpublish this school?" };
+                return {title: "Unpublish School", desc: "Are you sure you want to unpublish this school?"};
             case "delete":
-                return { title: "Delete School", desc: "Are you sure you want to delete this school?" };
+                return {title: "Delete School", desc: "Are you sure you want to delete this school?"};
             default:
-                return { title: "", desc: "" };
+                return {title: "", desc: ""};
         }
     };
 
@@ -219,13 +189,16 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     </Button>
                 }
                 {hasCreateSubmitButton &&
-                    <Button htmlType="button" type="primary" onClick={() => addSchoolHandle(1)} loading={isCreating}>
+                    <Button htmlType="button"
+                            type="primary"
+                            onClick={() => addSchoolHandle(1)} loading={isCreating}>
                         Submit
                     </Button>
                 }
                 {hasUpdateSubmitButton &&
-                    <Button htmlType="button" onClick={handleUpdateSubmit}
-                            className={'bg-blue-300 text-blue-800 border-blue-900'}>
+                    <Button htmlType="button"
+                            onClick={handleUpdateSubmit}
+                            type={'primary'}>
                         Submit
                     </Button>
                 }
@@ -256,25 +229,25 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     <Button
                         htmlType="button"
                         onClick={handleUnpublish}
-                        className={'bg-purple-300 text-purple-800 border-purple-900'}
+                        className={'bg-purple-600 hover:!bg-purple-500 text-white hover:!text-white border-none\''}
                     >
                         Unpublish
                     </Button>
                 }
                 <Modal
-                   title={getModalContent().title}
-                   open={modalVisible}
-                   onOk={handleConfirmAction}
-                   onCancel={() => {
-                       setModalVisible(false);
-                       setActiveButton(null);
-                   }}
-                   okText="Yes"
-                   cancelText="No, Take me back!"
-                   confirmLoading={isUpdatingStatus}
-               >
-                   <p>{getModalContent().desc}</p>
-               </Modal>
+                    title={getModalContent().title}
+                    open={modalVisible}
+                    onOk={handleConfirmAction}
+                    onCancel={() => {
+                        setModalVisible(false);
+                        setActiveButton(null);
+                    }}
+                    okText="Yes"
+                    cancelText="No, Take me back!"
+                    confirmLoading={isUpdatingStatus}
+                >
+                    <p>{getModalContent().desc}</p>
+                </Modal>
 
             </div>
         </>

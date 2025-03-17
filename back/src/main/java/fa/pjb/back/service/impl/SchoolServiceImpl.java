@@ -270,8 +270,9 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
-                                            String street, String email, String phone, Pageable pageable) {
+        String street, String email, String phone, Pageable pageable) {
         Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
+        schoolPage.forEach(school -> log.info("School: id={}, postedDate={}", school.getId(), school.getPostedDate()));
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 

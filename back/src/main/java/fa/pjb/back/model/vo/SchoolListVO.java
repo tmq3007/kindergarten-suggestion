@@ -1,8 +1,6 @@
 package fa.pjb.back.model.vo;
 
-
 import java.time.LocalDate;
-
 
 public record SchoolListVO(
         Integer id,
