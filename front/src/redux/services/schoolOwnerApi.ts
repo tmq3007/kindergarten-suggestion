@@ -17,7 +17,6 @@ export const schoolOwnerApi = createApi({
     tagTypes: ["School"],
     endpoints: (build) => ({
         // Get school list
-        // Lấy danh sách trường học theo userId
         getSchoolOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
             query: () => ({
                 url: `/school-owner/school-info`,

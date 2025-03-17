@@ -249,7 +249,9 @@ public class SchoolServiceImpl implements SchoolService {
                         projection.getUsername(),
                         projection.getEmail(),
                         projection.getPhone(),
-                        projection.getExpectedSchool()
+                        projection.getExpectedSchool(),
+                        projection.getImageList(),
+                        projection.getDob()
                 ))
                 .toList();
     }

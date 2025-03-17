@@ -15,6 +15,7 @@ import Image from "next/image";
 import {formatPhoneNumber} from "@/lib/util/phoneUtils";
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
+import {opt} from "ts-interface-checker";
 
 export default function SchoolDetail() {
     const router = useRouter();
@@ -33,9 +34,7 @@ export default function SchoolDetail() {
     }
 
     //get school by user id
-    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery({
-        name: undefined,
-    });
+    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery();
 
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
