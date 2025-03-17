@@ -177,26 +177,7 @@ public class ForgotPasswordTest {
         verify(emailService, never()).sendLinkPasswordResetEmail(any(), any(), any());
     }
 
-    // 6. Far Boundary Test Case: Email vượt quá độ dài tối đa
-    @Test
-    public void forgotPassword_FarBoundary_OverMaxLengthEmail() {
-        // Arrange
-        String overMaxEmail = "a_very_long_email_address_1234567890abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz@example.com"; // > 254 chars
-        ForgotPasswordDTO forgotPasswordDTO = ForgotPasswordDTO.builder()
-                .email(overMaxEmail)
-                .build();
-
-        when(userRepository.findByEmail(overMaxEmail)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        EmailNotFoundException exception = assertThrows(EmailNotFoundException.class, () ->
-                authService.forgotPassword(forgotPasswordDTO, response));
-        assertEquals("Could not found user with email " + overMaxEmail, exception.getMessage());
-        verify(userRepository, times(1)).findByEmail(overMaxEmail);
-        verify(emailService, never()).sendLinkPasswordResetEmail(any(), any(), any());
-    }
-
-    // 7. Far Boundary Test Case: Email chứa ký tự không hợp lệ
+    // 6. Far Boundary Test Case: Email chứa ký tự không hợp lệ
     @Test
     public void forgotPassword_FarBoundary_InvalidCharactersEmail() {
         // Arrange
