@@ -269,21 +269,6 @@ const CreateUser: React.FC = () => {
                                     <DatePicker disabledDate={(current) => current && current > dayjs().endOf('day')} />
                                 </Form.Item>
                             </motion.div>
-                        </Col>
-
-                        <Col xs={24} sm={24} md={24} lg={12}> {/* Single column on xs/md, two columns on lg+ */}
-                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={5}>
-                                <Form.Item className={'mb-10'} label="Role" name="role" rules={[{ required: true, message: 'Please select a role!' }]}>
-                                    <Select
-                                        placeholder="Select a role"
-                                        onChange={handleRoleChange} // Track role change
-                                        options={[
-                                            { value: 'admin', label: 'Admin' },
-                                            { value: 'school_owner', label: 'School Owner' },
-                                        ]}
-                                    />
-                                </Form.Item>
-                            </motion.div>
 
                             {/* Conditional Expected School TextArea */}
                             {selectedRole === 'school_owner' && (
@@ -291,6 +276,7 @@ const CreateUser: React.FC = () => {
                                     <Form.Item
                                         label="Expected School"
                                         name="expectedSchool"
+                                        className={'mb-10'}
                                         rules={[
                                             { required: true, message: 'Expected school name is required for School Owner!' },
                                             { max: 200, message: 'Expected school name must not exceed 200 characters!' }
@@ -311,9 +297,34 @@ const CreateUser: React.FC = () => {
                                         ]}
                                     >
                                         <Input
-                                             placeholder="Enter the Business Registration Number"
+                                            placeholder="Enter the Business Registration Number"
                                         />
                                     </Form.Item>
+
+
+                                </motion.div>
+
+                            )}
+
+                        </Col>
+
+                        <Col xs={24} sm={24} md={24} lg={12}> {/* Single column on xs/md, two columns on lg+ */}
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={5}>
+                                <Form.Item className={'mb-10'} label="Role" name="role" rules={[{ required: true, message: 'Please select a role!' }]}>
+                                    <Select
+                                        placeholder="Select a role"
+                                        onChange={handleRoleChange} // Track role change
+                                        options={[
+                                            { value: 'admin', label: 'Admin' },
+                                            { value: 'school_owner', label: 'School Owner' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </motion.div>
+
+                            {/* Conditional Expected School TextArea */}
+                            {selectedRole === 'school_owner' && (
+                                <motion.div className={'mb-10'} variants={fadeInUpVariants} initial="initial" animate="animate" custom={6}>
 
                                     <Form.Item
                                         label="Business license "
@@ -332,7 +343,6 @@ const CreateUser: React.FC = () => {
                                             maxSizeMB={5}
                                             hideImageUpload={false}
                                             imageList={[{ url: '', filename: '' }]}
-                                            formLoaded={false}
                                         />
                                     </Form.Item>
 
