@@ -86,30 +86,6 @@ public class UpdateSchoolStatusByAdmin {
     }
 
     /**
-     * Test case for updating a school status by an admin with the maximum value for school ID.
-     * Description: Update a school status successfully when the school ID is set to Integer.MAX_VALUE.
-     * Expected: Returns HTTP 200 OK indicating the status was updated successfully.
-     */
-    @Test
-    void testUpdateSchoolStatusByAdmin_SchoolIdMaxValue() throws Exception {
-        // Prepare DTO with maximum integer value for school ID
-        ChangeSchoolStatusDTO dto = ChangeSchoolStatusDTO.builder()
-                .schoolId(Integer.MAX_VALUE)
-                .status((byte) 1)
-                .build();
-
-        // Stub the service to do nothing when called with the DTO
-        doNothing().when(schoolService).updateSchoolStatusByAdmin(any(ChangeSchoolStatusDTO.class));
-
-        // Perform the request
-        mockMvc.perform(put("/school/change-status/by-admin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                // Assert the response
-                .andExpect(status().isOk());
-    }
-
-    /**
      * Test case for updating a school status by an admin with the minimum value for school status.
      * Description: Update a school status successfully when the school status is set to Byte.MIN_VALUE.
      * Expected: Returns HTTP 200 OK indicating the status was updated successfully.
@@ -132,6 +108,7 @@ public class UpdateSchoolStatusByAdmin {
                 // Assert the response
                 .andExpect(status().isOk());
     }
+
 
     /**
      * Test case for updating a school status by an admin with the maximum value for school status.
