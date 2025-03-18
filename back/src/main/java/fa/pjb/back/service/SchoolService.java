@@ -18,7 +18,7 @@ public interface SchoolService {
     Page<SchoolListVO> getAllSchools(String name, String province, String district, String street,
                                      String email, String phone, Pageable pageable);
 
-    SchoolDetailVO getSchoolByUserId(Integer userId, String name);
+    SchoolDetailVO getSchoolByUserId(Integer userId);
 
     SchoolDetailVO addSchool(SchoolDTO schoolDTO, List<MultipartFile> image);
 

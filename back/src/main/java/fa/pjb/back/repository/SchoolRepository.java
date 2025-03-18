@@ -3,10 +3,6 @@ package fa.pjb.back.repository;
 import fa.pjb.back.model.entity.School;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import fa.pjb.back.model.entity.User;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,8 +20,8 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
     @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId")
     boolean existsByEmailExcept(@Param("email") String email, @Param("schoolId") Integer schoolId);
 
-    @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId AND (:name IS NULL OR s.name LIKE %:name%)")
-    Optional<School> findSchoolByUserId(@Param("userId") Integer userId, @Param("name") String name);
+    @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId")
+    Optional<School> findSchoolByUserId(@Param("userId") Integer userId);
 
     @Query("SELECT s FROM School s WHERE " +
             "(:name IS NULL OR s.name LIKE %:name%) AND " +

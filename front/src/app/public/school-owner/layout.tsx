@@ -85,7 +85,7 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
                         </Resizable>
 
                         <Button
-                            className="absolute top-[30%] -right-4 z-10"
+                            className="absolute top-[400px] -right-4 z-10"
                             type="primary"
                             shape="circle"
                             icon={collapsed ? <RightOutlined/> : <LeftOutlined/>}

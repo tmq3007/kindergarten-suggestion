@@ -8,17 +8,21 @@ import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import closedImg from '@public/closed.png'
 import {CHILD_RECEIVING_AGE_OPTIONS, EDUCATION_METHOD_OPTIONS, ROLES, SCHOOL_STATUS_OPTIONS,} from "@/lib/constants";
-import {useApproveSchoolMutation, useGetSchoolByUserIdQuery} from "@/redux/services/schoolApi";
+import {useApproveSchoolMutation} from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
 import Image from "next/image";
-import {formatPhoneNumber} from "@/lib/phoneUtils";
+import {formatPhoneNumber} from "@/lib/util/phoneUtils";
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
+import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
+import {opt} from "ts-interface-checker";
 
 export default function SchoolDetail() {
     const router = useRouter();
-    const role = useSelector((state: RootState) => state.user?.role);
-
+    const user = useSelector((state: RootState) => state.user);
+    const role = user.role;
+    console.log("****************")
+    console.log(user)
     //Check role user
     const unauthorized = () => {
         router.push("/login");
@@ -30,9 +34,7 @@ export default function SchoolDetail() {
     }
 
     //get school by user id
-    const {data, isError, isLoading} = useGetSchoolByUserIdQuery({
-        name: undefined,
-    });
+    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery();
 
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;

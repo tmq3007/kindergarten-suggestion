@@ -62,6 +62,7 @@ public class SchoolServiceImpl implements SchoolService {
     private String schoolDetailedLinkAdmin;
 
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     public SchoolDetailVO getSchoolInfo(Integer schoolId) {
         School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
@@ -252,7 +253,9 @@ public class SchoolServiceImpl implements SchoolService {
                         projection.getUsername(),
                         projection.getEmail(),
                         projection.getPhone(),
-                        projection.getExpectedSchool()
+                        projection.getExpectedSchool(),
+                        projection.getImageList(),
+                        projection.getDob()
                 ))
                 .toList();
     }
@@ -279,8 +282,8 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public SchoolDetailVO getSchoolByUserId(Integer userId, String name) {
-        School school = schoolRepository.findSchoolByUserId(userId, name)
+    public SchoolDetailVO getSchoolByUserId(Integer userId) {
+        School school = schoolRepository.findSchoolByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         return schoolMapper.toSchoolDetailVO(school);
     }

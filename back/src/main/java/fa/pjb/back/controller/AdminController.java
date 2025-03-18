@@ -6,7 +6,11 @@ import fa.pjb.back.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -16,9 +20,11 @@ public class AdminController {
 
     private final UserService userService;
 
-    @PostMapping("/user")
-    public ApiResponse<UserCreateDTO> createUser(@RequestBody @Valid UserCreateDTO userCreateDTO) {
-        UserCreateDTO createdUser = userService.createUser(userCreateDTO);
+    @PostMapping(value = "/user",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<UserCreateDTO> createUser(
+            @RequestPart(value = "data") @Valid UserCreateDTO userCreateDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        UserCreateDTO createdUser = userService.createUser(userCreateDTO,images);
         log.info("Received UserDTO: {}", userCreateDTO);
         return ApiResponse.<UserCreateDTO>builder()
                 .code(200)

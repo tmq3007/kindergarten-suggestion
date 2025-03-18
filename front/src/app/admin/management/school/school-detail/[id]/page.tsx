@@ -17,7 +17,7 @@ import {
 import {useApproveSchoolMutation, useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
 import {RootState} from '@/redux/store';
 import {useSelector} from "react-redux";
-import {formatPhoneNumber} from "@/lib/phoneUtils";
+import {formatPhoneNumber} from "@/lib/util/phoneUtils";
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 
 export default function SchoolDetail() {

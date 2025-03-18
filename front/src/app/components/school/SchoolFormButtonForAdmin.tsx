@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {Button, message, Modal, notification, UploadFile} from "antd";
+import {Button, message, Modal, notification} from "antd";
 import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
@@ -11,7 +11,7 @@ import {
 } from "@/redux/services/schoolApi";
 import {useSelector} from "react-redux";
 import {ButtonGroupProps} from "./SchoolFormButton";
-import {formatErrorMessage, prepareSchoolData} from "@/lib/schoolUtils";
+import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -58,7 +58,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
-        const schoolValue = await prepareSchoolAddData(); // Sử dụng hàm utility
+        const schoolValue = await prepareSchoolAddData(form, emailInputRef, phoneInputRef, messageApi);
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
             ...schoolValue,
@@ -90,47 +90,10 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     };
 
     /**
-     * Utility function to prepare school data before submission
-     * - Validates form fields
-     * - Formats phone number correctly
-     * - Extracts uploaded images
-     */
-    
-    const prepareSchoolAddData = async (): Promise<SchoolCreateDTO | null> => {
-        try {
-            // Validate form fields and get values
-            const values = await form.validateFields();
-            // Validate email and phone using refs from SchoolForm
-    
-            const isEmailValid = await emailInputRef?.current?.validateEmail();
-            const isPhoneValid = await phoneInputRef?.current?.validatePhone();
-    
-            if (!isEmailValid || !isPhoneValid) {
-                console.log('Validation failed');
-                messageApi.error("Email or phone validation failed. Please check your inputs.");
-                return null;
-            }
-            const fileList: File[] = (values.image as UploadFile[] || [])
-                .filter((file) => file.originFileObj)
-                .map((file) => file.originFileObj as File);
-            const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
-    
-            // Prepare final data
-            return {
-                ...values,
-                imageFile: fileList,
-                phone: fullPhoneNumber,
-            };
-        } catch (error) {
-            console.error("Form validation failed:", error);
-            return null; // Return null if validation fails
-        }
-    };
-    /**
      * Handles school update
      */
     const handleUpdateSubmit = async () => {
-        const schoolData = await prepareSchoolData(form, emailInputRef!, phoneInputRef!, messageApi);
+        const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
         try {
             await updateSchoolByAdmin({id: Number(schoolId), ...schoolData}).unwrap();

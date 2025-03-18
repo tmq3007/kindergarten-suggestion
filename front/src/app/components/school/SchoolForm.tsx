@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect, useRef, useState } from 'react';
 import { Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile } from 'antd';
 import MyEditor from "@/app/components/common/MyEditor";
@@ -18,7 +19,7 @@ import clsx from "clsx";
 import {  MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { SchoolOwnerVO } from '@/redux/services/SchoolOwnerApi';
+import { SchoolOwnerVO } from '@/redux/services/schoolOwnerApi';
 
 const {Option} = Select;
 const {Panel} = Collapse;
@@ -187,7 +188,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
         }
     };
     useEffect(() => {
-        handleSchoolNameChange(schoolNameValue);
+        handleSchoolNameChange(schoolNameValue).then(r => {});
     }, [schoolNameValue]);
 
     useEffect(() => {

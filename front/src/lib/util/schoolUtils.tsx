@@ -1,8 +1,7 @@
 // schoolUtils.ts
-import { FormInstance } from "antd/es/form";
-import { UploadFile } from "antd";
-import { SchoolDTO, SchoolUpdateDTO } from "@/redux/services/schoolApi";
-import { message } from "antd";
+import {FormInstance} from "antd/es/form";
+import {UploadFile} from "antd";
+import {SchoolCreateDTO} from "@/redux/services/schoolApi";
 import React from "react";
 
 export const formatErrorMessage = (error: unknown): string | React.ReactNode => {
@@ -31,7 +30,7 @@ export const formatErrorMessage = (error: unknown): string | React.ReactNode => 
             errorMessage = allErrorMessages.map((msg, index) => (
                 <React.Fragment key={index}>
                     {'-' + msg}
-                    {index < allErrorMessages.length - 1 && <br />}
+                    {index < allErrorMessages.length - 1 && <br/>}
                 </React.Fragment>
             ));
         } else if (errorData?.message) {
@@ -48,33 +47,33 @@ export const formatErrorMessage = (error: unknown): string | React.ReactNode => 
 
 const convertUrlToFile = async (fileUrl: string, fileName: string = "image.jpg") => {
 
-    // Dùng proxy API để lấy ảnh từ Google Drive
+    // Use proxy API to get image from Google Drive
     const proxyUrl = `/api/image?url=${encodeURIComponent(fileUrl)}`;
 
     try {
         const response = await fetch(proxyUrl);
         const blob = await response.blob();
-        return new File([blob], fileName, { type: blob.type });
+        return new File([blob], fileName, {type: blob.type});
     } catch (error) {
-        console.error("❌ Lỗi khi tải ảnh qua proxy:", error);
+        console.error("Error when loading image via proxy", error);
         return null;
     }
 };
 
 
-export const prepareSchoolData = async (form: FormInstance, emailInputRef: any, phoneInputRef: any, messageApi: any) => {
+export const prepareSchoolUpdateData = async (form: FormInstance, emailInputRef: any, phoneInputRef: any, messageApi: any) => {
     try {
         const values = await form.validateFields();
 
         const fileList: UploadFile[] = form.getFieldValue('image') || [];
 
-        // Chuyển tất cả ảnh thành File
+        // Convert image to File
         const imagesToSend = await Promise.all(
             fileList.map(async (file) => {
                 if (file.originFileObj) {
-                    return file.originFileObj; // Ảnh mới upload
+                    return file.originFileObj; // New uploaded image
                 } else if (file.url) {
-                    return await convertUrlToFile(file.url, file.name || "image.jpg"); // Ảnh từ database
+                    return await convertUrlToFile(file.url, file.name || "image.jpg"); // Image from database
                 }
                 return null;
             })
@@ -87,17 +86,59 @@ export const prepareSchoolData = async (form: FormInstance, emailInputRef: any, 
         //TODO:remove this when done
         let tempSO = values.schoolOwners;
         if (tempSO === undefined) {
-            tempSO = []; // ✅ Gán lại thành mảng rỗng nếu bị undefined
+            tempSO = [];
         }
         // Prepare final data
         return {
             ...values,
-            image: imagesToSend.filter(Boolean), // Loại bỏ giá trị null
+            image: imagesToSend.filter(Boolean),
             phone: fullPhoneNumber,
             schoolOwners: tempSO,
         };
     } catch (error) {
-        console.error("❌ Form validation failed:", error);
+        console.error("Form validation failed:", error);
         return null;
+    }
+};
+
+/**
+ * Utility function to prepare school data before submission
+ * - Validates form fields
+ * - Formats phone number correctly
+ * - Extracts uploaded images
+ */
+export const prepareSchoolAddData = async (
+    form: FormInstance,
+    emailInputRef: React.RefObject<any> | undefined,
+    phoneInputRef: React.RefObject<any> | undefined,
+    messageApi: any
+): Promise<SchoolCreateDTO | null> => {
+    try {
+        // Validate form fields and get values
+        const values = await form.validateFields();
+        // Validate email and phone using refs from SchoolForm
+
+        const isEmailValid = await emailInputRef?.current?.validateEmail();
+        const isPhoneValid = await phoneInputRef?.current?.validatePhone();
+
+        if (!isEmailValid || !isPhoneValid) {
+            console.log('Validation failed');
+            messageApi.error("Email or phone validation failed. Please check your inputs.");
+            return null;
+        }
+        const fileList: File[] = (values.image as UploadFile[] || [])
+            .filter((file) => file.originFileObj)
+            .map((file) => file.originFileObj as File);
+        const fullPhoneNumber = phoneInputRef?.current?.getFormattedPhoneNumber() || values.phone;
+
+        // Prepare final data
+        return {
+            ...values,
+            imageFile: fileList,
+            phone: fullPhoneNumber,
+        };
+    } catch (error) {
+        console.error("Form validation failed:", error);
+        return null; // Return null if validation fails
     }
 };
