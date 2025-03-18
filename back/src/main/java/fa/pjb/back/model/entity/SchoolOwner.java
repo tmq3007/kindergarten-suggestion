@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Builder
 @AllArgsConstructor
@@ -39,5 +40,11 @@ public class SchoolOwner {
 
     @Column(name = "assign_time")
     private LocalDate assignTime;
+
+    @OneToMany(mappedBy = "schoolOwner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Media> images;
+
+    @Column(name = "business_registration_number")
+    private String business_registration_number;
 
 }

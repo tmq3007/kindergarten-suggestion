@@ -15,6 +15,7 @@ import Image from "next/image";
 import {formatPhoneNumber} from "@/lib/util/phoneUtils";
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
+import {opt} from "ts-interface-checker";
 
 export default function SchoolDetail() {
     const router = useRouter();

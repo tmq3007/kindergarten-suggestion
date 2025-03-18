@@ -1,8 +1,7 @@
 package fa.pjb.back.service;
 
-import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
@@ -24,9 +23,11 @@ public interface SchoolService {
 
     SchoolDetailVO getDraft(User user);
 
-    SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image);
+    SchoolDetailVO addSchool(SchoolDTO schoolDTO, List<MultipartFile> image);
 
     void updateSchoolStatusByAdmin(ChangeSchoolStatusDTO changeSchoolStatusDTO);
+
+    SchoolDetailVO updateSchoolByAdmin(SchoolDTO schoolDTO, List<MultipartFile> images);
 
     void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
@@ -35,8 +36,6 @@ public interface SchoolService {
     boolean checkEditingEmailExists(String email, Integer schoolId);
 
     boolean checkPhoneExists(String phone);
-
-    SchoolDetailVO updateSchoolByAdmin(SchoolUpdateDTO schoolDTO, List<MultipartFile> images);
 
     List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool);
 

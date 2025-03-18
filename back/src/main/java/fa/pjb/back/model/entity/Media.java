@@ -43,4 +43,8 @@ public class Media {
     @JoinColumn(name = "school_id")
     private School school;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_owner_id")
+    private SchoolOwner schoolOwner;
+
 }
