@@ -45,4 +45,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u.email FROM User u WHERE u.role = :role AND u.status = true")
     List<String> findActiveUserEmailsByRole(ERole role);
+    @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = true")
+    List<User> findActiveUserByRole(ERole role);
 }

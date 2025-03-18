@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDate;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -53,4 +55,7 @@ public class RequestCounselling {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @NotNull
+    @Column(name = "due_date", nullable = false)
+    private LocalDate due_date;
 }

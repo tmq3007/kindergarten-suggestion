@@ -1,5 +1,6 @@
 package fa.pjb.back.service;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public interface EmailService {
@@ -11,4 +12,6 @@ public interface EmailService {
     String sendSchoolPublishedEmail(String to, String schoolName, String username, String detailLink);
     boolean sendSubmitSchool(String to, String schoolName, String username, String detailLink);
     CompletableFuture<Boolean> sendSubmitEmailToAllAdmin(String schoolName, String username, String detailLink);
+
+    void sendRequestCounsellingReminder(String to ,  String adminName,String inquiry, String dueDateString,String schoolName,String detailsLink ) throws Exception;
 }
