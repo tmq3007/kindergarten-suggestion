@@ -32,4 +32,7 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     List<ExpectedSchoolVO> getExpectedSchoolByUserId(Integer id);
 
     Set<SchoolOwner> findAllByIdIn(Set<Integer> ids);
+
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM SchoolOwner s WHERE s.business_registration_number = :businessLicense")
+    boolean existsSchoolOwnerByBusinessRegistrationNumber( String businessLicense);
 }

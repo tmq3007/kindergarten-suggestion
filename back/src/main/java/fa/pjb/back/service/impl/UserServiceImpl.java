@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
@@ -230,6 +231,10 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
+        if ( schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number()) ) {
+            throw new BRNAlreadyExistedException("Business registration number already exists.");
+        }
+
         // Create User
         String usernameAutoGen = autoGeneratorHelper.generateUsername(userCreateDTO.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
@@ -244,6 +249,7 @@ public class UserServiceImpl implements UserService {
                 .build();
        if(Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
             user.setRole(ERole.ROLE_SCHOOL_OWNER);
+
 
             // Create SchoolOwner
             SchoolOwner schoolOwner = SchoolOwner.builder()
