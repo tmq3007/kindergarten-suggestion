@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
@@ -269,9 +270,9 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
-        String street, String email, String phone, Pageable pageable) {
+                                            String street, String email, String phone, Pageable pageable) {
         Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
-        schoolPage.forEach(school -> log.info("School: id={}, postedDate={}", school.getId(), school.getPostedDate()));
+      //  schoolPage.forEach(school -> log.info("School: id={}, postedDate={}", school.getId(), school.getPostedDate()));
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 
@@ -280,6 +281,17 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolRepository.findSchoolByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         return schoolMapper.toSchoolDetailVO(school);
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    public SchoolDetailVO getDraft(User user) {
+        Integer userId = user.getId();
+        SchoolOwner so = schoolOwnerRepository.findWithSchoolAndDraftByUserId(userId).orElseThrow(UserNotFoundException::new);
+        School school = so.getSchool();
+        if (school == null) throw new SchoolNotFoundException();
+        School draft = school.getDraft();
+        return schoolMapper.toSchoolDetailVO(draft);
     }
 
     /**

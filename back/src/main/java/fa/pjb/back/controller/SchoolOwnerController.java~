@@ -1,7 +1,6 @@
 package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
-import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -27,23 +25,14 @@ public class SchoolOwnerController {
     private final SchoolService schoolService;
 
     @GetMapping("/school-info")
-    public ApiResponse<SchoolDetailVO> getSchoolInfo(
+    public ApiResponse<SchoolDetailVO> getSchoolByUserId(
             @AuthenticationPrincipal User user) {
+        // Lấy userId trực tiếp từ User entity
         Integer userId = user.getId();
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get school info successfully.")
+                .message("Get school by user ID successfully.")
                 .data(schoolService.getSchoolByUserId(userId))
-                .build();
-    }
-
-    @GetMapping("/draft-info")
-    public ApiResponse<SchoolDetailVO> getDraftInfo(
-            @AuthenticationPrincipal User user) {
-        return ApiResponse.<SchoolDetailVO>builder()
-                .code(HttpStatus.OK.value())
-                .message("Get draft info successfully.")
-                .data(schoolService.getDraft(user))
                 .build();
     }
 }

@@ -1,5 +1,5 @@
 'use client';
-import React, {Fragment, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import logo from '@public/logo2-removebg-preview.png';
 import {
     BellOutlined,
@@ -224,10 +224,10 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                         </Link>
                     </Header>
                     <Content
-                        className='rounded-lg'
+                        className='rounded-lg overflow-auto'
                         style={{
                             padding: 15,
-                            minHeight: 800,
+                            minHeight: `calc(100vh - 70px)`,
                         }}
                     >
                         {children}

@@ -1,5 +1,6 @@
 package fa.pjb.back.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -15,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"images", "facilities", "utilities"})
+@ToString(exclude = {"images", "facilities", "utilities", "originalSchool", "schoolOwners"})
 @Entity
 @Table(name = "School")
 public class School {
@@ -36,7 +37,7 @@ public class School {
 
     @Size(max = 255)
     @NotNull
-    @Column(name = "email",unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @NotNull
@@ -98,7 +99,7 @@ public class School {
     @ColumnDefault("CURRENT_DATE")
     private LocalDate postedDate;
 
-    @OneToMany(mappedBy = "school",cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> images;
 
     @ManyToMany
@@ -113,10 +114,13 @@ public class School {
             inverseJoinColumns = @JoinColumn(name = "uid"))
     private Set<Utility> utilities;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ref_id")
+    private School originalSchool;
+
+    @OneToOne(mappedBy = "originalSchool")
     private School draft;
 
-    @OneToMany(mappedBy = "school",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
     private Set<SchoolOwner> schoolOwners;
 }

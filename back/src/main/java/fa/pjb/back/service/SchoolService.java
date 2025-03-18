@@ -3,6 +3,7 @@ package fa.pjb.back.service;
 import fa.pjb.back.model.dto.AddSchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolUpdateDTO;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
@@ -20,6 +21,8 @@ public interface SchoolService {
                                      String email, String phone, Pageable pageable);
 
     SchoolDetailVO getSchoolByUserId(Integer userId);
+
+    SchoolDetailVO getDraft(User user);
 
     SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image);
 

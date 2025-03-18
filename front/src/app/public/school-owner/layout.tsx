@@ -3,7 +3,7 @@ import React, {Fragment, useEffect, useRef, useState} from 'react';
 import {FolderOpenOutlined, HomeOutlined, LeftOutlined, RightOutlined} from '@ant-design/icons';
 import {Button, ConfigProvider, Layout, Menu} from 'antd';
 import Link from 'next/link';
-import {forbidden, unauthorized} from 'next/navigation';
+import {forbidden, unauthorized, usePathname} from 'next/navigation';
 import {useSelector} from 'react-redux';
 import {RootState} from '@/redux/store';
 import {ROLES} from '@/lib/constants';
@@ -32,6 +32,11 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
     const onResize = (event: any, {size}: { size: { width: number } }) => {
         setSiderWidth(size.width);
     };
+    const pathname = usePathname();
+
+    const selectedKeys = pathname.startsWith('/public/school-owner/draft')
+        ? ['2']
+        : ['1'];
 
     return (
         <Fragment>
@@ -76,9 +81,18 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
                                     theme="dark"
                                     mode="inline"
                                     defaultSelectedKeys={['1']}
+                                    selectedKeys={selectedKeys}
                                     items={[
-                                        {key: '1', icon: <HomeOutlined/>, label: <Link href="">My School</Link>},
-                                        {key: '2', icon: <FolderOpenOutlined/>, label: <Link href="">My Draft</Link>},
+                                        {
+                                            key: '1',
+                                            icon: <HomeOutlined/>,
+                                            label: <Link href="/public/school-owner">My School</Link>
+                                        },
+                                        {
+                                            key: '2',
+                                            icon: <FolderOpenOutlined/>,
+                                            label: <Link href="/public/school-owner/draft">My Draft</Link>
+                                        },
                                     ]}
                                 />
                             </Sider>
@@ -94,7 +108,12 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
                     </div>
                 </ConfigProvider>
                 <Content
-                    style={{padding: 20, minHeight: 280, paddingTop: 90}}
+                    style={{
+                        padding: 20,
+                        minHeight: `calc(100vh - 70px)`,
+                        paddingTop: 90,
+                    }}
+                    className="overflow-auto"
                 >
                     {children}
                 </Content>

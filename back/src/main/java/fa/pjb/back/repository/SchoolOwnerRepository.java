@@ -32,4 +32,11 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     List<ExpectedSchoolVO> getExpectedSchoolByUserId(Integer id);
 
     Set<SchoolOwner> findAllByIdIn(Set<Integer> ids);
+
+    @Query("SELECT so FROM SchoolOwner so " +
+            "JOIN FETCH so.school s " +
+            "JOIN FETCH s.draft d " +
+            "WHERE so.user.id = :userId")
+    Optional<SchoolOwner> findWithSchoolAndDraftByUserId(@Param("userId") Integer userId);
+
 }

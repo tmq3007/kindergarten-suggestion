@@ -33,9 +33,7 @@ export default function SchoolDetail() {
     }
 
     //get school by user id
-    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery({
-        name: undefined,
-    });
+    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery();
 
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
@@ -46,7 +44,6 @@ export default function SchoolDetail() {
     useEffect(() => {
         if (school) {
             console.log('school.imageList in SchoolDetail:', school.imageList);
-
             const validEducationMethod = EDUCATION_METHOD_OPTIONS.find(opt => opt.value === String(school.educationMethod))?.value || "0";
             const validReceivingAge = CHILD_RECEIVING_AGE_OPTIONS.find(opt => opt.value === String(school.receivingAge))?.value || "0";
 
@@ -78,7 +75,7 @@ export default function SchoolDetail() {
 
     useEffect(() => {
         if (isError) {
-            message.error("Failed to load school details");
+            message.error("Failed to load school details").then(r => {});
         }
     }, [isError, router]);
 
@@ -87,7 +84,7 @@ export default function SchoolDetail() {
             <div className="pt-2">
                 <MyBreadcrumb
                     paths={[
-                        {label: "School Management", href: "/admin/management/school/school-list"},
+                        {label: "My School"},
                         {label: "School Detail"},
                     ]}
                 />
