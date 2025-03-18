@@ -8,6 +8,5 @@ public interface SchoolOwnerProjection {
     String getEmail();
     String getPhone();
     String getExpectedSchool();
-
 }
 

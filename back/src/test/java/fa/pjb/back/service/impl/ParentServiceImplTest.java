@@ -10,7 +10,7 @@ package fa.pjb.back.service.impl;
  import fa.pjb.back.model.entity.User;
  import fa.pjb.back.model.enums.FileFolderEnum;
  import fa.pjb.back.model.mapper.ParentMapper;
- import fa.pjb.back.model.vo.ImageVO;
+ import fa.pjb.back.model.vo.FileUploadVO;
  import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.repository.ParentRepository;
  import fa.pjb.back.repository.UserRepository;
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
  import org.springframework.mock.web.MockMultipartFile;
  import org.springframework.security.crypto.password.PasswordEncoder;
  import org.springframework.web.multipart.MultipartFile;
@@ -245,7 +244,7 @@ import static org.mockito.Mockito.*;
                  .fullname("Updated Parent Name")
                  .email("updated@parent.com")
                  .build();
-         ImageVO imageVO = ImageVO.builder()
+         FileUploadVO imageVO = FileUploadVO.builder()
                  .status(200)
                  .message("Uploaded successfully")
                  .size(1024L)
@@ -401,7 +400,7 @@ import static org.mockito.Mockito.*;
                  .id(1)
                  .user(User.builder().id(userId).email("old@parent.com").build())
                  .build();
-         ImageVO imageVO = ImageVO.builder()
+         FileUploadVO imageVO = FileUploadVO.builder()
                  .status(400)
                  .message("Upload failed")
                  .size(0L)

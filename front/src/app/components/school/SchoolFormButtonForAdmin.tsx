@@ -4,8 +4,6 @@ import {Button, message, Modal, notification, UploadFile} from "antd";
 import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
-    SchoolDTO,
-    SchoolUpdateDTO,
     useAddSchoolMutation,
     useGetSchoolByIdQuery,
     useUpdateSchoolByAdminMutation,

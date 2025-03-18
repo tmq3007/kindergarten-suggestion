@@ -54,8 +54,8 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(page-1, size);
         ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
 
-        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
-        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
+        return userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
+
     }
 
     private ERole convertRole2(String role) {

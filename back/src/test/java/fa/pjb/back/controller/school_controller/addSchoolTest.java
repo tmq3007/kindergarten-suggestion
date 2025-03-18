@@ -2,7 +2,7 @@ package fa.pjb.back.controller.school_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
-import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.enums.SchoolStatusEnum;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.service.SchoolService;
@@ -17,7 +17,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +41,7 @@ class addSchoolTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private AddSchoolDTO validSchoolDTO;
+    private SchoolDTO validSchoolDTO;
     private SchoolDetailVO schoolDetailVO;
     private String url;
 
@@ -51,7 +50,7 @@ class addSchoolTest {
         url = "/api/school/add";
 
         // Valid AddSchoolDTO for successful case
-        validSchoolDTO = new AddSchoolDTO(
+        validSchoolDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
@@ -69,11 +68,11 @@ class addSchoolTest {
     @Test
     void testAddSchool_Success_WithImages() throws Exception {
         // Mock service response
-        when(schoolService.addSchool(any(AddSchoolDTO.class), any(List.class))).thenReturn(schoolDetailVO);
+        when(schoolService.addSchool(any(SchoolDTO.class), any(List.class))).thenReturn(schoolDetailVO);
 
         // Create mock multipart files
         MockMultipartFile imageFile = new MockMultipartFile(
-                "image", "test.jpg", "image/jpeg", "mock image content".getBytes()
+                "image", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "mock image content".getBytes()
         );
         MockMultipartFile dataFile = new MockMultipartFile(
                 "data", "", "application/json", objectMapper.writeValueAsBytes(validSchoolDTO)
@@ -93,11 +92,48 @@ class addSchoolTest {
                 .andExpect(jsonPath("$.data.email").value("test@example.com"));
     }
 
+    // Normal: Successful school creation with only required fields
+    @Test
+    void testAddSchool_Success_WithOnlyRequiredFields() throws Exception {
+        SchoolDTO validRequiredDTO = new SchoolDTO(
+                1, "Test School", 1, "", SchoolStatusEnum.SUBMITTED.getValue(),
+                "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
+                1, 1, 1000, 2000, Set.of(), Set.of(), Set.of(1), ""
+        );
+        SchoolDetailVO validRequiredVO = new SchoolDetailVO(
+                1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
+                "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "",
+                "", null, null, null, new Date()
+        );
+        // Mock service response
+        when(schoolService.addSchool(any(SchoolDTO.class), any())).thenReturn(validRequiredVO);
+
+        MockMultipartFile dataFile = new MockMultipartFile(
+                "data", "", "application/json", objectMapper.writeValueAsBytes(validRequiredDTO)
+        );
+
+        // Perform POST request
+        mockMvc.perform(multipart(url)
+                        .file(dataFile)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value(HttpStatus.CREATED.value()))
+                .andExpect(jsonPath("$.message").value("School Created!"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Test School"))
+                .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.data.website").value(""))
+                .andExpect(jsonPath("$.data.description").value(""))
+                .andExpect(jsonPath("$.data.facilities").isEmpty())
+                .andExpect(jsonPath("$.data.facilities").isEmpty());
+    }
+
     // Abnormal: Validation failure (missing required fields)
     @Test
     void testAddSchool_ValidationFailure_MissingFields() throws Exception {
         // Invalid DTO with missing required fields
-        AddSchoolDTO invalidDTO = new AddSchoolDTO(
+        SchoolDTO invalidDTO = new SchoolDTO(
                 null, "", null, null, SchoolStatusEnum.SUBMITTED.getValue(),
                 "", "", "", null, "", "", null, null, null, null, null, null, null, null
         );
@@ -125,7 +161,7 @@ class addSchoolTest {
     @Test
     void testAddSchool_ValidationFailure_InvalidFeeRange() throws Exception {
         // Invalid DTO with feeFrom > feeTo
-        AddSchoolDTO invalidFeeDTO = new AddSchoolDTO(
+        SchoolDTO invalidFeeDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 2000, 1000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
@@ -148,9 +184,9 @@ class addSchoolTest {
 
     // Abnormal: Service throws Exception
     @Test
-    void testAddSchool_ServiceThrowsIOException() throws Exception {
-        // Mock service to throw IOException
-        when(schoolService.addSchool(any(AddSchoolDTO.class), any(List.class)))
+    void testAddSchool_ServiceThrowsInvalidFileFormatException() throws Exception {
+        // Mock service to throw InvalidFileFormatException
+        when(schoolService.addSchool(any(SchoolDTO.class), any(List.class)))
                 .thenThrow(new InvalidFileFormatException("Image upload failed"));
 
         MockMultipartFile imageFile = new MockMultipartFile(
@@ -175,7 +211,7 @@ class addSchoolTest {
     @Test
     void testAddSchool_ValidationFailure_InvalidPhoneFormat() throws Exception {
         // DTO with an invalid phone number (no "+" and too few digits)
-        AddSchoolDTO invalidPhoneDTO = new AddSchoolDTO(
+        SchoolDTO invalidPhoneDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "12345", // Invalid phone
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
@@ -195,11 +231,12 @@ class addSchoolTest {
                 .andExpect(jsonPath("$.message").value("Validation failed for object='data'. Error count: 1"))
                 .andExpect(jsonPath("$.fieldErrors[?(@.property == 'phone')].message").value("Invalid phone format"));
     }
+
     //Abnormal
     @Test
     void testAddSchool_ValidationFailure_InvalidEmailFormat() throws Exception {
         // DTO with an invalid email (no "@" or domain)
-        AddSchoolDTO invalidEmailDTO = new AddSchoolDTO(
+        SchoolDTO invalidEmailDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "invalidemail", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
