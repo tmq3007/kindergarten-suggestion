@@ -33,9 +33,7 @@ export default function SchoolDetail() {
     }
 
     //get school by user id
-    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery({
-        name: undefined,
-    });
+    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery();
 
     const school = data?.data;
     const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
