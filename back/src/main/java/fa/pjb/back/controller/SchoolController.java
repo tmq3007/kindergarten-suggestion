@@ -1,9 +1,8 @@
 package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
-import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
@@ -22,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
@@ -99,8 +97,8 @@ public class SchoolController {
 
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolDetailVO> addSchool(
-            @RequestPart(value = "data") @Valid AddSchoolDTO schoolDTO,
-            @RequestPart(value = "image", required = false) List<MultipartFile> images) throws IOException {
+            @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
+            @RequestPart(value = "image", required = false) List<MultipartFile> images) {
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("School Created!")
@@ -110,8 +108,8 @@ public class SchoolController {
 
     @PostMapping(value = "/update/by-admin", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolDetailVO> updateSchoolByAdmin(
-            @RequestPart(value = "data") @Valid SchoolUpdateDTO schoolDTO,
-            @RequestPart(value = "image", required = false) List<MultipartFile> images) throws IOException {
+            @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
+            @RequestPart(value = "image", required = false) List<MultipartFile> images) {
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("School updated successfully")

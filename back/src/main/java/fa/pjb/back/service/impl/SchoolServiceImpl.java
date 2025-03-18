@@ -8,9 +8,8 @@ import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
-import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.dto.SchoolUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.SchoolMapper;
@@ -35,7 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
@@ -60,6 +58,8 @@ public class SchoolServiceImpl implements SchoolService {
     private static final Tika tika = new Tika();
     @Value("${school-detailed-link}")
     private String schoolDetailedLink;
+    @Value("${school-detail-link-admin}")
+    private String schoolDetailedLinkAdmin;
 
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -70,7 +70,7 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     private void processAndSaveImages(List<MultipartFile> image, School school) {
-        List<ImageVO> imageVOList;
+        List<FileUploadVO> imageVOList;
 
         for (MultipartFile file : image) {
             if (file.getSize() > MAX_FILE_SIZE) {
@@ -87,16 +87,16 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         try {
-            imageVOList = imageService.uploadListImages(
+            imageVOList = imageService.uploadListFiles(
                     imageService.convertMultiPartFileToFile(image),
                     "School_" + school.getId() + "Image_",
-                    SCHOOL_IMAGES
+                    SCHOOL_IMAGES, imageService::uploadImage
             );
         } catch (IOException e) {
             throw new UploadFileException("Error while uploading images: " + e.getMessage());
         }
         List<Media> mediaList = new ArrayList<>();
-        for (ImageVO imageVO : imageVOList) {
+        for (FileUploadVO imageVO : imageVOList) {
             if (imageVO.status() == 200) {
                 Media media = Media.builder()
                         .url(imageVO.url())
@@ -115,7 +115,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Transactional
     @Override
-    public SchoolDetailVO addSchool(AddSchoolDTO schoolDTO, List<MultipartFile> image) {
+    public SchoolDetailVO addSchool(SchoolDTO schoolDTO, List<MultipartFile> image) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         // Check if principal is an instance of User entity
@@ -123,9 +123,13 @@ public class SchoolServiceImpl implements SchoolService {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
 
-        //  Map DTO to School entity (without schoolOwners initially)
-        School school = prepareSchoolData(schoolDTO, user);
+        //  Map DTO to School entity
+        School school = prepareSchoolData(schoolDTO, user, new School());
 
+        // Check user role and adjust status
+        if (user.getRole() == ERole.ROLE_ADMIN && schoolDTO.status() == SUBMITTED.getValue()) {
+            school.setStatus(APPROVED.getValue());
+        }
         // Save the School to generate its ID
         School newSchool = schoolRepository.save(school);
 
@@ -134,26 +138,33 @@ public class SchoolServiceImpl implements SchoolService {
             processAndSaveImages(image, newSchool);
         }
 
-        // Send submit emails to admins (if applicable)
+        // Send submit emails to admins
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER && newSchool.getStatus() == SUBMITTED.getValue()) {
             emailService.sendSubmitEmailToAllAdmin(
                     newSchool.getName(),
                     user.getUsername(),
-                    "http://localhost:3000/admin/management/school/school-detail/" + newSchool.getId()
+                    schoolDetailedLinkAdmin + newSchool.getId()
             );
         }
+        log.info("in update data: " + newSchool.toString());
 
         return schoolMapper.toSchoolDetailVO(newSchool);
     }
 
-    private School prepareSchoolData(AddSchoolDTO schoolDTO, User user) {
+    private School prepareSchoolData(SchoolDTO schoolDTO, User user, School oldSchool) {
 
         // Check if email already exists
-        if (checkEmailExists(schoolDTO.email())) {
-            throw new EmailAlreadyExistedException("This email is already in use");
+        if(schoolDTO.id() == null) {
+            if (checkEmailExists(schoolDTO.email())) {
+                throw new EmailAlreadyExistedException("This email is already in use");
+            }
+        }else{
+            if(checkEditingEmailExists(schoolDTO.email(),schoolDTO.id())){
+                throw new EmailAlreadyExistedException("This email is already in use");
+            }
         }
 
-        School school = schoolMapper.toSchool(schoolDTO);
+        School school = schoolMapper.toSchool(schoolDTO, oldSchool);
 
         school.setPostedDate(LocalDate.now());
 
@@ -175,11 +186,6 @@ public class SchoolServiceImpl implements SchoolService {
             school.setUtilities(existingUtilities);
         }
 
-        // Check user role and adjust status
-        if (user.getRole() == ERole.ROLE_ADMIN && schoolDTO.status() == SUBMITTED.getValue()) {
-            school.setStatus((byte) APPROVED.getValue());
-        }
-
         // Update all SchoolOwners with the saved School and batch-save them
         if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
             Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
@@ -191,6 +197,16 @@ public class SchoolServiceImpl implements SchoolService {
         } else {
             school.setSchoolOwners(new HashSet<>());
         }
+        // Delete old images
+        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+        if (!oldMedias.isEmpty()) {
+            for (Media media : oldMedias) {
+                // Delete images from Google Drive
+                FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
+            }
+            school.getImages().clear();
+            mediaRepository.deleteAllBySchool(school);
+        }
 
         return school;
     }
@@ -198,41 +214,29 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     @Override
-    public SchoolDetailVO updateSchoolByAdmin(SchoolUpdateDTO schoolDTO, List<MultipartFile> images) {
+    public SchoolDetailVO updateSchoolByAdmin(SchoolDTO schoolDTO, List<MultipartFile> images) {
         // Check if the school exists
-        School school = schoolRepository.findById(schoolDTO.id())
-                .orElseThrow(SchoolNotFoundException::new);
+        School oldSchool = schoolRepository.findById(schoolDTO.id()).orElseThrow(SchoolNotFoundException::new);
+        Byte curStatus = oldSchool.getStatus();
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        // Check if principal is an instance of User entity
+        if (!(principal instanceof User user)) {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
         // Update entity fields from DTO
-        schoolMapper.updateSchoolFromDto(schoolDTO, school);
-        // Update facilities
-        Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
-        if (existingFacilities.size() != schoolDTO.facilities().size()) {
-            throw new InvalidDataException("Some facilities do not exist in the database");
-        }
-        school.setFacilities(existingFacilities);
-        // Update utilities
-        Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
-        if (existingUtilities.size() != schoolDTO.utilities().size()) {
-            throw new InvalidDataException("Some utilities do not exist in the database");
-        }
-        school.setUtilities(existingUtilities);
-        // Delete old images
-        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
-        if (!oldMedias.isEmpty()) {
-            for (Media media : oldMedias) {
-                // Delete images from Google Drive
-                ImageVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
-            }
-            school.getImages().clear();
-            schoolRepository.save(school);
-            mediaRepository.deleteAllBySchool(school);
-        }
+        School school = prepareSchoolData(schoolDTO, user, oldSchool);
+        school.setStatus(curStatus);
+
         // Handle new uploaded images
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, school);
         }
         // Save the updated school data
         schoolRepository.save(school);
+
+
         return schoolMapper.toSchoolDetailVO(school);
     }
 
@@ -271,7 +275,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
-        String street, String email, String phone, Pageable pageable) {
+                                            String street, String email, String phone, Pageable pageable) {
         Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
         schoolPage.forEach(school -> log.info("School: id={}, postedDate={}", school.getId(), school.getPostedDate()));
         return schoolPage.map(schoolMapper::toSchoolListVO);

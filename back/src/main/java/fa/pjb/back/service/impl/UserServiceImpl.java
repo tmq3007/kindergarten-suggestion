@@ -11,8 +11,7 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
-import fa.pjb.back.model.mapper.UserProjection;
-import fa.pjb.back.model.vo.ImageVO;
+import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.ParentRepository;
@@ -39,7 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import static fa.pjb.back.model.enums.ERole.*;
-import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
 
 @Slf4j
@@ -64,11 +62,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
-        Pageable pageable = PageRequest.of(page-1, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
 
-        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
-        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
+        return userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
+
     }
 
     private ERole convertRole2(String role) {
@@ -104,74 +102,75 @@ public class UserServiceImpl implements UserService {
                 formatRole(user.getRole()),
                 Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
     }
-  //Covert ERole to String
-  private String formatRole(ERole role) {
-    return switch (role) {
-      case ROLE_PARENT -> "Parent";
-      case ROLE_SCHOOL_OWNER -> "School Owner";
-      case ROLE_ADMIN -> "Admin";
-      default -> "Unknown Role";
-    };
-  }
 
-  //Covert String Role => ERole
-  private ERole convertRole(String role) {
-    return switch (role.toUpperCase()) {
-      case "PARENT" -> ROLE_PARENT;
-      case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-      case "ADMIN" -> ERole.ROLE_ADMIN;
-      default -> throw new IllegalArgumentException("Invalid role: " + role);
-    };
-  }
-
-  // Update User Detail
-  @Override
-  public UserDetailDTO updateUser(UserUpdateDTO dto) {
-    User user = userRepository.findById(dto.id())
-        .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
-
-    if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
-      throw new EmailAlreadyExistedException("Email already exists.");
+    //Covert ERole to String
+    private String formatRole(ERole role) {
+        return switch (role) {
+            case ROLE_PARENT -> "Parent";
+            case ROLE_SCHOOL_OWNER -> "School Owner";
+            case ROLE_ADMIN -> "Admin";
+            default -> "Unknown Role";
+        };
     }
 
-    user.setFullname(dto.fullname());
-    user.setUsername(dto.username());
-    user.setEmail(dto.email());
-    user.setDob(LocalDate.parse(dto.dob()));
-    user.setPhone(dto.phone());
-    user.setRole(convertRole(dto.role()));
-    user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
+    //Covert String Role => ERole
+    private ERole convertRole(String role) {
+        return switch (role.toUpperCase()) {
+            case "PARENT" -> ROLE_PARENT;
+            case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+            case "ADMIN" -> ERole.ROLE_ADMIN;
+            default -> throw new IllegalArgumentException("Invalid role: " + role);
+        };
+    }
 
-    userRepository.save(user);
+    // Update User Detail
+    @Override
+    public UserDetailDTO updateUser(UserUpdateDTO dto) {
+        User user = userRepository.findById(dto.id())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
 
-    return new UserDetailDTO(
-        user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
-        user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
-        Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
-  }
+        if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
+            throw new EmailAlreadyExistedException("Email already exists.");
+        }
 
-  // Active or Deactivate user status
-  @Override
-  public UserDetailDTO toggleStatus(int userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        user.setFullname(dto.fullname());
+        user.setUsername(dto.username());
+        user.setEmail(dto.email());
+        user.setDob(LocalDate.parse(dto.dob()));
+        user.setPhone(dto.phone());
+        user.setRole(convertRole(dto.role()));
+        user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
 
-    user.setStatus(!user.getStatus());
-    userRepository.save(user);
+        userRepository.save(user);
 
-    return new UserDetailDTO(
-        user.getId(),
-        user.getUsername(),
-        user.getFullname(),
-        user.getEmail(),
-        user.getDob() != null ? user.getDob().toString() : null,
-        user.getPhone(),
-        formatRole(user.getRole()),
-        Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
-  }
+        return new UserDetailDTO(
+                user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
+                user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
+                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+    }
+
+    // Active or Deactivate user status
+    @Override
+    public UserDetailDTO toggleStatus(int userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        user.setStatus(!user.getStatus());
+        userRepository.save(user);
+
+        return new UserDetailDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getFullname(),
+                user.getEmail(),
+                user.getDob() != null ? user.getDob().toString() : null,
+                user.getPhone(),
+                formatRole(user.getRole()),
+                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+    }
 
     private void processAndSaveImages(List<MultipartFile> image, SchoolOwner schoolOwner) {
-        List<ImageVO> imageVOList;
+        List<FileUploadVO> imageVOList;
 
         for (MultipartFile file : image) {
             if (file.getSize() > MAX_FILE_SIZE) {
@@ -188,16 +187,16 @@ public class UserServiceImpl implements UserService {
         }
 
         try {
-            imageVOList = imageService.uploadListImages(
+            imageVOList = imageService.uploadListFiles(
                     imageService.convertMultiPartFileToFile(image),
                     "School_Owner_" + schoolOwner.getId() + "Image_",
-                    SO_IMAGES
+                    SO_IMAGES,imageService::uploadImage
             );
         } catch (IOException e) {
             throw new UploadFileException("Error while uploading images: " + e.getMessage());
         }
         List<Media> mediaList = new ArrayList<>();
-        for (ImageVO imageVO : imageVOList) {
+        for (FileUploadVO imageVO : imageVOList) {
             if (imageVO.status() == 200) {
                 Media media = Media.builder()
                         .url(imageVO.url())
@@ -213,6 +212,7 @@ public class UserServiceImpl implements UserService {
         }
         mediaRepository.saveAll(mediaList);
     }
+
     @Override
     public UserCreateDTO createUser(UserCreateDTO userCreateDTO, List<MultipartFile> image) {
         if (userCreateDTO.email() == null || userCreateDTO.email().isBlank()) {
@@ -233,7 +233,7 @@ public class UserServiceImpl implements UserService {
         // Create User
         String usernameAutoGen = autoGeneratorHelper.generateUsername(userCreateDTO.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
-        User user =User.builder()
+        User user = User.builder()
                 .username(usernameAutoGen)
                 .password(passwordEncoder.encode(passwordAutoGen))
                 .phone(userCreateDTO.phone())
@@ -242,7 +242,7 @@ public class UserServiceImpl implements UserService {
                 .dob(userCreateDTO.dob())
                 .email(userCreateDTO.email())
                 .build();
-       if(Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
+        if (Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
             user.setRole(ERole.ROLE_SCHOOL_OWNER);
 
             // Create SchoolOwner
@@ -258,11 +258,11 @@ public class UserServiceImpl implements UserService {
             // Save SchoolOwner to database
             SchoolOwner newSO = schoolOwnerRepository.save(schoolOwner);
 
-           // Validate and upload images (if provided)
-           if (image != null && !image.isEmpty()) {
-               processAndSaveImages(image, newSO);
-           }
-        } else if(Objects.equals(userCreateDTO.role(), "ROLE_ADMIN")) {
+            // Validate and upload images (if provided)
+            if (image != null && !image.isEmpty()) {
+                processAndSaveImages(image, newSO);
+            }
+        } else if (Objects.equals(userCreateDTO.role(), "ROLE_ADMIN")) {
             user.setRole(ERole.ROLE_ADMIN);
         }
 
@@ -275,7 +275,7 @@ public class UserServiceImpl implements UserService {
         //Check email exist
         if (existingUserEmail.isEmpty()) {
             emailService.sendUsernamePassword(userCreateDTO.email(), userCreateDTO.fullname(),
-                    usernameAutoGen,passwordAutoGen);
+                    usernameAutoGen, passwordAutoGen);
         }
 
         return userCreateDTO;
