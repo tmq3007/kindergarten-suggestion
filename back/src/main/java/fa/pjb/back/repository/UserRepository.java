@@ -3,6 +3,7 @@ package fa.pjb.back.repository;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserProjection;
+import fa.pjb.back.model.vo.UserVO;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             + "AND (:email IS NULL OR u.email LIKE %:email%) "
             + "AND (:name IS NULL OR u.fullname LIKE %:name%) "
             + "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
-    Page<UserProjection> findAllByCriteria(
+    Page<UserVO> findAllByCriteria(
             @Param("role") ERole role,
             @Param("email") String email,
             @Param("name") String name,

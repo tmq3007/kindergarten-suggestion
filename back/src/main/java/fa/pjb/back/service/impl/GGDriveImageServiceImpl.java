@@ -13,7 +13,7 @@ import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.service.GGDriveImageService;
-import fa.pjb.back.model.vo.ImageVO;
+import fa.pjb.back.model.vo.FileUploadVO;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -26,13 +26,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -76,7 +74,7 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     }
 
     @Override
-    public ImageVO uploadImage(java.io.File file, String fileNamePrefix, FileFolderEnum fileFolder) {
+    public FileUploadVO uploadImage(java.io.File file, String fileNamePrefix, FileFolderEnum fileFolder) {
         java.io.File resizedFile = null;
         try {
             //Process & resize the image
@@ -102,9 +100,9 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             drive.permissions().create(uploadFile.getId(), permission).execute();
 
             String imageUrl = "https://drive.google.com/thumbnail?id=" + uploadFile.getId() + "&sz=w1000";
-            return new ImageVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(), uploadFile.getId(), imageUrl);
+            return new FileUploadVO(200, "Upload successful", uploadFile.getSize(), uploadFile.getName(), uploadFile.getId(), imageUrl);
         } catch (IOException | GeneralSecurityException e) {
-            return new ImageVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.toString());
+            return new FileUploadVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.toString());
         } finally {
             boolean deleted = file.delete() && Objects.requireNonNull(resizedFile).delete();
             if (!deleted) {
@@ -114,18 +112,61 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     }
 
     @Override
-    public List<ImageVO> uploadListImages(List<java.io.File> files, String fileNamePrefix, FileFolderEnum fileFolder) {
-        List<ImageVO> uploadResults = Collections.synchronizedList(new ArrayList<>());
+    public FileUploadVO uploadFile(java.io.File file, String fileNamePrefix, FileFolderEnum fileFolder) {
+        try {
+            Drive drive = getDriveService();
+            String uniqueFileName = fileNamePrefix + UUID.randomUUID() + "_" + file.getName();
 
-        // Create list of CompletableFutures for all upload tasks
-        List<CompletableFuture<ImageVO>> futures = files.stream()
+            // Determine the MIME type dynamically based on the file
+            String mimeType = Files.probeContentType(file.toPath());
+            if (mimeType == null) {
+                // Fallback to a generic type if MIME type cannot be determined
+                mimeType = "application/octet-stream";
+            }
+
+            // Prepare metadata
+            File fileMetaData = new File();
+            fileMetaData.setName(uniqueFileName);
+            fileMetaData.setParents(Collections.singletonList(fileFolder.getValue()));
+
+            // Upload the file with its detected MIME type
+            FileContent fileContent = new FileContent(mimeType, file);
+            File uploadedFile = drive.files().create(fileMetaData, fileContent)
+                    .setFields("id, webContentLink, webViewLink, size")
+                    .execute();
+
+            // Set file permissions to be publicly viewable
+            Permission permission = new Permission()
+                    .setType("anyone")
+                    .setRole("reader");
+            drive.permissions().create(uploadedFile.getId(), permission).execute();
+
+            // Use webViewLink for generic file access (thumbnail URL is image-specific)
+            String fileUrl = uploadedFile.getWebViewLink();
+            return new FileUploadVO(200, "Upload successful", uploadedFile.getSize(), uploadedFile.getName(), uploadedFile.getId(), fileUrl);
+
+        } catch (IOException | GeneralSecurityException e) {
+            return new FileUploadVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.toString());
+        } finally {
+            boolean deleted = file.delete();
+            if (!deleted) {
+                log.warn("Original file deletion failed: {}", file.getName());
+            }
+        }
+    }
+
+    @Override
+    public List<FileUploadVO> uploadListFiles(List<java.io.File> files, String fileNamePrefix, FileFolderEnum fileFolder,
+                                              UploadFileInterface<java.io.File, String, FileFolderEnum, FileUploadVO> uploadMethod) {
+        List<FileUploadVO> uploadResults = Collections.synchronizedList(new ArrayList<>());
+
+        List<CompletableFuture<FileUploadVO>> futures = files.stream()
                 .map(file -> CompletableFuture.supplyAsync(
-                        () -> uploadImage(file, fileNamePrefix, fileFolder),
-                        Executors.newFixedThreadPool(10) // Limit to 10 parallel uploads
+                        () -> uploadMethod.apply(file, fileNamePrefix, fileFolder), // Pass all parameters
+                        Executors.newFixedThreadPool(10)
                 ))
                 .toList();
 
-        // Wait for all futures to complete and collect results
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                 .whenComplete((result, exception) -> {
                     if (exception != null) {
@@ -140,21 +181,21 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
                         }
                     });
                 })
-                .join(); // Wait for all operations to complete
+                .join();
 
         return uploadResults;
     }
 
     //Delete Uploaded Image
-    public ImageVO deleteUploadedImage(String fileId) {
+    public FileUploadVO deleteUploadedImage(String fileId) {
         try {
             Drive drive = getDriveService();
             drive.files().delete(fileId).execute();
             log.info("File deleted successfully: {}", fileId);
-            return new ImageVO(200, "File deleted successfully", 0L, "Deleted", fileId, "File deleted successfully.");
+            return new FileUploadVO(200, "File deleted successfully", 0L, "Deleted", fileId, "File deleted successfully.");
         } catch (IOException | GeneralSecurityException e) {
             log.error("Failed to delete file: {}", e.getMessage());
-            return new ImageVO(500, "Failed to delete file", 0L, fileId, "Failed", e.getMessage());
+            return new FileUploadVO(500, "Failed to delete file", 0L, fileId, "Failed", e.getMessage());
         }
     }
 
@@ -170,3 +211,4 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     }
 
 }
+
