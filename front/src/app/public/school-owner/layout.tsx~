@@ -16,7 +16,6 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
     const [collapsed, setCollapsed] = useState(false);
     const user = useSelector((state: RootState) => state.user);
     const role = user.role;
-    const hasDraft = user.hasDraft;
 
     if (!role) {
         unauthorized();

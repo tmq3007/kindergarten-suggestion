@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "School_Owner")
-@ToString(exclude = {"user", "school"})
+@ToString(exclude = {"user", "school", "images"})
 public class SchoolOwner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

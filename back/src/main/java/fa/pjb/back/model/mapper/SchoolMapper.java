@@ -33,6 +33,14 @@ public interface SchoolMapper {
     @Mapping(target = "schoolOwners", ignore = true)
     School toSchool(SchoolDTO schoolDTO, @MappingTarget School school);
 
+
+    @Mapping(target = "facilities", ignore = true)
+    @Mapping(target = "utilities", ignore = true)
+    @Mapping(target = "schoolOwners", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    void toDraft(SchoolDTO schoolDTO, @MappingTarget School draft);
+
     // Convert List<Integer> to Set<Facility>
     @Named("mapFacilityIds")
     default Set<Facility> mapFacilityIds(Set<Integer> facilityIds) {

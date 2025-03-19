@@ -1,7 +1,6 @@
 package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
-import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.service.SchoolService;
@@ -12,8 +11,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor

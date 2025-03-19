@@ -1,7 +1,7 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
-import { SchoolOwnerVO } from "./schoolOwnerApi";
-import { UploadFile } from "antd";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import {SchoolOwnerVO} from "./schoolOwnerApi";
+import {UploadFile} from "antd";
 
 export interface Facility {
     fid: number;
@@ -137,7 +137,7 @@ const createSchoolFormData = (schoolData: SchoolDTO | SchoolUpdateDTO): FormData
 };
 
 // Utility function to handle FormData creation
-const createSchoolFormAddData = (schoolData: SchoolCreateDTO ): FormData => {
+const createSchoolFormAddData = (schoolData: SchoolCreateDTO): FormData => {
     const formData = new FormData();
     const {imageFile, ...schoolDataWithoutImage} = schoolData;
 
@@ -190,17 +190,17 @@ export const schoolApi = createApi({
                 phone?: string;
             }
         >({
-            query: ({ page = 1, size, name, province, district, email, phone }) => ({
+            query: ({page = 1, size, name, province, district, email, phone}) => ({
                 url: `/school/all`,
                 method: "GET",
                 params: {
                     page,
                     size,
-                    ...(name && { name }),
-                    ...(province && { province }),
-                    ...(district && { district }),
-                    ...(email && { email }),
-                    ...(phone && { phone }),
+                    ...(name && {name}),
+                    ...(province && {province}),
+                    ...(district && {district}),
+                    ...(email && {email}),
+                    ...(phone && {phone}),
                 },
             }),
             transformResponse: (
@@ -253,7 +253,7 @@ export const schoolApi = createApi({
         }),
 
         checkEditSchoolEmail: build.mutation<ApiResponse<string>, { email: string; schoolId: number }>({
-            query: ({ email, schoolId }) => ({
+            query: ({email, schoolId}) => ({
                 url: `/school/check-editing-email?email=${encodeURIComponent(email)}&schoolId=${schoolId}`,  // Sử dụng query string
                 method: "POST",
             }),
@@ -281,9 +281,22 @@ export const schoolApi = createApi({
 
         updateSchoolByAdmin: build.mutation<ApiResponse<SchoolDetailVO>, SchoolUpdateDTO>({
             query: (schoolUpdateDTO) => {
-                const formData = createSchoolFormData(schoolUpdateDTO); // Sử dụng hàm utility
+                const formData = createSchoolFormData(schoolUpdateDTO);
                 return {
                     url: "/school/update/by-admin",
+                    method: "POST",
+                    body: formData,
+                    formData: true,
+                };
+            },
+            invalidatesTags: ["School"],
+        }),
+
+        updateSchoolBySchoolOwner: build.mutation<ApiResponse<SchoolDetailVO>, SchoolUpdateDTO>({
+            query: (schoolUpdateDTO) => {
+                const formData = createSchoolFormData(schoolUpdateDTO);
+                return {
+                    url: "/school/update/by-so",
                     method: "POST",
                     body: formData,
                     formData: true,
@@ -311,7 +324,7 @@ export const schoolApi = createApi({
         }),
 
         searchExpectedSchool: build.query<ApiResponse<ExpectedSchool[]>, { id: number }>({
-            query: ({ id }) => {
+            query: ({id}) => {
                 return {
                     url: `school/search-expected-school/${id}`,
                 };
@@ -321,7 +334,7 @@ export const schoolApi = createApi({
             query: (expectedSchool) => ({
                 url: '/school/get-so-list',
                 method: 'GET',
-                params: { q: expectedSchool },
+                params: {q: expectedSchool},
             }),
         }),
     }),
@@ -334,6 +347,7 @@ export const {
     useLazyCheckSchoolPhoneQuery,
     useCheckEditSchoolEmailMutation,
     useUpdateSchoolByAdminMutation,
+    useUpdateSchoolBySchoolOwnerMutation,
     useUpdateSchoolStatusByAdminMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation,
     useGetSchoolListQuery,

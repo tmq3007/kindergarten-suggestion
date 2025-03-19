@@ -121,6 +121,6 @@ public class School {
     @OneToOne(mappedBy = "originalSchool")
     private School draft;
 
-    @OneToMany(mappedBy = "school", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<SchoolOwner> schoolOwners;
 }

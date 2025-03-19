@@ -20,16 +20,24 @@ import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 import {useGetDraftOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 
 export default function Draft() {
-    const {data, isLoading} = useGetDraftOfSchoolOwnerQuery();
-    const draft = data?.data;
-    const draftStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(draft?.status))?.label || undefined;
-
-    const [form] = Form.useForm();
     const user = useSelector((state: RootState) => state.user);
     const role = useSelector((state: RootState) => state.user?.role);
+    const hasDraft = user.hasDraft;
+    if (!hasDraft) {
+        return (
+            <div className={'h-full flex items-center justify-center'}>
+                <Empty/>
+            </div>
+        )
+    }
+    const {data, isLoading} = useGetDraftOfSchoolOwnerQuery(undefined,{
+        skip: !hasDraft,
+    });
+    const draft = data?.data;
+    const draftStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(draft?.status))?.label || undefined;
+    const [form] = Form.useForm();
 
-    const [approveSchool] = useApproveSchoolMutation();
-
+    console.log("draft: ", draft);
     useEffect(() => {
         if (draft) {
             //assign value in string for education and receiving age
@@ -81,14 +89,6 @@ export default function Draft() {
                 <SchoolFormSkeleton/>
             </div>
         );
-    }
-
-    if (!user.hasDraft) {
-        return (
-            <div className={'h-full flex items-center justify-center'}>
-                <Empty/>
-            </div>
-        )
     }
 
     return (

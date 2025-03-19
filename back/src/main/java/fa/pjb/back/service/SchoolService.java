@@ -1,7 +1,7 @@
 package fa.pjb.back.service;
 
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
@@ -28,6 +28,8 @@ public interface SchoolService {
     void updateSchoolStatusByAdmin(ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
     SchoolDetailVO updateSchoolByAdmin(SchoolDTO schoolDTO, List<MultipartFile> images);
+
+    SchoolDetailVO updateSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images);
 
     void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO);
 

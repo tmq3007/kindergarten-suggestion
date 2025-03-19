@@ -33,10 +33,12 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
 
     Set<SchoolOwner> findAllByIdIn(Set<Integer> ids);
 
-    @Query("SELECT so FROM SchoolOwner so " +
-            "JOIN FETCH so.school s " +
-            "JOIN FETCH s.draft d " +
+    @Query("SELECT DISTINCT so FROM SchoolOwner so " +
+            "LEFT JOIN FETCH so.school s " +
+            "LEFT JOIN FETCH s.draft d " +
+            "LEFT JOIN FETCH so.images i " +  // FETCH images để tránh lỗi LazyInitializationException
             "WHERE so.user.id = :userId")
     Optional<SchoolOwner> findWithSchoolAndDraftByUserId(@Param("userId") Integer userId);
+
 
 }
