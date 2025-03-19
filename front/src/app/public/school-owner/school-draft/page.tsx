@@ -19,6 +19,7 @@ import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import React, {useEffect} from "react";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolDraftSkeleton from "@/app/components/skeleton/SchoolDraftSkeleton";
+import NoData from "@/app/admin/management/school/rating-feedback/NoData";
 
 export default function SchoolDraft() {
     const [form] = Form.useForm();
@@ -27,7 +28,8 @@ export default function SchoolDraft() {
     const role = useSelector((state: RootState) => state.user?.role);
 
     const hasDraft = user.hasDraft;
-    if (!hasDraft) {
+    console.log("hasDraft in SchoolFormPreview:", hasDraft);
+    if (hasDraft===false) {
         return (
             <div className={'h-full flex items-center justify-center'}>
                 <Empty/>
