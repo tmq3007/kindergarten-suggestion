@@ -36,7 +36,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             + "AND (:email IS NULL OR u.email LIKE %:email%) "
             + "AND (:name IS NULL OR u.fullname LIKE %:name%) "
             + "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
-    Page<UserVO> findAllByCriteria(
+    Page<UserProjection> findAllByCriteria(
             @Param("role") ERole role,
             @Param("email") String email,
             @Param("name") String name,

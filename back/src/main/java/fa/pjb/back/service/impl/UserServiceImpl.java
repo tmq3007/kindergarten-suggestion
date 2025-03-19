@@ -11,6 +11,7 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
+import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.MediaRepository;
@@ -62,12 +63,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page-1, size);
         ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
 
-        return userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
-
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
+        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
+
 
     private ERole convertRole2(String role) {
         if (role == null || role.trim().isEmpty()) {
