@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +30,15 @@ public class SchoolOwnerController {
                 .code(HttpStatus.OK.value())
                 .message("Get school by user ID successfully.")
                 .data(schoolService.getSchoolByUserId(userId))
+                .build();
+    }
+
+    @GetMapping("/draft/{userId}")
+    public ApiResponse<SchoolDetailVO> getSchoolDraftInfo(@PathVariable Integer userId) {
+        return ApiResponse.<SchoolDetailVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get school information successfully.")
+                .data(schoolService.getSchoolDraftInfo(userId))
                 .build();
     }
 }

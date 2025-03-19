@@ -70,20 +70,6 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(school);
     }
 
-//    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
-    @Override
-    public SchoolDetailVO getSchoolDraftInfo(Integer userId) {
-        School school = schoolRepository.findSchoolByUserId(userId).orElseThrow(SchoolNotFoundException::new);
-        log.info("school: {}", school.getId());
-
-        School draft = schoolRepository.findSchoolDraftBySchoolId(school.getId()).orElseThrow(SchoolNotFoundException::new);
-        if (draft.getDraft()  == null) {
-            throw new SchoolDraftNotFoundException("School has no draft");
-        }
-        log.info("draft: {}", draft.getId());
-        return schoolMapper.toSchoolDetailVO(draft);
-    }
-
     private void processAndSaveImages(List<MultipartFile> image, School school) {
         List<FileUploadVO> imageVOList;
 
@@ -301,6 +287,20 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolRepository.findSchoolByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         return schoolMapper.toSchoolDetailVO(school);
+    }
+
+    //    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    public SchoolDetailVO getSchoolDraftInfo(Integer userId) {
+        School draft = schoolRepository.findSchoolByUserId(userId).orElseThrow(SchoolNotFoundException::new);
+        log.info("school: {}", draft.getId());
+
+       // School draft = schoolRepository.findSchoolDraftBySchoolId(school.getId()).orElseThrow(SchoolNotFoundException::new);
+        if (draft.getDraft()  == null) {
+            throw new SchoolDraftNotFoundException("School has no draft");
+        }
+        log.info("draft: {}", draft.getId());
+        return schoolMapper.toSchoolDetailVO(draft.getDraft());
     }
 
     /**

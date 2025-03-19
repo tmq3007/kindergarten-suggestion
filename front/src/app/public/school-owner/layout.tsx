@@ -78,7 +78,8 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
                                     defaultSelectedKeys={['1']}
                                     items={[
                                         {key: '1', icon: <HomeOutlined/>, label: <Link href="">My School</Link>},
-                                        {key: '2', icon: <FolderOpenOutlined/>, label: <Link href="">My Draft</Link>},
+                                        {key: '2', icon: <FolderOpenOutlined/>,
+                                            label: <Link href="/public/school-owner/school-draft">My Draft</Link>},
                                     ]}
                                 />
                             </Sider>

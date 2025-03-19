@@ -24,7 +24,14 @@ export const schoolOwnerApi = createApi({
             }),
             providesTags: ["School"],
         }),
+        getSchoolDraftOfSchoolOwner: build.query<ApiResponse<SchoolVO>, number>({
+            query: (userId  ) => ({
+                url: `/school-owner/draft/${userId}`,
+                method: "GET",
+            }),
+            providesTags: ["School"],
+        }),
     }),
 });
 
-export const {useGetSchoolOfSchoolOwnerQuery} = schoolOwnerApi
+export const {useGetSchoolOfSchoolOwnerQuery,useGetSchoolDraftOfSchoolOwnerQuery} = schoolOwnerApi

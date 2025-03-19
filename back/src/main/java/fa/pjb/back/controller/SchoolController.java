@@ -47,15 +47,6 @@ public class SchoolController {
                 .build();
     }
 
-    @GetMapping("/draft/{userId}")
-    public ApiResponse<SchoolDetailVO> getSchoolDraftInfo(@PathVariable Integer userId) {
-        return ApiResponse.<SchoolDetailVO>builder()
-                .code(HttpStatus.OK.value())
-                .message("Get school information successfully.")
-                .data(schoolService.getSchoolDraftInfo(userId))
-                .build();
-    }
-
     @GetMapping("/all")
     public ApiResponse<Page<SchoolListVO>> getAllSchools(
             @RequestParam(defaultValue = "1") int page,
