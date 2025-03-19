@@ -18,6 +18,7 @@ const { Title } = Typography;
 const { TextArea } = AntdInput; // Importing TextArea from AntdInput
 import { Row, Col } from 'antd';
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import {ImageUpload} from "@/app/components/common/ImageUploader";
 
 const formItemLayout = {
     labelCol: { xs: { span: 24 }, sm: { span: 6 } },
@@ -33,6 +34,8 @@ const fadeInUpVariants: Variants = {
         transition: { duration: 0.3, delay: i * 0.1 }
     }),
 };
+
+
 
 const CreateUser: React.FC = () => {
     const [form] = Form.useForm();
@@ -68,11 +71,15 @@ const CreateUser: React.FC = () => {
             phone: formattedPhone,
             status: Boolean(values.status),
             email: values.email,
-            ...(values.expectedSchool && { expectedSchool: values.expectedSchool }), // Add expectedSchool if present
-        };
 
+            ...(values.expectedSchool && {
+                expectedSchool: values.expectedSchool ,
+                business_registration_number: values.business_registration_number
+            }), // Add expectedSchool if present
+        };
+        const imageFiles = values.image?.map((file: any) => file.originFileObj).filter(Boolean) || [];
         try {
-            const response = await createUser(formattedValues).unwrap();
+            const response = await createUser({data :formattedValues, imageList: imageFiles}).unwrap();
             if (response.data) {
                 dispatch(setUser(formattedValues));
                 openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
@@ -137,7 +144,9 @@ const CreateUser: React.FC = () => {
                     <Row gutter={[24, 24]}> {/* Added vertical gutter for spacing between rows */}
                         <Col xs={24} sm={24} md={24} lg={12}> {/* Single column on xs/md, two columns on lg+ */}
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={0}>
-                                <Form.Item label="User Name" name="username" className={'mb-10'}>
+                                <Form.Item label=" &nbsp;&nbsp;&nbsp;User Name"
+                                          // tooltip="Enter your 10-digit Business Registration Number"
+                                           name="username" className={'mb-10'}>
                                     <Input placeholder="System Auto Generate" disabled />
                                 </Form.Item>
                             </motion.div>
@@ -220,6 +229,18 @@ const CreateUser: React.FC = () => {
                                 </Form.Item>
                             </motion.div>
 
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 7 : 6}>
+                                <Form.Item  initialValue={true} className={'mb-10'} label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
+                                    <Select
+                                        placeholder="Select status"
+                                        options={[
+                                            { value: true, label: 'Active' },
+                                            { value: false, label: 'Inactive' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </motion.div>
+
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={4}>
                                 <Form.Item
                                     label="DOB"
@@ -248,6 +269,43 @@ const CreateUser: React.FC = () => {
                                     <DatePicker disabledDate={(current) => current && current > dayjs().endOf('day')} />
                                 </Form.Item>
                             </motion.div>
+
+                            {/* Conditional Expected School TextArea */}
+                            {selectedRole === 'school_owner' && (
+                                <motion.div className={'mb-10'} variants={fadeInUpVariants} initial="initial" animate="animate" custom={6}>
+                                    <Form.Item
+                                        label="Expected School"
+                                        name="expectedSchool"
+                                        className={'mb-10'}
+                                        rules={[
+                                            { required: true, message: 'Expected school name is required for School Owner!' },
+                                            { max: 200, message: 'Expected school name must not exceed 200 characters!' }
+                                        ]}
+                                    >
+                                        <Input
+                                            placeholder="Enter the expected school name"
+                                        />
+                                    </Form.Item>
+
+                                    <Form.Item
+                                        label="BRN&nbsp;"
+                                        tooltip="Enter your 10-digit Business Registration Number"
+                                        name="business_registration_number"
+                                        rules={[
+                                            { required: true, message: 'Business Registration Number is required for School Owner!' },
+                                            { min: 200,max:10, message: 'Business Registration Number must have 10 characters!' }
+                                        ]}
+                                    >
+                                        <Input
+                                            placeholder="Enter the Business Registration Number"
+                                        />
+                                    </Form.Item>
+
+
+                                </motion.div>
+
+                            )}
+
                         </Col>
 
                         <Col xs={24} sm={24} md={24} lg={12}> {/* Single column on xs/md, two columns on lg+ */}
@@ -264,35 +322,32 @@ const CreateUser: React.FC = () => {
                                 </Form.Item>
                             </motion.div>
 
-                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 7 : 6}>
-                                <Form.Item className={'mb-10'} label="Status" name="status" rules={[{ required: true, message: 'Please choose status!' }]}>
-                                    <Select
-                                        placeholder="Select status"
-                                        options={[
-                                            { value: true, label: 'Active' },
-                                            { value: false, label: 'Inactive' },
-                                        ]}
-                                    />
-                                </Form.Item>
-                            </motion.div>
-
                             {/* Conditional Expected School TextArea */}
                             {selectedRole === 'school_owner' && (
                                 <motion.div className={'mb-10'} variants={fadeInUpVariants} initial="initial" animate="animate" custom={6}>
+
                                     <Form.Item
-                                        label="Expected School"
-                                        name="expectedSchool"
+                                        label="Business license "
+                                        name="image"
+                                        valuePropName="fileList"
+                                        getValueFromEvent={(e) => e?.fileList || []}
                                         rules={[
-                                            { required: true, message: 'Expected school name is required for School Owner!' },
-                                            { max: 200, message: 'Expected school name must not exceed 200 characters!' }
+                                            { required: true, message: 'Business license  is required for School Owner!' }
                                         ]}
                                     >
-                                        <TextArea
-                                            rows={4}
-                                            placeholder="Enter the expected school name"
+                                        <ImageUpload
+                                            form={form}
+                                            fieldName="image"
+                                            maxCount={10}
+                                            accept="image/*"
+                                            maxSizeMB={5}
+                                            hideImageUpload={false}
+                                            imageList={[{ url: '', filename: '' }]}
                                         />
                                     </Form.Item>
+
                                 </motion.div>
+
                             )}
                         </Col>
                     </Row>

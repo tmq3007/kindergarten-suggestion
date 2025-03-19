@@ -16,8 +16,6 @@ export const schoolOwnerApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["School"],
     endpoints: (build) => ({
-        // Get school list
-        // Lấy danh sách trường học theo userId
         getSchoolOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
             query: () => ({
                 url: `/school-owner/school-info`,
@@ -25,7 +23,18 @@ export const schoolOwnerApi = createApi({
             }),
             providesTags: ["School"],
         }),
+
+        getDraftOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
+            query: () => ({
+                url: `/school-owner/draft-info`,
+                method: "GET",
+            }),
+            providesTags: ["School"],
+        }),
     }),
 });
 
-export const {useGetSchoolOfSchoolOwnerQuery} = schoolOwnerApi
+export const {
+    useGetSchoolOfSchoolOwnerQuery,
+    useGetDraftOfSchoolOwnerQuery
+} = schoolOwnerApi

@@ -14,8 +14,7 @@ import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.model.mapper.MediaMapper;
 import fa.pjb.back.model.mapper.ParentMapper;
-import fa.pjb.back.model.vo.ImageVO;
-import fa.pjb.back.model.vo.MediaVO;
+import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
@@ -143,7 +142,7 @@ public class ParentServiceImpl implements ParentService {
             }
 
             // Upload the image to Google Drive using GGDriveImageService
-            ImageVO imageVO = ggDriveImageService.uploadImage(
+            FileUploadVO imageVO = ggDriveImageService.uploadImage(
                     tempFile,
                     "Parent_" + userId + "_Profile_",
                     FileFolderEnum.USER_IMAGES

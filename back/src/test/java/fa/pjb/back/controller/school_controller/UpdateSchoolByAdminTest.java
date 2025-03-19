@@ -2,7 +2,7 @@ package fa.pjb.back.controller.school_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fa.pjb.back.controller.SchoolController;
-import fa.pjb.back.model.dto.SchoolUpdateDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.vo.FacilityVO;
 import fa.pjb.back.model.vo.MediaVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
@@ -58,10 +58,10 @@ class UpdateSchoolByAdminTest {
     @Test
     void updateSchoolByAdmin_Success() throws Exception {
         // Prepare DTO and mock images
-        SchoolUpdateDTO schoolDTO = SchoolUpdateDTO.builder()
+        SchoolDTO schoolDTO = SchoolDTO.builder()
                 .id(1)
                 .name("Updated School Name")
-                .schoolType((byte) 1)
+                .schoolType((int) 1)
                 .website("https://updated-school.com")
                 .province("Updated Province")
                 .district("Updated District")
@@ -69,8 +69,8 @@ class UpdateSchoolByAdminTest {
                 .street("123 Updated Street")
                 .email("updated@school.com")
                 .phone("+84123456789")
-                .receivingAge((byte) 1)
-                .educationMethod((byte) 2)
+                .receivingAge((int) 1)
+                .educationMethod((int) 2)
                 .feeFrom(1000)
                 .feeTo(2000)
                 .facilities(Set.of(1, 2))
@@ -106,7 +106,7 @@ class UpdateSchoolByAdminTest {
                 .posted_date(new Date())
                 .build();
 
-        when(schoolService.updateSchoolByAdmin(any(SchoolUpdateDTO.class), any(List.class))).thenReturn(schoolDetailVO);
+        when(schoolService.updateSchoolByAdmin(any(SchoolDTO.class), any(List.class))).thenReturn(schoolDetailVO);
 
         // Perform request
         ResultActions response = mockMvc.perform(multipart("/school/update/by-admin")
@@ -135,7 +135,7 @@ class UpdateSchoolByAdminTest {
     @Test
     void updateSchoolByAdmin_Fail_MissingRequiredFields() throws Exception {
         // Prepare invalid DTO (missing required fields)
-        SchoolUpdateDTO schoolDTO = SchoolUpdateDTO.builder()
+        SchoolDTO schoolDTO = SchoolDTO.builder()
                 .id(1)
                 .build();
 
@@ -157,18 +157,18 @@ class UpdateSchoolByAdminTest {
     @Test
     void updateSchoolByAdmin_Boundary_MinValidData() throws Exception {
         // Prepare DTO with minimal valid data
-        SchoolUpdateDTO schoolDTO = SchoolUpdateDTO.builder()
+        SchoolDTO schoolDTO = SchoolDTO.builder()
                 .id(1)
                 .name("Min School")
-                .schoolType((byte) 0)
+                .schoolType((int) 0)
                 .province("Min Province")
                 .district("Min District")
                 .ward("Min Ward")
                 .street("Min Street")
                 .email("min@school.com")
                 .phone("+84123456789")
-                .receivingAge((byte) 0)
-                .educationMethod((byte) 0)
+                .receivingAge((int) 0)
+                .educationMethod((int) 0)
                 .build();
 
         SchoolDetailVO schoolDetailVO = SchoolDetailVO.builder()
@@ -211,18 +211,18 @@ class UpdateSchoolByAdminTest {
         String longName = "A".repeat(255);
         String longProvince = "B".repeat(255);
 
-        SchoolUpdateDTO schoolDTO = SchoolUpdateDTO.builder()
+        SchoolDTO schoolDTO = SchoolDTO.builder()
                 .id(1)
                 .name(longName)
-                .schoolType((byte) 1)
+                .schoolType((int) 1)
                 .province(longProvince)
                 .district("Long District")
                 .ward("Long Ward")
                 .street("Long Street")
                 .email("long@school.com")
                 .phone("+84123456789")
-                .receivingAge((byte) 1)
-                .educationMethod((byte) 2)
+                .receivingAge((int) 1)
+                .educationMethod((int) 2)
                 .feeFrom(1000)
                 .feeTo(2000)
                 .facilities(Set.of(1, 2))
@@ -256,7 +256,7 @@ class UpdateSchoolByAdminTest {
                 .posted_date(new Date())
                 .build();
 
-        when(schoolService.updateSchoolByAdmin(any(SchoolUpdateDTO.class), any(List.class))).thenReturn(schoolDetailVO);
+        when(schoolService.updateSchoolByAdmin(any(SchoolDTO.class), any(List.class))).thenReturn(schoolDetailVO);
 
         // Perform request
         ResultActions response = mockMvc.perform(multipart("/school/update/by-admin")

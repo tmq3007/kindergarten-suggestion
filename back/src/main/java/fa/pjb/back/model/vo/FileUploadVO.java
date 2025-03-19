@@ -1,10 +1,9 @@
 package fa.pjb.back.model.vo;
 
 import lombok.Builder;
-import lombok.Getter;
 
 @Builder
-public record ImageVO(
+public record FileUploadVO(
         int status,
         String message,
         Long size,
