@@ -234,7 +234,23 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                           justify-content: center;
                           align-items: center;
                           }
-                        `}</style>
+                            .custom-carousel .slick-list {
+                              display: flex !important;
+                              justify-content: center !important;
+                            }
+
+                            .custom-carousel .slick-track {
+                              display: flex !important;
+                              justify-content: center !important;
+                              align-items: center !important;
+                            }
+
+                            .custom-carousel .slick-slide {
+                              display: flex !important;
+                              justify-content: center !important;
+                            }
+
+                `}</style>
                 {/* Thumbnail Carousel */}
                 <Carousel
                     dots={true}
