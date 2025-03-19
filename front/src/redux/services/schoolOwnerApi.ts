@@ -31,10 +31,18 @@ export const schoolOwnerApi = createApi({
             }),
             providesTags: ["School"],
         }),
+        getSchoolDraftOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
+            query: (  ) => ({
+                url: `/school-owner/draft`,
+                method: "GET",
+            }),
+            providesTags: ["School"],
+        }),
     }),
 });
 
 export const {
     useGetSchoolOfSchoolOwnerQuery,
-    useGetDraftOfSchoolOwnerQuery
+    useGetDraftOfSchoolOwnerQuery,
+    useGetSchoolDraftOfSchoolOwnerQuery
 } = schoolOwnerApi

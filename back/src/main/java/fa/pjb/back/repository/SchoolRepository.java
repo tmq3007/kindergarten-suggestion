@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface SchoolRepository extends JpaRepository<School, Integer> {
@@ -22,6 +21,9 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
 
     @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId")
     Optional<School> findSchoolByUserId(@Param("userId") Integer userId);
+
+    @Query("SELECT s FROM School s WHERE s.draft.id = :schoolId")
+    Optional<School> findSchoolDraftBySchoolId(@Param("schoolId") Integer schoolId);
 
     @Query(value = "SELECT s FROM School s " +
             "LEFT JOIN FETCH s.originalSchool " +
@@ -48,5 +50,4 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
             @Param("email") String email,
             @Param("phone") String phone,
             Pageable pageable);
-
 }

@@ -4,6 +4,7 @@ import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
+import fa.pjb.back.common.exception._13xx_school.SchoolDraftNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
@@ -154,6 +155,7 @@ public class SchoolServiceImpl implements SchoolService {
                     schoolDetailedLinkAdmin + newSchool.getId()
             );
         }
+        log.info("in update data: " + newSchool.toString());
 
         return schoolMapper.toSchoolDetailVO(newSchool);
     }
@@ -409,12 +411,28 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
     public SchoolDetailVO getDraft(User user) {
+        log.info("into getDraft service");
         Integer userId = user.getId();
         SchoolOwner so = schoolOwnerRepository.findWithSchoolAndDraftByUserId(userId).orElseThrow(UserNotFoundException::new);
         School school = so.getSchool();
         if (school == null) throw new SchoolNotFoundException();
         School draft = school.getDraft();
+        log.info("draft test: {}", draft.getId());
         return schoolMapper.toSchoolDetailVO(draft);
+    }
+
+    //    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    public SchoolDetailVO getSchoolDraftInfo(Integer userId) {
+        School draft = schoolRepository.findSchoolByUserId(userId).orElseThrow(SchoolNotFoundException::new);
+        log.info("school: {}", draft.getId());
+
+       // School draft = schoolRepository.findSchoolDraftBySchoolId(school.getId()).orElseThrow(SchoolNotFoundException::new);
+        if (draft.getDraft()  == null) {
+            throw new SchoolDraftNotFoundException("School has no draft");
+        }
+        log.info("draft: {}", draft.getId());
+        return schoolMapper.toSchoolDetailVO(draft.getDraft());
     }
 
     /**

@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
@@ -45,7 +46,7 @@ import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
 @Service
 public class UserServiceImpl implements UserService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
+    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg","application/pdf");
     private final GGDriveImageService imageService;
     private static final Tika tika = new Tika();
     private final MediaRepository mediaRepository;
@@ -169,10 +170,10 @@ public class UserServiceImpl implements UserService {
                 Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
     }
 
-    private void processAndSaveImages(List<MultipartFile> image, SchoolOwner schoolOwner) {
+    private void processAndSaveFile(List<MultipartFile> files, SchoolOwner schoolOwner) {
         List<FileUploadVO> imageVOList;
 
-        for (MultipartFile file : image) {
+        for (MultipartFile file : files) {
             if (file.getSize() > MAX_FILE_SIZE) {
                 throw new InvalidFileFormatException("File cannot exceed 5MB");
             }
@@ -188,9 +189,9 @@ public class UserServiceImpl implements UserService {
 
         try {
             imageVOList = imageService.uploadListFiles(
-                    imageService.convertMultiPartFileToFile(image),
+                    imageService.convertMultiPartFileToFile(files),
                     "School_Owner_" + schoolOwner.getId() + "Image_",
-                    SO_IMAGES,imageService::uploadImage
+                    SO_IMAGES,imageService::uploadFile
             );
         } catch (IOException e) {
             throw new UploadFileException("Error while uploading images: " + e.getMessage());
@@ -230,6 +231,10 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
+        if ( schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number()) ) {
+            throw new BRNAlreadyExistedException("Business registration number already exists.");
+        }
+
         // Create User
         String usernameAutoGen = autoGeneratorHelper.generateUsername(userCreateDTO.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
@@ -244,6 +249,7 @@ public class UserServiceImpl implements UserService {
                 .build();
         if (Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
             user.setRole(ERole.ROLE_SCHOOL_OWNER);
+
 
             // Create SchoolOwner
             SchoolOwner schoolOwner = SchoolOwner.builder()
@@ -260,7 +266,7 @@ public class UserServiceImpl implements UserService {
 
             // Validate and upload images (if provided)
             if (image != null && !image.isEmpty()) {
-                processAndSaveImages(image, newSO);
+                processAndSaveFile(image, newSO);
             }
         } else if (Objects.equals(userCreateDTO.role(), "ROLE_ADMIN")) {
             user.setRole(ERole.ROLE_ADMIN);
