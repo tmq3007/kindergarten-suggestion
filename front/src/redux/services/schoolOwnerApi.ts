@@ -16,10 +16,17 @@ export const schoolOwnerApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["School"],
     endpoints: (build) => ({
-        // Get school list
         getSchoolOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
             query: () => ({
                 url: `/school-owner/school-info`,
+                method: "GET",
+            }),
+            providesTags: ["School"],
+        }),
+
+        getDraftOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
+            query: () => ({
+                url: `/school-owner/draft-info`,
                 method: "GET",
             }),
             providesTags: ["School"],
@@ -34,4 +41,8 @@ export const schoolOwnerApi = createApi({
     }),
 });
 
-export const {useGetSchoolOfSchoolOwnerQuery,useGetSchoolDraftOfSchoolOwnerQuery} = schoolOwnerApi
+export const {
+    useGetSchoolOfSchoolOwnerQuery,
+    useGetDraftOfSchoolOwnerQuery,
+    useGetSchoolDraftOfSchoolOwnerQuery
+} = schoolOwnerApi

@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
@@ -23,6 +24,8 @@ import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.hibernate.Hibernate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -153,21 +156,26 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     private School prepareSchoolData(SchoolDTO schoolDTO, User user, School oldSchool) {
+        log.info("begin prepareSchoolData");
 
         // Check if email already exists
-        if(schoolDTO.id() == null) {
+        if (schoolDTO.id() == null) {
             if (checkEmailExists(schoolDTO.email())) {
                 throw new EmailAlreadyExistedException("This email is already in use");
             }
-        }else{
-            if(checkEditingEmailExists(schoolDTO.email(),schoolDTO.id())){
+        } else {
+            if (checkEditingEmailExists(schoolDTO.email(), schoolDTO.id())) {
                 throw new EmailAlreadyExistedException("This email is already in use");
             }
         }
+        log.info("1");
 
         School school = schoolMapper.toSchool(schoolDTO, oldSchool);
+        log.info("2");
 
         school.setPostedDate(LocalDate.now());
+        log.info("2.1");
+        log.info("school: {}", school.toString());
 
         // Validate facilities
         if (schoolDTO.facilities() != null) {
@@ -177,6 +185,7 @@ public class SchoolServiceImpl implements SchoolService {
             }
             school.setFacilities(existingFacilities);
         }
+        log.info("3");
 
         // Validate utilities
         if (schoolDTO.utilities() != null) {
@@ -186,6 +195,7 @@ public class SchoolServiceImpl implements SchoolService {
             }
             school.setUtilities(existingUtilities);
         }
+        log.info("4");
 
         // Update all SchoolOwners with the saved School and batch-save them
         if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
@@ -193,22 +203,34 @@ public class SchoolServiceImpl implements SchoolService {
             if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
                 throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
             }
-            schoolOwners.forEach(owner -> owner.setSchool(school));
+            for (SchoolOwner owner : schoolOwners) {
+                owner.setSchool(school); // Không dùng lambda để tránh lỗi
+            }
             school.setSchoolOwners(schoolOwners);
         } else {
             school.setSchoolOwners(new HashSet<>());
         }
+        log.info("5");
+        log.info("school: {}", school.toString());
+
         // Delete old images
         List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+        log.info("6");
+
         if (!oldMedias.isEmpty()) {
+            log.info("7");
+
             for (Media media : oldMedias) {
                 // Delete images from Google Drive
                 FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
             }
             school.getImages().clear();
+            log.info("8");
             mediaRepository.deleteAllBySchool(school);
-        }
+            log.info("9");
 
+        }
+        log.info("finish prepareSchoolData");
         return school;
     }
 
@@ -237,8 +259,100 @@ public class SchoolServiceImpl implements SchoolService {
         // Save the updated school data
         schoolRepository.save(school);
 
-
         return schoolMapper.toSchoolDetailVO(school);
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Transactional
+    @Override
+    public SchoolDetailVO updateSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images) {
+        log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        // Kiểm tra nếu người dùng không phải là School Owner
+        if (!(principal instanceof User user)) {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
+        log.info("User: {}", user.toString());
+
+        // Lấy SchoolOwner từ user ID
+        SchoolOwner schoolOwner = schoolOwnerRepository
+                .findWithSchoolAndDraftByUserId(user.getId())
+                .orElseThrow(UserNotFoundException::new);
+
+        // Kiểm tra nếu school tồn tại
+        School currentSchool = schoolOwner.getSchool();
+        if (currentSchool == null) {
+            throw new SchoolNotFoundException();
+        }
+        log.info("Current school: {}", currentSchool.toString());
+
+        // Kiểm tra nếu đã có draft
+        School draft = currentSchool.getDraft();
+
+        if (currentSchool.getStatus().equals(SUBMITTED.getValue()) || (draft != null && draft.getStatus().equals(SUBMITTED.getValue()))) {
+            throw new IllegalStateException("Cannot update a submitted school or draft");
+        }
+
+        if (draft == null) {
+            log.info("No draft found, creating a new draft...");
+
+            // Tạo một School mới làm draft
+            draft = new School();
+            draft.setStatus(SUBMITTED.getValue()); // Đặt trạng thái là SUBMITTED
+            draft.setOriginalSchool(currentSchool);
+        } else {
+            log.info("Draft found, updating existing draft...");
+        }
+
+        // Cập nhật dữ liệu từ DTO vào draft
+        log.info("Before updating draft, ID: {}", draft.getId());
+        schoolMapper.toDraft(schoolDTO, draft);
+        log.info("After updating draft, ID: {}", draft.getId());
+        log.info("Draft saved with ID: {}", draft.getId());
+// Validate facilities
+        if (schoolDTO.facilities() != null) {
+            Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
+            if (existingFacilities.size() != schoolDTO.facilities().size()) {
+                throw new InvalidDataException("Some facilities do not exist in the database");
+            }
+            draft.setFacilities(existingFacilities);
+        }
+        log.info("3");
+
+        // Validate utilities
+        if (schoolDTO.utilities() != null) {
+            Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
+            if (existingUtilities.size() != schoolDTO.utilities().size()) {
+                throw new InvalidDataException("Some utilities do not exist in the database");
+            }
+            draft.setUtilities(existingUtilities);
+        }
+        log.info("4");
+
+        // Update all SchoolOwners with the saved School and batch-save them
+        if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
+            Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
+            if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
+                throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
+            }
+            for (SchoolOwner owner : schoolOwners) {
+                owner.setSchool(draft); // Không dùng lambda để tránh lỗi
+            }
+            draft.setSchoolOwners(schoolOwners);
+        } else {
+            draft.setSchoolOwners(new HashSet<>());
+        }
+        // Xử lý hình ảnh nếu có
+        if (images != null && !images.isEmpty()) {
+            processAndSaveImages(images, draft);
+        }
+        draft.setPostedDate(LocalDate.now());
+        // Lưu draft vào DB
+        draft = schoolRepository.save(draft);
+        log.info("Update by school owner completed.");
+        return schoolMapper.toSchoolDetailVO(draft);
     }
 
 
@@ -278,7 +392,7 @@ public class SchoolServiceImpl implements SchoolService {
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
                                             String street, String email, String phone, Pageable pageable) {
         Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
-        schoolPage.forEach(school -> log.info("School: id={}, postedDate={}", school.getId(), school.getPostedDate()));
+        //  schoolPage.forEach(school -> log.info("School: id={}, postedDate={}", school.getId(), school.getPostedDate()));
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 
@@ -287,6 +401,17 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolRepository.findSchoolByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         return schoolMapper.toSchoolDetailVO(school);
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    public SchoolDetailVO getDraft(User user) {
+        Integer userId = user.getId();
+        SchoolOwner so = schoolOwnerRepository.findWithSchoolAndDraftByUserId(userId).orElseThrow(UserNotFoundException::new);
+        School school = so.getSchool();
+        if (school == null) throw new SchoolNotFoundException();
+        School draft = school.getDraft();
+        return schoolMapper.toSchoolDetailVO(draft);
     }
 
     //    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")

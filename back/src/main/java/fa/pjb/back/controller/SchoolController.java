@@ -1,9 +1,8 @@
 package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -114,6 +112,17 @@ public class SchoolController {
                 .code(HttpStatus.OK.value())
                 .message("School updated successfully")
                 .data(schoolService.updateSchoolByAdmin(schoolDTO, images))
+                .build();
+    }
+
+    @PostMapping(value = "/update/by-so", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<SchoolDetailVO> updateSchoolBySchoolOwner(
+            @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
+            @RequestPart(value = "image", required = false) List<MultipartFile> images) {
+        return ApiResponse.<SchoolDetailVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("School updated successfully")
+                .data(schoolService.updateSchoolBySchoolOwner(schoolDTO, images))
                 .build();
     }
 

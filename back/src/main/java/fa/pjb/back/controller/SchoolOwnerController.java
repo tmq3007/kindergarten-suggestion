@@ -22,13 +22,12 @@ public class SchoolOwnerController {
     private final SchoolService schoolService;
 
     @GetMapping("/school-info")
-    public ApiResponse<SchoolDetailVO> getSchoolByUserId(
+    public ApiResponse<SchoolDetailVO> getSchoolInfo(
             @AuthenticationPrincipal User user) {
-        // Lấy userId trực tiếp từ User entity
         Integer userId = user.getId();
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get school by user ID successfully.")
+                .message("Get school info successfully.")
                 .data(schoolService.getSchoolByUserId(userId))
                 .build();
     }
@@ -39,6 +38,16 @@ public class SchoolOwnerController {
                 .code(HttpStatus.OK.value())
                 .message("Get school information successfully.")
                 .data(schoolService.getSchoolDraftInfo(userId))
+                .build();
+    }
+
+    @GetMapping("/draft-info")
+    public ApiResponse<SchoolDetailVO> getDraftInfo(
+            @AuthenticationPrincipal User user) {
+        return ApiResponse.<SchoolDetailVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get draft info successfully.")
+                .data(schoolService.getDraft(user))
                 .build();
     }
 }

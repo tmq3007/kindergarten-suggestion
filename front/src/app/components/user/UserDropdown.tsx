@@ -87,15 +87,30 @@ export default function UserDropdown({username}: UserDropdownProps) {
     }
     // Define items for the Dropdown menu
     const items: MenuProps["items"] = [
-        {
-            label: (
-                <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
-                    My Schools
-                </div>
-            ),
-            key: "1",
-        },
-        {type: "divider"},
+        ...(role === ROLES.PARENT ? [
+            {
+                label: (
+                    <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
+                        My Schools
+                    </div>
+                ),
+                key: "1",
+            },
+            { type: "divider" as "divider" },
+            {
+                label: (
+                    <Link
+                        href={"/public/view-account"}
+                        className="block hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
+                    >
+                        My Profiles
+                    </Link>
+                ),
+                key: "3",
+            },
+            { type: "divider" as "divider" },
+        ] : []),
+
         {
             label: (
                 <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
@@ -104,19 +119,10 @@ export default function UserDropdown({username}: UserDropdownProps) {
             ),
             key: "2",
         },
-        {type: "divider"},
-        {
-            label: (
-                <Link
-                    href={"/public/view-account"}
-                    className="block hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
-                >
-                    My Profiles
-                </Link>
-            ),
-            key: "3",
-        },
-        {type: "divider"},
+        { type: "divider" as "divider" },
+
+
+
         ...(role === ROLES.SCHOOL_OWNER ? [
             {
                 label: (
@@ -129,8 +135,9 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "4",
             },
-            {type: "divider" as "divider"},
+            { type: "divider" as "divider" },
         ] : []),
+
         {
             label: (
                 <div
@@ -143,6 +150,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
             key: "5",
         },
     ];
+
 
     const menuProps = {items};
 
