@@ -16,7 +16,6 @@ const page = () => {
             />
             <SchoolManageTitle title={'My Draft'} />
             <div className='bg-white pt-1 rounded-lg'>
-
                 <ContentPage/>
              </div>
         </>

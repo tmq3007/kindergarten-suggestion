@@ -3,6 +3,7 @@ package fa.pjb.back.service.impl;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
+import fa.pjb.back.common.exception._13xx_school.SchoolDraftNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
@@ -67,6 +68,20 @@ public class SchoolServiceImpl implements SchoolService {
     public SchoolDetailVO getSchoolInfo(Integer schoolId) {
         School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
         return schoolMapper.toSchoolDetailVO(school);
+    }
+
+//    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    public SchoolDetailVO getSchoolDraftInfo(Integer userId) {
+        School school = schoolRepository.findSchoolByUserId(userId).orElseThrow(SchoolNotFoundException::new);
+        log.info("school: {}", school.getId());
+
+        School draft = schoolRepository.findSchoolDraftBySchoolId(school.getId()).orElseThrow(SchoolNotFoundException::new);
+        if (draft.getDraft()  == null) {
+            throw new SchoolDraftNotFoundException("School has no draft");
+        }
+        log.info("draft: {}", draft.getId());
+        return schoolMapper.toSchoolDetailVO(draft);
     }
 
     private void processAndSaveImages(List<MultipartFile> image, School school) {
