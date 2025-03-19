@@ -1,7 +1,6 @@
 package fa.pjb.back.model.mapper;
 
-import fa.pjb.back.model.dto.AddSchoolDTO;
-import fa.pjb.back.model.dto.SchoolUpdateDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.vo.*;
 import org.mapstruct.Mapper;
@@ -24,11 +23,23 @@ public interface SchoolMapper {
     SchoolListVO toSchoolListVO(School school);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "facilities", source = "facilities", qualifiedByName = "mapFacilityIds")
-    @Mapping(target = "utilities", source = "utilities", qualifiedByName = "mapUtilityIds")
-    @Mapping(target = "schoolOwners" , source = "schoolOwners", qualifiedByName = "mapSchoolOwnerIds")
+    @Mapping(target = "facilities", ignore = true)
+    @Mapping(target = "utilities", ignore = true)
+    @Mapping(target = "schoolOwners", ignore = true)
+    School toSchool(SchoolDTO schoolDTO);
 
-    School toSchool(AddSchoolDTO schoolDTO);
+    @Mapping(target = "facilities", ignore = true)
+    @Mapping(target = "utilities", ignore = true)
+    @Mapping(target = "schoolOwners", ignore = true)
+    School toSchool(SchoolDTO schoolDTO, @MappingTarget School school);
+
+
+    @Mapping(target = "facilities", ignore = true)
+    @Mapping(target = "utilities", ignore = true)
+    @Mapping(target = "schoolOwners", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    void toDraft(SchoolDTO schoolDTO, @MappingTarget School draft);
 
     // Convert List<Integer> to Set<Facility>
     @Named("mapFacilityIds")
@@ -82,9 +93,5 @@ public interface SchoolMapper {
     default Set<UtilityVO> mapUtilities(Set<Utility> utilities) {
         return utilities != null ? utilities.stream().map(utility -> new UtilityVO(utility.getUid(), utility.getName())).collect(Collectors.toSet()) : null;
     }
-
-    @Mapping(target = "facilities", ignore = true)
-    @Mapping(target = "utilities", ignore = true)
-    void updateSchoolFromDto(SchoolUpdateDTO schoolUpdateDTO, @MappingTarget School school);
 
 }

@@ -1,6 +1,8 @@
 package fa.pjb.back.service.parent_service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
@@ -15,12 +17,15 @@ import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import fa.pjb.back.service.impl.ParentServiceImpl;
+import io.github.wimdeblauwe.errorhandlingspringbootstarter.handler.HandlerMethodValidationExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,9 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-@SpringBootTest
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class registerTest {
 
     @Mock
@@ -109,6 +112,7 @@ class registerTest {
         });
 
         assertEquals("Email already exists", thrown.getMessage());
+        verify(parentRepository,never()).save(Mockito.any());
     }
 
     @Test
@@ -121,5 +125,6 @@ class registerTest {
         });
 
         assertTrue(thrown.getMessage().contains("Registration failed!"));
+
     }
 }

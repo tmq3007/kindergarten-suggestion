@@ -5,49 +5,67 @@ import {InboxOutlined, PlusOutlined} from '@ant-design/icons';
 import 'antd/dist/reset.css';
 
 interface ImageUploadProps {
-    form: FormInstance; // Form instance to update directly
-    fieldName?: string; // Name of the field to update (defaults to 'image')
+    form: FormInstance;
+    fieldName: string;
     maxCount?: number;
-    accept?: string;
-    maxSizeMB?: number; // Maximum file size in MB
+    accept?: string | string[];
+    maxSizeMB?: number;
     hideImageUpload?: boolean;
     imageList?: { url: string; filename: string }[];
-    formLoaded?: boolean; // New prop
+    formLoaded?: boolean;
 }
 
 const uploadButton = (
-  <button style={{ border: 0, background: 'none' }} type="button">
-    <PlusOutlined />
-    <div style={{ marginTop: 8 }}>Upload</div>
-  </button>
+    <button style={{border: 0, background: 'none'}} type="button">
+        <PlusOutlined/>
+        <div style={{marginTop: 8}}>Upload</div>
+    </button>
 );
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
                                                             form,
-                                                            fieldName = 'image',
+                                                            fieldName,
                                                             maxCount = 10,
-                                                            accept = 'image/*',
+                                                            accept,
                                                             maxSizeMB = 5,
-                                                            hideImageUpload,
+                                                            hideImageUpload=false,
                                                             imageList = [],
-                                                            formLoaded=false,
+                                                            formLoaded = false,
                                                         }) => {
     const [fileList, setFileList] = useState<UploadFile[]>(form.getFieldValue(fieldName) || []);
     const [previewImage, setPreviewImage] = useState<string>('');
     const [previewOpen, setPreviewOpen] = useState(false);
+    const [noti, notificationContextHolder] = notification.useNotification();
 
-    // Sync internal state with form field value
+    // Format for Upload component (technical MIME types)
+    const formattedAccept = accept
+        ? Array.isArray(accept)
+            ? accept.join(',')
+            : accept
+        : '*/*';
+
+    // Format for display (user-friendly extensions)
+    const displayAccept = accept
+        ? Array.isArray(accept)
+            ? accept.map(type => {
+                const extension = type.split('/')[1]?.toUpperCase();
+                return extension === 'JPEG' ? 'JPG' : extension; // Normalize JPEG to JPG
+            }).join(', ')
+            : accept.split('/')[1]?.toUpperCase() || accept
+        : 'any type';
+
+
     useEffect(() => {
         const currentFiles = form.getFieldValue(fieldName) || [];
         console.log('4. Current image field value in ImageUpload:', currentFiles);
-      
+
         const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
-          uid: file.cloudId || file.uid || `${Math.random()}`,
-          name: file.filename || file.name || `Image-${file.cloudId || file.uid || Math.random()}`,
-          status: 'done',
-          url: file.url,
+            uid: file.cloudId || file.uid || `${Math.random()}`,
+            name: file.filename || file.name || `Image-${file.cloudId || file.uid || Math.random()}`,
+            status: 'done',
+            url: file.url,
         }));
-      
+
         setFileList(formattedFiles);
         console.log('5. FileList set in ImageUpload:', formattedFiles);
     }, [formLoaded]);
@@ -71,29 +89,54 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
         console.log("📸 Trước khi cập nhật:", fileList);
         console.log("📥 Ảnh mới được thêm / cập nhật:", newFileList);
-
-        // Danh sách ảnh sau khi cập nhật (gồm cả ảnh cũ và mới nhưng không giữ ảnh bị xóa)
         setFileList(newFileList);
         form.setFieldsValue({[fieldName]: newFileList});
-
         console.log("📌 Danh sách ảnh sau khi cập nhật:", newFileList);
     };
-
 
     const beforeUpload = (file: File) => {
         const isLtMaxSize = file.size / 1024 / 1024 < maxSizeMB;
         if (!isLtMaxSize) {
-            notification.error({
-                message: 'Image too large',
-                description: `Image must be smaller than ${maxSizeMB}MB!`,
+            noti.error({
+                message: 'File too large',
+                description: `File must be smaller than ${maxSizeMB}MB!`,
             });
             return Upload.LIST_IGNORE;
         }
-        return false; // Prevent automatic upload since we handle it manually
+        // If accept is not specified, allow all files
+        if (!accept) {
+            return true;
+        }
+
+        // Check file type against accept prop
+        const fileType = file.type; // MIME type (e.g., "image/jpeg")
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        const allowedTypes = Array.isArray(accept) ? accept : [accept];
+
+        // Convert allowed MIME types to extensions for comparison
+        const allowedExtensions = allowedTypes.map(type => {
+            const ext = type.split('/')[1]?.toLowerCase();
+            return ext === 'jpeg' ? 'jpg' : ext; // Normalize "jpeg" to "jpg"
+        });
+
+        // Check if the file's MIME type or extension is allowed
+        const isValidType = allowedTypes.includes(fileType) ||
+            (fileExtension && allowedExtensions.includes(fileExtension));
+
+        if (!isValidType) {
+            noti.error({
+                message: 'Invalid file type',
+                description: `Only ${displayAccept} files are allowed!`,
+            });
+            return Upload.LIST_IGNORE;
+        }
+
+        return false;
     };
 
     return (
         <>
+            {notificationContextHolder}
             {hideImageUpload ? (
                 <div className="grid grid-cols-3 gap-4">
                     {imageList.length > 0 ? (
@@ -122,7 +165,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                     fileList={fileList}
                     beforeUpload={beforeUpload}
                     maxCount={maxCount}
-                    accept={accept}
+                    accept={formattedAccept}
                     onPreview={handlePreview}
                     onChange={handleChange}
                     className="custom-upload-dragger"
@@ -152,7 +195,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                                     Click or drag file to this area to upload
                                 </p>
                                 <p className="ant-upload-text" style={{margin: 0}}>
-                                    Upload files of format <strong>png, jpg, jpeg</strong> only
+                                    Upload files of format <strong>{displayAccept}</strong> only
                                 </p>
                                 <p className="ant-upload-text" style={{margin: 0}}>
                                     Maximum size: <strong>{maxSizeMB}MB</strong>

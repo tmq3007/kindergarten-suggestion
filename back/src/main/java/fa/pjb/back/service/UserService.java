@@ -5,6 +5,9 @@ import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.vo.UserVO;
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface UserService {
     Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone);
@@ -15,6 +18,6 @@ public interface UserService {
 
     UserDetailDTO toggleStatus(int userId);
 
-    UserCreateDTO createUser(UserCreateDTO userCreateDTO);
+    UserCreateDTO createUser(UserCreateDTO userCreateDTO, List<MultipartFile> image);
 
 }
