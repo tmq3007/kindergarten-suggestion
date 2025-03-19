@@ -32,7 +32,7 @@ export default function SchoolDraft() {
     if (hasDraft===false) {
         return (
             <div className={'h-full flex items-center justify-center'}>
-                <Empty/>
+                <Empty description={<span>No draft availables</span>}/>
             </div>
         )
     }
