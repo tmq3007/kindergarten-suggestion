@@ -10,6 +10,9 @@ import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
+import fa.pjb.back.event.model.SchoolApprovedEvent;
+import fa.pjb.back.event.model.SchoolPublishedEvent;
+import fa.pjb.back.event.model.SchoolRejectedEvent;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.entity.*;
@@ -27,6 +30,7 @@ import org.apache.tika.Tika;
 import org.hibernate.Hibernate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,6 +63,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final EmailService emailService;
     private final GGDriveImageService imageService;
     private final SchoolOwnerRepository schoolOwnerRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private static final Tika tika = new Tika();
     @Value("${school-detailed-link}")
     private String schoolDetailedLink;
@@ -447,6 +452,11 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolRepository.findById(schoolID)
                 .orElseThrow(SchoolNotFoundException::new);
 
+        Byte currentSchoolStatus = school.getStatus();
+        String currentSchoolEmail = school.getEmail();
+        String currentSchoolName = school.getName();
+
+
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String username;
@@ -464,9 +474,9 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 2 -> {
                 // Change to "Approved" status if current status is "Submitted"
-                if (school.getStatus() == 1) {
+                if (currentSchoolStatus == 1) {
                     school.setStatus(preparedStatus);
-                    emailService.sendSchoolApprovedEmail(school.getEmail(), school.getName(), schoolDetailedLink);
+                    eventPublisher.publishEvent(new SchoolApprovedEvent(currentSchoolEmail, currentSchoolName, schoolDetailedLink));
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -474,9 +484,9 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 3 -> {
                 // Change to "Rejected" status if current status is "Submitted"
-                if (school.getStatus() == 1) {
+                if (currentSchoolStatus == 1) {
                     school.setStatus(preparedStatus);
-                    emailService.sendSchoolRejectedEmail(school.getEmail(), school.getName());
+                    eventPublisher.publishEvent(new SchoolRejectedEvent(currentSchoolEmail, school.getName()));
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -484,7 +494,7 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 4 -> {
                 // Change to "Published" status if current status is "Approved"
-                if (school.getStatus() == 2 || school.getStatus() == 5) {
+                if (currentSchoolStatus == 2 || currentSchoolStatus == 5) {
 
                     school.setStatus(preparedStatus);
 
@@ -495,7 +505,7 @@ public class SchoolServiceImpl implements SchoolService {
                         so.setPublicPermission(true);
                         schoolOwnerRepository.saveAndFlush(so);
                     }
-                    emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink);
+                    eventPublisher.publishEvent(new SchoolPublishedEvent(currentSchoolEmail, currentSchoolName, username, schoolDetailedLink));
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -504,7 +514,7 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 5 -> {
                 //Change to "Unpublished" status if current status is "Published"
-                if (school.getStatus() == 4) {
+                if (currentSchoolStatus == 4) {
 
                     school.setStatus(preparedStatus);
 
@@ -570,7 +580,7 @@ public class SchoolServiceImpl implements SchoolService {
                     // Change to "Published" status if current status is "Approved" or "Unpublished"
                     if (school.getStatus() == 2 || school.getStatus() == 5) {
                         school.setStatus(changeSchoolStatusDTO.status());
-                        emailService.sendSchoolPublishedEmail(school.getEmail(), school.getName(), username, schoolDetailedLink);
+                        eventPublisher.publishEvent(new SchoolPublishedEvent(school.getEmail(), school.getName(), username, schoolDetailedLink));
                     } else {
                         throw new InappropriateSchoolStatusException();
                     }
