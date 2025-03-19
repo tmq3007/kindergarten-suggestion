@@ -339,7 +339,7 @@ const CreateUser: React.FC = () => {
                                             form={form}
                                             fieldName="image"
                                             maxCount={10}
-                                            accept="image/*,.pdf"
+                                            accept={["image/*", "application/pdf"]}
                                             maxSizeMB={5}
                                             hideImageUpload={false}
                                             imageList={[{ url: '', filename: '' }]}
