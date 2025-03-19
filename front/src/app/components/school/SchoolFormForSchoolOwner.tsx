@@ -23,7 +23,7 @@ import {
   CalendarOutlined,
   BankOutlined,
   EnvironmentOutlined,
-  BookOutlined,
+  BookOutlined, ToolOutlined,
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -212,7 +212,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
   }, [expectedSchoolData]);
 
   return (
-      <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
+      <div className="mx-auto  rounded-lg  ">
         <Form<SchoolFieldType> size="middle" form={form} className="space-y-6 h-auto">
           <Row gutter={[16, 16]}>
             {/* Section 1: Ảnh minh họa */}
@@ -312,7 +312,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
               <Row gutter={[16, 16]}>
                 {/* Cột trái: Basic Information */}
                 <Col span={12}>
-                  <Card title="Basic Information" bordered={false}>
+                  <Card title="Basic Information"    style={{ height: "430px" }}>
                     <div className="space-y-4">
                       <h2 className="text-2xl font-bold">{form.getFieldValue("name") || "Unknown School"}</h2>
                       <div className="flex items-center">
@@ -383,40 +383,47 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
                 {/* Cột phải: Facilities & Utilities */}
                 <Col span={12}>
-                  <Card title="Facilities & Utilities" bordered={false} style={{ minHeight: "100%" }}>
+                  <Card title="Facilities & Utilities"   style={{ height: "430px" }}>
                     <div className="space-y-6">
-                      <Form.Item label="Facilities" name="facilities" labelCol={{ style: { fontSize: "28px", fontWeight: "bold" } }}>
-                        <Checkbox.Group
-                            options={FACILITY_OPTIONS}
-                            value={form.getFieldValue("facilities")?.map(String)}
-                            className={clsx("grid grid-cols-3 gap-2 custom-add-school-select", { "pointer-events-none": isReadOnly })}
-                        />
+                      <Form.Item label={
+                        <span>
+                            <BookOutlined style={{ marginRight: 8 }} />
+                            Facilities
+                        </span>
+                      }  name="facilities" labelCol={{ style: { fontSize: "28px", fontWeight: "bold" } }}>
+                        <ul className="grid grid-cols-3 gap-2 custom-add-school-select">
+                          {FACILITY_OPTIONS.map((option) => (
+                              <li key={option.value} className="flex items-center">
+                                {option.label}
+                              </li>
+                          ))}
+                        </ul>
                       </Form.Item>
 
-                      <Form.Item label="Utilities" name="utilities" labelCol={{ style: { fontSize: "28px", fontWeight: "bold" } }}>
-                        <Checkbox.Group
-                            options={UTILITY_OPTIONS}
-                            value={form.getFieldValue("utilities")?.map(String)}
-                            className={clsx("grid grid-cols-3 gap-2 custom-add-school-select", { "pointer-events-none": isReadOnly })}
-                        />
+                      <Form.Item label={
+                        <span>
+                            <ToolOutlined style={{ marginRight: 8 }} />
+                            Utilities
+                        </span>
+                      } name="utilities" labelCol={{ style: { fontSize: "28px", fontWeight: "bold" } }}>
+                        <ul className="grid grid-cols-3 gap-2 custom-add-school-select">
+                          {UTILITY_OPTIONS.map((option) => (
+                              <li key={option.value} className="flex items-center">
+                                {option.label}
+                              </li>
+                          ))}
+                        </ul>
                       </Form.Item>
                     </div>
                     <style>{`
-                    .custom-add-school-select .ant-checkbox-wrapper {
-                      display: flex;
-                      align-items: center;
-                      margin-bottom: 5px;
-                      margin-top: 7px;
-                      margin-left: 10px;
-                    }
-                    .custom-add-school-select .ant-checkbox-inner {
-                      width: 24px !important;
-                      height: 24px !important;
-                    }
-                    .custom-add-school-select .ant-checkbox-input {
-                      transform: scale(2);
-                    }
-                  `}</style>
+      .custom-add-school-select li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+        margin-top: 17px;
+        margin-left: 10px;
+      }
+    `}</style>
                   </Card>
                 </Col>
               </Row>
@@ -424,7 +431,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
             {/* Section 3: Mô tả giới thiệu */}
             <Col span={24}>
-              <Card title="School Introduction" bordered={false}>
+              <Card title="School Introduction"  >
                 <div className="text-gray-800" dangerouslySetInnerHTML={{ __html: form.getFieldValue("description") || "N/A" }} />
               </Card>
             </Col>

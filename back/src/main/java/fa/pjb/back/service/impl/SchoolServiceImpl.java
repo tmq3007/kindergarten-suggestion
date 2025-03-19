@@ -406,11 +406,13 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
     public SchoolDetailVO getDraft(User user) {
+        log.info("into getDraft service");
         Integer userId = user.getId();
         SchoolOwner so = schoolOwnerRepository.findWithSchoolAndDraftByUserId(userId).orElseThrow(UserNotFoundException::new);
         School school = so.getSchool();
         if (school == null) throw new SchoolNotFoundException();
         School draft = school.getDraft();
+        log.info("draft test: {}", draft.getId());
         return schoolMapper.toSchoolDetailVO(draft);
     }
 

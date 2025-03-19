@@ -32,12 +32,15 @@ public class SchoolOwnerController {
                 .build();
     }
 
-    @GetMapping("/draft/{userId}")
-    public ApiResponse<SchoolDetailVO> getSchoolDraftInfo(@PathVariable Integer userId) {
+    @GetMapping("/draft")
+    public ApiResponse<SchoolDetailVO> getSchoolDraftInfo(
+            @AuthenticationPrincipal User user
+    ) {
+        log.info("User draft: {}", user.toString());
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Get school information successfully.")
-                .data(schoolService.getSchoolDraftInfo(userId))
+                .data(schoolService.getDraft(user))
                 .build();
     }
 

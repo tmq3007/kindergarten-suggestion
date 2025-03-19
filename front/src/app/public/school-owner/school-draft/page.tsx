@@ -1,27 +1,42 @@
 "use client";
-import { Form, message } from "antd";
+import {Empty, Form, message} from "antd";
 import SchoolForm from "@/app/components/school/SchoolFormForSchoolOwner"; // Đường dẫn đến file SchoolForm.tsx
-import {useGetSchoolDraftOfSchoolOwnerQuery, useGetSchoolOfSchoolOwnerQuery } from "@/redux/services/schoolOwnerApi";
+import {
+    useGetDraftOfSchoolOwnerQuery,
+    useGetSchoolDraftOfSchoolOwnerQuery,
+    useGetSchoolOfSchoolOwnerQuery
+} from "@/redux/services/schoolOwnerApi";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { formatPhoneNumber } from "@/lib/util/phoneUtils";
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
-    ROLES,
+    ROLES, SCHOOL_STATUS_OPTIONS,
 } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import React, {useEffect} from "react";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
-import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
+import SchoolDraftSkeleton from "@/app/components/skeleton/SchoolDraftSkeleton";
 
-export default function SchoolFormPreview() {
+export default function SchoolDraft() {
     const [form] = Form.useForm();
     const router = useRouter();
     const user = useSelector((state: RootState) => state.user);
-    const role = user.role;
-    const userId = user.id;
+    const role = useSelector((state: RootState) => state.user?.role);
+
+    const hasDraft = user.hasDraft;
+    if (!hasDraft) {
+        return (
+            <div className={'h-full flex items-center justify-center'}>
+                <Empty/>
+            </div>
+        )
+    }
+    const {data, isLoading} = useGetSchoolDraftOfSchoolOwnerQuery(undefined,{
+        skip: !hasDraft,
+    });
 
     // Check role user
     const unauthorized = () => {
@@ -34,9 +49,10 @@ export default function SchoolFormPreview() {
     }
 
     // Get school data by user id
-    const { data, isError, isLoading } = useGetSchoolDraftOfSchoolOwnerQuery(Number(userId));
+   // const { data, isError, isLoading } = useGetSchoolDraftOfSchoolOwnerQuery();
     console.log("data in SchoolFormPreview:", data);
     const school = data?.data;
+    const draftStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
 
     useEffect(() => {
         if (school) {
@@ -75,12 +91,6 @@ export default function SchoolFormPreview() {
         }
     }, [school, form]);
 
-    useEffect(() => {
-        if (isError) {
-            message.error("Failed to load school details");
-        }
-    }, [isError]);
-
      const imageListFormatted = school?.imageList
         ? school.imageList.map((img: any) => ({
             url: img.url || img,
@@ -89,18 +99,21 @@ export default function SchoolFormPreview() {
         : [];
 
      if (isLoading) {
-        return <div>Loading school data...</div>;
+        return <div>
+
+            <SchoolDraftSkeleton/>
+        </div>;
     }
 
     return (
         <div style={{ padding: "20px" }}>
             <MyBreadcrumb
                 paths={[
-                    {label: "School Management", href: "/admin/management/school/school-list"},
-                    {label: "School Detail"},
+                    {label: "Home", href: "/public"},
+                    {label: "School Draft"},
                 ]}
             />
-            <SchoolManageTitle title={"School details"}/>
+            <SchoolManageTitle title={"School Draft"} schoolStatus={draftStatus!}/>
             <SchoolForm
                 form={form}
                 isReadOnly={false}
