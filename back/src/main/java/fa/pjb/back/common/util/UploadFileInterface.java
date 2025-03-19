@@ -1,4 +1,4 @@
-package fa.pjb.back.service.impl;
+package fa.pjb.back.common.util;
 
 @FunctionalInterface
 public interface UploadFileInterface<T, U, V, R> {

@@ -4,12 +4,13 @@ import {useParams, useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
 import {
     SchoolCreateDTO,
-    useAddSchoolMutation,
+    useAddSchoolMutation, useUpdateSchoolBySchoolOwnerMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation
 } from "@/redux/services/schoolApi";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
-import {formatErrorMessage, prepareSchoolAddData} from "@/lib/util/schoolUtils";
+import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
+import {updateHasDraft} from "@/redux/features/userSlice";
 
 const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     {
@@ -30,9 +31,12 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const router = useRouter();
     const params = useParams();
     const user = useSelector((state: RootState) => state.user);
+    const dispatch = useDispatch();
 
     const [updateSchoolStatusBySchoolOwner, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusBySchoolOwnerMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
+    const [updateSchoolBySO, {isLoading: isUpdatingBySO}] = useUpdateSchoolBySchoolOwnerMutation();
+
 
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
@@ -105,6 +109,18 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
 
     const handleUpdateSubmit = async () => {
         // Handle update submit logic here
+        console.log("Update by SO");
+        const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
+        if (!schoolData) return;
+        try {
+            await updateSchoolBySO({id: undefined, ...schoolData}).unwrap();
+            dispatch(updateHasDraft(true));
+            messageApi.success('School updated successfully!');
+            // getSchoolByIdRefetch();
+        } catch (error) {
+            console.log(error)
+            messageApi.error("Failed to update school. Please try again.");
+        }
     };
 
     const handleCancel = () => {
@@ -198,6 +214,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasUpdateSubmitButton &&
                     <Button htmlType="button"
                             onClick={handleUpdateSubmit}
+                            loading={isUpdatingBySO}
                             type={'primary'}>
                         Submit
                     </Button>

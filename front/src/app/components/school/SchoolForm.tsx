@@ -377,7 +377,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 tagRender={renderOwnerTag}
                                 filterOption={(input, option) => {
                                     const owner = (option as any)?.owner as SchoolOwnerVO;
-                                    return !!(
+                                    return (
                                         owner && (
                                             owner.fullname.toLowerCase().includes(input.toLowerCase()) ||
                                             owner.username.toLowerCase().includes(input.toLowerCase()) ||
@@ -449,7 +449,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             <MyEditor
                                 description={form.getFieldValue("description") || undefined}
                                 onChange={(value) => form.setFieldsValue({description: value})}
-                                isReadOnly={isReadOnly}
                             />
                         </Form.Item>
                         <Form.Item label="School image" name="image" valuePropName="fileList"
