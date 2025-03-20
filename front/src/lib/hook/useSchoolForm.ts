@@ -17,12 +17,9 @@ export default function useSchoolForm({data, isLoading}: SchoolFormData) {
         SCHOOL_STATUS_OPTIONS.find((s) => s.value === String(school?.status))?.label || undefined;
 
     const [form] = Form.useForm();
-    const [formLoaded, setFormLoaded] = useState(false);
 
     useEffect(() => {
         if (school) {
-            console.log('1. Loaded school data:', school);
-            console.log('2. Raw imageList:', school.imageList);
 
             form.setFieldsValue({
                 name: school.name || '',
@@ -44,11 +41,8 @@ export default function useSchoolForm({data, isLoading}: SchoolFormData) {
                 website: school.website || '',
                 image: school.imageList || [],
             });
-
-            console.log('3. Form updated with image:', form.getFieldValue('image'));
-            setFormLoaded(true);
         }
     }, [school, form]);
 
-    return {form, formLoaded, schoolStatus, school, isLoading};
+    return {form, schoolStatus, school, isLoading};
 }

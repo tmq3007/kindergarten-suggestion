@@ -4,7 +4,6 @@ import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
-import fa.pjb.back.common.exception._13xx_school.SchoolDraftNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
@@ -15,7 +14,6 @@ import fa.pjb.back.event.model.SchoolPublishedEvent;
 import fa.pjb.back.event.model.SchoolRejectedEvent;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.SchoolMapper;
@@ -187,22 +185,6 @@ public class SchoolServiceImpl implements SchoolService {
         } else {
             school.setSchoolOwners(new HashSet<>());
         }
-
-        if (isUpdate) {
-            // Delete old images
-            List<Media> oldMedias = mediaRepository.getAllBySchool(school);
-            if (!oldMedias.isEmpty()) {
-                for (Media media : oldMedias) {
-                    // Delete images from Google Drive
-                    FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
-                    if (deleteResponse.status() == 200) {
-                        oldMedias.remove(media);
-                    }
-                }
-                mediaRepository.saveAll(oldMedias);
-            }
-        }
-        return school;
     }
 
     private SchoolDetailVO processSchoolUpdate(SchoolDTO schoolDTO, List<MultipartFile> images, Byte status) {
@@ -255,14 +237,16 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
 
-    private School prepareSchoolData(SchoolDTO schoolDTO, User user, School oldSchool) {
+    private School prepareSchoolData(SchoolDTO schoolDTO, School oldSchool) {
+        boolean isUpdate = schoolDTO.id() != null;
+
         // Check if email already exists
-        if (schoolDTO.id() == null) {
-            if (checkEmailExists(schoolDTO.email())) {
+        if (isUpdate) {
+            if (checkEditingEmailExists(schoolDTO.email(), schoolDTO.id())) {
                 throw new EmailAlreadyExistedException("This email is already in use");
             }
         } else {
-            if (checkEditingEmailExists(schoolDTO.email(), schoolDTO.id())) {
+            if (checkEmailExists(schoolDTO.email())) {
                 throw new EmailAlreadyExistedException("This email is already in use");
             }
         }
@@ -270,19 +254,26 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolMapper.toSchool(schoolDTO, oldSchool);
         school.setPostedDate(LocalDate.now());
 
+        // Delete old images
+        if (isUpdate) {
+            List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+            List<Media> deleteMedias = new ArrayList<>();
+            if (!oldMedias.isEmpty()) {
+                for (Media media : oldMedias) {
+                    // Delete images from Google Drive
+                    FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
+                    log.info(String.valueOf(deleteResponse));
+                    if (deleteResponse.status() == 200) {
+                        deleteMedias.add(media);
+                        school.getImages().remove(media);
+                    }
+                }
+                mediaRepository.deleteAll(deleteMedias);
+            }
+        }
+
         validateAndSetAssociations(schoolDTO, school);
 
-        // Delete old images
-        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
-
-        if (!oldMedias.isEmpty()) {
-            for (Media media : oldMedias) {
-                // Delete images from Google Drive
-                FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
-            }
-            school.getImages().clear();
-            mediaRepository.deleteAllBySchool(school);
-        }
         return school;
     }
 
@@ -296,7 +287,7 @@ public class SchoolServiceImpl implements SchoolService {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         // Check if principal is an instance of User entity
-        if (!(principal instanceof User user)) {
+        if (!(principal instanceof User)) {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
 
@@ -304,12 +295,13 @@ public class SchoolServiceImpl implements SchoolService {
         School school = prepareSchoolData(schoolDTO, oldSchool);
         school.setStatus(curStatus);
 
+        schoolRepository.save(school);
+
         // Handle new uploaded images
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, school);
         }
         // Save the updated school data
-        schoolRepository.save(school);
 
         return schoolMapper.toSchoolDetailVO(school);
     }
@@ -481,10 +473,10 @@ public class SchoolServiceImpl implements SchoolService {
                 }
             }
 
-            case 6 -> {
+            case 6 ->
                 // Change to "Deleted" status
-                school.setStatus(preparedStatus);
-            }
+                    school.setStatus(preparedStatus);
+
 
             default -> throw new StatusNotExistException("Status does not exist");
 
@@ -536,7 +528,6 @@ public class SchoolServiceImpl implements SchoolService {
                 } else {
                     throw new AuthenticationFailedException("You do not have permission to publish the school");
                 }
-
             }
 
             case 5 -> {
