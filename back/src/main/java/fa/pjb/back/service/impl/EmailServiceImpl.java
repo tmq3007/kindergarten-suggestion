@@ -221,19 +221,18 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendRequestCounsellingReminder(String to, String name, String schoolId, String dueDateString, String schoolName, String detailsLink) throws Exception {
+    public void sendRequestCounsellingReminder(String to, String name, int totalRequest, String dueDateString , String detailsLink) throws Exception {
         try {
             Map<String, Object> model = new HashMap<>();
             model.put("name", name);
-            model.put("inquiry", schoolId);
+            model.put("totalRequest", totalRequest);
             model.put("dueDateString", dueDateString);
-            model.put("schoolName", schoolName);
             model.put("detailsLink", detailsLink); // Thêm detailsLink vào model
             // Send email
             sendEmailWithTemplate(to, "no-reply-email-KTS-system <Request counselling reminder>", "request-counselling-reminder", model);
         } catch (MessagingException | IOException | TemplateException e) {
-            log.error("Error sending request counselling reminder to {}: {}", to, e.getMessage(), e); // Thêm log lỗi
-            throw e; // Ném lại ngoại lệ để tầng trên xử lý
+            log.error("Error sending request counselling reminder to {}: {}", to, e.getMessage(), e);
+            throw e;
         }
     }
 }
