@@ -4,13 +4,14 @@ import {useParams, useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
 import {
     SchoolCreateDTO,
-    useAddSchoolMutation, useUpdateSchoolBySchoolOwnerMutation,
+    useAddSchoolMutation, useSaveSchoolBySchoolOwnerMutation, useUpdateSchoolBySchoolOwnerMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation
 } from "@/redux/services/schoolApi";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
 import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
 import {updateHasDraft} from "@/redux/features/userSlice";
+import {useGetDraftOfSchoolOwnerQuery, useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 
 const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     {
@@ -32,10 +33,14 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const params = useParams();
     const user = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
+    const hasDraft = user.hasDraft;
+    const {data, refetch} = useGetSchoolOfSchoolOwnerQuery();
+    const schoolStatus = data?.data.status;
 
     const [updateSchoolStatusBySchoolOwner, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusBySchoolOwnerMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
     const [updateSchoolBySO, {isLoading: isUpdatingBySO}] = useUpdateSchoolBySchoolOwnerMutation();
+    const [saveSchoolBySO, {isLoading: isSavingBySO}] = useSaveSchoolBySchoolOwnerMutation();
 
 
     const [messageApi, messageContextHolder] = message.useMessage();
@@ -97,10 +102,24 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 },
             );
         }
-    };
+    }
 
-    const handleSave = () => {
+    const handleSave = async () => {
         // Handle save logic here
+        console.log("Save by SO");
+        const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
+        if (!schoolData) return;
+        try {
+            await saveSchoolBySO({id: undefined, ...schoolData}).unwrap();
+            refetch();
+            if (!hasDraft) {
+                dispatch(updateHasDraft(true));
+            }
+            messageApi.success('School saved successfully!');
+        } catch (error) {
+            console.log(error)
+            messageApi.error("Failed to save school. Please try again.");
+        }
     };
 
     const handleCreateSubmit = async () => {
@@ -114,9 +133,11 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         if (!schoolData) return;
         try {
             await updateSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            dispatch(updateHasDraft(true));
+            await refetch();
+            if (!hasDraft) {
+                dispatch(updateHasDraft(true));
+            }
             messageApi.success('School updated successfully!');
-            // getSchoolByIdRefetch();
         } catch (error) {
             console.log(error)
             messageApi.error("Failed to update school. Please try again.");
@@ -125,6 +146,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
 
     const handleCancel = () => {
         // Handle cancel logic here
+        router.push('/public/school-owner');
     };
 
     const handleConfirmAction = async () => {
@@ -143,6 +165,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     messageApi.success('School deleted successfully!');
                     break;
             }
+            await refetch();
             setModalVisible(false);
             setActiveButton(null);
         } catch (error) {
@@ -199,11 +222,16 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         Save
                     </Button>
                 }
-                {hasSaveButton &&
-                    <Button htmlType="button" onClick={handleSave} variant="outlined" color="primary">
+                {hasSaveButton && String(schoolStatus) !== "1" && (
+                    <Button htmlType="button"
+                            onClick={handleSave}
+                            variant="outlined"
+                            color="primary"
+                            loading={isSavingBySO}
+                    >
                         Save
                     </Button>
-                }
+                )}
                 {hasCreateSubmitButton &&
                     <Button htmlType="button"
                             type="primary"
@@ -211,14 +239,16 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         Submit
                     </Button>
                 }
-                {hasUpdateSubmitButton &&
-                    <Button htmlType="button"
-                            onClick={handleUpdateSubmit}
-                            loading={isUpdatingBySO}
-                            type={'primary'}>
+                {hasUpdateSubmitButton && String(schoolStatus) !== "1" && (
+                    <Button
+                        htmlType="button"
+                        onClick={handleUpdateSubmit}
+                        loading={isUpdatingBySO}
+                        type="primary"
+                    >
                         Submit
                     </Button>
-                }
+                )}
                 {hasDeleteButton &&
                     <Button
                         htmlType="button"
