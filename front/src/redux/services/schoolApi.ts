@@ -305,6 +305,19 @@ export const schoolApi = createApi({
             invalidatesTags: ["School"],
         }),
 
+        saveSchoolBySchoolOwner: build.mutation<ApiResponse<SchoolDetailVO>, SchoolUpdateDTO>({
+            query: (schoolUpdateDTO) => {
+                const formData = createSchoolFormData(schoolUpdateDTO);
+                return {
+                    url: "/school/save/by-so",
+                    method: "POST",
+                    body: formData,
+                    formData: true,
+                };
+            },
+            invalidatesTags: ["School"],
+        }),
+
         updateSchoolStatusByAdmin: build.mutation<ApiResponse<void>, ChangeSchoolStatusDTO>({
             query: (changeSchoolStatusDTO) => ({
                 url: `/school/change-status/by-admin`,
@@ -348,6 +361,7 @@ export const {
     useCheckEditSchoolEmailMutation,
     useUpdateSchoolByAdminMutation,
     useUpdateSchoolBySchoolOwnerMutation,
+    useSaveSchoolBySchoolOwnerMutation,
     useUpdateSchoolStatusByAdminMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation,
     useGetSchoolListQuery,

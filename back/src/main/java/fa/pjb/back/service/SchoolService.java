@@ -16,8 +16,6 @@ import java.util.List;
 public interface SchoolService {
     SchoolDetailVO getSchoolInfo(Integer schoolId);
 
-    SchoolDetailVO getSchoolDraftInfo(Integer schoolId);
-
     Page<SchoolListVO> getAllSchools(String name, String province, String district, String street,
                                      String email, String phone, Pageable pageable);
 
@@ -32,6 +30,8 @@ public interface SchoolService {
     SchoolDetailVO updateSchoolByAdmin(SchoolDTO schoolDTO, List<MultipartFile> images);
 
     SchoolDetailVO updateSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images);
+
+    SchoolDetailVO saveSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images);
 
     void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO);
 
