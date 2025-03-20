@@ -1,8 +1,12 @@
 'use client'
-import React, { useEffect, useRef, useState } from 'react';
-import { Checkbox, Collapse, Form, Input, InputNumber, Select, Upload, UploadFile } from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
+import {Card, Carousel, Checkbox, Col, Collapse, Form, Input, InputNumber, Row, Select, UploadFile} from 'antd';
 import MyEditor from "@/app/components/common/MyEditor";
-import { ExpectedSchool, useLazyCheckSchoolEmailQuery, useLazySearchSchoolOwnersForAddSchoolQuery, useSearchExpectedSchoolQuery } from '@/redux/services/schoolApi';
+import {
+    ExpectedSchool,
+    useLazySearchSchoolOwnersForAddSchoolQuery,
+    useSearchExpectedSchoolQuery
+} from '@/redux/services/schoolApi';
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
@@ -14,13 +18,28 @@ import SchoolFormButton from "@/app/components/school/SchoolFormButton";
 import PhoneInput from '../common/PhoneInput';
 import AddressInput from '../common/AddressInput';
 import EmailInput from '../common/EmailInput';
-import { ImageUpload } from '../common/ImageUploader';
+import {ImageUpload} from '../common/ImageUploader';
 import clsx from "clsx";
-import {  MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { SchoolOwnerVO } from '@/redux/services/schoolOwnerApi';
-
+import {
+    BankOutlined,
+    BookOutlined,
+    CalendarOutlined,
+    DollarOutlined,
+    EnvironmentOutlined,
+    GlobalOutlined,
+    MailOutlined,
+    PhoneOutlined,
+    ToolOutlined,
+    UserOutlined
+} from "@ant-design/icons";
+import {useSelector} from 'react-redux';
+import {RootState} from '@/redux/store';
+import {SchoolOwnerVO} from '@/redux/services/schoolOwnerApi';
+import school1 from '@public/school1.jpg'
+import school2 from '@public/school2.jpg'
+import school3 from '@public/school3.jpg'
+import school4 from '@public/school4.jpg'
+import school5 from '@public/school5.jpg'
 const {Option} = Select;
 const {Panel} = Collapse;
 
@@ -44,7 +63,8 @@ interface SchoolFieldType {
     // Facilities and Utilities (Checkbox Groups)
     facilities?: number[];
     utilities?: number[];
-    description?: string; // School introduction
+    // School introduction
+    description?: string;
     // File Upload
     image?: UploadFile[];
     schoolOwners?: string[]; // Changed to string[] to match Select values
@@ -71,7 +91,16 @@ interface SchoolFormFields {
     schoolId?: number;
     isEdit?: boolean;
     formLoaded?: boolean;
+    isDetailPage?: boolean;
 }
+
+const images = [
+    school1.src,
+    school2.src,
+    school3.src,
+    school4.src,
+    school5.src,
+];
 
 const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     isReadOnly,
@@ -93,20 +122,32 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     triggerCheckEmail,
                                                     schoolId,
                                                     isEdit,
-                                                    formLoaded = false
+                                                    formLoaded = false,
+                                                    isDetailPage,
                                                 }) => {
     const [form] = Form.useForm(externalForm);
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
     const user = useSelector((state: RootState) => state.user);
 
+    const [mainImage, setMainImage] = useState(imageList[0]?.url || images[0]); // Default to first image
+    const handleThumbnailClick = (index: number) => {
+        setMainImage(imageList[index]?.url || images[index]);
+    };
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
-
     const [schoolOptions, setSchoolOptions] = useState<{ label: string; value: string }[]>([]);
-    const [ownerOptions, setOwnerOptions] = useState<{ label: React.ReactNode; value: string; owner: SchoolOwnerVO }[]>([]);
+    const [ownerOptions, setOwnerOptions] = useState<{
+        label: React.ReactNode;
+        value: string;
+        owner: SchoolOwnerVO
+    }[]>([]);
 
-    const { data: expectedSchoolData, error: expectedSchoolError, isLoading: isLoadingExpectedSchool } = useSearchExpectedSchoolQuery({ id: Number(user.id) });
+    const {
+        data: expectedSchoolData,
+        error: expectedSchoolError,
+        isLoading: isLoadingExpectedSchool
+    } = useSearchExpectedSchoolQuery({id: Number(user.id)});
     const [triggerSearchSchoolOwners, searchSchoolOwnersResult] = useLazySearchSchoolOwnersForAddSchoolQuery();
     const schoolNameValue = Form.useWatch('name', form);
 
@@ -114,29 +155,29 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     const renderOwnerOption = (owner: SchoolOwnerVO) => (
         <div className="py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center text-sm">
-                <UserOutlined className="mr-2 text-blue-500" />
+                <UserOutlined className="mr-2 text-blue-500"/>
                 <span className="font-medium text-gray-800">{owner.fullname}</span>
                 <span className="ml-2 text-gray-500">(@{owner.username})</span>
             </div>
             <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <MailOutlined className="mr-2 text-gray-400" />
+                <MailOutlined className="mr-2 text-gray-400"/>
                 {owner.email}
             </div>
             <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <PhoneOutlined className="mr-2 text-gray-400" />
+                <PhoneOutlined className="mr-2 text-gray-400"/>
                 {owner.phone}
             </div>
         </div>
     );
     // Custom render for selected tags (disable close for logged-in user)
     const renderOwnerTag = (props: any) => {
-        const { label, value, closable, onClose } = props;
+        const {label, value, closable, onClose} = props;
         const owner = ownerOptions.find((opt) => opt.value === value)?.owner;
         const isCurrentUser = owner?.userId === Number(user.id); // Compare with userId
 
         return (
             <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1 mr-1 mb-1">
-                <UserOutlined className="text-blue-500 mr-1" />
+                <UserOutlined className="text-blue-500 mr-1"/>
                 <span>{owner?.username || 'Unknown'} {isCurrentUser && '(You)'}</span>
                 {!isCurrentUser && closable && (
                     <span
@@ -170,7 +211,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
             const currentOwners = form.getFieldValue('schoolOwners') || [];
             const userOwnerId = owners.find(owner => owner.owner.userId === Number(user.id))?.value;
             if (userOwnerId && !currentOwners.includes(userOwnerId)) {
-                form.setFieldsValue({ schoolOwners: [...currentOwners, userOwnerId] });
+                form.setFieldsValue({schoolOwners: [...currentOwners, userOwnerId]});
             }
         } catch (error) {
             console.error('Error fetching school owners:', error);
@@ -182,13 +223,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
         const userOwnerId = ownerOptions.find(opt => opt.owner.userId === Number(user.id))?.value;
         if (userOwnerId && !selectedOwners.includes(userOwnerId) && ownerOptions.some(opt => opt.owner.userId === Number(user.id))) {
             // Prevent deselection of logged-in user
-            form.setFieldsValue({ schoolOwners: [...selectedOwners, userOwnerId] });
+            form.setFieldsValue({schoolOwners: [...selectedOwners, userOwnerId]});
         } else {
-            form.setFieldsValue({ schoolOwners: selectedOwners });
+            form.setFieldsValue({schoolOwners: selectedOwners});
         }
     };
     useEffect(() => {
-        handleSchoolNameChange(schoolNameValue).then(r => {});
+        handleSchoolNameChange(schoolNameValue).then(r => {
+        });
     }, [schoolNameValue]);
 
     useEffect(() => {
@@ -200,14 +242,292 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                 }))
             );
         }
-    }, [expectedSchoolData]);
+    }, [expectedSchoolData])
+
+
+    if (isDetailPage) {
+        return (
+            <div className="mx-auto container px-4 sm:px-6 lg:px-8">
+                <Form<SchoolFieldType> size="middle" form={form} className="space-y-6">
+                    <Row gutter={[16, 16]}>
+                        {/* Section 1: School Images */}
+                        <Col xs={24}>
+                            <Card title="School Images" bordered={false} className="w-full">
+                                <div className="mb-6 flex justify-center items-center w-full h-[150px] xs:h-[200px] sm:h-[250px] md:h-[350px] lg:h-[450px]">
+                                    <img
+                                        src={mainImage}
+                                        alt="Main Display"
+                                        className="w-full h-full object-contain rounded-lg transition-all duration-500"
+                                    />
+                                </div>
+
+                                <Carousel
+                                    dots={true}
+                                    autoplaySpeed={2000}
+                                    autoplay={true}
+                                    afterChange={handleThumbnailClick}
+                                    infinite={true}
+                                    slidesToShow={3}
+                                    slidesToScroll={1}
+                                    className={clsx("mb-4 flex justify-center items-center w-full")}
+                                    draggable={true}
+                                    centerMode={true}
+                                    centerPadding="0px"
+                                    responsive={[
+                                        {
+                                            breakpoint: 1024,
+                                            settings: {
+                                                slidesToShow: 3,
+                                                centerMode: true,
+                                                centerPadding: "0px",
+                                            },
+                                        },
+                                        {
+                                            breakpoint: 768,
+                                            settings: {
+                                                slidesToShow: 2,
+                                                centerMode: true,
+                                                centerPadding: "0px",
+                                            },
+                                        },
+                                        {
+                                            breakpoint: 480,
+                                            settings: {
+                                                slidesToShow: 1,
+                                                centerMode: true,
+                                                centerPadding: "0px",
+                                            },
+                                        },
+                                        {
+                                            breakpoint: 360,
+                                            settings: {
+                                                slidesToShow: 1,
+                                                centerMode: true,
+                                                centerPadding: "0px",
+                                            },
+                                        },
+                                    ]}
+                                >
+                                    {imageList.length > 0
+                                        ? imageList.map((img, index) => (
+                                            <div
+                                                key={index}
+                                                onClick={() => handleThumbnailClick(index)}
+                                                className="cursor-pointer px-1 !flex !justify-center !items-center h-full w-full"
+                                            >
+                                                <img
+                                                    src={img.url}
+                                                    alt={`Thumbnail ${index + 1}`}
+                                                    className="h-12 sm:h-16 md:h-20 lg:h-24 object-cover rounded-lg transition-all duration-500 max-w-[80px] sm:max-w-[100px] md:max-w-[120px] lg:max-w-[150px]"
+                                                />
+                                            </div>
+                                        ))
+                                        : images.map((src, index) => (
+                                            <div
+                                                key={index}
+                                                onClick={() => handleThumbnailClick(index)}
+                                                className="cursor-pointer px-1 flex justify-center items-center h-full w-full"
+                                            >
+                                                <img
+                                                    src={src}
+                                                    alt={`Thumbnail ${index + 1}`}
+                                                    className="h-12 sm:h-16 md:h-20 lg:h-24 object-cover rounded-lg transition-all duration-500 max-w-[80px] sm:max-w-[100px] md:max-w-[120px] lg:max-w-[150px]"
+                                                />
+                                            </div>
+                                        ))}
+                                </Carousel>
+                            </Card>
+                        </Col>
+
+
+                        {/* Section 2: Basic Information and Facilities & Utilities */}
+                        <Col xs={24}>
+                            <Row gutter={[16, 16]}>
+                                {/* Left Column: Basic Information */}
+                                <Col xs={24} lg={12}>
+                                    <Card title="Basic Information" className="w-full min-h-[430px]">
+                                        <div className="space-y-4">
+                                            <h2 className="text-2xl font-bold">
+                                                {form.getFieldValue("name") || "Unknown School"}
+                                            </h2>
+                                            <div className="flex items-center flex-wrap">
+                                                <EnvironmentOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">Address:</span>
+                                                <span className="ml-2">
+                                            {[
+                                                form.getFieldValue("street"),
+                                                form.getFieldValue("ward"),
+                                                form.getFieldValue("district"),
+                                                form.getFieldValue("province"),
+                                            ]
+                                                .filter(Boolean)
+                                                .join(", ") || "N/A"}
+                                        </span>
+                                            </div>
+                                            <div className="flex items-center flex-wrap">
+                                                <MailOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">Email:</span>
+                                                <span className="ml-2">{form.getFieldValue("email") || "N/A"}</span>
+                                            </div>
+                                            <div className="flex items-center flex-wrap">
+                                                <PhoneOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">Contact:</span>
+                                                <span className="ml-2">{form.getFieldValue("phone") || "N/A"}</span>
+                                            </div>
+                                            <div className="flex items-center flex-wrap">
+                                                <GlobalOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">Website:</span>
+                                                <span className="ml-2 text-blue-500">
+                                            <a
+                                                href={form.getFieldValue("website")}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {form.getFieldValue("website") || "N/A"}
+                                            </a>
+                                        </span>
+                                            </div>
+                                            <div className="flex items-center flex-wrap">
+                                                <DollarOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">Tuition fee:</span>
+                                                <span className="ml-2">
+                                            From {form.getFieldValue("feeFrom")?.toLocaleString() || "N/A"} VND/month
+                                                    {form.getFieldValue("feeTo")
+                                                        ? ` to ${form.getFieldValue("feeTo")?.toLocaleString()} VND/month`
+                                                        : ""}
+                                        </span>
+                                            </div>
+                                            <div className="flex items-center flex-wrap">
+                                                <CalendarOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">Admission age:</span>
+                                                <span className="ml-2">
+                                            {CHILD_RECEIVING_AGE_OPTIONS.find(
+                                                (opt) => opt.value === form.getFieldValue("receivingAge")
+                                            )?.label || "N/A"}
+                                        </span>
+                                            </div>
+                                            <div className="flex items-center flex-wrap">
+                                                <BankOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">School type:</span>
+                                                <span className="ml-2">
+                                            {SCHOOL_TYPE_OPTIONS.find(
+                                                (opt) => opt.value === form.getFieldValue("schoolType")
+                                            )?.label || "N/A"}
+                                        </span>
+                                            </div>
+                                            <div className="flex items-center flex-wrap">
+                                                <BookOutlined className="mr-2 text-gray-500"/>
+                                                <span className="font-medium">Education method:</span>
+                                                <span className="ml-2">
+                                            {EDUCATION_METHOD_OPTIONS.find(
+                                                (opt) => opt.value === form.getFieldValue("educationMethod")
+                                            )?.label || "N/A"}
+                                        </span>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </Col>
+
+                                {/* Right Column: Facilities & Utilities */}
+                                {form.getFieldValue("facilities")?.length > 0 ||
+                                form.getFieldValue("utilities")?.length > 0 ? (
+                                    <Col xs={24} lg={12}>
+                                        <Card title="Facilities & Utilities" className="w-full min-h-[442px]">
+                                            <div className="space-y-6">
+                                                {form.getFieldValue("facilities")?.length > 0 && (
+                                                    <Form.Item
+                                                        label={
+                                                            <span className="flex items-center">
+                                                                 <BookOutlined className="mr-2"/>
+                                                                 Facilities
+                                                            </span>
+                                                        }
+                                                        name="facilities"
+                                                        labelCol={{className: "text-2xl font-bold"}}
+                                                    >
+                                                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                                            {FACILITY_OPTIONS.filter((option) =>
+                                                                form.getFieldValue("facilities")?.includes(option.value)
+                                                            ).map((option) => (
+                                                                <li key={option.value}
+                                                                    className="flex items-center mb-1 ml-2">
+                                                                    {option.label}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </Form.Item>
+                                                )}
+
+                                                {form.getFieldValue("utilities")?.length > 0 && (
+                                                    <Form.Item
+                                                        label={
+                                                            <span className="flex items-center">
+                                                                <ToolOutlined className="mr-2"/>
+                                                                Utilities
+                                                            </span>
+                                                        }
+                                                        name="utilities"
+                                                        labelCol={{className: "text-2xl font-bold"}}
+                                                    >
+                                                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                                            {UTILITY_OPTIONS.filter((option) =>
+                                                                form.getFieldValue("utilities")?.includes(option.value)
+                                                            ).map((option) => (
+                                                                <li key={option.value}
+                                                                    className="flex items-center mb-1 ml-2">
+                                                                    {option.label}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </Form.Item>
+                                                )}
+                                            </div>
+                                        </Card>
+                                    </Col>
+                                ) : null}
+                            </Row>
+                        </Col>
+
+                        {/* Section 3: School Introduction */}
+                        <Col xs={24}>
+                            <Card title="School Introduction" className="w-full">
+                                <div
+                                    className="text-gray-800"
+                                    dangerouslySetInnerHTML={{__html: form.getFieldValue("description") || "N/A"}}
+                                />
+                                <div className={'py-4'}>
+                                    {actionButtons}
+                                    <SchoolFormButton
+                                        form={form}
+                                        hasCancelButton={hasCancelButton}
+                                        hasSaveButton={hasSaveButton}
+                                        hasCreateSubmitButton={hasCreateSubmitButton}
+                                        hasUpdateSubmitButton={hasUpdateSubmitButton}
+                                        hasCreateSaveButton={hasCreateSaveButton}
+                                        hasDeleteButton={hasDeleteButton}
+                                        hasEditButton={hasEditButton}
+                                        hasRejectButton={hasRejectButton}
+                                        hasApproveButton={hasApproveButton}
+                                        hasPublishButton={hasPublishButton}
+                                        hasUnpublishButton={hasUnpublishButton}
+                                        emailInputRef={emailInputRef}
+                                        phoneInputRef={phoneInputRef}
+                                    />
+                                </div>
+                            </Card>
+                        </Col>
+                    </Row>
+                </Form>
+            </div>
+        );
+    }
 
     return (
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form<SchoolFieldType>
                 size='middle'
                 form={form}
-                labelCol={{ span: 6, className: 'font-bold' }}
+                labelCol={{span: 6, className: 'font-bold'}}
                 labelAlign='left'
                 labelWrap
                 layout="horizontal"
@@ -219,7 +539,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             tooltip="This must match the expected school when creating School Owner account"
                             name="name"
                             label="School Name"
-                            rules={[{ required: true, message: 'Please enter school name' }]}
+                            rules={[{required: true, message: 'Please enter school name'}]}
                         >
                             {isEdit ? (
                                 <Input
@@ -238,22 +558,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     disabled={isReadOnly}
                                 />
                             )}
-                            {/* <Select
-                                showSearch
-                                placeholder="Search and select a school..."
-                                options={schoolOptions}
-                                loading={isLoadingExpectedSchool}
-                                filterOption={(input, option) =>
-                                    !!(option && option.label.toLowerCase().includes(input.toLowerCase()))
-                                }
-                                disabled={isReadOnly}
-                            /> */}
                         </Form.Item>
 
                         <Form.Item
                             name="schoolType"
                             label="School Type"
-                            rules={[{ required: true, message: 'Please select school type' }]}
+                            rules={[{required: true, message: 'Please select school type'}]}
                         >
                             <Select
                                 placeholder="Select a type..."
@@ -286,7 +596,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Form.Item
                             name="receivingAge"
                             label="Child receiving age"
-                            rules={[{ required: true, message: 'Please select age range' }]}
+                            rules={[{required: true, message: 'Please select age range'}]}
                         >
                             <Select
                                 placeholder="Select a category..."
@@ -377,7 +687,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 tagRender={renderOwnerTag}
                                 filterOption={(input, option) => {
                                     const owner = (option as any)?.owner as SchoolOwnerVO;
-                                    return !!(
+                                    return (
                                         owner && (
                                             owner.fullname.toLowerCase().includes(input.toLowerCase()) ||
                                             owner.username.toLowerCase().includes(input.toLowerCase()) ||
@@ -386,7 +696,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         )
                                     );
                                 }}
-                                dropdownStyle={{ minWidth: 300 }}
+                                dropdownStyle={{minWidth: 300}}
                                 notFoundContent={
                                     searchSchoolOwnersResult.isFetching
                                         ? "Loading..."
@@ -401,7 +711,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             name="website"
                             label="School Website"
                         >
-                            <Input placeholder="Enter School Website here..." readOnly={isReadOnly} />
+                            <Input placeholder="Enter School Website here..." readOnly={isReadOnly}/>
                         </Form.Item>
                     </div>
                     <div>
@@ -449,7 +759,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             <MyEditor
                                 description={form.getFieldValue("description") || undefined}
                                 onChange={(value) => form.setFieldsValue({description: value})}
-                                isReadOnly={isReadOnly}
                             />
                         </Form.Item>
                         <Form.Item label="School image" name="image" valuePropName="fileList"
@@ -469,7 +778,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                 </div>
 
                 {/* Thêm Form.Item cho các nút ở đáy form */}
-                <Form.Item style={{ textAlign: 'center', marginTop: '16px' }}>
+                <Form.Item style={{textAlign: 'center', marginTop: '16px'}}>
                     {actionButtons}
                     <SchoolFormButton
                         form={form}

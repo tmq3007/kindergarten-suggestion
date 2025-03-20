@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface SchoolRepository extends JpaRepository<School, Integer> {
@@ -17,19 +16,32 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId")
+    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId AND s.originalSchool IS NULL")
     boolean existsByEmailExcept(@Param("email") String email, @Param("schoolId") Integer schoolId);
 
     @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId")
     Optional<School> findSchoolByUserId(@Param("userId") Integer userId);
 
-    @Query("SELECT s FROM School s WHERE " +
+    @Query("SELECT s FROM School s WHERE s.draft.id = :schoolId")
+    Optional<School> findSchoolDraftBySchoolId(@Param("schoolId") Integer schoolId);
+
+    @Query(value = "SELECT s FROM School s " +
+            "LEFT JOIN FETCH s.originalSchool " +
+            "LEFT JOIN FETCH s.draft " +
+            "WHERE " +
             "(:name IS NULL OR s.name LIKE %:name%) AND " +
             "(:province IS NULL OR s.province LIKE %:province%) AND " +
             "(:district IS NULL OR s.district LIKE %:district%) AND " +
             "(:street IS NULL OR s.street LIKE %:street%) AND " +
             "(:email IS NULL OR s.email LIKE %:email%) AND " +
-            "(:phone IS NULL OR s.phone LIKE %:phone%)")
+            "(:phone IS NULL OR s.phone LIKE %:phone%)",
+            countQuery = "SELECT COUNT(s) FROM School s WHERE " +
+                    "(:name IS NULL OR s.name LIKE %:name%) AND " +
+                    "(:province IS NULL OR s.province LIKE %:province%) AND " +
+                    "(:district IS NULL OR s.district LIKE %:district%) AND " +
+                    "(:street IS NULL OR s.street LIKE %:street%) AND " +
+                    "(:email IS NULL OR s.email LIKE %:email%) AND " +
+                    "(:phone IS NULL OR s.phone LIKE %:phone%)")
     Page<School> findSchools(
             @Param("name") String name,
             @Param("province") String province,
@@ -38,5 +50,4 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
             @Param("email") String email,
             @Param("phone") String phone,
             Pageable pageable);
-
 }

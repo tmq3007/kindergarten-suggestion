@@ -2,7 +2,7 @@ package fa.pjb.back.service;
 
 import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.model.vo.FileUploadVO;
-import fa.pjb.back.service.impl.UploadFileInterface;
+import fa.pjb.back.common.util.UploadFileInterface;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;

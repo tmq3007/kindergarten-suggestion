@@ -1,5 +1,6 @@
 package fa.pjb.back.model.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -16,7 +17,6 @@ import java.util.Set;
 @Builder
 @ValidFeeRange
 public record SchoolDTO(
-
         Integer id,
 
         @NotBlank(message = "School name is required")

@@ -20,7 +20,6 @@ export default function MyEditor({ description, onChange, isReadOnly }: MyEditor
     };
 
     return (
-       <div className={isReadOnly ? "pointer-events-none" : ""}>
          <Editor
              apiKey="yef1yooqlyelh8v19e2boyww0ulgh6czrqafw4sylq03z8dw"
              init={{
@@ -35,6 +34,5 @@ export default function MyEditor({ description, onChange, isReadOnly }: MyEditor
              value={content}
              onEditorChange={handleEditorChange}
          />
-       </div>
     );
 }

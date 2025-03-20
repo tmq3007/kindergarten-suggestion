@@ -16,7 +16,6 @@ export const schoolOwnerApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["School"],
     endpoints: (build) => ({
-        // Get school list
         getSchoolOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
             query: () => ({
                 url: `/school-owner/school-info`,
@@ -24,7 +23,26 @@ export const schoolOwnerApi = createApi({
             }),
             providesTags: ["School"],
         }),
+
+        getDraftOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
+            query: () => ({
+                url: `/school-owner/draft-info`,
+                method: "GET",
+            }),
+            providesTags: ["School"],
+        }),
+        getSchoolDraftOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
+            query: (  ) => ({
+                url: `/school-owner/draft`,
+                method: "GET",
+            }),
+            providesTags: ["School"],
+        }),
     }),
 });
 
-export const {useGetSchoolOfSchoolOwnerQuery} = schoolOwnerApi
+export const {
+    useGetSchoolOfSchoolOwnerQuery,
+    useGetDraftOfSchoolOwnerQuery,
+    useGetSchoolDraftOfSchoolOwnerQuery
+} = schoolOwnerApi

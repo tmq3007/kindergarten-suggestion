@@ -35,9 +35,12 @@ export const userSlice = createSlice({
             state.hasDraft = action.payload.hasDraft;
         },
         resetUser: () => initialState,
+        updateHasDraft: (state, action: PayloadAction<boolean>) => {
+            state.hasDraft = action.payload
+        },
     }
 })
 
-export const {updateUser, resetUser} = userSlice.actions;
+export const {updateUser, resetUser, updateHasDraft} = userSlice.actions;
 
 export default userSlice.reducer;

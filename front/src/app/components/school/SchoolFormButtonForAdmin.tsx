@@ -12,6 +12,7 @@ import {
 import {useSelector} from "react-redux";
 import {ButtonGroupProps} from "./SchoolFormButton";
 import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
+import {useGetDraftOfSchoolOwnerQuery, useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -34,12 +35,12 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
     const [updateSchoolByAdmin, {isLoading: isUpdating}] = useUpdateSchoolByAdminMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
-    const [messageApi, messageContextHolder] = message.useMessage();
-    const [api, notificationContextHolder] = notification.useNotification();
     const { refetch : getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
     const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [messageApi, messageContextHolder] = message.useMessage();
+    const [api, notificationContextHolder] = notification.useNotification();
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {

@@ -198,40 +198,6 @@ const RatingsDashboard = () => {
         return <RatingSkeleton />;
     }
 
-    if (error) {
-        const errorData = (error as ApiError)?.data;
-        if (errorData?.code === "1300" && errorData?.message === "Review not found") {
-            return (
-                <div className="min-h-screen bg-gray-50 p-6">
-                    <MyBreadcrumb
-                        paths={[
-                            { label: "School Management", href: "/admin/management/school/school-list" },
-                            { label: "School List", href: "/admin/management/school/school-list" },
-                            { label: "School Detail", href: `/admin/management/school/school-detail/${schoolId}` },
-                            { label: "Ratings & Feedback" },
-                        ]}
-                    />
-                    <SchoolManageTitle title={"Ratings & Feedback"} />
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex gap-4 mb-8 justify-center"
-                    >
-                        <RangePicker onChange={handleDateChange} value={dateRange} className="w-64" />
-                        <Button type="primary" icon={<SyncOutlined />} onClick={handleRefresh}>
-                            Refresh
-                        </Button>
-                    </motion.div>
-                    <NoData />
-                </div>
-            );
-        }
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Text type="danger">Error loading reviews: {JSON.stringify(error)}</Text>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">

@@ -32,4 +32,16 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     List<ExpectedSchoolVO> getExpectedSchoolByUserId(Integer id);
 
     Set<SchoolOwner> findAllByIdIn(Set<Integer> ids);
+
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM SchoolOwner s WHERE s.business_registration_number = :businessLicense")
+    boolean existsSchoolOwnerByBusinessRegistrationNumber( String businessLicense);
+
+    @Query("SELECT DISTINCT so FROM SchoolOwner so " +
+            "LEFT JOIN FETCH so.school s " +
+            "LEFT JOIN FETCH s.draft d " +
+            "LEFT JOIN FETCH so.images i " +  // FETCH images để tránh lỗi LazyInitializationException
+            "WHERE so.user.id = :userId")
+    Optional<SchoolOwner> findWithSchoolAndDraftByUserId(@Param("userId") Integer userId);
+
+
 }

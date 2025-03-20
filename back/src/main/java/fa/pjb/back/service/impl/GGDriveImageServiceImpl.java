@@ -11,6 +11,7 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import fa.pjb.back.common.util.UploadFileInterface;
 import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.model.vo.FileUploadVO;
@@ -105,9 +106,6 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
             return new FileUploadVO(500, "Failed to connect to Google Drive or IO problem", 0L, "Failed", "", e.toString());
         } finally {
             boolean deleted = file.delete() && Objects.requireNonNull(resizedFile).delete();
-            if (!deleted) {
-                log.warn("Original file deletion failed: {}", file.getName());
-            }
         }
     }
 
