@@ -272,28 +272,29 @@ public class SchoolServiceImpl implements SchoolService {
         log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // Kiểm tra nếu người dùng không phải là School Owner
+
         if (!(principal instanceof User user)) {
             throw new AuthenticationFailedException("Cannot authenticate");
         }
 
         log.info("User: {}", user.toString());
 
-        // Lấy SchoolOwner từ user ID
+
         SchoolOwner schoolOwner = schoolOwnerRepository
                 .findWithSchoolAndDraftByUserId(user.getId())
                 .orElseThrow(UserNotFoundException::new);
 
-        // Kiểm tra nếu school tồn tại
+        // Get the current school
         School currentSchool = schoolOwner.getSchool();
         if (currentSchool == null) {
             throw new SchoolNotFoundException();
         }
         log.info("Current school: {}", currentSchool.toString());
 
-        // Kiểm tra nếu đã có draft
+
         School draft = currentSchool.getDraft();
 
+        // Check if current school or draft is submitted
         if (currentSchool.getStatus().equals(SUBMITTED.getValue()) || (draft != null && draft.getStatus().equals(SUBMITTED.getValue()))) {
             throw new IllegalStateException("Cannot update a submitted school or draft");
         }
@@ -301,20 +302,21 @@ public class SchoolServiceImpl implements SchoolService {
         if (draft == null) {
             log.info("No draft found, creating a new draft...");
 
-            // Tạo một School mới làm draft
+            // Create a new draft
             draft = new School();
-            draft.setStatus(SUBMITTED.getValue()); // Đặt trạng thái là SUBMITTED
+            draft.setStatus(SUBMITTED.getValue()); // Set status to SUBMITTED
             draft.setOriginalSchool(currentSchool);
         } else {
             log.info("Draft found, updating existing draft...");
         }
 
-        // Cập nhật dữ liệu từ DTO vào draft
+        // Update entity fields from DTO
         log.info("Before updating draft, ID: {}", draft.getId());
         schoolMapper.toDraft(schoolDTO, draft);
         log.info("After updating draft, ID: {}", draft.getId());
         log.info("Draft saved with ID: {}", draft.getId());
-// Validate facilities
+
+        // Validate facilities
         if (schoolDTO.facilities() != null) {
             Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
             if (existingFacilities.size() != schoolDTO.facilities().size()) {
@@ -341,18 +343,19 @@ public class SchoolServiceImpl implements SchoolService {
                 throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
             }
             for (SchoolOwner owner : schoolOwners) {
-                owner.setSchool(draft); // Không dùng lambda để tránh lỗi
+                owner.setSchool(draft); // Set the School for each SchoolOwner
             }
             draft.setSchoolOwners(schoolOwners);
         } else {
             draft.setSchoolOwners(new HashSet<>());
         }
-        // Xử lý hình ảnh nếu có
+        // Handle new uploaded images
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, draft);
         }
         draft.setPostedDate(LocalDate.now());
-        // Lưu draft vào DB
+
+        // Save the updated draft
         draft = schoolRepository.save(draft);
         log.info("Update by school owner completed.");
         return schoolMapper.toSchoolDetailVO(draft);
