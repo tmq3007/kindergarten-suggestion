@@ -16,8 +16,6 @@ import java.util.List;
 public interface SchoolService {
     SchoolDetailVO getSchoolInfo(Integer schoolId);
 
-    SchoolDetailVO getSchoolDraftInfo(Integer schoolId);
-
     Page<SchoolListVO> getAllSchools(String name, String province, String district, String street,
                                      String email, String phone, Pageable pageable);
 

@@ -421,19 +421,6 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(draft);
     }
 
-    //    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
-    @Override
-    public SchoolDetailVO getSchoolDraftInfo(Integer userId) {
-        School draft = schoolRepository.findSchoolByUserId(userId).orElseThrow(SchoolNotFoundException::new);
-        log.info("school: {}", draft.getId());
-
-       // School draft = schoolRepository.findSchoolDraftBySchoolId(school.getId()).orElseThrow(SchoolNotFoundException::new);
-        if (draft.getDraft()  == null) {
-            throw new SchoolDraftNotFoundException("School has no draft");
-        }
-        log.info("draft: {}", draft.getId());
-        return schoolMapper.toSchoolDetailVO(draft.getDraft());
-    }
 
     /**
      * Updates the status of a school based on the provided status code.
