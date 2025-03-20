@@ -95,7 +95,7 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
                                         {
                                             key: '2',
                                             icon: <FolderOpenOutlined/>,
-                                            label: <Link href="/public/school-owner/school-draft">My Draft</Link>
+                                            label: <Link href="/public/school-owner/draft">My Draft</Link>
                                         },
                                     ]}
                                 />

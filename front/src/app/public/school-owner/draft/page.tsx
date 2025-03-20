@@ -18,6 +18,7 @@ import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 import {useGetDraftOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
+import DetailPageSkeleton from "@/app/components/skeleton/DetailPageSkeleton";
 
 export default function Draft() {
     const user = useSelector((state: RootState) => state.user);
@@ -30,9 +31,7 @@ export default function Draft() {
             </div>
         )
     }
-    const {data, isLoading} = useGetDraftOfSchoolOwnerQuery(undefined,{
-        skip: !hasDraft,
-    });
+    const {data, isLoading} = useGetDraftOfSchoolOwnerQuery();
     const draft = data?.data;
     const draftStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(draft?.status))?.label || undefined;
     const [form] = Form.useForm();
@@ -69,7 +68,7 @@ export default function Draft() {
             const utilityValues: string[] = draft.utilities?.map((utility) => String(utility.uid)) || [];
             form.setFieldsValue({utilities: utilityValues});
         }
-    }, [draft, form]);
+    }, [draft, form, user]);
 
     // Check role and status
     if (role === ROLES.ADMIN && draft?.status === SCHOOL_STATUS.Saved) {
@@ -77,33 +76,33 @@ export default function Draft() {
     }
 
     if (isLoading) {
-        return (
-            <div className="pt-2">
-                <MyBreadcrumb
-                    paths={[
-                        {label: "School Management", href: "/admin/management/school/school-list"},
-                        {label: "School Detail"},
-                    ]}
-                />
-                <SchoolManageTitle title={"School details"}/>
-                <SchoolFormSkeleton/>
-            </div>
-        );
+        if (isLoading) {
+            const paths = [
+                {label: "My Draft", href: '/public/school-owner/draft'},
+                {label: "School Detail"},
+            ]
+            return (
+                <DetailPageSkeleton paths={paths}/>
+            );
+        }
     }
 
     return (
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    {label: "School Management", href: "/admin/management/school/school-list"},
+                    {label: "My Draft", href: "/public/school-owner/draft"},
                     {label: "School Detail"},
                 ]}
             />
             <SchoolManageTitle title={"School details"} schoolStatus={draftStatus!}/>
 
-
             <div className="read-only-form email-locked">
-                <SchoolFormWrapper form={form} school={draft!}/>
+                <SchoolFormWrapper
+                    form={form}
+                    school={draft!}
+                    isDetailPage={true}
+                />
             </div>
         </div>
     );

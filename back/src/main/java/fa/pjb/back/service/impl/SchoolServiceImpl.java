@@ -15,6 +15,7 @@ import fa.pjb.back.event.model.SchoolPublishedEvent;
 import fa.pjb.back.event.model.SchoolRejectedEvent;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.SchoolMapper;
@@ -27,8 +28,6 @@ import fa.pjb.back.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
-import org.hibernate.Hibernate;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -44,8 +43,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
-import static fa.pjb.back.model.enums.SchoolStatusEnum.APPROVED;
-import static fa.pjb.back.model.enums.SchoolStatusEnum.SUBMITTED;
+import static fa.pjb.back.model.enums.SchoolStatusEnum.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -155,14 +153,95 @@ public class SchoolServiceImpl implements SchoolService {
                     schoolDetailedLinkAdmin + newSchool.getId()
             );
         }
-        log.info("in update data: " + newSchool.toString());
 
         return schoolMapper.toSchoolDetailVO(newSchool);
     }
 
-    private School prepareSchoolData(SchoolDTO schoolDTO, User user, School oldSchool) {
-        log.info("begin prepareSchoolData");
+    private void validateAndSetAssociations(SchoolDTO schoolDTO, School school) {
+        // Validate facilities
+        if (schoolDTO.facilities() != null) {
+            Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
+            if (existingFacilities.size() != schoolDTO.facilities().size()) {
+                throw new InvalidDataException("Some facilities do not exist in the database");
+            }
+            school.setFacilities(existingFacilities);
+        }
 
+        // Validate utilities
+        if (schoolDTO.utilities() != null) {
+            Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
+            if (existingUtilities.size() != schoolDTO.utilities().size()) {
+                throw new InvalidDataException("Some utilities do not exist in the database");
+            }
+            school.setUtilities(existingUtilities);
+        }
+
+        // Update all SchoolOwners with the saved School and batch-save them
+        if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
+            Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
+            if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
+                throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
+            }
+            for (SchoolOwner owner : schoolOwners) {
+                owner.setSchool(school);
+            }
+            school.setSchoolOwners(schoolOwners);
+        } else {
+            school.setSchoolOwners(new HashSet<>());
+        }
+    }
+
+    private SchoolDetailVO processSchoolUpdate(SchoolDTO schoolDTO, List<MultipartFile> images, Byte status) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof User user)) {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+
+        // Find School Owner from UserID
+        SchoolOwner schoolOwner = schoolOwnerRepository
+                .findWithSchoolAndDraftByUserId(user.getId())
+                .orElseThrow(UserNotFoundException::new);
+
+        // Check if school exists or not
+        School originSchool = schoolOwner.getSchool();
+        if (originSchool == null) {
+            throw new SchoolNotFoundException();
+        }
+        Integer originSchoolId = originSchool.getId();
+
+        // Check if draft exists or not
+        School draft = originSchool.getDraft();
+
+        // If status of school or draft is submitted thus can not update
+        if (originSchool.getStatus().equals(SUBMITTED.getValue()) || (draft != null && draft.getStatus().equals(SUBMITTED.getValue()))) {
+            throw new IllegalStateException("Cannot update a submitted school or draft");
+        }
+
+        if (draft == null) {
+            draft = new School();
+            draft.setOriginalSchool(originSchool);
+        }
+
+        // Update data from DTO into draft
+        schoolMapper.toDraft(schoolDTO, draft);
+        draft.setStatus(status);
+        validateAndSetAssociations(schoolDTO, draft);
+        // Delete old images
+        if (draft.getImages() != null && !draft.getImages().isEmpty()) {
+            draft.getImages().clear();
+        }
+        // Save new images
+        if (images != null && !images.isEmpty()) {
+            processAndSaveImages(images, draft);
+        }
+        draft.setPostedDate(LocalDate.now());
+        draft = schoolRepository.save(draft);
+
+        return schoolMapper.toSchoolDetailVO(draft);
+    }
+
+
+    private School prepareSchoolData(SchoolDTO schoolDTO, User user, School oldSchool) {
         // Check if email already exists
         if (schoolDTO.id() == null) {
             if (checkEmailExists(schoolDTO.email())) {
@@ -173,69 +252,23 @@ public class SchoolServiceImpl implements SchoolService {
                 throw new EmailAlreadyExistedException("This email is already in use");
             }
         }
-        log.info("1");
 
         School school = schoolMapper.toSchool(schoolDTO, oldSchool);
-        log.info("2");
-
         school.setPostedDate(LocalDate.now());
-        log.info("2.1");
-        log.info("school: {}", school.toString());
 
-        // Validate facilities
-        if (schoolDTO.facilities() != null) {
-            Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
-            if (existingFacilities.size() != schoolDTO.facilities().size()) {
-                throw new InvalidDataException("Some facilities do not exist in the database");
-            }
-            school.setFacilities(existingFacilities);
-        }
-        log.info("3");
-
-        // Validate utilities
-        if (schoolDTO.utilities() != null) {
-            Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
-            if (existingUtilities.size() != schoolDTO.utilities().size()) {
-                throw new InvalidDataException("Some utilities do not exist in the database");
-            }
-            school.setUtilities(existingUtilities);
-        }
-        log.info("4");
-
-        // Update all SchoolOwners with the saved School and batch-save them
-        if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
-            Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
-            if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
-                throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
-            }
-            for (SchoolOwner owner : schoolOwners) {
-                owner.setSchool(school); // Không dùng lambda để tránh lỗi
-            }
-            school.setSchoolOwners(schoolOwners);
-        } else {
-            school.setSchoolOwners(new HashSet<>());
-        }
-        log.info("5");
-        log.info("school: {}", school.toString());
+        validateAndSetAssociations(schoolDTO, school);
 
         // Delete old images
         List<Media> oldMedias = mediaRepository.getAllBySchool(school);
-        log.info("6");
 
         if (!oldMedias.isEmpty()) {
-            log.info("7");
-
             for (Media media : oldMedias) {
                 // Delete images from Google Drive
                 FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
             }
             school.getImages().clear();
-            log.info("8");
             mediaRepository.deleteAllBySchool(school);
-            log.info("9");
-
         }
-        log.info("finish prepareSchoolData");
         return school;
     }
 
@@ -271,95 +304,15 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO updateSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images) {
-        log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        // Kiểm tra nếu người dùng không phải là School Owner
-        if (!(principal instanceof User user)) {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
-
-        log.info("User: {}", user.toString());
-
-        // Lấy SchoolOwner từ user ID
-        SchoolOwner schoolOwner = schoolOwnerRepository
-                .findWithSchoolAndDraftByUserId(user.getId())
-                .orElseThrow(UserNotFoundException::new);
-
-        // Kiểm tra nếu school tồn tại
-        School currentSchool = schoolOwner.getSchool();
-        if (currentSchool == null) {
-            throw new SchoolNotFoundException();
-        }
-        log.info("Current school: {}", currentSchool.toString());
-
-        // Kiểm tra nếu đã có draft
-        School draft = currentSchool.getDraft();
-
-        if (currentSchool.getStatus().equals(SUBMITTED.getValue()) || (draft != null && draft.getStatus().equals(SUBMITTED.getValue()))) {
-            throw new IllegalStateException("Cannot update a submitted school or draft");
-        }
-
-        if (draft == null) {
-            log.info("No draft found, creating a new draft...");
-
-            // Tạo một School mới làm draft
-            draft = new School();
-            draft.setStatus(SUBMITTED.getValue()); // Đặt trạng thái là SUBMITTED
-            draft.setOriginalSchool(currentSchool);
-        } else {
-            log.info("Draft found, updating existing draft...");
-        }
-
-        // Cập nhật dữ liệu từ DTO vào draft
-        log.info("Before updating draft, ID: {}", draft.getId());
-        schoolMapper.toDraft(schoolDTO, draft);
-        log.info("After updating draft, ID: {}", draft.getId());
-        log.info("Draft saved with ID: {}", draft.getId());
-// Validate facilities
-        if (schoolDTO.facilities() != null) {
-            Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
-            if (existingFacilities.size() != schoolDTO.facilities().size()) {
-                throw new InvalidDataException("Some facilities do not exist in the database");
-            }
-            draft.setFacilities(existingFacilities);
-        }
-        log.info("3");
-
-        // Validate utilities
-        if (schoolDTO.utilities() != null) {
-            Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
-            if (existingUtilities.size() != schoolDTO.utilities().size()) {
-                throw new InvalidDataException("Some utilities do not exist in the database");
-            }
-            draft.setUtilities(existingUtilities);
-        }
-        log.info("4");
-
-        // Update all SchoolOwners with the saved School and batch-save them
-        if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
-            Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
-            if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
-                throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
-            }
-            for (SchoolOwner owner : schoolOwners) {
-                owner.setSchool(draft); // Không dùng lambda để tránh lỗi
-            }
-            draft.setSchoolOwners(schoolOwners);
-        } else {
-            draft.setSchoolOwners(new HashSet<>());
-        }
-        // Xử lý hình ảnh nếu có
-        if (images != null && !images.isEmpty()) {
-            processAndSaveImages(images, draft);
-        }
-        draft.setPostedDate(LocalDate.now());
-        // Lưu draft vào DB
-        draft = schoolRepository.save(draft);
-        log.info("Update by school owner completed.");
-        return schoolMapper.toSchoolDetailVO(draft);
+        return processSchoolUpdate(schoolDTO, images, SUBMITTED.getValue());
     }
 
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Transactional
+    @Override
+    public SchoolDetailVO saveSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images) {
+        return processSchoolUpdate(schoolDTO, images, SAVED.getValue());
+    }
 
     @Override
     public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool) {
@@ -397,7 +350,6 @@ public class SchoolServiceImpl implements SchoolService {
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
                                             String street, String email, String phone, Pageable pageable) {
         Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
-        //  schoolPage.forEach(school -> log.info("School: id={}, postedDate={}", school.getId(), school.getPostedDate()));
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 
@@ -411,28 +363,12 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
     public SchoolDetailVO getDraft(User user) {
-        log.info("into getDraft service");
         Integer userId = user.getId();
         SchoolOwner so = schoolOwnerRepository.findWithSchoolAndDraftByUserId(userId).orElseThrow(UserNotFoundException::new);
         School school = so.getSchool();
         if (school == null) throw new SchoolNotFoundException();
         School draft = school.getDraft();
-        log.info("draft test: {}", draft.getId());
         return schoolMapper.toSchoolDetailVO(draft);
-    }
-
-    //    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
-    @Override
-    public SchoolDetailVO getSchoolDraftInfo(Integer userId) {
-        School draft = schoolRepository.findSchoolByUserId(userId).orElseThrow(SchoolNotFoundException::new);
-        log.info("school: {}", draft.getId());
-
-       // School draft = schoolRepository.findSchoolDraftBySchoolId(school.getId()).orElseThrow(SchoolNotFoundException::new);
-        if (draft.getDraft()  == null) {
-            throw new SchoolDraftNotFoundException("School has no draft");
-        }
-        log.info("draft: {}", draft.getId());
-        return schoolMapper.toSchoolDetailVO(draft.getDraft());
     }
 
     /**
@@ -527,7 +463,6 @@ public class SchoolServiceImpl implements SchoolService {
                     }
 
                 } else {
-                    log.info("InappropriateSchoolStatusException");
                     throw new InappropriateSchoolStatusException();
                 }
             }

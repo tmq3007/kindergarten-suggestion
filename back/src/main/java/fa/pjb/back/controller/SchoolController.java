@@ -126,6 +126,18 @@ public class SchoolController {
                 .build();
     }
 
+    @PostMapping(value = "/save/by-so", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<SchoolDetailVO> saveSchoolBySchoolOwner(
+            @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
+            @RequestPart(value = "image", required = false) List<MultipartFile> images) {
+        log.info("dto: {}", schoolDTO);
+        return ApiResponse.<SchoolDetailVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("School updated successfully")
+                .data(schoolService.saveSchoolBySchoolOwner(schoolDTO, images))
+                .build();
+    }
+
     @PutMapping("/change-status/by-admin")
     public ApiResponse<?> updateSchoolStatusByAdmin(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 

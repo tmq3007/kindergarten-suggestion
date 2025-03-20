@@ -8,11 +8,13 @@ interface SchoolFormWrapperProps {
     form: FormInstance;
     school: SchoolVO;
     isEdit?: boolean;
+    isDetailPage?: boolean;
 }
 
-export default function SchoolFormWrapper({form, school,isEdit}: SchoolFormWrapperProps) {
+export default function SchoolFormWrapper({form, school, isEdit, isDetailPage}: SchoolFormWrapperProps) {
     return (
         <SchoolForm
+            isDetailPage={isDetailPage}
             isEdit={isEdit}
             isReadOnly={true}
             form={form}
@@ -25,7 +27,7 @@ export default function SchoolFormWrapper({form, school,isEdit}: SchoolFormWrapp
                 school.status === SCHOOL_STATUS.Unpublished
             }
             hasEditButton={
-                school.status === SCHOOL_STATUS.Submitted ||
+                school.status === SCHOOL_STATUS.Saved ||
                 school.status === SCHOOL_STATUS.Approved ||
                 school.status === SCHOOL_STATUS.Published ||
                 school.status === SCHOOL_STATUS.Unpublished
