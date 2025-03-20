@@ -10,14 +10,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Collection;
 
 @RequiredArgsConstructor
 @RestController
@@ -44,7 +36,7 @@ public class UserController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phone
     ) {
-        Page<UserVO> users = userService.getAllUsers(page, size, role, email, name, phone);
+        Page<UserVO> users = userService.getAllUsersAdmin(page, size, role, email, name, phone);
         return ApiResponse.<Page<UserVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Users retrieved successfully")

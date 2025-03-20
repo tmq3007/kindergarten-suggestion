@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface UserService {
-    Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone);
+    Page<UserVO> getAllUsersAdmin(int page, int size, String role, String email, String name, String phone);
 
     UserDetailDTO getUserDetailById(int userId);
 

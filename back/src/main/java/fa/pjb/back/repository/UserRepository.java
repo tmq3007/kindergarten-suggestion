@@ -32,12 +32,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             + "u.role AS role, u.status AS status, "
             + "p.street AS street, p.ward AS ward, p.district AS district, p.province AS province "
             + "FROM User u LEFT JOIN Parent p ON u.id = p.id "
-            + "WHERE (:role IS NULL OR u.role = :role) "
+            + "WHERE (:roles IS NULL OR u.role IN :roles) "
             + "AND (:email IS NULL OR u.email LIKE %:email%) "
             + "AND (:name IS NULL OR u.fullname LIKE %:name%) "
             + "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
     Page<UserProjection> findAllByCriteria(
-            @Param("role") ERole role,
+            @Param("roles") List<ERole> roles,
             @Param("email") String email,
             @Param("name") String name,
             @Param("phone") String phone,

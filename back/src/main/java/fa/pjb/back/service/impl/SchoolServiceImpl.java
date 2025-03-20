@@ -124,7 +124,7 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         //  Map DTO to School entity
-        School school = prepareSchoolData(schoolDTO, user, new School());
+        School school = prepareSchoolData(schoolDTO, new School());
 
         // Check user role and adjust status
         if (user.getRole() == ERole.ROLE_ADMIN && schoolDTO.status() == SUBMITTED.getValue()) {
@@ -146,20 +146,19 @@ public class SchoolServiceImpl implements SchoolService {
                     schoolDetailedLinkAdmin + newSchool.getId()
             );
         }
-        log.info("in update data: " + newSchool.toString());
 
         return schoolMapper.toSchoolDetailVO(newSchool);
     }
 
-    private School prepareSchoolData(SchoolDTO schoolDTO, User user, School oldSchool) {
-
+    private School prepareSchoolData(SchoolDTO schoolDTO, School oldSchool) {
+        boolean isUpdate = schoolDTO.id() != null;
         // Check if email already exists
-        if(schoolDTO.id() == null) {
-            if (checkEmailExists(schoolDTO.email())) {
+        if (isUpdate) {
+            if (checkEditingEmailExists(schoolDTO.email(), schoolDTO.id())) {
                 throw new EmailAlreadyExistedException("This email is already in use");
             }
-        }else{
-            if(checkEditingEmailExists(schoolDTO.email(),schoolDTO.id())){
+        } else {
+            if (checkEmailExists(schoolDTO.email())) {
                 throw new EmailAlreadyExistedException("This email is already in use");
             }
         }
@@ -170,44 +169,46 @@ public class SchoolServiceImpl implements SchoolService {
 
         // Validate facilities
         if (schoolDTO.facilities() != null) {
-            Set<Facility> existingFacilities = facilityRepository.findAllByFidIn(schoolDTO.facilities());
-            if (existingFacilities.size() != schoolDTO.facilities().size()) {
+            int existingFacilitiesSize = facilityRepository.findAllByFidIn(schoolDTO.facilities()).size();
+            if (existingFacilitiesSize != schoolDTO.facilities().size()) {
                 throw new InvalidDataException("Some facilities do not exist in the database");
             }
-            school.setFacilities(existingFacilities);
         }
 
         // Validate utilities
         if (schoolDTO.utilities() != null) {
-            Set<Utility> existingUtilities = utilityRepository.findAllByUidIn(schoolDTO.utilities());
-            if (existingUtilities.size() != schoolDTO.utilities().size()) {
+            int existingUtilitiesSize = utilityRepository.findAllByUidIn(schoolDTO.utilities()).size();
+            if (existingUtilitiesSize != schoolDTO.utilities().size()) {
                 throw new InvalidDataException("Some utilities do not exist in the database");
             }
-            school.setUtilities(existingUtilities);
         }
 
         // Update all SchoolOwners with the saved School and batch-save them
         if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
             Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
             if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
-                throw new IllegalArgumentException("One or more SchoolOwner IDs not found");
+                throw new InvalidDataException("One or more SchoolOwner IDs not found");
             }
             schoolOwners.forEach(owner -> owner.setSchool(school));
             school.setSchoolOwners(schoolOwners);
         } else {
             school.setSchoolOwners(new HashSet<>());
         }
-        // Delete old images
-        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
-        if (!oldMedias.isEmpty()) {
-            for (Media media : oldMedias) {
-                // Delete images from Google Drive
-                FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
-            }
-            school.getImages().clear();
-            mediaRepository.deleteAllBySchool(school);
-        }
 
+        if (isUpdate) {
+            // Delete old images
+            List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+            if (!oldMedias.isEmpty()) {
+                for (Media media : oldMedias) {
+                    // Delete images from Google Drive
+                    FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
+                    if (deleteResponse.status() == 200) {
+                        oldMedias.remove(media);
+                    }
+                }
+                mediaRepository.saveAll(oldMedias);
+            }
+        }
         return school;
     }
 
@@ -226,7 +227,7 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         // Update entity fields from DTO
-        School school = prepareSchoolData(schoolDTO, user, oldSchool);
+        School school = prepareSchoolData(schoolDTO, oldSchool);
         school.setStatus(curStatus);
 
         // Handle new uploaded images
