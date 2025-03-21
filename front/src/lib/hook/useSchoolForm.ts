@@ -1,29 +1,35 @@
 'use client';
 
-import {useEffect, useState}from 'react';
-import {Form}from 'antd';
-import {SchoolDetailVO, SchoolVO}from "@/redux/services/schoolApi";
-import {SCHOOL_STATUS_OPTIONS}from "@/lib/constants";
-import {formatPhoneNumber}from "@/lib/util/phoneUtils";
+import {useEffect, useState} from 'react';
+import {Form} from 'antd';
+import {SchoolDetailVO, SchoolVO} from "@/redux/services/schoolApi";
+import {SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
+import {formatPhoneNumber} from "@/lib/util/phoneUtils";
 
-interface SchoolFormData {
-data?: SchoolVO | SchoolDetailVO;
-isLoading: boolean;
+interface UseSchoolFormProps {
+    data?: SchoolVO | SchoolDetailVO;
+    isLoading: boolean;
+    externalForm?: ReturnType<typeof Form.useForm>[0];
 }
 
-export default function useSchoolForm({data, isLoading}: SchoolFormData) {
+export default function useSchoolForm({data, isLoading, externalForm}: UseSchoolFormProps) {
     const school = data;
     const schoolStatus =
         SCHOOL_STATUS_OPTIONS.find((s) => s.value === String(school?.status))?.label || undefined;
-    const [formLoaded, setFormLoaded] = useState(false);
-    const [form] = Form.useForm();
-    useEffect(() => {
-    console.log("2: ",formLoaded);
 
+    const [form] = Form.useForm();
+    const usedForm = externalForm || form;
+
+    const [formLoaded, setFormLoaded] = useState(false);
+
+    useEffect(() => {
         if (school) {
-            form.setFieldsValue({
+            const validEducationMethod = school.educationMethod != null ? String(school.educationMethod) : '0';
+            const validReceivingAge = school.receivingAge != null ? String(school.receivingAge) : '0';
+
+            usedForm.setFieldsValue({
                 name: school.name || '',
-                schoolType: String(school.schoolType),
+                schoolType: school.schoolType != null ? String(school.schoolType) : '0',
                 province: school.province || '',
                 district: school.district || '',
                 ward: school.ward || '',
@@ -31,21 +37,21 @@ export default function useSchoolForm({data, isLoading}: SchoolFormData) {
                 email: school.email || '',
                 phone: formatPhoneNumber(school.phone),
                 countryCode: formatPhoneNumber(school.phone, 0),
-                receivingAge: String(school.receivingAge),
-                educationMethod: String(school.educationMethod),
+                website: school.website || '',
+                receivingAge: validReceivingAge,
+                educationMethod: validEducationMethod,
                 feeFrom: school.feeFrom || 0,
                 feeTo: school.feeTo || 0,
-                facilities: school.facilities?.map((f) => String(f.fid)) || [],
-                utilities: school.utilities?.map((u) => String(u.uid)) || [],
                 description: school.description || '',
-                website: school.website || '',
+                status: school.status || 0,
+                facilities: school.facilities?.map(f => String(f.fid)) || [],
+                utilities: school.utilities?.map(u => String(u.uid)) || [],
                 image: school.imageList || [],
             });
+
             setFormLoaded(true);
         }
-    console.log("3: ",formLoaded);
+    }, [school, usedForm]);
 
-    }, [school, form]);
-
-    return {form,formLoaded, schoolStatus, school, isLoading};
+    return {form: usedForm, formLoaded, schoolStatus, school, isLoading};
 }

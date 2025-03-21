@@ -34,7 +34,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const user = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
     const hasDraft = user.hasDraft;
-    const {data, refetch} = useGetSchoolOfSchoolOwnerQuery();
+    const {data, refetch: getSchoolRefetch} = useGetSchoolOfSchoolOwnerQuery();
+    const {refetch: getDraftRefetch} = useGetDraftOfSchoolOwnerQuery();
     const schoolStatus = data?.data.status;
 
     const [updateSchoolStatusBySchoolOwner, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusBySchoolOwnerMutation();
@@ -111,7 +112,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         if (!schoolData) return;
         try {
             await saveSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            refetch();
+            getDraftRefetch();
             if (!hasDraft) {
                 dispatch(updateHasDraft(true));
             }
@@ -133,7 +134,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         if (!schoolData) return;
         try {
             await updateSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            await refetch();
+            getDraftRefetch();
             if (!hasDraft) {
                 dispatch(updateHasDraft(true));
             }
@@ -165,7 +166,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     messageApi.success('School deleted successfully!');
                     break;
             }
-            await refetch();
+            getDraftRefetch();
             setModalVisible(false);
             setActiveButton(null);
         } catch (error) {

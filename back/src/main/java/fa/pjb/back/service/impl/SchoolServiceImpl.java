@@ -655,6 +655,8 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public boolean checkEditingEmailExists(String email, Integer schoolId) {
+        log.info("email: {}", email);
+        log.info("schoolId: {}", schoolId);
         return schoolRepository.existsByEmailExcept(email, schoolId);
     }
 

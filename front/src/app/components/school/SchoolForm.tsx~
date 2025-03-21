@@ -42,7 +42,6 @@ import school4 from '@public/school4.jpg'
 import school5 from '@public/school5.jpg'
 import {AnimatePresence} from "framer-motion";
 import {motion} from "framer-motion";
-
 const {Option} = Select;
 const {Panel} = Collapse;
 
@@ -265,10 +264,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             src={mainImage}
                                             alt="Main Display"
                                             className="object-cover w-full h-full rounded-lg"
-                                            initial={{opacity: 0}}
-                                            animate={{opacity: 1}}
-                                            exit={{opacity: 0}}
-                                            transition={{duration: 0.3, ease: "circInOut"}}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.3, ease: "circInOut" }}
                                         />
                                     </AnimatePresence>
                                 </div>
@@ -432,6 +431,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 </Col>
 
 
+
+
                                 {/* Right Column: Facilities & Utilities */}
                                 <Col xs={24} lg={12} className="flex">
                                     <Card title="Facilities & Utilities" className="w-full">
@@ -461,6 +462,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     <p className="text-gray-500 mt-1">No data</p>
                                                 )}
                                             </Form.Item>
+
+
 
 
                                             <Form.Item
@@ -493,6 +496,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 </Col>
                             </Row>
                         </Col>
+
+
+
+
 
                         {/* Section 3: School Introduction */}
                         <Col xs={24}>
@@ -529,7 +536,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     }
 
     return (
-
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form<SchoolFieldType>
                 size='middle'
@@ -594,10 +600,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         />
                         <PhoneInput
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}
+                            initialCountryCode={isEdit ? (externalForm.countryCode || '+84') : undefined}
                             form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
-                            formLoaded={formLoaded}
                         />
 
                         <Form.Item
@@ -668,6 +674,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     <InputNumber
                                         placeholder="To"
                                         className="w-full"
+
                                         min={form.getFieldValue("feeFrom") || 0}
                                         step={100000}
                                         onChange={(value) => form.setFieldsValue({feeTo: value})}
@@ -773,7 +780,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 form={form}
                                 fieldName="image"
                                 maxCount={10}
-                                accept={["image/png","image/jpg","image/jpeg"]}
+                                accept={["image/png", "image/jpg", "image/jpeg", "application/pdf"]}
                                 maxSizeMB={5}
                                 hideImageUpload={hideImageUpload}
                                 imageList={imageList}
