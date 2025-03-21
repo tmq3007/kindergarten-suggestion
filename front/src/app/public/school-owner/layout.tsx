@@ -1,6 +1,12 @@
 'use client';
 import React, {Fragment, useEffect, useRef, useState} from 'react';
-import {FolderOpenOutlined, HomeOutlined, LeftOutlined, RightOutlined} from '@ant-design/icons';
+import {
+    FolderOpenOutlined,
+    HomeOutlined,
+    LeftOutlined, PaperClipOutlined,
+    RightOutlined,
+    TeamOutlined
+} from '@ant-design/icons';
 import {Button, ConfigProvider, Layout, Menu} from 'antd';
 import Link from 'next/link';
 import {forbidden, unauthorized, usePathname} from 'next/navigation';
@@ -96,6 +102,16 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
                                             key: '2',
                                             icon: <FolderOpenOutlined/>,
                                             label: <Link href="/public/school-owner/draft">My Draft</Link>
+                                        },
+                                        {
+                                            key: '3',
+                                            icon: <PaperClipOutlined />,
+                                            label: <Link href="/public/school-owner/draft">My Request</Link>
+                                        },
+                                        {
+                                            key: '4',
+                                            icon: <TeamOutlined />,
+                                            label: <Link href="/public/school-owner/draft">My Parents</Link>
                                         },
                                     ]}
                                 />

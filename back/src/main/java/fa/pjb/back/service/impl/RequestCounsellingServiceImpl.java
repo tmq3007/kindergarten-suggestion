@@ -30,11 +30,12 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final SchoolMapper schoolMapper;
     @Override
     public RequestCounsellingVO createRequestCounselling(RequestCounsellingDTO request) {
-
-        Parent parent = parentRepository.findParentByUserId(request.userId());
-
-        if (parent == null) {
-            throw new UserNotFoundException();
+        Parent parent = null;
+        if (request.userId() != null){
+            parent = parentRepository.findParentByUserId(request.userId());
+            if (parent == null) {
+                throw new UserNotFoundException();
+            }
         }
 
         Optional<School> school = schoolRepository.findSchoolBySchoolId(request.schoolId());

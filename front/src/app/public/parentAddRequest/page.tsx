@@ -13,11 +13,15 @@ const RequestCounsellingModal: React.FC = () => {
     const userRole = useSelector((state: RootState) => state.user?.role);
     const userId = useSelector((state: RootState) => state.user?.id);
 
-    const isParent = userRole === "ROLE_PARENT";
+    const isAdminOrSO = userRole === "ROLE_ADMIN" || userRole === "ROLE_SCHOOL_OWNER";
 
     const showModal = () => {
         setIsModalOpen(true);
-        form.setFieldsValue({ userId, schoolId: 1 });
+        if (userId) {
+            form.setFieldsValue({ userId, schoolId: 1 });
+        } else {
+            form.setFieldsValue({ schoolId: 1 });
+        }
     };
 
     const handleCancel = () => {
@@ -41,43 +45,47 @@ const RequestCounsellingModal: React.FC = () => {
     };
 
 
-    if (!isParent) return null;
+    if (!isAdminOrSO  ) {
+        return (
+            <div className="flex items-center mt-20 justify-center h-screen">
+                <Button type="primary" onClick={showModal}>
+                    Open Modal
+                </Button>
+                <Modal
+                    title="Request Counselling"
+                    open={isModalOpen}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                    confirmLoading={isLoading}
+                >
+                    <Form form={form} layout="vertical">
+                        <Form.Item name="userId" label="User ID">
+                            <Input disabled />
+                        </Form.Item>
+                        <Form.Item name="schoolId" label="School ID">
+                            <Input disabled />
+                        </Form.Item>
+                        <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Valid email is required" }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="phone" label="Phone" rules={[{ required: true, message: "Phone is required" }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="name" label="Name" rules={[{ required: true, message: "Name is required" }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="inquiry" label="Inquiry">
+                            <Input.TextArea />
+                        </Form.Item>
+                    </Form>
+                </Modal>
+            </div>
+        );
+    }else{
+        return null;
+    }
 
-    return (
-        <div className="flex items-center mt-20 justify-center h-screen">
-            <Button type="primary" onClick={showModal}>
-                Open Modal
-            </Button>
-            <Modal
-                title="Request Counselling"
-                open={isModalOpen}
-                onOk={handleOk}
-                onCancel={handleCancel}
-                confirmLoading={isLoading}
-            >
-                <Form form={form} layout="vertical">
-                    <Form.Item name="userId" label="User ID">
-                        <Input disabled />
-                    </Form.Item>
-                    <Form.Item name="schoolId" label="School ID">
-                        <Input disabled />
-                    </Form.Item>
-                    <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Valid email is required" }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="phone" label="Phone" rules={[{ required: true, message: "Phone is required" }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="name" label="Name" rules={[{ required: true, message: "Name is required" }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="inquiry" label="Inquiry">
-                        <Input.TextArea />
-                    </Form.Item>
-                </Form>
-            </Modal>
-        </div>
-    );
+
 };
 
 export default RequestCounsellingModal;

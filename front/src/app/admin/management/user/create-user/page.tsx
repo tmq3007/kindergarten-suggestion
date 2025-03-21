@@ -3,19 +3,16 @@ import React, { useState } from 'react';
 import {
     Button, DatePicker, Form, Input, Select, Space, Typography, notification, Image, Spin
 } from 'antd';
-import { Breadcrumb, Input as AntdInput } from 'antd';
 import Link from "next/link";
 import dayjs from "dayjs";
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
-import { setUser } from '@/redux/features/userCreateSlice';
 import { Country, useGetCountriesQuery } from "@/redux/services/registerApi";
 import { useCreateUserMutation } from "@/redux/services/adminApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 import { motion, Variants } from 'framer-motion';
 
 const { Title } = Typography;
-const { TextArea } = AntdInput; // Importing TextArea from AntdInput
 import { Row, Col } from 'antd';
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import {ImageUpload} from "@/app/components/common/ImageUploader";
@@ -81,7 +78,7 @@ const CreateUser: React.FC = () => {
         try {
             const response = await createUser({data :formattedValues, imageList: imageFiles}).unwrap();
             if (response.data) {
-                dispatch(setUser(formattedValues));
+                //dispatch(setUser(formattedValues));
                 openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                 form.resetFields();
                 setSelectedRole(undefined);
@@ -339,7 +336,7 @@ const CreateUser: React.FC = () => {
                                             form={form}
                                             fieldName="image"
                                             maxCount={10}
-                                            accept={["image/*", "application/pdf"]}
+                                            accept={["image/png", "image/jpg", "image/jpeg"]}
                                             maxSizeMB={5}
                                             hideImageUpload={false}
                                             imageList={[{ url: '', filename: '' }]}

@@ -22,9 +22,8 @@ public class RequestCounselling {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "parent_id", nullable = false)
+    @JoinColumn(name = "parent_id")
     private Parent parent;
 
     @NotNull

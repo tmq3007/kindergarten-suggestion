@@ -8,7 +8,7 @@ export type RequestCounsellingReminderVO = {
       description: string
 }
 export type RequestCounsellingDTO = {
-    userId: number;
+    userId?: number;
     schoolId: number;
     inquiry?: string;
     status: number;

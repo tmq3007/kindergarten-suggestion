@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public record RequestCounsellingDTO (
-        @NotNull(message = "User ID is required")
         Integer userId,
 
         @NotNull(message = "School ID is required")
