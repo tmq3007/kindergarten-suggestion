@@ -45,7 +45,7 @@ import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
 @Service
 public class UserServiceImpl implements UserService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg","application/pdf");
+    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
     private final GGDriveImageService imageService;
     private static final Tika tika = new Tika();
     private final MediaRepository mediaRepository;
