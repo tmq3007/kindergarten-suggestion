@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private ERole convertRole2(String role) {
+    public ERole convertRole2(String role) {
         if (role == null || role.trim().isEmpty()) {
             return null;
         }

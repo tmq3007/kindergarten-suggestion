@@ -11,14 +11,13 @@ import useSchoolForm from "@/lib/hook/useSchoolForm";
 export default function EditSchool() {
     const params = useParams();
     const schoolId = params.id;
+
     const {data, isLoading} = useGetSchoolQuery(Number(schoolId));
-    const {form, schoolStatus, school} = useSchoolForm({
+    const {form, formLoaded,schoolStatus, school} = useSchoolForm({
         data: data?.data,
         isLoading,
     });
-    useEffect(() => {
-        console.log('isLoading',isLoading);
-    }, [isLoading])
+    console.log("1: ",formLoaded);
     if (isLoading || !school) {
         return (
             <>
@@ -44,7 +43,7 @@ export default function EditSchool() {
                 isEdit={true}
                 triggerCheckEmail={null}
                 schoolId={Number(schoolId)}
-                formLoaded={isLoading} 
+                formLoaded={formLoaded}
             />
         </>
     );

@@ -8,7 +8,7 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
-import { setUser } from '@/redux/features/userCreateSlice';
+// import { setUser } from '@/redux/features/userCreateSlice';
 import { Country, useGetCountriesQuery } from "@/redux/services/registerApi";
 import { useCreateUserMutation } from "@/redux/services/adminApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
@@ -81,7 +81,7 @@ const CreateUser: React.FC = () => {
         try {
             const response = await createUser({data :formattedValues, imageList: imageFiles}).unwrap();
             if (response.data) {
-                dispatch(setUser(formattedValues));
+                // dispatch(setUser(formattedValues));
                 openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                 form.resetFields();
                 setSelectedRole(undefined);

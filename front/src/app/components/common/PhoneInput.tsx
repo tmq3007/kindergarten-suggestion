@@ -21,7 +21,7 @@ const PhoneInput = forwardRef((
             initialCountryCode ="+84",
             onPhoneChange,
             triggerCheckPhone,
-            formLoaded = true,
+            formLoaded = false,
         }: PhoneInputProps,
         ref
     ) => {

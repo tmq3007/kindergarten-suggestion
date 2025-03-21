@@ -85,7 +85,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
         );
     }
     return (
-        <div className="shadow-md sm:rounded-lg p-4 bg-white">
+        <div>
             <Table className="over-flow-scroll" columns={columns} locale={{ emptyText: "No results found" }} size="small"
                 dataSource={users} pagination={false} loading={isFetching} scroll={{
                     x: "max-content",

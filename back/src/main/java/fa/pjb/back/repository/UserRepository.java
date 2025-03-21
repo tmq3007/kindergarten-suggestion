@@ -48,4 +48,20 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<String> findActiveUserEmailsByRole(ERole role);
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = true")
     List<User> findActiveUserByRole(ERole role);
+
+    @Query("SELECT u as user " +
+            "FROM ParentInSchool pis " +
+            "JOIN pis.parent p " +
+            "JOIN p.user u " +
+            "WHERE pis.school.id = :schoolId " +
+            "AND (:roles IS NULL OR u.role IN :roles) " +
+            "AND (:email IS NULL OR u.email LIKE %:email%) " +
+            "AND (:name IS NULL OR u.username LIKE %:name%) " +
+            "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
+    Page<UserProjection> findAllBySchoolAndCriteria(@Param("roles") List<ERole> roles,
+                                                    @Param("email") String email,
+                                                    @Param("name") String name,
+                                                    @Param("phone") String phone,
+                                                    Pageable pageable,
+                                                    @Param("schoolId") int schoolId);
 }

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import UserList from "@/app/components/user/UserList";
 import React, { useState } from "react";
-import { Input } from "antd";
-import {useGetUserListQuery} from "@/redux/services/userApi";
+import { Card, Input } from "antd";
+import { useGetUserListQuery } from "@/redux/services/userApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
@@ -28,7 +28,7 @@ export default function Page() {
     });
 
     // Function to fetch data for the specified page
-    const fetchPage = (page: number,size:number) => {
+    const fetchPage = (page: number, size: number) => {
         setCurrentPage(page);
         setCurrentPageSize(size);
     };
@@ -80,44 +80,46 @@ export default function Page() {
     };
 
     return (
-            <div className="p-5">
-                {/* Breadcrumb navigation */}
-                <MyBreadcrumb
-                    paths={[
-                        {label: "User Management", href: "/admin/management/user/user-list"},
-                        {label: "User List"},
-                    ]}
-                />
-
-                {/* Page header with search bar and add user button */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                    <SchoolManageTitle title={"User List"}/>
-                    <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
-                        <div className="w-full md:w-80 relative">
-                            <Search
-                                placeholder="Search user (e.g., name, email, phone, or role: admin/parent/school owner)"
-                                enterButton="Search"
-                                size="large"
-                                onSearch={handleSearch} // Trigger search on button click or Enter key
-                                loading={isFetching} // Show loading state during data fetch
-                                className="w-full"
-                                onChange={(e) => {
-                                    if (!e.target.value.trim()) {
-                                        handleSearch(""); // Reset search criteria on empty input
-                                    }
-                                }} // Handle input changes
-                            />
+        <div>
+            {/* Breadcrumb navigation */}
+            <MyBreadcrumb
+                paths={[
+                    { label: "User Management", href: "/admin/management/user/user-list" },
+                    { label: "User List" },
+                ]}
+            />
+            <Card title={
+                <>
+                    {/* Page header with search bar and add user button */}
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+                        <SchoolManageTitle title={"User List"} />
+                        <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
+                            <div className="w-full md:w-80 relative">
+                                <Search
+                                    placeholder="Search user (e.g., name, email, phone, or role: admin/parent/school owner)"
+                                    enterButton="Search"
+                                    size="large"
+                                    onSearch={handleSearch} // Trigger search on button click or Enter key
+                                    loading={isFetching} // Show loading state during data fetch
+                                    className="w-full"
+                                    onChange={(e) => {
+                                        if (!e.target.value.trim()) {
+                                            handleSearch(""); // Reset search criteria on empty input
+                                        }
+                                    }} // Handle input changes
+                                />
+                            </div>
+                            <Link
+                                href="create-user"
+                                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 text-center"
+                            >
+                                Add user
+                            </Link>
                         </div>
-
-                        <Link
-                            href="create-user"
-                            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 text-center"
-                        >
-                            Add user
-                        </Link>
                     </div>
-                </div>
-
+                </>
+            }
+            >
                 {/* User List component */}
                 <div className="mt-4">
                     <UserList
@@ -128,6 +130,7 @@ export default function Page() {
                         isFetching={isFetching} // Fetching state during API interaction
                     />
                 </div>
-            </div>
+            </Card>
+        </div>
     );
 }

@@ -1,5 +1,5 @@
 // components/ImageUpload.tsx
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Upload, UploadFile, UploadProps, notification, Image, FormInstance} from 'antd';
 import {InboxOutlined, PlusOutlined} from '@ant-design/icons';
 import 'antd/dist/reset.css';
@@ -56,18 +56,19 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
 
     useEffect(() => {
-        const currentFiles = form.getFieldValue(fieldName) || [];
-        console.log('4. Current image field value in ImageUpload:', currentFiles);
+        console.log('ImageUpload useEffect, formLoaded:', formLoaded);
+        if (formLoaded) {
+            const currentFiles = form.getFieldValue(fieldName) || [];
 
-        const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
-            uid: file.cloudId || file.uid || `${Math.random()}`,
-            name: file.filename || file.name || `Image-${file.cloudId || file.uid || Math.random()}`,
-            status: 'done',
-            url: file.url,
-        }));
+            const formattedFiles: UploadFile[] = currentFiles.map((file: any) => ({
+                uid: file.cloudId || file.uid || `${Math.random()}`,
+                name: file.filename || file.name || `Image-${file.cloudId || file.uid || Math.random()}`,
+                status: 'done',
+                url: file.url,
+            }));
 
-        setFileList(formattedFiles);
-        console.log('5. FileList set in ImageUpload:', formattedFiles);
+            setFileList(formattedFiles);
+        }
     }, [formLoaded]);
 
     const getBase64 = (file: File): Promise<string> =>

@@ -7,7 +7,6 @@ import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusExcept
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
-import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.event.model.SchoolApprovedEvent;
 import fa.pjb.back.event.model.SchoolPublishedEvent;
@@ -23,6 +22,7 @@ import fa.pjb.back.repository.*;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
+import io.micrometer.core.aop.CountedAspect;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -36,9 +36,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
 import static fa.pjb.back.model.enums.SchoolStatusEnum.*;
@@ -61,6 +63,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final ApplicationEventPublisher eventPublisher;
     private static final Tika tika = new Tika();
+//    private final CountedAspect countedAspect;
     @Value("${school-detailed-link}")
     private String schoolDetailedLink;
     @Value("${school-detail-link-admin}")
@@ -74,33 +77,79 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(school);
     }
 
-    private void processAndSaveImages(List<MultipartFile> image, School school) {
-        List<FileUploadVO> imageVOList;
-
-        for (MultipartFile file : image) {
-            if (file.getSize() > MAX_FILE_SIZE) {
-                throw new InvalidFileFormatException("File cannot exceed 5MB");
-            }
-            try {
-                String mimeType = tika.detect(file.getBytes());
-                if (!ALLOWED_MIME_TYPES.contains(mimeType)) {
-                    throw new InvalidFileFormatException("Invalid file type: " + file.getOriginalFilename() + ". Allowed: JPEG, PNG, JPG.");
-                }
-            } catch (IOException e) {
-                throw new InvalidFileFormatException("Error when processing file");
-            }
+    public void processAndSaveImages(List<MultipartFile> images, School school) {
+        if (school == null) {
+            throw new IllegalArgumentException("School cannot be null");
         }
 
+        // Step 1: Filter valid images
+        List<MultipartFile> validImages = filterValidImages(images);
+
+        if (validImages.isEmpty()) {
+            log.warn("No valid images to process for school ID: {}", school.getId());
+            return;
+        }
+
+        // Upload images to cloud
+        List<FileUploadVO> imageVOList = uploadImagesToCloud(validImages, school);
+
+        // Prepare and save media entities
+        saveMediaEntities(imageVOList, school);
+    }
+
+    private List<MultipartFile> filterValidImages(List<MultipartFile> images) {
+        return images.stream()
+                .filter(this::isValidImage)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isValidImage(MultipartFile file) {
         try {
-            imageVOList = imageService.uploadListFiles(
-                    imageService.convertMultiPartFileToFile(image),
-                    "School_" + school.getId() + "Image_",
-                    SCHOOL_IMAGES, imageService::uploadImage
-            );
+            if (file.isEmpty()) {
+                log.warn("Skipping empty file: {}", file.getOriginalFilename());
+                return false;
+            }
+
+            String mimeType = tika.detect(file.getBytes());
+            boolean isValid = ALLOWED_MIME_TYPES.contains(mimeType) && file.getSize() <= MAX_FILE_SIZE;
+
+            if (!isValid) {
+                log.warn("Invalid file: {} (MIME: {}, Size: {})",
+                        file.getOriginalFilename(), mimeType, file.getSize());
+            }
+            return isValid;
         } catch (IOException e) {
-            throw new UploadFileException("Error while uploading images: " + e.getMessage());
+            log.error("Error validating file {}: {}", file.getOriginalFilename(), e.getMessage());
+            return false;
         }
+    }
+
+    private List<FileUploadVO> uploadImagesToCloud(List<MultipartFile> images, School school) {
+        try {
+            List<File> convertedFiles = imageService.convertMultiPartFileToFile(images);
+            List<FileUploadVO> imageVOList = imageService.uploadListFiles(
+                    convertedFiles,
+                    "School_" + school.getId() + "_Image_",
+                    SCHOOL_IMAGES,
+                    imageService::uploadImage
+            );
+
+            // Clean up temporary files
+            convertedFiles.forEach(file -> {
+                if (file.exists() && !file.delete()) {
+                    log.warn("Failed to delete temporary file: {}", file.getAbsolutePath());
+                }
+            });
+
+            return imageVOList;
+        } catch (IOException e) {
+            throw new UploadFileException("Failed to upload images for school ID " + school.getId() + ": " + e.getMessage());
+        }
+    }
+
+    private void saveMediaEntities(List<FileUploadVO> imageVOList, School school) {
         List<Media> mediaList = new ArrayList<>();
+
         for (FileUploadVO imageVO : imageVOList) {
             if (imageVO.status() == 200) {
                 Media media = Media.builder()
@@ -113,9 +162,67 @@ public class SchoolServiceImpl implements SchoolService {
                         .school(school)
                         .build();
                 mediaList.add(media);
+            } else {
+                log.error("Failed to upload image: {} (Status: {})", imageVO.fileName(), imageVO.status());
             }
         }
-        mediaRepository.saveAll(mediaList);
+
+        if (!mediaList.isEmpty()) {
+            mediaRepository.saveAll(mediaList);
+            log.info("Saved {} media entities for school ID: {}", mediaList.size(), school.getId());
+        }
+
+        if (mediaList.size() < imageVOList.size()) {
+            log.warn("Partial upload failure: {} out of {} images processed for school ID: {}",
+                    mediaList.size(), imageVOList.size(), school.getId());
+            //optional admin notification or retry attempt
+        }
+    }
+
+    /**
+     * Handles deletion of old images from cloud and database.
+     */
+    private void deleteOldImages(School school) {
+        List<Media> oldMedias = mediaRepository.getAllBySchool(school);
+        if (oldMedias.isEmpty()) {
+            return;
+        }
+
+        List<Media> successfullyDeletedMedias = new ArrayList<>();
+        List<String> failedDeletions = new ArrayList<>();
+
+        // Attempt to delete from cloud
+        for (Media media : oldMedias) {
+            try {
+                FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
+                if (deleteResponse.status() == 200) {
+                    successfullyDeletedMedias.add(media);
+                    school.getImages().remove(media); // Update in-memory entity
+                } else {
+                    failedDeletions.add(media.getCloudId());
+                    log.error("Failed to delete image with cloudId {}: Status {}", media.getCloudId(), deleteResponse.status());
+                }
+            } catch (Exception e) {
+                failedDeletions.add(media.getCloudId());
+                log.error("Exception while deleting image with cloudId {}: {}", media.getCloudId(), e.getMessage());
+            }
+        }
+
+        // If all deletions failed, throw an exception or handle accordingly
+        if (successfullyDeletedMedias.isEmpty() && !oldMedias.isEmpty()) {
+            throw new UploadFileException("Failed to delete any images from cloud: " + failedDeletions);
+        }
+
+        // Delete from database only if cloud deletion succeeded
+        if (!successfullyDeletedMedias.isEmpty()) {
+            mediaRepository.deleteAll(successfullyDeletedMedias);
+            log.info("Successfully deleted {} images from cloud and database", successfullyDeletedMedias.size());
+        }
+
+        // Handle partial failures
+        if (!failedDeletions.isEmpty()) {
+            log.warn("Partial failure: {} images could not be deleted from cloud", failedDeletions.size());
+        }
     }
 
     @Transactional
@@ -236,7 +343,6 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(draft);
     }
 
-
     private School prepareSchoolData(SchoolDTO schoolDTO, School oldSchool) {
         boolean isUpdate = schoolDTO.id() != null;
 
@@ -254,22 +360,9 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolMapper.toSchool(schoolDTO, oldSchool);
         school.setPostedDate(LocalDate.now());
 
-        // Delete old images
+        // Delete old images (only for updates)
         if (isUpdate) {
-            List<Media> oldMedias = mediaRepository.getAllBySchool(school);
-            List<Media> deleteMedias = new ArrayList<>();
-            if (!oldMedias.isEmpty()) {
-                for (Media media : oldMedias) {
-                    // Delete images from Google Drive
-                    FileUploadVO deleteResponse = imageService.deleteUploadedImage(media.getCloudId());
-                    log.info(String.valueOf(deleteResponse));
-                    if (deleteResponse.status() == 200) {
-                        deleteMedias.add(media);
-                        school.getImages().remove(media);
-                    }
-                }
-                mediaRepository.deleteAll(deleteMedias);
-            }
+            deleteOldImages(school);
         }
 
         validateAndSetAssociations(schoolDTO, school);
