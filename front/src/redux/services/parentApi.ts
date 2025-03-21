@@ -1,5 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
+import {SchoolVO} from "@/redux/services/schoolApi";
+import {Pageable} from "@/redux/services/userApi";
 
 interface ChangePasswordDTO {
     oldPassword: string;
@@ -23,6 +25,7 @@ export type ParentUpdateDTO = {
 };
 
 export type ParentVO = {
+    id: number;
     username?: string;
     email: string;
     status?: boolean;
@@ -33,9 +36,19 @@ export type ParentVO = {
     ward: string| null;
     province: string| null;
     street: string| null;
-    role: string;
+    role?: string;
     media?: MediaVO;
 };
+
+export type ParentInSchoolVO = {
+    id: number;
+    parent: ParentVO,
+    School: SchoolVO,
+    fromDate: Date,
+    toDate: Date,
+    status: boolean,
+}
+
 export type MediaVO = {
     url: string;
     filename: string;
@@ -95,7 +108,30 @@ export const parentApi = createApi({
             }),
             invalidatesTags: ["Parent"],
         }),
+        listAllParentWithFilter: build.query<
+            ApiResponse<{ content: ParentVO[]; page: Pageable }>,
+            {page?: number; size?: number; username?: string; email?: string; fullname?: string; phone?: string}
+        >({
+            query: ({ page = 1, size = 15, email,username, fullname, phone }) => ({
+                url: `parent/get-parents-admin`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    email,
+                    fullname,
+                    username,
+                    phone,
+                },
+            }),
+            providesTags: ["Parent"],
+        })
     }),
 });
 
-export const { useGetParentByIdQuery, useEditParentMutation, useChangePasswordMutation } = parentApi;
+export const {
+    useGetParentByIdQuery,
+    useEditParentMutation,
+    useListAllParentWithFilterQuery,
+    useChangePasswordMutation
+} = parentApi;

@@ -9,7 +9,7 @@ import {Pageable, UserVO, useToggleUserStatusMutation} from "@/redux/services/us
 import message from "antd/lib/message";
 
 interface UserListProps {
-    data: ApiResponse<{ content: UserVO[]; pageable: Pageable }> | undefined;
+    data: ApiResponse<{ content: UserVO[]; page: Pageable }> | undefined;
     isLoading: boolean;
     error: any;
     fetchPage: (page: number, size: number) => void;
@@ -22,7 +22,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
     const [toggleUserStatus] = useToggleUserStatusMutation();
     const router = useRouter();
     const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
-    const totalElements = data?.data.pageable.totalElements || 0;
+    const totalElements = data?.data.page.totalElements || 0;
     const handlePageChange = (page: number, size: number) => {
         setPageSize(size);
         setCurrent(page);

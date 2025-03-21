@@ -6,7 +6,6 @@ import {parentApi} from "@/redux/services/parentApi";
 import {userApi} from "@/redux/services/userApi";
 import {reviewApi} from "@/redux/services/reviewApi";
 import {schoolApi} from "@/redux/services/schoolApi";
-import { testApi } from "../services/testApi";
 import {schoolOwnerApi} from "@/redux/services/schoolOwnerApi";
 
 const apiMiddlewares = [
@@ -17,7 +16,6 @@ const apiMiddlewares = [
     userApi.middleware,
     reviewApi.middleware,
     schoolApi.middleware,
-    testApi.middleware,
     schoolOwnerApi.middleware,
 ];
 

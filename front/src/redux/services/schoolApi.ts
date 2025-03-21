@@ -2,6 +2,8 @@ import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 import {SchoolOwnerVO} from "./schoolOwnerApi";
 import {UploadFile} from "antd";
+import {MediaVO} from "@/redux/services/parentApi";
+import {Pageable} from "@/redux/services/userApi";
 
 export interface Facility {
     fid: number;
@@ -96,20 +98,6 @@ export type SchoolVO = {
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
 };
-
-export type MediaVO = {
-    url: string;
-    filename: string;
-    cloudId: string;
-};
-
-export type Pageable = {
-    pageNumber: number;
-    pageSize: number;
-    totalElements: number;
-    totalPages: number;
-};
-
 export type ExpectedSchool = {
     expectedSchool: string
 }
@@ -179,7 +167,7 @@ export const schoolApi = createApi({
     endpoints: (build) => ({
         // Get school list
         getSchoolList: build.query<
-            ApiResponse<{ content: SchoolVO[]; pageable: Pageable }>,
+            ApiResponse<{ content: SchoolVO[]; page: Pageable }>,
             {
                 page?: number;
                 size?: number;
@@ -201,18 +189,6 @@ export const schoolApi = createApi({
                     ...(district && {district}),
                     ...(email && {email}),
                     ...(phone && {phone}),
-                },
-            }),
-            transformResponse: (
-                response: ApiResponse<{ content: SchoolVO[]; pageable: Pageable; totalElements: number }>
-            ) => ({
-                ...response,
-                data: {
-                    ...response.data,
-                    pageable: {
-                        ...response.data.pageable,
-                        totalElements: response.data.totalElements,
-                    },
                 },
             }),
             providesTags: ["SchoolList"],

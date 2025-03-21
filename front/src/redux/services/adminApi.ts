@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
+import {MediaVO} from "@/redux/services/parentApi";
 
 export type UserCreateDTO = {
     id: number;
@@ -14,12 +15,6 @@ export type UserCreateDTO = {
     imageList?: MediaVO[];
     business_registration_number?: string;
 }
-
-export type MediaVO = {
-    url: string;
-    filename: string;
-    cloudId: string;
-};
 
 export const adminApi = createApi({
     reducerPath: "adminApi",

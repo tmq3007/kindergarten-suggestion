@@ -14,7 +14,8 @@ public interface ParentService {
     ParentVO getParentById(Integer userId);
     void changePassword(Integer parentId, String oldPassword, String newPassword);
 
-    Page<UserVO> getParentByAdmin(int page, int size, String role, String email, String name, String phone);
-    Page<UserVO> getParentBySchool(int page, int size, String role, String email, String name, String phone,int schoolId);
+    Page<ParentVO> getParentByAdmin(int page, int size, String email, String username, String name, String phone);
+
+    Page<ParentVO> getParentBySchool(int page, int size, String email, String name, String phone, int schoolId);
 
 }
