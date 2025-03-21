@@ -6,27 +6,30 @@ import {SchoolDetailVO, SchoolVO} from "@/redux/services/schoolApi";
 import {SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
 import {formatPhoneNumber} from "@/lib/util/phoneUtils";
 
-interface SchoolFormData {
+interface UseSchoolFormProps {
     data?: SchoolVO | SchoolDetailVO;
     isLoading: boolean;
+    externalForm?: ReturnType<typeof Form.useForm>[0];
 }
 
-export default function useSchoolForm({data, isLoading}: SchoolFormData) {
+export default function useSchoolForm({data, isLoading, externalForm}: UseSchoolFormProps) {
     const school = data;
     const schoolStatus =
         SCHOOL_STATUS_OPTIONS.find((s) => s.value === String(school?.status))?.label || undefined;
 
     const [form] = Form.useForm();
+    const usedForm = externalForm || form;
+
     const [formLoaded, setFormLoaded] = useState(false);
 
     useEffect(() => {
         if (school) {
-            console.log('1. Loaded school data:', school);
-            console.log('2. Raw imageList:', school.imageList);
+            const validEducationMethod = school.educationMethod != null ? String(school.educationMethod) : '0';
+            const validReceivingAge = school.receivingAge != null ? String(school.receivingAge) : '0';
 
-            form.setFieldsValue({
+            usedForm.setFieldsValue({
                 name: school.name || '',
-                schoolType: String(school.schoolType),
+                schoolType: school.schoolType != null ? String(school.schoolType) : '0',
                 province: school.province || '',
                 district: school.district || '',
                 ward: school.ward || '',
@@ -34,21 +37,21 @@ export default function useSchoolForm({data, isLoading}: SchoolFormData) {
                 email: school.email || '',
                 phone: formatPhoneNumber(school.phone),
                 countryCode: formatPhoneNumber(school.phone, 0),
-                receivingAge: String(school.receivingAge),
-                educationMethod: String(school.educationMethod),
+                website: school.website || '',
+                receivingAge: validReceivingAge,
+                educationMethod: validEducationMethod,
                 feeFrom: school.feeFrom || 0,
                 feeTo: school.feeTo || 0,
-                facilities: school.facilities?.map((f) => String(f.fid)) || [],
-                utilities: school.utilities?.map((u) => String(u.uid)) || [],
                 description: school.description || '',
-                website: school.website || '',
+                status: school.status || 0,
+                facilities: school.facilities?.map(f => String(f.fid)) || [],
+                utilities: school.utilities?.map(u => String(u.uid)) || [],
                 image: school.imageList || [],
             });
 
-            console.log('3. Form updated with image:', form.getFieldValue('image'));
             setFormLoaded(true);
         }
-    }, [school, form]);
+    }, [school, usedForm]);
 
-    return {form, formLoaded, schoolStatus, school, isLoading};
+    return {form: usedForm, formLoaded, schoolStatus, school, isLoading};
 }

@@ -10,6 +10,7 @@ interface PhoneInputProps {
     initialCountryCode?: string;  //Optional initial Country
     onPhoneChange?: (phone: string) => void; // Optional callback to update form value
     triggerCheckPhone?: (phone: string) => any; // Optional hook for server-side validation
+    formLoaded?: boolean;
 }
 
 // Use forwardRef to allow parent to call methods
@@ -17,9 +18,10 @@ const PhoneInput = forwardRef((
         {
             form,
             isReadOnly,
-            initialCountryCode = '+84',
+            initialCountryCode ="+84",
             onPhoneChange,
             triggerCheckPhone,
+            formLoaded = false,
         }: PhoneInputProps,
         ref
     ) => {
@@ -33,12 +35,14 @@ const PhoneInput = forwardRef((
 
         // Sync selectedCountry with countries when they load
         useEffect(() => {
+            console.log(form.getFieldValue('countryCode'));
+            console.log(initialCountryCode);
             if (countries && !selectedCountry) {
-                const defaultCountry = countries.find((c) => c.dialCode === initialCountryCode);
+                const defaultCountry = countries.find((c) => c.dialCode === (form.getFieldValue('countryCode') || initialCountryCode));
                 setPhone(form.getFieldValue('phone'));
                 setSelectedCountry(defaultCountry);
             }
-        }, [countries, initialCountryCode, form.getFieldValue('phone')]);
+        }, [countries, formLoaded, form.getFieldValue('phone')]);
 
         const handleCountryChange = async (value: string) => {
             const country = countries?.find((c) => c.code === value);

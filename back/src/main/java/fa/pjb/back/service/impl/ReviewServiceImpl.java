@@ -31,7 +31,6 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
         }
-
         return reviewMapper.toReviewVOList(reviews);
     }
 

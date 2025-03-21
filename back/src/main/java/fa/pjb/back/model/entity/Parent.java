@@ -44,5 +44,4 @@ public class Parent {
     @JoinColumn(name = "image",referencedColumnName = "id")
     private Media media;
 
-
 }

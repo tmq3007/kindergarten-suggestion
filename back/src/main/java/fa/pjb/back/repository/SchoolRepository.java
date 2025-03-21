@@ -19,7 +19,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId AND s.originalSchool IS NULL")
+    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId AND s.draft.id <> :schoolId")
     boolean existsByEmailExcept(@Param("email") String email, @Param("schoolId") Integer schoolId);
 
     @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId")

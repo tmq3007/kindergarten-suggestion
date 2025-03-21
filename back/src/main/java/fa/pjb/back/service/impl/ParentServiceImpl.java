@@ -11,17 +11,24 @@ import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.model.mapper.MediaMapper;
 import fa.pjb.back.model.mapper.ParentMapper;
+import fa.pjb.back.model.mapper.UserMapper;
+import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
+import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +36,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static fa.pjb.back.model.enums.ERole.ROLE_PARENT;
@@ -44,10 +53,33 @@ public class ParentServiceImpl implements ParentService {
     private final ParentRepository parentRepository;
     private final ParentMapper parentMapper;
     private final UserRepository userRepository;
-    private final EmailService emailService;
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
-    private final MediaMapper mediaMapper;
+    private final UserMapper userMapper;
+
+
+
+    @Override
+    public Page<UserVO> getParentByAdmin(int page, int size, String role, String email, String name, String phone) {
+        Pageable pageable = PageRequest.of(page-1, size);
+        ERole roleEnum = (role != null && !role.isEmpty()) ? userService.convertRole2(role) : null;
+        List<ERole> roleList = roleEnum != null ? Collections.singletonList(roleEnum) : List.of(ROLE_PARENT);
+
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, email, name, phone, pageable);
+        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
+    }
+
+    @Override
+    public Page<UserVO> getParentBySchool(int page, int size, String role, String email, String name, String phone, int schoolId) {
+        Pageable pageable = PageRequest.of(page-1, size);
+        ERole roleEnum = (role != null && !role.isEmpty()) ? userService.convertRole2(role) : null;
+        List<ERole> roleList = roleEnum != null ? Collections.singletonList(roleEnum) : List.of(ROLE_PARENT);
+
+        Page<UserProjection> userEntitiesPage = userRepository.findAllBySchoolAndCriteria(roleList, email, name, phone, pageable,schoolId);
+        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
+    }
+
+
     @Transactional
     @Override
     public RegisterVO saveNewParent(RegisterDTO registerDTO) throws UserNotCreatedException {

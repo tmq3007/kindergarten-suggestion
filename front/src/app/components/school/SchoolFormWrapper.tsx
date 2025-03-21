@@ -2,11 +2,11 @@ import {SCHOOL_STATUS} from "@/lib/constants";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import React from "react";
 import {FormInstance} from "antd/es/form";
-import {SchoolVO} from "@/redux/services/schoolApi";
+import {SchoolDetailVO, SchoolVO} from "@/redux/services/schoolApi";
 
 interface SchoolFormWrapperProps {
     form: FormInstance;
-    school: SchoolVO;
+    school: SchoolVO | SchoolDetailVO;
     isEdit?: boolean;
     isDetailPage?: boolean;
 }

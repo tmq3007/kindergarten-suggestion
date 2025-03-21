@@ -1,7 +1,7 @@
 'use client';
 import {useParams} from 'next/navigation';
 import {useGetSchoolQuery} from '@/redux/services/schoolApi';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SchoolFormSkeleton from '@/app/components/skeleton/SchoolFormSkeleton';
 import SchoolForm from '@/app/components/school/SchoolForm';
 import MyBreadcrumb from '@/app/components/common/MyBreadcrumb';
@@ -11,12 +11,13 @@ import useSchoolForm from "@/lib/hook/useSchoolForm";
 export default function EditSchool() {
     const params = useParams();
     const schoolId = params.id;
+
     const {data, isLoading} = useGetSchoolQuery(Number(schoolId));
-    const {form, formLoaded, schoolStatus, school} = useSchoolForm({
+    const {form, formLoaded,schoolStatus, school} = useSchoolForm({
         data: data?.data,
         isLoading,
     });
-
+    console.log("1: ",formLoaded);
     if (isLoading || !school) {
         return (
             <>
@@ -26,7 +27,6 @@ export default function EditSchool() {
             </>
         );
     }
-
     return (
         <>
             <MyBreadcrumb
@@ -43,7 +43,7 @@ export default function EditSchool() {
                 isEdit={true}
                 triggerCheckEmail={null}
                 schoolId={Number(schoolId)}
-                formLoaded={formLoaded} // Pass to SchoolForm
+                formLoaded={formLoaded}
             />
         </>
     );

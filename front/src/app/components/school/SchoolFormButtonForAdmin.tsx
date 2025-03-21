@@ -12,7 +12,6 @@ import {
 import {useSelector} from "react-redux";
 import {ButtonGroupProps} from "./SchoolFormButton";
 import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
-import {useGetDraftOfSchoolOwnerQuery, useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -221,13 +220,13 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             )}
             {hasRejectButton && (
                 <Button htmlType="button" onClick={handleReject}
-                        className={'bg-red-300 text-red-800 border-red-900'}>
+                        className={'bg-fuchsia-600 hover:!bg-fuchsia-500 text-white hover:!text-white border-none'}>
                     Reject
                 </Button>
             )}
             {hasApproveButton && (
                 <Button htmlType="button" onClick={handleApprove}
-                        className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
+                        className={'bg-yellow-400 hover:!bg-yellow-300 text-white hover:!text-white border-none'}>
                     Approve
                 </Button>
             )}
