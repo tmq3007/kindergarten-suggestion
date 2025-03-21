@@ -8,7 +8,7 @@ import { MediaVO, ParentVO } from "@/redux/services/parentApi";
 import Link from "antd/lib/typography/Link";
 
 interface ParentListProps {
-    data: ApiResponse<{ content: ParentVO[]; pageable: Pageable }> | undefined;
+    data: ApiResponse<{ content: ParentVO[]; page: Pageable }> | undefined;
     isLoading: boolean;
     error: any;
     fetchPage: (page: number, size: number) => void;
@@ -21,7 +21,7 @@ export default function ParentList({ fetchPage, data, error, isFetching }: Paren
 
     const router = useRouter();
     const parents = data?.data.content.map((parent, index) => ({ ...parent, key: index })) || [];
-    const totalElements = data?.data.pageable.totalElements || 0;
+    const totalElements = data?.data.page.totalElements || 0;
 
     const handlePageChange = (page: number, size: number) => {
         setPageSize(size);
@@ -49,7 +49,7 @@ export default function ParentList({ fetchPage, data, error, isFetching }: Paren
             render: (fullname: string, record: ParentVO) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Avatar
-                        src={record.media?.url} 
+                        src={record.media?.url}
                         size={32}
                         style={{ backgroundColor: '#87d068' }}
                     >

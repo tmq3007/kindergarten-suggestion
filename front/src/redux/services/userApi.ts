@@ -35,8 +35,8 @@ export type UserVO = {
 };
 
 export type Pageable = {
-    pageNumber: number;
-    pageSize: number;
+    number: number;
+    size: number;
     totalElements: number;
     totalPages: number;
 };
@@ -68,7 +68,7 @@ export const userApi = createApi({
     tagTypes: ["User", "UserDetail","Admin"],
     endpoints: (build) => ({
         getUserList: build.query<
-            ApiResponse<{ content: UserVO[]; pageable: Pageable }>,
+            ApiResponse<{ content: UserVO[]; page: Pageable }>,
             { page?: number; size?: number; role?: string; email?: string; name?: string; phone?: string }
         >({
             query: ({ page = 1, size, role, email, name, phone }) => ({
@@ -84,18 +84,6 @@ export const userApi = createApi({
                 },
             }),
             providesTags: ["User"],
-            transformResponse: (
-                response: ApiResponse<{ content: UserVO[]; pageable: Pageable; totalElements: number }>
-            ) => ({
-                ...response,
-                data: {
-                    ...response.data,
-                    pageable: {
-                        ...response.data.pageable,
-                        totalElements: response.data.totalElements,
-                    },
-                },
-            }),
         }),
 
         getUserDetail: build.query<ApiResponse<UserDetailDTO>, number>({

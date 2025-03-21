@@ -15,6 +15,5 @@ public interface SchoolOwnerProjection {
     String getExpectedSchool();
     List<MediaVO> getImageList();
     LocalDate getDob();
-
 }
 

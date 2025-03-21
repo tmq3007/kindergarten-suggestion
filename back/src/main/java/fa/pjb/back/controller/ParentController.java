@@ -9,12 +9,17 @@ import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -66,6 +71,23 @@ public class ParentController {
                 .code(HttpStatus.OK.value())
                 .message("Parent details retrieved successfully")
                 .data(parent)
+                .build();
+    }
+
+    @GetMapping("/get-parents-admin")
+    public ApiResponse<Page<ParentVO>> getAllParentsAdmin(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String fullname,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String phone
+    ) {
+        Page<ParentVO> parents = parentService.getParentByAdmin(page, size, email,username, fullname, phone);
+        return ApiResponse.<Page<ParentVO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("All parents retrieved successfully")
+                .data(parents)
                 .build();
     }
 
