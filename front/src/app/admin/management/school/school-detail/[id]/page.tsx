@@ -7,25 +7,26 @@ import React from "react";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
-import {ROLES, SCHOOL_STATUS, SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
+import {ROLES, SCHOOL_STATUS} from "@/lib/constants";
 import {useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
 import {RootState} from '@/redux/store';
 import {useSelector} from "react-redux";
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
-import {useSchoolFormSetup} from "@/lib/hook/useSchoolFormSetup";
+import useSchoolForm from "@/lib/hook/useSchoolForm";
 
 export default function SchoolDetail() {
     const params = useParams();
     const schoolId = Number(params.id as string);
     const router = useRouter();
     const {data, isError, isLoading} = useGetSchoolByIdQuery(schoolId);
-    const school = data?.data;
-    const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
-    const [form] = Form.useForm();
     const user = useSelector((state: RootState) => state.user);
     const role = useSelector((state: RootState) => state.user?.role);
-
-    useSchoolFormSetup(school, form);
+    const [form] = Form.useForm();
+    const {school, schoolStatus} = useSchoolForm({
+        data: data?.data,
+        isLoading,
+        externalForm: form,
+    });
 
     // Check role and status
     if (role === ROLES.ADMIN && school?.status === SCHOOL_STATUS.Saved) {

@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 @AllArgsConstructor
@@ -21,9 +22,8 @@ public class RequestCounselling {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "parent_id", nullable = false)
+    @JoinColumn(name = "parent_id")
     private Parent parent;
 
     @NotNull
@@ -57,5 +57,5 @@ public class RequestCounselling {
 
     @NotNull
     @Column(name = "due_date", nullable = false)
-    private LocalDate due_date;
+    private LocalDateTime due_date;
 }

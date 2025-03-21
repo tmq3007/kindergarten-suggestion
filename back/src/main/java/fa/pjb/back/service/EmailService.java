@@ -13,5 +13,5 @@ public interface EmailService {
     boolean sendSubmitSchool(String to, String schoolName, String username, String detailLink);
     CompletableFuture<Boolean> sendSubmitEmailToAllAdmin(String schoolName, String username, String detailLink);
 
-    void sendRequestCounsellingReminder(String to ,  String adminName,String inquiry, String dueDateString,String schoolName,String detailsLink ) throws Exception;
+    void sendRequestCounsellingReminder(String to ,  String adminName,int totalRequest, String dueDateString,String detailsLink ) throws Exception;
 }

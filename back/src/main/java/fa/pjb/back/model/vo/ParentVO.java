@@ -1,12 +1,6 @@
 package fa.pjb.back.model.vo;
 
-import fa.pjb.back.model.entity.Media;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
-import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 @Builder

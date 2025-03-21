@@ -15,6 +15,7 @@ import {adminApi} from "@/redux/services/adminApi";
 import {reviewApi} from "@/redux/services/reviewApi";
 import {schoolApi} from "@/redux/services/schoolApi";
 import {schoolOwnerApi} from "@/redux/services/schoolOwnerApi";
+import {requestCounsellingApi} from "@/redux/services/requestCounsellingApi";
 
 
 // Create a rootReducer that includes reducers for managing the API and state management.
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
     [reviewApi.reducerPath]: reviewApi.reducer,
     [schoolApi.reducerPath]: schoolApi.reducer,
     [schoolOwnerApi.reducerPath]: schoolOwnerApi.reducer,
+    [requestCounsellingApi.reducerPath]: requestCounsellingApi.reducer,
     // Reducers managing state
     counter: counterReducer,
     auth: authReducer,

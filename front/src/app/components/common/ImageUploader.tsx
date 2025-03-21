@@ -1,4 +1,3 @@
-// components/ImageUpload.tsx
 import React, {useEffect, useRef, useState} from 'react';
 import {Upload, UploadFile, UploadProps, notification, Image, FormInstance} from 'antd';
 import {InboxOutlined, PlusOutlined} from '@ant-design/icons';

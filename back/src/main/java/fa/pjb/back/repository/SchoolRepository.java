@@ -12,18 +12,18 @@ import java.util.Optional;
 public interface SchoolRepository extends JpaRepository<School, Integer> {
     Optional<School> findByEmail(String email);
 
+    @Query("SELECT s FROM School s  WHERE s.id = :schoolId")
+    Optional<School> findSchoolBySchoolId(@Param("schoolId") Integer schoolId);
+
     boolean existsByPhone(String phone);
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId AND s.originalSchool IS NULL")
+    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId AND s.draft.id <> :schoolId")
     boolean existsByEmailExcept(@Param("email") String email, @Param("schoolId") Integer schoolId);
 
     @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId")
     Optional<School> findSchoolByUserId(@Param("userId") Integer userId);
-
-    @Query("SELECT s FROM School s WHERE s.draft.id = :schoolId")
-    Optional<School> findSchoolDraftBySchoolId(@Param("schoolId") Integer schoolId);
 
     @Query(value = "SELECT s FROM School s " +
             "LEFT JOIN FETCH s.originalSchool " +

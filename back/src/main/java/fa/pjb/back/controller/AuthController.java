@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 public class AuthController {
     private final AuthService authService;
-    private final UserService userService;
 
     @Operation(summary = "Login", description = "Login content website")
     @PostMapping("login/admin")
