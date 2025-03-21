@@ -32,12 +32,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             + "u.role AS role, u.status AS status, "
             + "p.street AS street, p.ward AS ward, p.district AS district, p.province AS province "
             + "FROM User u LEFT JOIN Parent p ON u.id = p.id "
-            + "WHERE (:role IS NULL OR u.role = :role) "
+            + "WHERE (:roles IS NULL OR u.role IN :roles) "
             + "AND (:email IS NULL OR u.email LIKE %:email%) "
             + "AND (:name IS NULL OR u.fullname LIKE %:name%) "
             + "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
-    Page<UserVO> findAllByCriteria(
-            @Param("role") ERole role,
+    Page<UserProjection> findAllByCriteria(
+            @Param("roles") List<ERole> roles,
             @Param("email") String email,
             @Param("name") String name,
             @Param("phone") String phone,
@@ -46,4 +46,22 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u.email FROM User u WHERE u.role = :role AND u.status = true")
     List<String> findActiveUserEmailsByRole(ERole role);
+    @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = true")
+    List<User> findActiveUserByRole(ERole role);
+
+    @Query("SELECT u as user " +
+            "FROM ParentInSchool pis " +
+            "JOIN pis.parent p " +
+            "JOIN p.user u " +
+            "WHERE pis.school.id = :schoolId " +
+            "AND (:roles IS NULL OR u.role IN :roles) " +
+            "AND (:email IS NULL OR u.email LIKE %:email%) " +
+            "AND (:name IS NULL OR u.username LIKE %:name%) " +
+            "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
+    Page<UserProjection> findAllBySchoolAndCriteria(@Param("roles") List<ERole> roles,
+                                                    @Param("email") String email,
+                                                    @Param("name") String name,
+                                                    @Param("phone") String phone,
+                                                    Pageable pageable,
+                                                    @Param("schoolId") int schoolId);
 }

@@ -7,17 +7,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface SchoolRepository extends JpaRepository<School, Integer> {
     Optional<School> findByEmail(String email);
 
+    @Query("SELECT s FROM School s  WHERE s.id = :schoolId")
+    Optional<School> findSchoolBySchoolId(@Param("schoolId") Integer schoolId);
+
     boolean existsByPhone(String phone);
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId AND s.originalSchool IS NULL")
+    @Query("SELECT COUNT(s) > 0 FROM School s WHERE s.email = :email AND s.id <> :schoolId AND s.draft.id <> :schoolId")
     boolean existsByEmailExcept(@Param("email") String email, @Param("schoolId") Integer schoolId);
 
     @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId")
@@ -48,5 +50,4 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
             @Param("email") String email,
             @Param("phone") String phone,
             Pageable pageable);
-
 }

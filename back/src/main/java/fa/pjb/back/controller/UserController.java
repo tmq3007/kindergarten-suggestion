@@ -30,7 +30,7 @@ public class UserController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phone
     ) {
-        Page<UserVO> users = userService.getAllUsers(page, size, role, email, name, phone);
+        Page<UserVO> users = userService.getAllUsersAdmin(page, size, role, email, name, phone);
         return ApiResponse.<Page<UserVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Users retrieved successfully")

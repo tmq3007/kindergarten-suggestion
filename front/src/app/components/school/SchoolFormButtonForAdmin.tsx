@@ -34,12 +34,12 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
     const [updateSchoolByAdmin, {isLoading: isUpdating}] = useUpdateSchoolByAdminMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
-    const [messageApi, messageContextHolder] = message.useMessage();
-    const [api, notificationContextHolder] = notification.useNotification();
     const { refetch : getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
     const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [messageApi, messageContextHolder] = message.useMessage();
+    const [api, notificationContextHolder] = notification.useNotification();
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
@@ -220,13 +220,13 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             )}
             {hasRejectButton && (
                 <Button htmlType="button" onClick={handleReject}
-                        className={'bg-red-300 text-red-800 border-red-900'}>
+                        className={'bg-fuchsia-600 hover:!bg-fuchsia-500 text-white hover:!text-white border-none'}>
                     Reject
                 </Button>
             )}
             {hasApproveButton && (
                 <Button htmlType="button" onClick={handleApprove}
-                        className={'bg-yellow-300 text-yellow-800 border-yellow-900'}>
+                        className={'bg-yellow-400 hover:!bg-yellow-300 text-white hover:!text-white border-none'}>
                     Approve
                 </Button>
             )}

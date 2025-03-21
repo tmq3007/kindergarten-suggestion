@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
@@ -11,13 +12,12 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
+import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.MediaRepository;
-import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.UserService;
@@ -53,23 +53,23 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
-    private final AuthService authService;
     private final EmailService emailService;
-    private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
 
 
     @Override
-    public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public Page<UserVO> getAllUsersAdmin(int page, int size, String role, String email, String name, String phone) {
+        Pageable pageable = PageRequest.of(page-1, size);
         ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
-
-        return userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
-
+        List<ERole> roleList = roleEnum != null ? Collections.singletonList(roleEnum) : Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
+    
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, email, name, phone, pageable);
+        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
 
-    private ERole convertRole2(String role) {
+
+    public ERole convertRole2(String role) {
         if (role == null || role.trim().isEmpty()) {
             return null;
         }
@@ -109,7 +109,6 @@ public class UserServiceImpl implements UserService {
             case ROLE_PARENT -> "Parent";
             case ROLE_SCHOOL_OWNER -> "School Owner";
             case ROLE_ADMIN -> "Admin";
-            default -> "Unknown Role";
         };
     }
 
@@ -169,10 +168,10 @@ public class UserServiceImpl implements UserService {
                 Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
     }
 
-    private void processAndSaveImages(List<MultipartFile> image, SchoolOwner schoolOwner) {
+    private void processAndSaveFile(List<MultipartFile> files, SchoolOwner schoolOwner) {
         List<FileUploadVO> imageVOList;
 
-        for (MultipartFile file : image) {
+        for (MultipartFile file : files) {
             if (file.getSize() > MAX_FILE_SIZE) {
                 throw new InvalidFileFormatException("File cannot exceed 5MB");
             }
@@ -188,9 +187,9 @@ public class UserServiceImpl implements UserService {
 
         try {
             imageVOList = imageService.uploadListFiles(
-                    imageService.convertMultiPartFileToFile(image),
+                    imageService.convertMultiPartFileToFile(files),
                     "School_Owner_" + schoolOwner.getId() + "Image_",
-                    SO_IMAGES,imageService::uploadImage
+                    SO_IMAGES,imageService::uploadFile
             );
         } catch (IOException e) {
             throw new UploadFileException("Error while uploading images: " + e.getMessage());
@@ -230,6 +229,10 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
+        if ( schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number()) ) {
+            throw new BRNAlreadyExistedException("Business registration number already exists.");
+        }
+
         // Create User
         String usernameAutoGen = autoGeneratorHelper.generateUsername(userCreateDTO.fullname());
         String passwordAutoGen = autoGeneratorHelper.generateRandomPassword();
@@ -244,6 +247,7 @@ public class UserServiceImpl implements UserService {
                 .build();
         if (Objects.equals(userCreateDTO.role(), "ROLE_SCHOOL_OWNER")) {
             user.setRole(ERole.ROLE_SCHOOL_OWNER);
+
 
             // Create SchoolOwner
             SchoolOwner schoolOwner = SchoolOwner.builder()
@@ -260,7 +264,7 @@ public class UserServiceImpl implements UserService {
 
             // Validate and upload images (if provided)
             if (image != null && !image.isEmpty()) {
-                processAndSaveImages(image, newSO);
+                processAndSaveFile(image, newSO);
             }
         } else if (Objects.equals(userCreateDTO.role(), "ROLE_ADMIN")) {
             user.setRole(ERole.ROLE_ADMIN);
@@ -273,10 +277,8 @@ public class UserServiceImpl implements UserService {
         //UserCreateDTO responseDTO = userMapper.toUserDTO(user);
 
         //Check email exist
-        if (existingUserEmail.isEmpty()) {
-            emailService.sendUsernamePassword(userCreateDTO.email(), userCreateDTO.fullname(),
-                    usernameAutoGen, passwordAutoGen);
-        }
+        emailService.sendUsernamePassword(userCreateDTO.email(), userCreateDTO.fullname(),
+                usernameAutoGen, passwordAutoGen);
 
         return userCreateDTO;
     }

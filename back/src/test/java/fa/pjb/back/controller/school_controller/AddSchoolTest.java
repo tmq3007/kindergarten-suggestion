@@ -2,7 +2,7 @@ package fa.pjb.back.controller.school_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
-import fa.pjb.back.model.dto.AddSchoolDTO;
+import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.enums.SchoolStatusEnum;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.service.SchoolService;
@@ -41,7 +41,7 @@ class AddSchoolTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private AddSchoolDTO validSchoolDTO;
+    private SchoolDTO validSchoolDTO;
     private SchoolDetailVO schoolDetailVO;
     private String url;
 
@@ -49,8 +49,8 @@ class AddSchoolTest {
     void setUp() {
         url = "/api/school/add";
 
-        // Valid AddSchoolDTO for successful case
-        validSchoolDTO = new AddSchoolDTO(
+        // Valid SchoolDTO for successful case
+        validSchoolDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
@@ -68,7 +68,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_Success_WithImages() throws Exception {
         // Mock service response
-        when(schoolService.addSchool(any(AddSchoolDTO.class), any(List.class))).thenReturn(schoolDetailVO);
+        when(schoolService.addSchool(any(SchoolDTO.class), any(List.class))).thenReturn(schoolDetailVO);
 
         // Create mock multipart files
         MockMultipartFile imageFile = new MockMultipartFile(
@@ -96,7 +96,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_ValidationFailure_MissingFields() throws Exception {
         // Invalid DTO with missing required fields
-        AddSchoolDTO invalidDTO = new AddSchoolDTO(
+        SchoolDTO invalidDTO = new SchoolDTO(
                 null, "", null, null, SchoolStatusEnum.SUBMITTED.getValue(),
                 "", "", "", null, "", "", null, null, null, null, null, null, null, null
         );
@@ -124,7 +124,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_ValidationFailure_InvalidFeeRange() throws Exception {
         // Invalid DTO with feeFrom > feeTo
-        AddSchoolDTO invalidFeeDTO = new AddSchoolDTO(
+        SchoolDTO invalidFeeDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 2000, 1000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
@@ -149,7 +149,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_ServiceThrowsIOException() throws Exception {
         // Mock service to throw IOException
-        when(schoolService.addSchool(any(AddSchoolDTO.class), any(List.class)))
+        when(schoolService.addSchool(any(SchoolDTO.class), any(List.class)))
                 .thenThrow(new InvalidFileFormatException("Image upload failed"));
 
         MockMultipartFile imageFile = new MockMultipartFile(
@@ -173,7 +173,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_ValidationFailure_InvalidPhoneFormat() throws Exception {
         // DTO with an invalid phone number (no "+" and too few digits)
-        AddSchoolDTO invalidPhoneDTO = new AddSchoolDTO(
+        SchoolDTO invalidPhoneDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "12345", // Invalid phone
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
@@ -197,7 +197,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_ValidationFailure_InvalidEmailFormat() throws Exception {
         // DTO with an invalid email (no "@" or domain)
-        AddSchoolDTO invalidEmailDTO = new AddSchoolDTO(
+        SchoolDTO invalidEmailDTO = new SchoolDTO(
                 1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "invalidemail", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"

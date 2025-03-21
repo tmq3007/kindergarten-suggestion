@@ -2,17 +2,19 @@ import {SCHOOL_STATUS} from "@/lib/constants";
 import SchoolForm from "@/app/components/school/SchoolForm";
 import React from "react";
 import {FormInstance} from "antd/es/form";
-import {SchoolVO} from "@/redux/services/schoolApi";
+import {SchoolDetailVO, SchoolVO} from "@/redux/services/schoolApi";
 
 interface SchoolFormWrapperProps {
     form: FormInstance;
-    school: SchoolVO;
+    school: SchoolVO | SchoolDetailVO;
     isEdit?: boolean;
+    isDetailPage?: boolean;
 }
 
-export default function SchoolFormWrapper({form, school,isEdit}: SchoolFormWrapperProps) {
+export default function SchoolFormWrapper({form, school, isEdit, isDetailPage}: SchoolFormWrapperProps) {
     return (
         <SchoolForm
+            isDetailPage={isDetailPage}
             isEdit={isEdit}
             isReadOnly={true}
             form={form}
@@ -25,7 +27,7 @@ export default function SchoolFormWrapper({form, school,isEdit}: SchoolFormWrapp
                 school.status === SCHOOL_STATUS.Unpublished
             }
             hasEditButton={
-                school.status === SCHOOL_STATUS.Submitted ||
+                school.status === SCHOOL_STATUS.Saved ||
                 school.status === SCHOOL_STATUS.Approved ||
                 school.status === SCHOOL_STATUS.Published ||
                 school.status === SCHOOL_STATUS.Unpublished

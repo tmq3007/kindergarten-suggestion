@@ -5,13 +5,13 @@ import {useRouter} from "next/navigation";
 import React, {useEffect} from "react";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
-import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
-import {ROLES, SCHOOL_STATUS_OPTIONS,} from "@/lib/constants";
+import {ROLES} from "@/lib/constants";
 import {useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
-import {useSchoolFormSetup} from "@/lib/hook/useSchoolFormSetup";
+import DetailPageSkeleton from "@/app/components/skeleton/DetailPageSkeleton";
+import useSchoolForm from "@/lib/hook/useSchoolForm";
 
 export default function SchoolDetail() {
     const router = useRouter();
@@ -43,11 +43,13 @@ export default function SchoolDetail() {
         skip: !hasSchool,
     });
 
-    const school = data?.data;
-    const schoolStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(school?.status))?.label || undefined;
     const [form] = Form.useForm();
+    const {school, schoolStatus} = useSchoolForm({
+        data: data?.data,
+        isLoading,
+        externalForm: form,
+    });
 
-    useSchoolFormSetup(school, form);
 
     useEffect(() => {
         if (isError) {
@@ -57,17 +59,12 @@ export default function SchoolDetail() {
     }, [isError, router]);
 
     if (isLoading) {
+        const paths = [
+            {label: "My School", href: '/public/school-owner'},
+            {label: "School Detail"},
+        ]
         return (
-            <div className="pt-2">
-                <MyBreadcrumb
-                    paths={[
-                        {label: "My School"},
-                        {label: "School Detail"},
-                    ]}
-                />
-                <SchoolManageTitle title={"School details"}/>
-                <SchoolFormSkeleton/>
-            </div>
+            <DetailPageSkeleton paths={paths}/>
         );
     }
 
@@ -75,14 +72,14 @@ export default function SchoolDetail() {
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    {label: "School Management", href: "/admin/management/school/school-list"},
+                    {label: "My School", href: "/public/school-owner"},
                     {label: "School Detail"},
                 ]}
             />
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
 
             <div className="read-only-form email-locked">
-                <SchoolFormWrapper form={form} school={school!}/>
+                <SchoolFormWrapper form={form} school={school!} isDetailPage={true}/>
             </div>
         </div>
     );

@@ -153,7 +153,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                     {
                                         key: '4',
                                         icon: <UsergroupAddOutlined/>,
-                                        label: <Link href="/parent-management">Parent Management</Link>,
+                                        label: <Link href="/admin/management/parent/parent-list">Parent Management</Link>,
                                     },
                                     {
                                         key: '5',
@@ -191,13 +191,13 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             <Link href="/admin/management/school/school-list">
                                 <HomeOutlined/>
                             </Link>
-                            <Link href="/user-management">
+                            <Link href="/admin/management/user/user-list">
                                 <UserOutlined/>
                             </Link>
                             <Link href="/reminder">
                                 <BellOutlined/>
                             </Link>
-                            <Link href="/parent-management">
+                            <Link href="/admin/management/parent/parent-list">
                                 <UsergroupAddOutlined/>
                             </Link>
                             <Link href="/request-management">
