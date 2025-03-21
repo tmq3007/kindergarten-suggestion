@@ -523,6 +523,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     }
 
     return (
+
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form<SchoolFieldType>
                 size='middle'
@@ -587,10 +588,10 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         />
                         <PhoneInput
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}
-                            initialCountryCode={isEdit ? (externalForm.countryCode || '+84') : undefined}
                             form={form}
                             isReadOnly={isReadOnly}
                             ref={phoneInputRef}
+                            formLoaded={formLoaded}
                         />
 
                         <Form.Item
@@ -661,7 +662,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     <InputNumber
                                         placeholder="To"
                                         className="w-full"
-
                                         min={form.getFieldValue("feeFrom") || 0}
                                         step={100000}
                                         onChange={(value) => form.setFieldsValue({feeTo: value})}
@@ -767,7 +767,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 form={form}
                                 fieldName="image"
                                 maxCount={10}
-                                accept={["image/png", "image/jpg", "image/jpeg", "application/pdf"]}
+                                accept={["image/png","image/jpg","image/jpeg"]}
                                 maxSizeMB={5}
                                 hideImageUpload={hideImageUpload}
                                 imageList={imageList}

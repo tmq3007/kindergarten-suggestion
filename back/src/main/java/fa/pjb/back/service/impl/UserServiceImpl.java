@@ -12,13 +12,12 @@ import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
+import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.MediaRepository;
-import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.UserService;
@@ -54,23 +53,23 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
-    private final AuthService authService;
     private final EmailService emailService;
-    private final ParentRepository parentRepository;
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
 
 
     @Override
-    public Page<UserVO> getAllUsers(int page, int size, String role, String email, String name, String phone) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public Page<UserVO> getAllUsersAdmin(int page, int size, String role, String email, String name, String phone) {
+        Pageable pageable = PageRequest.of(page-1, size);
         ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
-
-        return userRepository.findAllByCriteria(roleEnum, email, name, phone, pageable);
-
+        List<ERole> roleList = roleEnum != null ? Collections.singletonList(roleEnum) : Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
+    
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, email, name, phone, pageable);
+        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
 
-    private ERole convertRole2(String role) {
+
+    public ERole convertRole2(String role) {
         if (role == null || role.trim().isEmpty()) {
             return null;
         }
@@ -110,7 +109,6 @@ public class UserServiceImpl implements UserService {
             case ROLE_PARENT -> "Parent";
             case ROLE_SCHOOL_OWNER -> "School Owner";
             case ROLE_ADMIN -> "Admin";
-            default -> "Unknown Role";
         };
     }
 
@@ -279,10 +277,8 @@ public class UserServiceImpl implements UserService {
         //UserCreateDTO responseDTO = userMapper.toUserDTO(user);
 
         //Check email exist
-        if (existingUserEmail.isEmpty()) {
-            emailService.sendUsernamePassword(userCreateDTO.email(), userCreateDTO.fullname(),
-                    usernameAutoGen, passwordAutoGen);
-        }
+        emailService.sendUsernamePassword(userCreateDTO.email(), userCreateDTO.fullname(),
+                usernameAutoGen, passwordAutoGen);
 
         return userCreateDTO;
     }

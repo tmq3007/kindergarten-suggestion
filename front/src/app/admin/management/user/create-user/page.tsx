@@ -8,17 +8,17 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
-import { setUser } from '@/redux/features/userCreateSlice';
+// import { setUser } from '@/redux/features/userCreateSlice';
 import { Country, useGetCountriesQuery } from "@/redux/services/registerApi";
 import { useCreateUserMutation } from "@/redux/services/adminApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 import { motion, Variants } from 'framer-motion';
-
-const { Title } = Typography;
-const { TextArea } = AntdInput; // Importing TextArea from AntdInput
 import { Row, Col } from 'antd';
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import {ImageUpload} from "@/app/components/common/ImageUploader";
+const { Title } = Typography;
+const { TextArea } = AntdInput; // Importing TextArea from AntdInput
+
 
 const formItemLayout = {
     labelCol: { xs: { span: 24 }, sm: { span: 6 } },
@@ -81,7 +81,7 @@ const CreateUser: React.FC = () => {
         try {
             const response = await createUser({data :formattedValues, imageList: imageFiles}).unwrap();
             if (response.data) {
-                dispatch(setUser(formattedValues));
+                // dispatch(setUser(formattedValues));
                 openNotificationWithIcon('success', 'User created successfully!', 'Check your email for username and password.');
                 form.resetFields();
                 setSelectedRole(undefined);

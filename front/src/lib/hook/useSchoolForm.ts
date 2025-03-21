@@ -1,29 +1,26 @@
 'use client';
 
-import {useEffect, useState} from 'react';
-import {Form} from 'antd';
-import {SchoolDetailVO, SchoolVO} from "@/redux/services/schoolApi";
-import {SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
-import {formatPhoneNumber} from "@/lib/util/phoneUtils";
+import {useEffect, useState}from 'react';
+import {Form}from 'antd';
+import {SchoolDetailVO, SchoolVO}from "@/redux/services/schoolApi";
+import {SCHOOL_STATUS_OPTIONS}from "@/lib/constants";
+import {formatPhoneNumber}from "@/lib/util/phoneUtils";
 
 interface SchoolFormData {
-    data?: SchoolVO | SchoolDetailVO;
-    isLoading: boolean;
+data?: SchoolVO | SchoolDetailVO;
+isLoading: boolean;
 }
 
 export default function useSchoolForm({data, isLoading}: SchoolFormData) {
     const school = data;
     const schoolStatus =
         SCHOOL_STATUS_OPTIONS.find((s) => s.value === String(school?.status))?.label || undefined;
-
-    const [form] = Form.useForm();
     const [formLoaded, setFormLoaded] = useState(false);
-
+    const [form] = Form.useForm();
     useEffect(() => {
-        if (school) {
-            console.log('1. Loaded school data:', school);
-            console.log('2. Raw imageList:', school.imageList);
+    console.log("2: ",formLoaded);
 
+        if (school) {
             form.setFieldsValue({
                 name: school.name || '',
                 schoolType: String(school.schoolType),
@@ -44,11 +41,11 @@ export default function useSchoolForm({data, isLoading}: SchoolFormData) {
                 website: school.website || '',
                 image: school.imageList || [],
             });
-
-            console.log('3. Form updated with image:', form.getFieldValue('image'));
             setFormLoaded(true);
         }
+    console.log("3: ",formLoaded);
+
     }, [school, form]);
 
-    return {form, formLoaded, schoolStatus, school, isLoading};
+    return {form,formLoaded, schoolStatus, school, isLoading};
 }

@@ -8,7 +8,7 @@ import {
 } from "@/redux/services/schoolOwnerApi";
 import useSchoolForm from "@/lib/hook/useSchoolForm";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
-import React from "react";
+import React, { useState } from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 
@@ -23,6 +23,7 @@ export default function EditSchool() {
         data: data?.data,
         isLoading,
     });
+
     if (isLoading) {
         return (
             <>
@@ -66,7 +67,7 @@ export default function EditSchool() {
                 hasSaveButton={true}
                 isEdit={true}
                 triggerCheckEmail={null}
-                formLoaded={formLoaded} // Pass to SchoolForm
+                formLoaded={formLoaded || false}
             />
         </>
     );
