@@ -5,7 +5,7 @@ import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
     useAddSchoolMutation,
-    useGetSchoolByIdQuery,
+    useGetSchoolByIdQuery, useIsDraftQuery, useMergeDraftMutation,
     useUpdateSchoolByAdminMutation,
     useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
@@ -22,6 +22,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   hasEditButton,
                                                                   hasRejectButton,
                                                                   hasApproveButton,
+                                                                  hasApproveDraftButton,
                                                                   hasPublishButton,
                                                                   hasUnpublishButton,
                                                                   emailInputRef,
@@ -34,12 +35,18 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
     const [updateSchoolByAdmin, {isLoading: isUpdating}] = useUpdateSchoolByAdminMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
-    const { refetch : getSchoolByIdRefetch } = useGetSchoolByIdQuery(Number(schoolId));
-    const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
+    const {refetch: getSchoolByIdRefetch} = useGetSchoolByIdQuery(Number(schoolId));
+    const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
+    const {data: isDraftData, isLoading: isDraftLoading} = useIsDraftQuery(Number(schoolId));
+    const isDraft = isDraftData?.data;
+    const [mergeDraft, {isLoading: isMerging}] = useMergeDraftMutation();
+
+
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
+    const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
@@ -87,12 +94,12 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 },
             );
         }
-    };
+    }
 
     /**
      * Handles school update
      */
-    const handleUpdateSubmit = async () => {
+    const updateSubmit = async () => {
         const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
         try {
@@ -105,6 +112,29 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         }
     };
 
+    const handleUpdateSubmit = () => {
+        setActiveButton("update");
+        setModalVisible(true);
+    };
+
+    const approveDraft = async () => {
+        try {
+            const mergeData = await mergeDraft(Number(schoolId)).unwrap();
+            const isSuccess = mergeData?.data;
+            if (isSuccess) {
+                messageApi.success('Draft merged successfully!');
+            }
+            getSchoolByIdRefetch();
+        } catch (error) {
+            messageApi.error('Failed to merge draft. Please try again.');
+        }
+    };
+
+    const handleApproveDraft = () => {
+        setActiveButton("approve-draft");
+        setModalVisible(true);
+    };
+
     const handleCancel = () => {
         router.back();
     };
@@ -112,24 +142,32 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const handleConfirmAction = async () => {
         try {
             switch (activeButton) {
+                case "update":
+                    setModalVisible(false);
+                    await updateSubmit();
+                    break;
+                case "approve-draft":
+                    setModalVisible(false);
+                    await approveDraft();
+                    break;
                 case "publish":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId),  status: 4 }).unwrap();
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 4}).unwrap();
                     messageApi.success('School published successfully!');
                     break;
                 case "unpublish":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 5 }).unwrap();
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 5}).unwrap();
                     messageApi.success('School unpublished successfully!');
                     break;
                 case "delete":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 6 }).unwrap();
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 6}).unwrap();
                     messageApi.success('School deleted successfully!');
                     break;
                 case "approve":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 2 }).unwrap();
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 2}).unwrap();
                     messageApi.success('School approved successfully!');
                     break;
                 case "reject":
-                    await updateSchoolStatusByAdmin({ schoolId: Number(schoolId), status: 3 }).unwrap();
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 3}).unwrap();
                     messageApi.success('School rejected successfully!');
                     break;
             }
@@ -173,18 +211,22 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
     const getModalContent = () => {
         switch (activeButton) {
+            case "update":
+                return {title: "Update School", desc: "Are you sure you want to update this school?"};
+            case "approve-draft":
+                return {title: "Approve School", desc: "Are you sure you want to approve this school?"};
             case "publish":
-                return { title: "Publish School", desc: "Are you sure you want to publish this school?" };
+                return {title: "Publish School", desc: "Are you sure you want to publish this school?"};
             case "unpublish":
-                return { title: "Unpublish School", desc: "Are you sure you want to unpublish this school?" };
+                return {title: "Unpublish School", desc: "Are you sure you want to unpublish this school?"};
             case "delete":
-                return { title: "Delete School", desc: "Are you sure you want to delete this school?" };
+                return {title: "Delete School", desc: "Are you sure you want to delete this school?"};
             case "approve":
-                return { title: "Approve School", desc: "Are you sure you want to approve this school?" };
+                return {title: "Approve School", desc: "Are you sure you want to approve this school?"};
             case "reject":
-                return { title: "Reject School", desc: "Are you sure you want to reject this school?" };
+                return {title: "Reject School", desc: "Are you sure you want to reject this school?"};
             default:
-                return { title: "", desc: "" };
+                return {title: "", desc: ""};
         }
     };
 
@@ -224,10 +266,18 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                     Reject
                 </Button>
             )}
-            {hasApproveButton && (
+            {!isDraftLoading && !isDraft && hasApproveButton && (
                 <Button htmlType="button" onClick={handleApprove}
                         className={'bg-yellow-400 hover:!bg-yellow-300 text-white hover:!text-white border-none'}>
                     Approve
+                </Button>
+            )}
+            {!isDraftLoading && isDraft && hasApproveDraftButton && (
+                <Button htmlType="button" onClick={handleApproveDraft}
+                        className={'bg-yellow-400 hover:!bg-yellow-300 text-white hover:!text-white border-none'}
+                        loading={isMerging}
+                >
+                    Approve2
                 </Button>
             )}
             {hasPublishButton && (
@@ -242,8 +292,11 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                     Unpublish
                 </Button>
             )}
+
+
+            {/* Modal confirm */}
             <Modal
-                title={getModalContent().title}
+                title={<p className={'font-bold text-3xl'}>{getModalContent().title}</p>}
                 open={modalVisible}
                 onOk={handleConfirmAction}
                 onCancel={() => {
@@ -253,8 +306,9 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 okText="Yes"
                 cancelText="No, Take me back!"
                 confirmLoading={isUpdatingStatus}
+                getContainer={false}
             >
-                <p>{getModalContent().desc}</p>
+                <p className={'text-lg'}>{getModalContent().desc}</p>
             </Modal>
         </div>
     );
