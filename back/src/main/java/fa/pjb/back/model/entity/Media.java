@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "Media")
+@ToString
 public class Media {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,14 +38,17 @@ public class Media {
     private String cloudId;
 
     @OneToOne(mappedBy = "media",fetch = FetchType.LAZY)
+    @ToString.Exclude
     private Parent parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id")
+    @ToString.Exclude
     private School school;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_owner_id")
+    @ToString.Exclude
     private SchoolOwner schoolOwner;
 
 }

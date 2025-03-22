@@ -15,6 +15,9 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
     @Query("SELECT s FROM School s  WHERE s.id = :schoolId")
     Optional<School> findSchoolBySchoolId(@Param("schoolId") Integer schoolId);
 
+    @Query("SELECT s FROM School s LEFT JOIN FETCH s.draft WHERE s.id = :schoolId")
+    School findByIdWithDraft(@Param("schoolId") Integer schoolId);
+
     boolean existsByPhone(String phone);
 
     boolean existsByEmail(String email);
