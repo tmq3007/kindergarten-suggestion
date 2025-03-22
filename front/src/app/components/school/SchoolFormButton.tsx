@@ -9,7 +9,7 @@ import React from "react";
 export interface ButtonGroupProps {
     form: FormInstance;
     hasCancelButton?: boolean;
-    hasSaveButton?: boolean;
+    hasUpdateSaveButton?: boolean;
     hasCreateSubmitButton?: boolean;
     hasCreateSaveButton?: boolean;
     hasUpdateSubmitButton?: boolean;
@@ -17,6 +17,7 @@ export interface ButtonGroupProps {
     hasEditButton?: boolean;
     hasRejectButton?: boolean;
     hasApproveButton?: boolean;
+    hasApproveDraftButton?: boolean;
     hasPublishButton?: boolean;
     hasUnpublishButton?: boolean;
     phoneInputRef?: React.RefObject<any>,
@@ -27,14 +28,15 @@ export default function SchoolFormButton(
     {
         form,
         hasCancelButton,
-        hasSaveButton,
         hasCreateSubmitButton,
         hasCreateSaveButton,
         hasUpdateSubmitButton,
+        hasUpdateSaveButton,
         hasDeleteButton,
         hasEditButton,
         hasRejectButton,
         hasApproveButton,
+        hasApproveDraftButton,
         hasPublishButton,
         hasUnpublishButton,
         phoneInputRef,
@@ -47,14 +49,15 @@ export default function SchoolFormButton(
         return <SchoolFormButtonForAdmin
             form={form}
             hasCancelButton={hasCancelButton}
-            hasSaveButton={hasSaveButton}
-            hasCreateSaveButton={hasCreateSaveButton}
             hasCreateSubmitButton={hasCreateSubmitButton}
+            hasCreateSaveButton={hasCreateSaveButton}
             hasUpdateSubmitButton={hasUpdateSubmitButton}
+            hasUpdateSaveButton={hasUpdateSaveButton}
             hasDeleteButton={hasDeleteButton}
             hasEditButton={hasEditButton}
             hasRejectButton={hasRejectButton}
             hasApproveButton={hasApproveButton}
+            hasApproveDraftButton={hasApproveDraftButton}
             hasPublishButton={hasPublishButton}
             hasUnpublishButton={hasUnpublishButton}
             emailInputRef={emailInputRef}
@@ -65,9 +68,10 @@ export default function SchoolFormButton(
         return <SchoolFormButtonForSchoolOwner
             form={form}
             hasCancelButton={hasCancelButton}
-            hasSaveButton={hasSaveButton}
             hasCreateSubmitButton={hasCreateSubmitButton}
+            hasCreateSaveButton={hasCreateSaveButton}
             hasUpdateSubmitButton={hasUpdateSubmitButton}
+            hasUpdateSaveButton={hasUpdateSaveButton}
             hasDeleteButton={hasDeleteButton}
             hasEditButton={hasEditButton}
             hasPublishButton={hasPublishButton}

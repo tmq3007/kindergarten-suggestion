@@ -17,7 +17,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     {
         form,
         hasCancelButton,
-        hasSaveButton,
+        hasUpdateSaveButton,
         hasCreateSaveButton,
         hasCreateSubmitButton,
         hasUpdateSubmitButton,
@@ -34,10 +34,11 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const user = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
     const hasDraft = user.hasDraft;
-    const {data, refetch: getSchoolRefetch} = useGetSchoolOfSchoolOwnerQuery();
-    const {refetch: getDraftRefetch} = useGetDraftOfSchoolOwnerQuery();
-    const schoolStatus = data?.data.status;
-
+    const draftQuery = useGetDraftOfSchoolOwnerQuery(undefined, {skip: !hasDraft});
+    const schoolQuery = useGetSchoolOfSchoolOwnerQuery(undefined, {skip: hasDraft});
+    const schoolQueryResult = hasDraft ? draftQuery : schoolQuery;
+    const {data, isLoading, refetch} = schoolQueryResult;
+    const schoolStatus = data?.data?.status;
     const [updateSchoolStatusBySchoolOwner, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusBySchoolOwnerMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
     const [updateSchoolBySO, {isLoading: isUpdatingBySO}] = useUpdateSchoolBySchoolOwnerMutation();
@@ -48,7 +49,6 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const [api, notificationContextHolder] = notification.useNotification();
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
-
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
@@ -105,14 +105,12 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         }
     }
 
-    const handleSave = async () => {
-        // Handle save logic here
-        console.log("Save by SO");
+    const updateSave = async () => {
         const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
         try {
             await saveSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            getDraftRefetch();
+            refetch();
             if (!hasDraft) {
                 dispatch(updateHasDraft(true));
             }
@@ -123,18 +121,21 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         }
     };
 
+    const handleSave = async () => {
+        setActiveButton("save");
+        setModalVisible(true);
+    };
+
     const handleCreateSubmit = async () => {
         // Handle create submit logic here
     };
 
-    const handleUpdateSubmit = async () => {
-        // Handle update submit logic here
-        console.log("Update by SO");
+    const updateSubmit = async () => {
         const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
         try {
             await updateSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            getDraftRefetch();
+            refetch();
             if (!hasDraft) {
                 dispatch(updateHasDraft(true));
             }
@@ -145,6 +146,11 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         }
     };
 
+    const handleUpdateSubmit = async () => {
+        setActiveButton("update");
+        setModalVisible(true);
+    };
+
     const handleCancel = () => {
         // Handle cancel logic here
         router.push('/public/school-owner');
@@ -153,6 +159,14 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const handleConfirmAction = async () => {
         try {
             switch (activeButton) {
+                case "update":
+                    setModalVisible(false);
+                    await updateSubmit()
+                    break;
+                case "save":
+                    setModalVisible(false);
+                    await updateSave()
+                    break;
                 case "publish":
                     await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 4}).unwrap();
                     messageApi.success('School published successfully!');
@@ -166,7 +180,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     messageApi.success('School deleted successfully!');
                     break;
             }
-            getDraftRefetch();
+            refetch();
             setModalVisible(false);
             setActiveButton(null);
         } catch (error) {
@@ -196,6 +210,10 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
 
     const getModalContent = () => {
         switch (activeButton) {
+            case "update":
+                return {title: "Update School", desc: "Are you sure you want to update this school?"};
+            case "save":
+                return {title: "Save School", desc: "Are you sure you want to save this school?"};
             case "publish":
                 return {title: "Publish School", desc: "Are you sure you want to publish this school?"};
             case "unpublish":
@@ -223,7 +241,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         Save
                     </Button>
                 }
-                {hasSaveButton && String(schoolStatus) !== "1" && (
+                {hasUpdateSaveButton && String(schoolStatus) !== "1" && (
                     <Button htmlType="button"
                             onClick={handleSave}
                             variant="outlined"
@@ -282,8 +300,9 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         Unpublish
                     </Button>
                 }
+
                 <Modal
-                    title={getModalContent().title}
+                    title={<p className={'text-center font-bold text-3xl'}>{getModalContent().title}</p>}
                     open={modalVisible}
                     onOk={handleConfirmAction}
                     onCancel={() => {
@@ -293,8 +312,9 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     okText="Yes"
                     cancelText="No, Take me back!"
                     confirmLoading={isUpdatingStatus}
+                    getContainer={false}
                 >
-                    <p>{getModalContent().desc}</p>
+                    <p className={'text-center text-lg'}>{getModalContent().desc}</p>
                 </Modal>
 
             </div>

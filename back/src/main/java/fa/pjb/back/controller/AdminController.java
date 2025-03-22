@@ -25,7 +25,6 @@ public class AdminController {
             @RequestPart(value = "data") @Valid UserCreateDTO userCreateDTO,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         UserCreateDTO createdUser = userService.createUser(userCreateDTO,images);
-        log.info("Received UserDTO: {}", userCreateDTO);
         return ApiResponse.<UserCreateDTO>builder()
                 .code(200)
                 .message("User created successfully")
