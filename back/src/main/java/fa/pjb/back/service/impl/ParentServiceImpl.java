@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
@@ -31,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static fa.pjb.back.model.enums.ERole.ROLE_PARENT;
@@ -257,9 +259,12 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public Page<ParentVO> getParentByAdmin(int page, int size, String email, String username, String name, String phone) {
+    public Page<ParentVO> getParentByAdmin(int page, int size, String searchBy, String keyword) {
+        if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
+            throw new InvalidDataException("Invalid searchBy value: " + searchBy);
+        }
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findParentsWithFilters(email, name,username, phone, pageable);
+        Page<ParentProjection> parentProjections = parentRepository.findParentsWithFilters(searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFronProjection);
 
     }

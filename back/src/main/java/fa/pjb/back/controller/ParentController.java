@@ -76,12 +76,10 @@ public class ParentController {
     public ApiResponse<Page<ParentVO>> getAllParentsAdmin(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String fullname,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String phone
+            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false) String keyword
     ) {
-        Page<ParentVO> parents = parentService.getParentByAdmin(page, size, email,username, fullname, phone);
+        Page<ParentVO> parents = parentService.getParentByAdmin(page, size, searchBy,keyword);
         return ApiResponse.<Page<ParentVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("All parents retrieved successfully")

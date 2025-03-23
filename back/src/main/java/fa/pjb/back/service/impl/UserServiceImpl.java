@@ -2,6 +2,7 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
@@ -59,12 +60,13 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Page<UserVO> getAllUsersAdmin(int page, int size, String role, String email, String name, String phone) {
-        Pageable pageable = PageRequest.of(page-1, size);
-        ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
-        List<ERole> roleList = roleEnum != null ? Collections.singletonList(roleEnum) : Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
-    
-        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, email, name, phone, pageable);
+    public Page<UserVO> getAllUsersAdmin(int page, int size, String searchBy, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
+            throw new InvalidDataException("Invalid searchBy value: " + searchBy);
+        }
+        List<ERole> roleList = Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, searchBy,keyword, pageable);
         return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
 
@@ -189,7 +191,7 @@ public class UserServiceImpl implements UserService {
             imageVOList = imageService.uploadListFiles(
                     imageService.convertMultiPartFileToFile(files),
                     "School_Owner_" + schoolOwner.getId() + "Image_",
-                    SO_IMAGES,imageService::uploadFile
+                    SO_IMAGES, imageService::uploadFile
             );
         } catch (IOException e) {
             throw new UploadFileException("Error while uploading images: " + e.getMessage());
@@ -229,7 +231,7 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        if ( schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number()) ) {
+        if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number())) {
             throw new BRNAlreadyExistedException("Business registration number already exists.");
         }
 

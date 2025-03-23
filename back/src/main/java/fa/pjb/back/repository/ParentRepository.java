@@ -35,16 +35,17 @@ public interface ParentRepository extends JpaRepository<Parent,Integer> {
             "FROM Parent p " +
             "JOIN p.user u " +
             "LEFT JOIN p.media m " +
-            "WHERE (:email IS NULL OR u.email LIKE CONCAT('%', :email, '%')) " +
-            "  AND (:fullname IS NULL OR u.fullname LIKE CONCAT('%', :fullname, '%')) " +
-            "  AND (:fullname IS NULL OR u.username LIKE CONCAT('%', :fullname, '%')) " +
-            "  AND (:phone IS NULL OR u.phone LIKE CONCAT('%', :phone, '%'))")
-
+            "WHERE (:keyword IS NULL OR :keyword = '' OR " +
+            "       (CASE :searchBy " +
+            "           WHEN 'username' THEN LOWER(u.username) " +
+            "           WHEN 'fullname' THEN LOWER(u.fullname) " +
+            "           WHEN 'email' THEN LOWER(u.email) " +
+            "           WHEN 'phone' THEN LOWER(u.phone) " +
+            "           ELSE '' " +
+            "        END) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<ParentProjection> findParentsWithFilters(
-            @Param("email") String email,
-            @Param("fullname") String fullname,
-            @Param("username") String username,
-            @Param("phone") String phone,
+            @Param("searchBy") String searchBy,
+            @Param("keyword") String keyword,
             Pageable pageable
     );
 
