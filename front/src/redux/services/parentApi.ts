@@ -110,18 +110,16 @@ export const parentApi = createApi({
         }),
         listAllParentWithFilter: build.query<
             ApiResponse<{ content: ParentVO[]; page: Pageable }>,
-            {page?: number; size?: number; username?: string; email?: string; fullname?: string; phone?: string}
+            {page?: number; size?: number; searchBy?: string; keyword?: string}
         >({
-            query: ({ page = 1, size = 15, email,username, fullname, phone }) => ({
+            query: ({ page = 1, size = 15, searchBy, keyword }) => ({
                 url: `parent/get-parents-admin`,
                 method: "GET",
                 params: {
                     page,
                     size,
-                    email,
-                    fullname,
-                    username,
-                    phone,
+                    searchBy,
+                    keyword
                 },
             }),
             providesTags: ["Parent"],

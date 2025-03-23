@@ -69,18 +69,16 @@ export const userApi = createApi({
     endpoints: (build) => ({
         getUserList: build.query<
             ApiResponse<{ content: UserVO[]; page: Pageable }>,
-            { page?: number; size?: number; role?: string; email?: string; name?: string; phone?: string }
+            { page?: number; size?: number; searchBy?: string; keyword?:string  }
         >({
-            query: ({ page = 1, size, role, email, name, phone }) => ({
+            query: ({ page = 1, size, searchBy, keyword }) => ({
                 url: `/user`,
                 method: "GET",
                 params: {
                     page,
                     size,
-                    ...(role && { role }),
-                    ...(email && { email }),
-                    ...(name && { name }),
-                    ...(phone && { phone }),
+                    searchBy,
+                    keyword,
                 },
             }),
             providesTags: ["User"],

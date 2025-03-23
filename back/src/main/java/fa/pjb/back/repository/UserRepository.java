@@ -28,24 +28,38 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByPhoneAndIdNot(String phone, int id);
 
-    @Query("SELECT u.id AS id, u.fullname AS fullname, u.email AS email, u.phone AS phone, "
-            + "u.role AS role, u.status AS status, "
-            + "p.street AS street, p.ward AS ward, p.district AS district, p.province AS province "
-            + "FROM User u LEFT JOIN Parent p ON u.id = p.id "
-            + "WHERE (:roles IS NULL OR u.role IN :roles) "
-            + "AND (:email IS NULL OR u.email LIKE %:email%) "
-            + "AND (:name IS NULL OR u.fullname LIKE %:name%) "
-            + "AND (:phone IS NULL OR u.phone LIKE %:phone%)")
+    @Query("SELECT " +
+            "    u.id AS id, " +
+            "    u.fullname AS fullname, " +
+            "    u.email AS email, " +
+            "    u.phone AS phone, " +
+            "    u.role AS role, " +
+            "    u.status AS status, " +
+            "    p.street AS street, " +
+            "    p.ward AS ward, " +
+            "    p.district AS district, " +
+            "    p.province AS province " +
+            "FROM User u " +
+            "LEFT JOIN Parent p ON p.user = u " +
+            "WHERE (:roles IS NULL OR u.role IN :roles) "+
+            "AND (:keyword IS NULL OR :keyword = '' OR " +
+            "     (CASE :searchBy " +
+            "         WHEN 'username' THEN LOWER(u.username) " +
+            "         WHEN 'fullname' THEN LOWER(u.fullname) " +
+            "         WHEN 'email' THEN LOWER(u.email) " +
+            "         WHEN 'phone' THEN LOWER(u.phone) " +
+            "         ELSE '' " +
+            "      END) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<UserProjection> findAllByCriteria(
             @Param("roles") List<ERole> roles,
-            @Param("email") String email,
-            @Param("name") String name,
-            @Param("phone") String phone,
+            @Param("searchBy") String searchBy,
+            @Param("keyword") String keyword,
             Pageable pageable);
 
 
     @Query("SELECT u.email FROM User u WHERE u.role = :role AND u.status = true")
     List<String> findActiveUserEmailsByRole(ERole role);
+
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.status = true")
     List<User> findActiveUserByRole(ERole role);
 

@@ -58,7 +58,7 @@ class GetUsersTest {
     @Test
     void testGetAllUsers_DefaultPagination() throws Exception {
         Page<UserVO> page = new PageImpl<>(returnUserVOList);
-        when(userService.getAllUsersAdmin(any(),any(), any(), any(), any(), any())).thenReturn(page);
+        when(userService.getAllUsersAdmin(any(),any(), any(), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/user")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -77,7 +77,7 @@ class GetUsersTest {
                 .filter(user -> "ADMIN".equals(user.role()))
                 .toList();
         Page<UserVO> page = new PageImpl<>(admins);
-        when(userService.getAllUsersAdmin(any(),any(), eq("ADMIN"), any(), any(), any())).thenReturn(page);
+        when(userService.getAllUsersAdmin(any(),any(), eq("ADMIN"), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/user")
                         .param("role", "ADMIN")
@@ -94,7 +94,7 @@ class GetUsersTest {
     @Test
     void testGetAllUsers_FilterByEmail() throws Exception {
         Page<UserVO> page = new PageImpl<>(List.of(returnUserVOList.get(0)));
-        when(userService.getAllUsersAdmin(any(),any(), any(), eq("john@example.com"), any(), any())).thenReturn(page);
+        when(userService.getAllUsersAdmin(any(),any(), any(), eq("john@example.com"))).thenReturn(page);
 
         mockMvc.perform(get("/api/user")
                         .param("email", "john@example.com")
@@ -111,7 +111,7 @@ class GetUsersTest {
     @Test
     void testGetAllUsers_FilterByName() throws Exception {
         Page<UserVO> page = new PageImpl<>(List.of(returnUserVOList.get(1)));
-        when(userService.getAllUsersAdmin(any(),any(), any(), any(), eq("Jane Smith"), any())).thenReturn(page);
+        when(userService.getAllUsersAdmin(any(),any(), any(), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/user")
                         .param("name", "Jane Smith")
@@ -128,7 +128,7 @@ class GetUsersTest {
     @Test
     void testGetAllUsers_FilterByPhone() throws Exception {
         Page<UserVO> page = new PageImpl<>(List.of(returnUserVOList.get(1)));
-        when(userService.getAllUsersAdmin(any(),any(), any(), any(), any(), eq("+84987654321"))).thenReturn(page);
+        when(userService.getAllUsersAdmin(any(),any(), any(), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/user")
                         .param("phone", "+84987654321")
@@ -145,7 +145,7 @@ class GetUsersTest {
     @Test
     void testGetAllUsers_EmptyResult() throws Exception {
         Page<UserVO> emptyPage = new PageImpl<>(Collections.emptyList());
-        when(userService.getAllUsersAdmin(any(),any(), any(), any(), any(), any())).thenReturn(emptyPage);
+        when(userService.getAllUsersAdmin(any(),any(), any(), any())).thenReturn(emptyPage);
 
         mockMvc.perform(get("/api/user")
                         .param("name", "not exist")
