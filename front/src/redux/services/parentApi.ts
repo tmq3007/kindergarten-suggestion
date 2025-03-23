@@ -31,12 +31,13 @@ export type ParentVO = {
     status?: boolean;
     fullname: string;
     phone: string;
-    dob: string;
+    dob?: string;
     district: string | null;
     ward: string| null;
     province: string| null;
     street: string| null;
     role?: string;
+    userEnrollStatus?: boolean;
     media?: MediaVO;
 };
 

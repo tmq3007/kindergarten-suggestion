@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public interface ParentProjection {
     Integer getId();
+    Boolean getStatus();
     String getParentDistrict();
     String getParentWard();
     String getParentProvince();
@@ -13,7 +14,7 @@ public interface ParentProjection {
     String getFullname();
     String getEmail();
     String getRole();
-    Boolean getUserStatus();
+    Boolean getUserEnrollStatus();
     String getPhone();
     LocalDate getDob();
     String getMediaId();

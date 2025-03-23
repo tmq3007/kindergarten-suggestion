@@ -42,11 +42,12 @@ public interface ParentMapper {
 
     // Mapping for ParentProjection to ParentVO
     @Mapping(source = "userId", target = "id")
-    @Mapping(source = "userStatus", target = "status")
+    @Mapping(source = "status", target = "status")
     @Mapping(source = "parentDistrict", target = "district")
     @Mapping(source = "parentWard", target = "ward")
     @Mapping(source = "parentProvince", target = "province")
     @Mapping(source = "parentStreet", target = "street")
+    @Mapping(source = "userEnrollStatus", target = "userEnrollStatus")
     @Mapping(target = "media", expression = "java(projection.getMediaId() != null ? new MediaVO(projection.getMediaUrl(),projection.getMediaId() ,null) : null)")
     ParentVO toParentVOFronProjection(ParentProjection projection);
 
