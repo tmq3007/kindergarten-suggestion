@@ -11,7 +11,6 @@ import {registerApi} from "./services/registerApi";
 import {addressApi} from "@/redux/services/addressApi";
 import {parentApi} from "@/redux/services/parentApi";
 import {userApi} from "@/redux/services/userApi";
-import {adminApi} from "@/redux/services/adminApi";
 import {reviewApi} from "@/redux/services/reviewApi";
 import {schoolApi} from "@/redux/services/schoolApi";
 import {testApi} from "./services/testApi";
@@ -27,7 +26,6 @@ const rootReducer = combineReducers({
     [registerApi.reducerPath]: registerApi.reducer,
     [addressApi.reducerPath]: addressApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
-    [adminApi.reducerPath]: adminApi.reducer,
     [reviewApi.reducerPath]: reviewApi.reducer,
     [schoolApi.reducerPath]: schoolApi.reducer,
     [testApi.reducerPath]: testApi.reducer,

@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '@/redux/store';
 import {Country, useGetCountriesQuery} from "@/redux/services/registerApi";
-import {useCreateUserMutation} from "@/redux/services/adminApi";
+import {useCreateUserMutation} from "@/redux/services/userApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 import { motion, Variants } from 'framer-motion';
 
@@ -335,7 +335,7 @@ const CreateUser: React.FC = () => {
                                             form={form}
                                             fieldName="image"
                                             maxCount={10}
-                                            accept={["image/*", "application/pdf"]}
+                                            accept={["image/png","image/jpg","image/jpeg"]}
                                             maxSizeMB={5}
                                             hideImageUpload={false}
                                             imageList={[{ url: '', filename: '' }]}

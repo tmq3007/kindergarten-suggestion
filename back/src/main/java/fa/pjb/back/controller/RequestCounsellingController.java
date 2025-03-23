@@ -6,6 +6,7 @@ import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.service.RequestCounsellingReminderService;
 import fa.pjb.back.service.RequestCounsellingService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class RequestCounsellingController {
      private final RequestCounsellingReminderService reminderService;
     private final RequestCounsellingService requestCounsellingService;
+
+    @Operation(summary = "Request Counselling Reminder", description = "Send email and notification to school owner and admin")
     @GetMapping("/alert-reminder")
     public ApiResponse<RequestCounsellingReminderVO> checkOverdueForUser(@RequestParam("userId") Integer userId) {
         return ApiResponse.<RequestCounsellingReminderVO>builder()
@@ -27,6 +30,7 @@ public class RequestCounsellingController {
                 .build();
     }
 
+    @Operation(summary = "Request counselling", description = "Parents make request counselling to school owner")
     @PostMapping("/request")
     public ApiResponse<RequestCounsellingVO> createRequestCounselling(
             @Valid @RequestBody RequestCounsellingDTO request) {
