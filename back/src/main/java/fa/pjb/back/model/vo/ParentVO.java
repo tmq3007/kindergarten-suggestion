@@ -18,6 +18,7 @@ public record ParentVO(
         String ward,
         String province,
         String street,
+        Boolean userEnrollStatus,
         MediaVO media
 ) {
 }

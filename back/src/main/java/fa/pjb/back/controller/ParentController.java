@@ -27,7 +27,7 @@ import java.util.List;
 public class ParentController {
     private final ParentService parentService;
 
-    @Operation(summary = "Register", description = "Register")
+    @Operation(summary = "Register", description = "This api will be used to register new parent")
     @PostMapping("register")
     public ApiResponse<RegisterVO> register(@Valid @RequestBody RegisterDTO registerDTO) {
         RegisterVO registerVO = parentService.saveNewParent(registerDTO);
@@ -72,19 +72,37 @@ public class ParentController {
                 .build();
     }
 
-    @GetMapping("/get-parents-admin")
-    public ApiResponse<Page<ParentVO>> getAllParentsAdmin(
+    @Operation(summary = "Get All Parents" , description = "This api will be used to retrieve all parents")
+    @GetMapping("/get-all-parents")
+    public ApiResponse<Page<ParentVO>> getAllParents(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
             @RequestParam(required = false) String searchBy,
             @RequestParam(required = false) String keyword
     ) {
-        Page<ParentVO> parents = parentService.getParentByAdmin(page, size, searchBy,keyword);
+        Page<ParentVO> parents = parentService.getAllParent(page, size, searchBy, keyword);
         return ApiResponse.<Page<ParentVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("All parents retrieved successfully")
                 .data(parents)
                 .build();
+    }
+
+    @Operation(summary = "Get All Parents By School", description = "This api will be used to retrieve all enrolled parents by school")
+    @GetMapping("/get-parent-by-school/{id}")
+    public ApiResponse<Page<ParentVO>> getParentsBySchool(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
+            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false) String keyword
+    ) {
+        Page<ParentVO> parents = parentService.getParentBySchool(id, page, size, searchBy, keyword);
+        return ApiResponse.<Page<ParentVO>>builder()
+                 .code(HttpStatus.OK.value())
+                 .message("Parents retrieved successfully")
+                 .data(parents)
+                 .build();
     }
 
 }

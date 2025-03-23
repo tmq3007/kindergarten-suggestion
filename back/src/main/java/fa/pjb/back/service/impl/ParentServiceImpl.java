@@ -259,20 +259,26 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public Page<ParentVO> getParentByAdmin(int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getAllParent(int page, int size, String searchBy, String keyword) {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findParentsWithFilters(searchBy, keyword, pageable);
+        Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFronProjection);
 
     }
 
     @Override
-    public Page<ParentVO> getParentBySchool(int page, int size, String email, String name, String phone, int schoolId) {
-        return null;
+    public Page<ParentVO> getParentBySchool(int schoolId, int page, int size, String searchBy, String keyword) {
+        if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
+            throw new InvalidDataException("Invalid searchBy value: " + searchBy);
+        }
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(schoolId,searchBy, keyword, pageable);
+        return parentProjections.map(parentMapper::toParentVOFronProjection);
     }
+
 
 }
 

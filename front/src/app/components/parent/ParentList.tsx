@@ -95,9 +95,9 @@ export default function ParentList({fetchPage, data, error, isFetching}: ParentL
             dataIndex: "status",
             key: "status",
             width: 120,
-            render: (status: boolean | undefined) => (
-                <Tag color={status ? "green" : "default"}>
-                    {status ? "ENROLLED" : "Not Enroll Yet"}
+            render: (userEnrollStatus: boolean | undefined) => (
+                <Tag color={userEnrollStatus ? "green" : "default"}>
+                    {userEnrollStatus ? "ENROLLED" : "Not Enroll Yet"}
                 </Tag>
             ),
         },
