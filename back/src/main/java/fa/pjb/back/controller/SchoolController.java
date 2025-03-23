@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
@@ -177,4 +178,23 @@ public class SchoolController {
                 .data(schoolService.findAllDistinctExpectedSchoolsByRole(id))
                 .build();
     }
+
+    @PutMapping("/merger-draft/{schoolId}")
+    public ApiResponse<Boolean> mergerDraft(@PathVariable Integer schoolId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Merge draft successfully.")
+                .data(schoolService.mergeDraft(schoolId))
+                .build();
+    }
+
+    @GetMapping("/isDraft/{schoolId}")
+    public ApiResponse<Boolean> isDraft(@PathVariable Integer schoolId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Check draft successfully.")
+                .data(schoolService.isDraft(schoolId))
+                .build();
+    }
+
 }

@@ -77,7 +77,7 @@ public class AuthController {
     }
 
     @GetMapping("check-email")
-    public ApiResponse<String> checkEmail(@RequestParam String email) {
+    public ApiResponse<String> checkEmailWhenRegister(@RequestParam String email) {
         return ApiResponse.<String>builder()
                 .code(HttpStatus.OK.value())
                 .message("Email checked!")

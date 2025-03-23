@@ -64,7 +64,7 @@ export default function EditSchool() {
                 form={form}
                 hasCancelButton={true}
                 hasUpdateSubmitButton={true}
-                hasSaveButton={true}
+                hasUpdateSaveButton={true}
                 isEdit={true}
                 triggerCheckEmail={null}
                 formLoaded={formLoaded || false}

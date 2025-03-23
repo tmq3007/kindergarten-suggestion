@@ -77,7 +77,7 @@ interface SchoolFormFields {
     isReadOnly?: boolean;
     form?: any;
     hasCancelButton?: boolean;
-    hasSaveButton?: boolean;
+    hasUpdateSaveButton?: boolean;
     hasCreateSubmitButton?: boolean;
     hasCreateSaveButton?: boolean;
     hasUpdateSubmitButton?: boolean;
@@ -85,6 +85,7 @@ interface SchoolFormFields {
     hasEditButton?: boolean;
     hasRejectButton?: boolean;
     hasApproveButton?: boolean;
+    hasApproveDraftButton?: boolean;
     hasPublishButton?: boolean;
     hasUnpublishButton?: boolean;
     hideImageUpload?: boolean;
@@ -109,14 +110,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     isReadOnly,
                                                     form: externalForm,
                                                     hasCancelButton,
-                                                    hasSaveButton,
                                                     hasCreateSubmitButton,
                                                     hasCreateSaveButton,
                                                     hasUpdateSubmitButton,
+                                                    hasUpdateSaveButton,
                                                     hasDeleteButton,
                                                     hasEditButton,
                                                     hasRejectButton,
                                                     hasApproveButton,
+                                                    hasApproveDraftButton,
                                                     hasPublishButton,
                                                     hasUnpublishButton,
                                                     hideImageUpload = false,
@@ -273,7 +275,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             initial={{opacity: 0}}
                                             animate={{opacity: 1}}
                                             exit={{opacity: 0}}
-                                            transition={{duration: 0.3, ease: "circInOut"}}
+                                            transition={{duration: 0.4, ease: "linear"}}
                                         />
                                     </AnimatePresence>
                                 </div>
@@ -505,14 +507,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     <SchoolFormButton
                                         form={form}
                                         hasCancelButton={hasCancelButton}
-                                        hasSaveButton={hasSaveButton}
+                                        hasUpdateSaveButton={hasUpdateSaveButton}
                                         hasCreateSubmitButton={hasCreateSubmitButton}
                                         hasUpdateSubmitButton={hasUpdateSubmitButton}
                                         hasCreateSaveButton={hasCreateSaveButton}
                                         hasDeleteButton={hasDeleteButton}
                                         hasEditButton={hasEditButton}
-                                        hasRejectButton={hasRejectButton}
-                                        hasApproveButton={hasApproveButton}
                                         hasPublishButton={hasPublishButton}
                                         hasUnpublishButton={hasUnpublishButton}
                                         emailInputRef={emailInputRef}
@@ -788,14 +788,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                     <SchoolFormButton
                         form={form}
                         hasCancelButton={hasCancelButton}
-                        hasSaveButton={hasSaveButton}
                         hasCreateSubmitButton={hasCreateSubmitButton}
-                        hasUpdateSubmitButton={hasUpdateSubmitButton}
                         hasCreateSaveButton={hasCreateSaveButton}
+                        hasUpdateSubmitButton={hasUpdateSubmitButton}
+                        hasUpdateSaveButton={hasUpdateSaveButton}
                         hasDeleteButton={hasDeleteButton}
                         hasEditButton={hasEditButton}
                         hasRejectButton={hasRejectButton}
                         hasApproveButton={hasApproveButton}
+                        hasApproveDraftButton={hasApproveDraftButton}
                         hasPublishButton={hasPublishButton}
                         hasUnpublishButton={hasUnpublishButton}
                         emailInputRef={emailInputRef}
