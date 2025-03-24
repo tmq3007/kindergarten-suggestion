@@ -37,4 +37,13 @@ public class RequestCounsellingController {
                 .data(createdRequest)
                 .build();
     }
+
+    @GetMapping("/{requestCounsellingId}")
+    public ApiResponse<RequestCounsellingVO> getRequestCounselling(@PathVariable Integer requestCounsellingId) {
+        return ApiResponse.<RequestCounsellingVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get request counselling successfully!")
+                .data(requestCounsellingService.getRequestCounselling(requestCounsellingId))
+                .build();
+    }
 }

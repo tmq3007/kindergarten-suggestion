@@ -5,4 +5,7 @@ import fa.pjb.back.model.vo.RequestCounsellingVO;
 
 public interface RequestCounsellingService {
     RequestCounsellingVO createRequestCounselling(RequestCounsellingDTO request);
+
+    RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId);
+
 }

@@ -19,12 +19,13 @@ export type RequestCounsellingDTO = {
 };
 
 export type RequestCounsellingVO = {
-    schoolVO: any;
+    schoolName: string;
     inquiry: string;
     status: number;
     email: string;
     phone: string;
     name: string;
+    address: string;
     dueDate: string;
 };
 export const requestCounsellingApi = createApi({
@@ -51,8 +52,16 @@ export const requestCounsellingApi = createApi({
             }),
             invalidatesTags: ["RequestCounselling"],
         }),
+        getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+            query: (requestCounsellingId) => ({
+                url: `counselling/${requestCounsellingId}`,
+                method: "GET",
+            }),
+            transformErrorResponse: (response: { status: string | number }) => response.status,
+            providesTags: ["RequestCounselling"],
+        }),
     }),
 
 });
 
-export const{useAlertReminderQuery,useCreateRequestCounsellingMutation} = requestCounsellingApi;
+export const{useAlertReminderQuery,useCreateRequestCounsellingMutation,useGetRequestCounsellingQuery} = requestCounsellingApi;
