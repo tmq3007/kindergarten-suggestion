@@ -66,6 +66,7 @@ public class RequestCounsellingController {
         return ResponseEntity.ok(requests);
     }
 
+    @Operation(summary = "Get request counselling", description = "Get detailed request counselling")
     @GetMapping("/{requestCounsellingId}")
     public ApiResponse<RequestCounsellingVO> getRequestCounselling(@PathVariable Integer requestCounsellingId) {
         return ApiResponse.<RequestCounsellingVO>builder()

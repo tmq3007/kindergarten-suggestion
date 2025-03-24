@@ -9,6 +9,7 @@ import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -33,9 +34,6 @@ import java.util.List;
 @RequestMapping("school")
 public class SchoolController {
     private final SchoolService schoolService;
-    private final GGDriveImageService imageService;
-    private final RestClient.Builder builder;
-
 
     @GetMapping("/{schoolId}")
     public ApiResponse<SchoolDetailVO> getSchoolInfo(@PathVariable Integer schoolId) {
@@ -139,6 +137,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school status", description = "Update school status by admin")
     @PutMapping("/change-status/by-admin")
     public ApiResponse<?> updateSchoolStatusByAdmin(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
@@ -150,6 +149,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school status", description = "Update school status by school owner")
     @PutMapping("/change-status/by-school-owner")
     public ApiResponse<?> updateSchoolStatusBySchoolOwner(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 

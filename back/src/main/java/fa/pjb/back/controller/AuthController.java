@@ -45,7 +45,7 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Forgot Password", description = "Forgot Password")
+    @Operation(summary = "Forgot Password", description = "Send an email with forgot password link")
     @PostMapping("forgot-password")
     public ApiResponse<ForgotPasswordVO> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         return ApiResponse.<ForgotPasswordVO>builder()
@@ -55,7 +55,7 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Reset Password", description = "Reset Password")
+    @Operation(summary = "Reset Password", description = "Reset user's password")
     @PostMapping("reset-password")
     public ApiResponse<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
                                         HttpServletRequest request) {
@@ -66,7 +66,7 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Logout", description = "Logout")
+    @Operation(summary = "Logout", description = "Logging out from website")
     @PutMapping("logout")
     public ApiResponse<?> logout() {
         authService.logout();
