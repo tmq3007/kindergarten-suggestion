@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum SchoolStatusEnum {
+
     SAVED((byte) 0),
     SUBMITTED((byte) 1),
     APPROVED((byte) 2),

@@ -6,6 +6,9 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface MediaMapper {
+
     MediaVO toMediaVO(Media media);
+
     Media toMedia(MediaVO mediaVO);
+
 }

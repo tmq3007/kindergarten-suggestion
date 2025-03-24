@@ -4,9 +4,14 @@ import lombok.Builder;
 
 @Builder
 public record LoginVO(
+
         String accessToken,
+
         String csrfToken,
+
         Boolean hasSchool,
+
         Boolean hasDraft
+
 ) {
 }

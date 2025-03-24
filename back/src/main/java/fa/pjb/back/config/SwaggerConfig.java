@@ -24,4 +24,5 @@ public class SwaggerConfig {
                 .termsOfService("TOC"));
         return openAPI;
     }
+
 }

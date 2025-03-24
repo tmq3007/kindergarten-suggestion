@@ -7,7 +7,6 @@ import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.entity.School;
-import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
@@ -16,9 +15,6 @@ import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.RequestCounsellingService;
 import jakarta.persistence.criteria.Predicate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +23,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -56,15 +55,15 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         }
 
         RequestCounselling entity = RequestCounselling.builder()
-            .parent(parent)
-            .school(school.get())
-            .inquiry(request.inquiry())
-            .status(request.status())
-            .email(request.email())
-            .phone(request.phone())
-            .name(request.name())
-            .due_date(request.dueDate())
-            .build();
+                .parent(parent)
+                .school(school.get())
+                .inquiry(request.inquiry())
+                .status(request.status())
+                .email(request.email())
+                .phone(request.phone())
+                .name(request.name())
+                .due_date(request.dueDate())
+                .build();
 
         RequestCounselling savedEntity = requestCounsellingRepository.save(entity);
         log.info("Created counseling request with ID: {}", savedEntity.getId());
@@ -83,8 +82,8 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
 
     @Override
     public Page<RequestCounsellingVO> getAllRequests(
-        int page, int size, Byte status, String email, String name, String phone,
-        String schoolName, LocalDateTime dueDate) {
+            int page, int size, Byte status, String email, String name, String phone,
+            String schoolName, LocalDateTime dueDate) {
 
         Pageable pageable = PageRequest.of(page - 1, size);
         Specification<RequestCounselling> specification = (root, query, criteriaBuilder) -> {
@@ -132,15 +131,15 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
 
         // Build the RequestCounsellingVO
         return RequestCounsellingVO.builder()
-            .id(request.getId())
-            .schoolName(schoolName != null ? schoolName : "Unknown")
-            .inquiry(request.getInquiry())
-            .status(request.getStatus())
-            .email(request.getEmail())
-            .phone(phone)
-            .name(name)
-            .dueDate(request.getDue_date())
-            .build();
+                .id(request.getId())
+                .schoolName(schoolName != null ? schoolName : "Unknown")
+                .inquiry(request.getInquiry())
+                .status(request.getStatus())
+                .email(request.getEmail())
+                .phone(phone)
+                .name(name)
+                .dueDate(request.getDue_date())
+                .build();
     }
 
     @Override
@@ -152,4 +151,5 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
 
         return requestCounsellingMapper.toRequestCounsellingVO(requestCounselling);
     }
+
 }

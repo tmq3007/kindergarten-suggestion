@@ -21,12 +21,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("parent")
 public class ParentController {
+
     private final ParentService parentService;
 
     @Operation(summary = "Register", description = "This api will be used to register new parent")
