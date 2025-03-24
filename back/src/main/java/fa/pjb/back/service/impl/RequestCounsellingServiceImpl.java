@@ -78,17 +78,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
             name = parentName; // Use parentName as name (for fullName on frontend)
             phone = parent.getUser().getPhone();
         }
-
-        return RequestCounsellingVO.builder()
-            .id(savedEntity.getId())
-            .schoolName(school.get().getName()) // Set schoolName as the school's name
-            .inquiry(savedEntity.getInquiry())
-            .status(savedEntity.getStatus())
-            .email(savedEntity.getEmail())
-            .phone(phone)
-            .name(name)
-            .dueDate(savedEntity.getDue_date())
-            .build();
+        return requestCounsellingMapper.toRequestCounsellingVO(savedEntity);
     }
 
     @Override

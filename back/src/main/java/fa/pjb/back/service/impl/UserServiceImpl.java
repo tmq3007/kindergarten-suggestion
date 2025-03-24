@@ -34,6 +34,7 @@ import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -214,6 +215,7 @@ public class UserServiceImpl implements UserService {
         mediaRepository.saveAll(mediaList);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     public UserCreateDTO createUser(UserCreateDTO userCreateDTO, List<MultipartFile> image) {
         if (userCreateDTO.email() == null || userCreateDTO.email().isBlank()) {
