@@ -40,4 +40,5 @@ public class RedisConfig {
     private GenericJackson2JsonRedisSerializer valueSerializer() {
         return new GenericJackson2JsonRedisSerializer();
     }
+
 }

@@ -8,20 +8,21 @@ import fa.pjb.back.service.RequestCounsellingReminderService;
 import fa.pjb.back.service.RequestCounsellingService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("counselling")
 public class RequestCounsellingController {
+
     private static final Logger logger = LoggerFactory.getLogger(RequestCounsellingController.class);
     private final RequestCounsellingReminderService reminderService;
     private final RequestCounsellingService requestCounsellingService;

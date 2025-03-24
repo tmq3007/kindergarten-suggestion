@@ -21,7 +21,7 @@ public record ParentUpdateDTO(
         String fullname,
 
         @NotNull
-         @Length(min = 1, max = 255, message = "Email must be between 1 and 50 characters")
+        @Length(min = 1, max = 255, message = "Email must be between 1 and 50 characters")
         @Pattern(regexp = ".+@.+\\..+", message = "Invalid email format")
         String email,
 
@@ -51,5 +51,6 @@ public record ParentUpdateDTO(
 
         @Nullable
         Media media
+
 ) {
 }
