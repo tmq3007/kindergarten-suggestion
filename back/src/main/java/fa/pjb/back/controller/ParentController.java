@@ -51,6 +51,7 @@ public class ParentController {
                 .build();
     }
 
+    @Operation(summary = "Edit Parent Information", description = "Edit Parent Information By Id")
     @PutMapping(value = "/edit/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ParentVO> editParent(
             @PathVariable Integer userId,
@@ -64,6 +65,7 @@ public class ParentController {
                 .build();
     }
 
+    @Operation(summary = "Get Parent Details", description = "Get Parent Details By Id")
     @GetMapping("/{userId}")
     public ApiResponse<ParentVO> getParentById(@PathVariable Integer userId) {
         ParentVO parent = parentService.getParentById(userId);

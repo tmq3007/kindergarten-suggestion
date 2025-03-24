@@ -319,11 +319,27 @@ export const schoolApi = createApi({
                 };
             },
         }),
+
         searchSchoolOwnersForAddSchool: build.query<ApiResponse<SchoolOwnerVO[]>, string>({
             query: (expectedSchool) => ({
                 url: '/school/get-so-list',
                 method: 'GET',
                 params: {q: expectedSchool},
+            }),
+        }),
+
+        mergeDraft: build.mutation<ApiResponse<boolean>, number>({
+            query: (schoolId) => ({
+                url: `/school/merger-draft/${schoolId}`,
+                method: 'PUT',
+            }),
+            invalidatesTags: ["School", "SchoolList"],
+        }),
+
+        isDraft: build.query<ApiResponse<boolean>, number>({
+            query: (schoolId) => ({
+                url: `/school/isDraft/${schoolId}`,
+                method: 'GET',
             }),
         }),
     }),
@@ -345,4 +361,6 @@ export const {
     useApproveSchoolMutation,
     useSearchExpectedSchoolQuery,
     useLazySearchSchoolOwnersForAddSchoolQuery,
+    useMergeDraftMutation,
+    useIsDraftQuery,
 } = schoolApi;

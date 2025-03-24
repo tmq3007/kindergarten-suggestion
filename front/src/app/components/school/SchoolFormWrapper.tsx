@@ -26,14 +26,10 @@ export default function SchoolFormWrapper({form, school, isEdit, isDetailPage}: 
                 school.status === SCHOOL_STATUS.Published ||
                 school.status === SCHOOL_STATUS.Unpublished
             }
-            hasEditButton={
-                school.status === SCHOOL_STATUS.Saved ||
-                school.status === SCHOOL_STATUS.Approved ||
-                school.status === SCHOOL_STATUS.Published ||
-                school.status === SCHOOL_STATUS.Unpublished
-            }
+            hasEditButton={true}
             hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
             hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
+            hasApproveDraftButton={school.status === SCHOOL_STATUS.Submitted}
             hasPublishButton={
                 school.status === SCHOOL_STATUS.Approved ||
                 school.status === SCHOOL_STATUS.Unpublished

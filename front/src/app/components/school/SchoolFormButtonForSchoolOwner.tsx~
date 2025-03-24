@@ -116,7 +116,6 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             }
             messageApi.success('School saved successfully!');
         } catch (error) {
-            console.log("error==================")
             console.log(error)
             messageApi.error("Failed to save school. Please try again.");
         }

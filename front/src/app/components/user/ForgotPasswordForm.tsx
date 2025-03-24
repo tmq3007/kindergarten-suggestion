@@ -71,7 +71,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotPassword, i
         <>
             {contextHolder}
             <Form
-                className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/3 sm:w-full shadow-xl`}
+                className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/2 sm:w-full shadow-xl`}
                 name="forgot-password-form"
                 labelCol={{span: 8}}
                 wrapperCol={{span: 16}}
@@ -84,7 +84,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotPassword, i
 
                     <p className={`${lato.className} text-center text-4xl font-bold pb-6`}>Forgot Password</p>
 
-                    <p className={'text-gray-400 text-center mx-20 mb-5'}>
+                    <p className={'text-gray-400 text-center lg:mx-20 lg:mb-5'}>
                         Please enter your email address and we'll send you a link to reset your password
                     </p>
 
@@ -97,7 +97,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotPassword, i
                     labelCol={{span: 24}}
                     wrapperCol={{span: 24}}
                 >
-                    <Input/>
+                    <Input className={''}/>
                 </Form.Item>
 
 
@@ -106,14 +106,14 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProp> = ({forgotPassword, i
                     <Space className={'flex flex-col md:flex-row justify-center'}>
 
                             <Button
-                                className={'block w-80 md:w-36 mx-4 font-bold bg-white text-custom border border-custom hover:!border-custom-500 hover:!text-custom-500 transition'}
+                                className={'block w-72 md:w-28 mx-4 font-bold bg-white text-custom border border-custom hover:!border-custom-500 hover:!text-custom-500 transition'}
                                 onClick={handleCancel}
                             >
                                 Cancel
                             </Button>
 
                         <Button
-                            className={'block w-80 md:w-36 mx-4 font-bold bg-custom hover:!bg-custom-700 text-white hover:!text-white border-none'}
+                            className={'block w-72 md:w-28 mx-4 font-bold bg-custom hover:!bg-custom-700 text-white hover:!text-white border-none'}
                             htmlType="submit"
                             loading={isLoading} // Show loading when submitting
                         >

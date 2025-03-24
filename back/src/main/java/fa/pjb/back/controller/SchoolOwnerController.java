@@ -4,6 +4,7 @@ import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.service.SchoolService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ public class SchoolOwnerController {
                 .build();
     }
 
+    @Operation(summary = "Get School Draft Info", description = "Get School Draft Information for School Owner")
     @GetMapping("/draft")
     public ApiResponse<SchoolDetailVO> getSchoolDraftInfo(
             @AuthenticationPrincipal User user

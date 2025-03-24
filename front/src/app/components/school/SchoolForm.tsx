@@ -77,7 +77,7 @@ interface SchoolFormFields {
     isReadOnly?: boolean;
     form?: any;
     hasCancelButton?: boolean;
-    hasSaveButton?: boolean;
+    hasUpdateSaveButton?: boolean;
     hasCreateSubmitButton?: boolean;
     hasCreateSaveButton?: boolean;
     hasUpdateSubmitButton?: boolean;
@@ -85,6 +85,7 @@ interface SchoolFormFields {
     hasEditButton?: boolean;
     hasRejectButton?: boolean;
     hasApproveButton?: boolean;
+    hasApproveDraftButton?: boolean;
     hasPublishButton?: boolean;
     hasUnpublishButton?: boolean;
     hideImageUpload?: boolean;
@@ -109,14 +110,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     isReadOnly,
                                                     form: externalForm,
                                                     hasCancelButton,
-                                                    hasSaveButton,
                                                     hasCreateSubmitButton,
                                                     hasCreateSaveButton,
                                                     hasUpdateSubmitButton,
+                                                    hasUpdateSaveButton,
                                                     hasDeleteButton,
                                                     hasEditButton,
                                                     hasRejectButton,
                                                     hasApproveButton,
+                                                    hasApproveDraftButton,
                                                     hasPublishButton,
                                                     hasUnpublishButton,
                                                     hideImageUpload = false,
@@ -135,7 +137,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     const [mainImage, setMainImage] = useState(imageList[0]?.url || images[0]); // Default to first image
     const handleThumbnailClick = (index: number) => {
-        setMainImage(imageList[index]?.url || images[index]);
+        const displayImages = [...imageList.map(img => img.url)];
+        if (displayImages.length < 5) {
+            const remainingCount = 5 - displayImages.length;
+            displayImages.push(...images.slice(0, remainingCount));
+        }
+        setMainImage(displayImages[index]);
     };
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
@@ -268,7 +275,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             initial={{opacity: 0}}
                                             animate={{opacity: 1}}
                                             exit={{opacity: 0}}
-                                            transition={{duration: 0.3, ease: "circInOut"}}
+                                            transition={{duration: 0.4, ease: "linear"}}
                                         />
                                     </AnimatePresence>
                                 </div>
@@ -319,21 +326,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         },
                                     ]}
                                 >
-                                    {imageList.length > 0
-                                        ? imageList.map((img, index) => (
-                                            <div
-                                                key={index}
-                                                onClick={() => handleThumbnailClick(index)}
-                                                className="cursor-pointer flex justify-center items-center h-full w-full"
-                                            >
-                                                <img
-                                                    src={img.url}
-                                                    alt={`Thumbnail ${index + 1}`}
-                                                    className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"
-                                                />
-                                            </div>
-                                        ))
-                                        : images.map((src, index) => (
+                                    {(() => {
+                                        const displayImages = [...imageList.map(img => img.url)];
+                                        if (displayImages.length < 5) {
+                                            const remainingCount = 5 - displayImages.length;
+                                            displayImages.push(...images.slice(0, remainingCount));
+                                        }
+
+                                        return displayImages.map((src, index) => (
                                             <div
                                                 key={index}
                                                 onClick={() => handleThumbnailClick(index)}
@@ -345,7 +345,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"
                                                 />
                                             </div>
-                                        ))}
+                                        ));
+                                    })()}
                                 </Carousel>
 
                             </Card>
@@ -506,14 +507,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                     <SchoolFormButton
                                         form={form}
                                         hasCancelButton={hasCancelButton}
-                                        hasSaveButton={hasSaveButton}
+                                        hasUpdateSaveButton={hasUpdateSaveButton}
                                         hasCreateSubmitButton={hasCreateSubmitButton}
                                         hasUpdateSubmitButton={hasUpdateSubmitButton}
                                         hasCreateSaveButton={hasCreateSaveButton}
                                         hasDeleteButton={hasDeleteButton}
                                         hasEditButton={hasEditButton}
-                                        hasRejectButton={hasRejectButton}
-                                        hasApproveButton={hasApproveButton}
                                         hasPublishButton={hasPublishButton}
                                         hasUnpublishButton={hasUnpublishButton}
                                         emailInputRef={emailInputRef}
@@ -789,14 +788,15 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                     <SchoolFormButton
                         form={form}
                         hasCancelButton={hasCancelButton}
-                        hasSaveButton={hasSaveButton}
                         hasCreateSubmitButton={hasCreateSubmitButton}
-                        hasUpdateSubmitButton={hasUpdateSubmitButton}
                         hasCreateSaveButton={hasCreateSaveButton}
+                        hasUpdateSubmitButton={hasUpdateSubmitButton}
+                        hasUpdateSaveButton={hasUpdateSaveButton}
                         hasDeleteButton={hasDeleteButton}
                         hasEditButton={hasEditButton}
                         hasRejectButton={hasRejectButton}
                         hasApproveButton={hasApproveButton}
+                        hasApproveDraftButton={hasApproveDraftButton}
                         hasPublishButton={hasPublishButton}
                         hasUnpublishButton={hasUnpublishButton}
                         emailInputRef={emailInputRef}

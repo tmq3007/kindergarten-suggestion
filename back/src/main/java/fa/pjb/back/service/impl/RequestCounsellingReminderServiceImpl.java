@@ -5,6 +5,7 @@ import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
+import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
@@ -12,15 +13,23 @@ import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.RequestCounsellingReminderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import jakarta.persistence.criteria.Predicate;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -31,12 +40,16 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
 
+    @Override
     public RequestCounsellingReminderVO checkOverdueForSchoolOwner(Integer userId) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime overdueThreshold = now.minusHours(24); // 24 hours ago
 
         Optional<SchoolOwner> schoolOwner = schoolOwnerRepository.findByUserId(userId);
-
+        if (schoolOwner.isEmpty()) {
+            log.warn("No SchoolOwner found for userId: {}", userId);
+            return null;
+        }
 
             Integer schoolId = schoolOwner.get().getSchool().getId();
 
@@ -62,102 +75,114 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     }
 
     // Runs every day at 9:00 AM
-    @Scheduled(cron = "0 46 18 * * ?")
+    @Scheduled(cron = "0 28 17 * * ?")
     @Override
     @Transactional(readOnly = true)
     public void checkDueDateAndSendEmail() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime overdueThreshold = now.minusHours(24); // 24 hours ago
+        LocalDateTime overdueThreshold = now.minusHours(24);
 
         List<RequestCounselling> requests = requestCounsellingRepository.findByStatus((byte) 0);
         int totalOverdueCount = 0;
-
-        // Đếm số request quá hạn của từng trường
         Map<Integer, Integer> schoolOverdueCounts = new HashMap<>();
 
         for (RequestCounselling request : requests) {
             LocalDateTime dueDate = request.getDue_date();
-            if (dueDate.isBefore(overdueThreshold)) { // Nếu quá hạn trên 24 giờ
+            if (dueDate.isBefore(overdueThreshold)) {
                 totalOverdueCount++;
-
                 Integer schoolId = request.getSchool().getId();
                 schoolOverdueCounts.put(schoolId, schoolOverdueCounts.getOrDefault(schoolId, 0) + 1);
             }
         }
 
-        // Gửi mail cho Admin với tổng số request quá hạn toàn hệ thống
+        List<CompletableFuture<Void>> emailFutures = new ArrayList<>();
+
+        // Send email to Admin
         if (totalOverdueCount > 0) {
-            sendToAllAdmins(totalOverdueCount);
+            emailFutures.addAll(sendToAllAdmins(totalOverdueCount));
         } else {
             log.info("No overdue requests found (over 24 hours).");
         }
 
-        log.info("  overdue requests.",  schoolOverdueCounts.values());
-        // Gửi mail cho từng chủ trường với số lượng request quá hạn của riêng trường đó
+        // Send email to School Owners
         for (Map.Entry<Integer, Integer> entry : schoolOverdueCounts.entrySet()) {
             Integer schoolId = entry.getKey();
-
             int overdueCountForSchool = entry.getValue();
-
-            sendToSchoolOwner(schoolId, overdueCountForSchool);
+            emailFutures.addAll(sendToSchoolOwner(schoolId, overdueCountForSchool));
         }
+
+        //Wait all email sent
+        CompletableFuture.allOf(emailFutures.toArray(new CompletableFuture[0]))
+                .exceptionally(throwable -> {
+                    log.error("Error occurred while sending emails: {}", throwable.getMessage());
+                    return null;
+                }).join(); // wait all complete
     }
 
-
-    private void sendToAllAdmins(int overdueCount) {
+    private List<CompletableFuture<Void>> sendToAllAdmins(int overdueCount) {
         List<User> admins = userRepository.findActiveUserByRole(ERole.ROLE_ADMIN);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
         if (admins == null || admins.isEmpty()) {
             log.warn("No active admins found");
-            return;
+            return futures;
         }
 
         for (User admin : admins) {
-            try {
-                String adminName = admin.getFullname();
-                String detailsLink = "http://your-app-domain/requests/"; // Replace with your app URL
+            String adminName = admin.getFullname();
+            String detailsLink = "http://your-app-domain/requests/";
 
-                emailService.sendRequestCounsellingReminder(
-                        admin.getEmail(),
-                        adminName,
-                        overdueCount,
-                        "Overdue by more than 24 hours",
-                        detailsLink
-                );
-                log.info("Email sent to admin {} with {} overdue requests", admin.getEmail(), overdueCount);
-            } catch (Exception e) {
-                log.error("Error sending email to admin {}: {}", admin.getEmail(), e.getMessage());
-            }
+            CompletableFuture<Void> future = emailService.sendRequestCounsellingReminder(
+                    admin.getEmail(),
+                    adminName,
+                    overdueCount,
+                    "Overdue by more than 24 hours",
+                    detailsLink
+            ).whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    log.error("Error sending email to admin {}: {}", admin.getEmail(), throwable.getMessage());
+                } else {
+                    log.info("Email sent to admin {} with {} overdue requests", admin.getEmail(), overdueCount);
+                }
+            });
+            futures.add(future);
         }
+        return futures;
     }
 
-    private void sendToSchoolOwner(Integer schoolId, int overdueCount) {
+    private List<CompletableFuture<Void>> sendToSchoolOwner(Integer schoolId, int overdueCount) {
         List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolId);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
         if (schoolOwners == null || schoolOwners.isEmpty()) {
             log.warn("No SchoolOwner found for school id {}", schoolId);
-            return;
+            return futures;
         }
 
         for (SchoolOwner schoolOwner : schoolOwners) {
             User ownerUser = schoolOwner.getUser();
             if (ownerUser == null) continue;
 
-            try {
-                String ownerName = ownerUser.getFullname();
-                String detailsLink = "http://your-app-domain/requests?schoolId=" + schoolId; // Link chỉ tới request của trường
+            String ownerName = ownerUser.getFullname();
+            String detailsLink = "http://your-app-domain/requests?schoolId=" + schoolId;
 
-                emailService.sendRequestCounsellingReminder(
-                        ownerUser.getEmail(),
-                        ownerName,
-                        overdueCount,
-                        "Overdue by more than 24 hours",
-                        detailsLink
-                );
-                log.info("Email sent to school owner {} with {} overdue requests for school {}",
-                        ownerUser.getEmail(), overdueCount, schoolId);
-            } catch (Exception e) {
-                log.error("Error sending email to school owner {}: {}", ownerUser.getEmail(), e.getMessage());
-            }
+            CompletableFuture<Void> future = emailService.sendRequestCounsellingReminder(
+                    ownerUser.getEmail(),
+                    ownerName,
+                    overdueCount,
+                    "Overdue by more than 24 hours",
+                    detailsLink
+            ).whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    log.error("Error sending email to school owner {}: {}", ownerUser.getEmail(), throwable.getMessage());
+                } else {
+                    log.info("Email sent to school owner {} with {} overdue requests for school {}",
+                            ownerUser.getEmail(), overdueCount, schoolId);
+                }
+            });
+            futures.add(future);
         }
+        return futures;
     }
 
 }

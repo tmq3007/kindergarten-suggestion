@@ -22,10 +22,10 @@ import fa.pjb.back.repository.*;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
-import io.micrometer.core.aop.CountedAspect;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -63,12 +63,27 @@ public class SchoolServiceImpl implements SchoolService {
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final ApplicationEventPublisher eventPublisher;
     private static final Tika tika = new Tika();
-//    private final CountedAspect countedAspect;
+    //    private final CountedAspect countedAspect;
     @Value("${school-detailed-link}")
     private String schoolDetailedLink;
     @Value("${school-detail-link-admin}")
     private String schoolDetailedLinkAdmin;
 
+    private User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Check if principal is an instance of User entity
+        if (principal instanceof User user) {
+            return user;
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+    }
+
+    private SchoolOwner getCurrentSchoolOwner() {
+        User user = getCurrentUser();
+        return schoolOwnerRepository.findWithSchoolAndDraftByUserId(user.getId())
+                .orElseThrow(UserNotFoundException::new);
+    }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
@@ -228,12 +243,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO addSchool(SchoolDTO schoolDTO, List<MultipartFile> image) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        // Check if principal is an instance of User entity
-        if (!(principal instanceof User user)) {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
+        User user = getCurrentUser();
 
         //  Map DTO to School entity
         School school = prepareSchoolData(schoolDTO, new School());
@@ -295,10 +305,7 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     private SchoolDetailVO processSchoolUpdate(SchoolDTO schoolDTO, List<MultipartFile> images, Byte status) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof User user)) {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
+        User user = getCurrentUser();
 
         // Find School Owner from UserID
         SchoolOwner schoolOwner = schoolOwnerRepository
@@ -310,6 +317,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (originSchool == null) {
             throw new SchoolNotFoundException();
         }
+        log.info("1");
         Integer originSchoolId = originSchool.getId();
 
         // Check if draft exists or not
@@ -319,6 +327,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (originSchool.getStatus().equals(SUBMITTED.getValue()) || (draft != null && draft.getStatus().equals(SUBMITTED.getValue()))) {
             throw new IllegalStateException("Cannot update a submitted school or draft");
         }
+        log.info("2");
 
         if (draft == null) {
             draft = new School();
@@ -329,17 +338,29 @@ public class SchoolServiceImpl implements SchoolService {
         schoolMapper.toDraft(schoolDTO, draft);
         draft.setStatus(status);
         validateAndSetAssociations(schoolDTO, draft);
-        // Delete old images
+        log.info("3");
+
+        log.info("4");
+
+        // Delete old images in database
         if (draft.getImages() != null && !draft.getImages().isEmpty()) {
+            log.info("Delete old images in database");
+            deleteOldImages(draft);
             draft.getImages().clear();
         }
+        log.info("5");
+
         // Save new images
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, draft);
         }
+        log.info("6");
+
         draft.setPostedDate(LocalDate.now());
         draft = schoolRepository.save(draft);
-
+        log.info("7");
+        // Delete old images in cloud
+//        deleteOldImages(draft);
         return schoolMapper.toSchoolDetailVO(draft);
     }
 
@@ -374,15 +395,11 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO updateSchoolByAdmin(SchoolDTO schoolDTO, List<MultipartFile> images) {
+        User user = getCurrentUser();
+        if (user == null) return null;
         // Check if the school exists
         School oldSchool = schoolRepository.findById(schoolDTO.id()).orElseThrow(SchoolNotFoundException::new);
         Byte curStatus = oldSchool.getStatus();
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        // Check if principal is an instance of User entity
-        if (!(principal instanceof User)) {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
 
         // Update entity fields from DTO
         School school = prepareSchoolData(schoolDTO, oldSchool);
@@ -434,7 +451,9 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public List<ExpectedSchoolVO> findAllDistinctExpectedSchoolsByRole(Integer id) {
-        User user = userRepository.findById(id).get();
+        User user = userRepository
+                .findById(id)
+                .orElseThrow(UserNotFoundException::new);
         if (user.getRole() == ERole.ROLE_ADMIN) {
             return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
         } else if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
@@ -442,6 +461,89 @@ public class SchoolServiceImpl implements SchoolService {
         } else {
             throw new AuthenticationFailedException("Something went wrong! Cannot find role");
         }
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Transactional
+    @Override
+    public Boolean mergeDraft(Integer schoolId) {
+        // 1. Retrieve the draft school data
+        School draft = schoolRepository.findByIdWithDraft(schoolId);
+        if (draft == null) return false;
+
+        // 2. Retrieve the original school and old media
+        School originSchool = draft.getOriginalSchool();
+        if (originSchool == null) return false;
+        List<Media> oldMedias = mediaRepository.getAllBySchool(originSchool);
+
+        // 3. Update the original school with data from the draft
+        try {
+            // Copy properties from draft to origin school, excluding certain fields
+            BeanUtils.copyProperties(draft, originSchool, "id", "originalSchool", "draft", "status", "postedDate", "schoolOwners");
+
+            // Update facilities and utilities to avoid shared references
+            if (draft.getFacilities() != null) {
+                originSchool.setFacilities(new HashSet<>(draft.getFacilities()));
+            }
+            if (draft.getUtilities() != null) {
+                originSchool.setUtilities(new HashSet<>(draft.getUtilities()));
+            }
+
+            // Save the media (images) associated with the draft
+            if (draft.getImages() != null) {
+                List<Media> images = new ArrayList<>();
+                for (Media media : draft.getImages()) {
+                    media.setSchool(originSchool); // Set the origin school for each media
+                    mediaRepository.save(media);   // Ensure the media is saved
+                    images.add(media);
+                }
+                originSchool.setImages(images);
+            }
+
+            // Update school owners, saving any transient owners
+            if (draft.getSchoolOwners() != null) {
+                Set<SchoolOwner> updatedSchoolOwners = new HashSet<>(draft.getSchoolOwners());
+                for (SchoolOwner owner : updatedSchoolOwners) {
+                    if (owner.getId() == null) {
+                        schoolOwnerRepository.save(owner); // Save transient owners
+                    }
+                    owner.setSchool(originSchool); // Set the relationship with origin school
+                }
+                originSchool.setSchoolOwners(updatedSchoolOwners);
+            }
+
+            // Remove the draft reference before saving
+            originSchool.setDraft(null);
+        } catch (Exception e) {
+            log.error("Error copying properties: {}", e.getMessage());
+            return false;
+        }
+
+        // 4. Save the updated origin school and flush to the database
+        schoolRepository.saveAndFlush(originSchool);
+
+        // 5. Delete the draft after the origin school is saved
+        schoolRepository.delete(draft);
+
+        // 6. Delete old images from cloud and database
+        if (!oldMedias.isEmpty()) {
+            for (Media media : oldMedias) {
+                try {
+                    imageService.deleteUploadedImage(media.getCloudId()); // Delete the image from the cloud
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+            mediaRepository.deleteAll(oldMedias); // Delete the media from the database
+        }
+
+        return true;
+    }
+
+    @Override
+    public Boolean isDraft(Integer schoolId) {
+        School draft = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
+        return draft.getOriginalSchool() != null;
     }
 
 
@@ -491,19 +593,8 @@ public class SchoolServiceImpl implements SchoolService {
         String currentSchoolEmail = school.getEmail();
         String currentSchoolName = school.getName();
 
-
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        String username;
-
-        // Check if principal is an instance of User entity
-        if (principal instanceof User user) {
-
-            username = user.getUsername();
-
-        } else {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
+        User user = getCurrentUser();
+        String username = user.getUsername();
 
         switch (preparedStatus) {
 
@@ -570,7 +661,6 @@ public class SchoolServiceImpl implements SchoolService {
                 // Change to "Deleted" status
                     school.setStatus(preparedStatus);
 
-
             default -> throw new StatusNotExistException("Status does not exist");
 
         }
@@ -580,27 +670,10 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     @Transactional
     public void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
-
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        String username;
-
-        Boolean publicPermission;
-
-        int ownedSchoolID;
-
-        // Check if principal is an instance of User entity
-        if (principal instanceof User user) {
-
-            username = user.getUsername();
-
-            publicPermission = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getPublicPermission();
-
-            ownedSchoolID = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getSchool().getId();
-
-        } else {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
+        User user = getCurrentUser();
+        String username = user.getUsername();
+        Boolean publicPermission = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getPublicPermission();
+        Integer ownedSchoolID = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getSchool().getId();
 
         School school = schoolRepository.findById(ownedSchoolID)
                 .orElseThrow(SchoolNotFoundException::new);
@@ -655,8 +728,6 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public boolean checkEditingEmailExists(String email, Integer schoolId) {
-        log.info("email: {}", email);
-        log.info("schoolId: {}", schoolId);
         return schoolRepository.existsByEmailExcept(email, schoolId);
     }
 

@@ -15,6 +15,7 @@ import java.util.List;
 
 public interface SchoolService {
     SchoolDetailVO getSchoolInfo(Integer schoolId);
+
     Page<SchoolListVO> getAllSchools(String name, String province, String district, String street,
                                      String email, String phone, Pageable pageable);
 
@@ -43,4 +44,8 @@ public interface SchoolService {
     List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool);
 
     List<ExpectedSchoolVO> findAllDistinctExpectedSchoolsByRole(Integer id);
+
+    Boolean mergeDraft(Integer schoolId);
+
+    Boolean isDraft(Integer schoolId);
 }

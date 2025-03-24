@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
-import { Card, List, Typography, Avatar, Button, DatePicker, Select } from "antd";
-import { StarFilled, SyncOutlined } from "@ant-design/icons";
+import React, {useState, useEffect, useMemo} from "react";
+import {Card, List, Typography, Avatar, Button, DatePicker, Select} from "antd";
+import {StarFilled, SyncOutlined} from "@ant-design/icons";
 import "antd/dist/reset.css";
-import { motion } from "framer-motion";
+import {motion} from "framer-motion";
 import {
     Cell,
     Pie,
@@ -16,16 +16,19 @@ import {
     CartesianGrid,
     Tooltip as RechartsTooltip,
 } from "recharts";
-import dayjs, { Dayjs } from "dayjs";
-import { ReviewVO, useGetReviewBySchoolIdQuery } from "@/redux/services/reviewApi";
-import { useParams } from "next/navigation";
+import dayjs, {Dayjs} from "dayjs";
+import {ReviewVO, useGetReviewBySchoolIdQuery} from "@/redux/services/reviewApi";
+import NoData from "../../../../components/common/NoData";
+import {useParams, useRouter} from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
-import NoData from "@/app/components/common/NoData";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
+import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 
-const { RangePicker } = DatePicker;
-const { Text } = Typography;
+const {RangePicker} = DatePicker;
+const {Text} = Typography;
 
 interface ApiError {
     data: {
@@ -45,22 +48,37 @@ interface EnhancedReview extends ReviewWithDayjs {
 
 const RatingsDashboard = () => {
     const params = useParams();
-    const schoolId = Number(params.id as string);
+    const router = useRouter();
+    const urlSchoolId = Number(params.schoolId);
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
+//get school by user id
+    const {data: schoolData, isError} = useGetSchoolOfSchoolOwnerQuery(undefined, {});
+    // Get the authenticated user's schoolId from Redux
+    const ownedSchoolId = schoolData?.data.id; // Assuming schoolId is stored in Redux under user
+
+    // Validate ownership
+    useEffect(() => {
+        if (!ownedSchoolId || urlSchoolId !== ownedSchoolId) {
+            const redirectPath = ownedSchoolId
+                ? `/public/school-owner/rating-feedback/${ownedSchoolId}`
+                : "/public/school-owner";
+            router.push(redirectPath)
+        }
+    }, [urlSchoolId, ownedSchoolId, router]);
 
     // Memoize query parameters for the API call
     const queryParams = useMemo(() => {
-        const params: { schoolId: number; fromDate?: string; toDate?: string } = { schoolId };
+        const params: { schoolId: number; fromDate?: string; toDate?: string } = {schoolId: urlSchoolId};
         if (dateRange && dateRange[0] && dateRange[1]) {
             params.fromDate = dateRange[0].format("YYYY-MM-DD");
             params.toDate = dateRange[1].format("YYYY-MM-DD");
         }
         return params;
-    }, [schoolId, dateRange]);
+    }, [ownedSchoolId, dateRange]);
 
-    const { data, isLoading, error, refetch } = useGetReviewBySchoolIdQuery(queryParams);
+    const {data, isLoading, error, refetch} = useGetReviewBySchoolIdQuery(queryParams);
 
     // Transform reviews data to use Dayjs for receiveDate and calculate reviewAverage
     const reviews: EnhancedReview[] = useMemo(
@@ -153,11 +171,11 @@ const RatingsDashboard = () => {
     // Pie chart data
     const pieData = useMemo(
         () => [
-            { name: "Learning Program", value: metrics.totalLearningProgram },
-            { name: "Facilities & Utilities", value: metrics.totalFacilitiesAndUtilities },
-            { name: "Extracurricular Activities", value: metrics.totalExtracurricularActivities },
-            { name: "Teacher & Staff", value: metrics.totalTeacherAndStaff },
-            { name: "Hygiene & Nutrition", value: metrics.totalHygieneAndNutrition },
+            {name: "Learning Program", value: metrics.totalLearningProgram},
+            {name: "Facilities & Utilities", value: metrics.totalFacilitiesAndUtilities},
+            {name: "Extracurricular Activities", value: metrics.totalExtracurricularActivities},
+            {name: "Teacher & Staff", value: metrics.totalTeacherAndStaff},
+            {name: "Hygiene & Nutrition", value: metrics.totalHygieneAndNutrition},
         ],
         [metrics]
     );
@@ -169,7 +187,7 @@ const RatingsDashboard = () => {
             acc[month] = (acc[month] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
-        return Object.entries(monthlyData).map(([month, reviews]) => ({ month, reviews }));
+        return Object.entries(monthlyData).map(([month, reviews]) => ({month, reviews}));
     }, [reviews]);
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
@@ -195,7 +213,7 @@ const RatingsDashboard = () => {
     const displayedReviews = showAll ? filteredReviews : filteredReviews.slice(0, 5);
 
     if (isLoading) {
-        return <RatingSkeleton />;
+        return <RatingSkeleton/>;
     }
 
 
@@ -203,59 +221,59 @@ const RatingsDashboard = () => {
         <div className={'pt-2'}>
             <MyBreadcrumb
                 paths={[
-                    { label: "School Management", href: "/admin/management/school/school-list" },
-                    { label: "School List", href: "/admin/management/school/school-list" },
-                    { label: "School Detail", href: `/admin/management/school/school-detail/${schoolId}` },
-                    { label: "Ratings & Feedback" },
+                    {label: "My School", href: "/public/school-owner"},
+                    {label: "Ratings & Feedback"},
                 ]}
             />
-            <SchoolManageTitle title={"Ratings & Feedback"} />
+            <SchoolManageTitle title={"Ratings & Feedback"}/>
 
             <div className="min-h-screen bg-gray-50 p-6">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{opacity: 0, y: 20}}
+                    animate={{opacity: 1, y: 0}}
                     className="flex gap-4 mb-8 justify-center"
                 >
-                    <RangePicker onChange={handleDateChange} value={dateRange} className="w-64" />
-                    <Button type="primary" icon={<SyncOutlined />} onClick={handleRefresh}>
+                    <RangePicker onChange={handleDateChange} value={dateRange} className="w-64"/>
+                    <Button type="primary" icon={<SyncOutlined/>} onClick={handleRefresh}>
                         Refresh
                     </Button>
                 </motion.div>
 
                 {reviews.length === 0 ? (
-                    <NoData />
+                    <NoData/>
                 ) : (
                     <>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
+                            <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}
+                                        whileHover={{scale: 1.05}}>
                                 <Card title="Rating Distribution">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <PieChart>
                                             <Pie
                                                 data={pieData}
                                                 dataKey="value"
-                                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                                 outerRadius={80}
                                             >
                                                 {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                                                 ))}
                                             </Pie>
-                                            <RechartsTooltip />
+                                            <RechartsTooltip/>
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Card>
                             </motion.div>
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
+                            <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}
+                                        whileHover={{scale: 1.05}}>
                                 <Card title="Monthly Reviews">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <BarChart data={barData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="month" />
-                                            <YAxis />
-                                            <RechartsTooltip />
-                                            <Bar dataKey="reviews" fill="#8884d8" />
+                                            <CartesianGrid strokeDasharray="3 3"/>
+                                            <XAxis dataKey="month"/>
+                                            <YAxis/>
+                                            <RechartsTooltip/>
+                                            <Bar dataKey="reviews" fill="#8884d8"/>
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </Card>
@@ -264,25 +282,29 @@ const RatingsDashboard = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             {[
-                                { title: "Average Rating", value: metrics.totalAverage.toFixed(1), color: "purple" },
-                                { title: "Total Reviews", value: metrics.totalReviews, color: "blue" },
-                                { title: "Learning Program", value: metrics.totalLearningProgram, color: "green" },
-                                { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, color: "orange" },
-                                { title: "Extracurricular", value: metrics.totalExtracurricularActivities, color: "yellow" },
-                                { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, color: "red" },
-                                { title: "Hygiene", value: metrics.totalHygieneAndNutrition, color: "pink" },
+                                {title: "Average Rating", value: metrics.totalAverage.toFixed(1), color: "purple"},
+                                {title: "Total Reviews", value: metrics.totalReviews, color: "blue"},
+                                {title: "Learning Program", value: metrics.totalLearningProgram, color: "green"},
+                                {title: "Facilities", value: metrics.totalFacilitiesAndUtilities, color: "orange"},
+                                {
+                                    title: "Extracurricular",
+                                    value: metrics.totalExtracurricularActivities,
+                                    color: "yellow"
+                                },
+                                {title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, color: "red"},
+                                {title: "Hygiene", value: metrics.totalHygieneAndNutrition, color: "pink"},
                             ].map((stat) => (
                                 <motion.div
                                     key={stat.title}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.1 }}
+                                    initial={{opacity: 0, y: 20}}
+                                    animate={{opacity: 1, y: 0}}
+                                    whileHover={{scale: 1.1}}
                                 >
                                     <Card>
                                         <div className="flex items-center gap-4">
                                             <Avatar
                                                 size={40}
-                                                icon={<StarFilled />}
+                                                icon={<StarFilled/>}
                                                 className={`bg-${stat.color}-200 text-${stat.color}-800`}
                                             />
                                             <div>
@@ -316,12 +338,12 @@ const RatingsDashboard = () => {
                                 dataSource={displayedReviews}
                                 renderItem={(item) => (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
+                                        initial={{opacity: 0, y: 20}}
+                                        animate={{opacity: 1, y: 0}}
                                         whileHover={{
                                             scale: 1.01,
                                             boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
-                                            transition: { duration: 0.3, ease: "easeInOut" },
+                                            transition: {duration: 0.3, ease: "easeInOut"},
                                         }}
                                     >
                                         <List.Item className="!px-3">
@@ -346,7 +368,8 @@ const RatingsDashboard = () => {
                                                         <Text type="secondary">{item.parentName || "Anonymous"}</Text>
                                                         <div className="flex">
                                                             {[...Array(Math.floor(item.reviewAverage || 0))].map((_, i) => (
-                                                                <StarFilled key={i} className="text-yellow-400 text-sm" />
+                                                                <StarFilled key={i}
+                                                                            className="text-yellow-400 text-sm"/>
                                                             ))}
                                                         </div>
                                                     </div>
