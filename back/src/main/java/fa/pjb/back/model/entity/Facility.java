@@ -14,6 +14,7 @@ import java.util.Set;
 @Entity
 @Table(name = "Facilities")
 public class Facility {
+
     @Id
     @Column(name = "fid", nullable = false)
     private Integer fid;
@@ -24,4 +25,5 @@ public class Facility {
 
     @ManyToMany(mappedBy = "facilities", fetch = FetchType.LAZY)
     private Set<School> schools;
+
 }

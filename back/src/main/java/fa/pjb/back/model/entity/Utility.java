@@ -14,6 +14,7 @@ import java.util.Set;
 @Entity
 @Table(name = "Utilities")
 public class Utility {
+
     @Id
     @Column(name = "uid", nullable = false)
     private Integer uid;
@@ -24,4 +25,5 @@ public class Utility {
 
     @ManyToMany(mappedBy = "utilities", fetch = FetchType.LAZY)
     private Set<School> schools;
+
 }

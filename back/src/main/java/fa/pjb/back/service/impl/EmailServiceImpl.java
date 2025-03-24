@@ -30,11 +30,8 @@ import java.util.concurrent.Executors;
 @Service
 public class EmailServiceImpl implements EmailService {
 
-
     private final JavaMailSender mailSender;
-
     private final Configuration freemarkerConfig;
-
     private final UserRepository userRepository;
 
     private void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> model) throws MessagingException, IOException, TemplateException {
@@ -61,7 +58,6 @@ public class EmailServiceImpl implements EmailService {
         // Send mail
         mailSender.send(message);
     }
-
 
     /**
      * Sends an email to the user with a link to reset their password.
@@ -236,4 +232,6 @@ public class EmailServiceImpl implements EmailService {
                 throw new RuntimeException(e); // throw exception
             }
         });
-    }}
+    }
+
+}

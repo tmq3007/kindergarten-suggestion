@@ -4,7 +4,10 @@ import lombok.Builder;
 
 @Builder
 public record UtilityVO(
+
         Integer uid,
+
         String name
+
 ) {
 }

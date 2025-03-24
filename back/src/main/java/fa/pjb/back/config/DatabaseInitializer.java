@@ -10,13 +10,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DatabaseInitializer implements CommandLineRunner {
-    private static final Dotenv dotenv = Dotenv.load();
 
+    private static final Dotenv dotenv = Dotenv.load();
     private static final String SSH_HOST = dotenv.get("SSH_HOST");
     private static final String SSH_USER = dotenv.get("SSH_USER");
     private static final String SSH_PRIVATE_KEY = dotenv.get("SSH_PRIVATE_KEY");
     private static final int SSH_PORT = Integer.parseInt(dotenv.get("SSH_PORT"));
-
     private static final String DB_HOST = dotenv.get("DB_HOST");
     private static final int DB_PORT = Integer.parseInt(dotenv.get("DB_PORT"));
 

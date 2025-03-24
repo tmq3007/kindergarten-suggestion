@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "Review")
 public class Review {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -25,7 +26,7 @@ public class Review {
     private School school;
 
     @NotNull
-    @ManyToOne(fetch =  FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "parent_id", nullable = false)
     private Parent parent;
 

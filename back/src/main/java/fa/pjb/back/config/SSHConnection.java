@@ -9,6 +9,7 @@ import java.util.Properties;
 
 @Slf4j
 public class SSHConnection {
+
     // Variable to hold the global SSH session,
     // helps manage the state of the SSH Tunnel throughout the application's lifecycle
     private static Session session;
@@ -41,4 +42,5 @@ public class SSHConnection {
             session.disconnect();
         }
     }
+
 }
