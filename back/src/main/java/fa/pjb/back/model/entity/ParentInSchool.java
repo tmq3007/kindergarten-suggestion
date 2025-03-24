@@ -15,16 +15,16 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "Parent_In_School")
 public class ParentInSchool {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Column(name = "id", nullable = false)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "school_id", nullable = false)
+    @JoinColumn(name = "school_id", nullable = false, insertable=false, updatable=false)
     private School school;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "parent_id", nullable = false)
+    @JoinColumn(name = "parent_id", nullable = false, insertable=false, updatable=false)
     private Parent parent;
 
     @NotNull

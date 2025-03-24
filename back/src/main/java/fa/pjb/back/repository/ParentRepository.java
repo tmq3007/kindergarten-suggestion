@@ -87,7 +87,7 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
             "LEFT JOIN p.user u " +
             "LEFT JOIN p.media m " +
             "LEFT JOIN p.parentInSchools pis " +
-            "WHERE pis.status = 1 AND pis.school.id = :schoolId " +
+            "ON pis.status = 1 AND pis.school.id = :schoolId " +
             "AND (:keyword IS NULL OR :keyword = '' OR " +
             "     (CASE :searchBy " +
             "         WHEN 'username' THEN LOWER(u.username) " +
@@ -104,12 +104,37 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
     );
 
 
-
-    @Query(value = "SELECT p FROM ParentInSchool pis " +
-            "JOIN FETCH Parent p on p.id=pis.parent.id " +
-            "LEFT JOIN FETCH p.media " +
-            "WHERE pis.school.id = :schoolId AND pis.status= 0")
-    Page<Parent> findEnrollRequestBySchool(
+    @Query(
+            "SELECT " +
+                    "    p.id AS id, " +
+                    "    p.district AS parentDistrict, " +
+                    "    p.ward AS parentWard, " +
+                    "    p.province AS parentProvince, " +
+                    "    p.street AS parentStreet, " +
+                    "    u.id AS userId, " +
+                    "    u.username AS username, " +
+                    "    u.fullname AS fullname, " +
+                    "    u.email AS email, " +
+                    "    u.role AS role, " +
+                    "    u.phone AS phone, " +
+                    "    u.dob AS dob, " +
+                    "    m.id AS mediaId, " +
+                    "    m.url AS mediaUrl, " +
+                    "    u.status AS status, " +
+                    "    pis.status AS userEnrollStatus " +
+                    "FROM Parent p " +
+                    "LEFT JOIN p.user u " +
+                    "LEFT JOIN p.media m " +
+                    "LEFT JOIN p.parentInSchools pis ON pis.status = 0 AND pis.school.id = :schoolId " +
+                    "AND (:keyword IS NULL OR :keyword = '' OR " +
+                    "     (CASE :searchBy " +
+                    "         WHEN 'username' THEN LOWER(u.username) " +
+                    "         WHEN 'fullname' THEN LOWER(u.fullname) " +
+                    "         WHEN 'email' THEN LOWER(u.email) " +
+                    "         WHEN 'phone' THEN LOWER(u.phone) " +
+                    "         ELSE '' " +
+                    "      END) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<ParentProjection> findEnrollRequestBySchool(
             @Param("schoolId") Integer schoolId,
             @Param("searchBy") String searchBy,
             @Param("keyword") String keyword,
