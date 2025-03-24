@@ -83,15 +83,7 @@ public class SchoolController {
                 .build();
     }
 
-    @GetMapping("/check-phone/{phone}")
-    public ApiResponse<String> checkPhone(@PathVariable String phone) {
-        return ApiResponse.<String>builder()
-                .code(HttpStatus.OK.value())
-                .message("Email checked!")
-                .data(String.valueOf(schoolService.checkPhoneExists(phone)))
-                .build();
-    }
-
+    @Operation(summary = "Add school", description = "This API will add a new school")
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolDetailVO> addSchool(
             @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
@@ -161,6 +153,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Get school owner list for add school", description = "Get school owner list for specified expected school")
     @GetMapping("/get-so-list")
     public ApiResponse<List<SchoolOwnerVO>> searchSchoolOwnersForAddSchool(@RequestParam("q") String expectedSchool) {
         return ApiResponse.<List<SchoolOwnerVO>>builder()
@@ -170,6 +163,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Search expected school", description = "Search the specified expected school names for creating school")
     @GetMapping("/search-expected-school/{id}")
     public ApiResponse<List<ExpectedSchoolVO>> searchExpectedSchoolForAddSchool(@PathVariable Integer id) {
         return ApiResponse.<List<ExpectedSchoolVO>>builder()

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -28,6 +29,7 @@ public class UserController {
     private final UserService userService;
     private final AuthService authService;
 
+    @Operation(summary = "Get user list", description = "Get user list for admin")
     @GetMapping()
     public ApiResponse<Page<UserVO>> getUsers(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
@@ -60,16 +62,16 @@ public class UserController {
         try {
             UserDetailDTO updatedUser = userService.updateUser(userUpdateDTO);
             return ApiResponse.<UserDetailDTO>builder()
-                .code(HttpStatus.OK.value())
-                .message("User updated successfully")
-                .data(updatedUser)
-                .build();
+                    .code(HttpStatus.OK.value())
+                    .message("User updated successfully")
+                    .data(updatedUser)
+                    .build();
         } catch (IllegalArgumentException e) {
             return ApiResponse.<UserDetailDTO>builder()
-                .code(HttpStatus.BAD_REQUEST.value())
-                .message(e.getMessage())
-                .data(null)
-                .build();
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
         }
     }
 
@@ -84,11 +86,11 @@ public class UserController {
     }
 
     @Operation(summary = "Create User", description = "Create school owner and admin")
-    @PostMapping(value = "/create",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<UserCreateDTO> createUser(
             @RequestPart(value = "data") @Valid UserCreateDTO userCreateDTO,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        UserCreateDTO createdUser = userService.createUser(userCreateDTO,images);
+        UserCreateDTO createdUser = userService.createUser(userCreateDTO, images);
         log.info("Received UserDTO: {}", userCreateDTO);
         return ApiResponse.<UserCreateDTO>builder()
                 .code(200)
