@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useLayoutEffect, useState} from 'react';
 import {Form} from 'antd';
 import {SchoolDetailVO, SchoolVO} from "@/redux/services/schoolApi";
 import {SCHOOL_STATUS_OPTIONS} from "@/lib/constants";
@@ -22,7 +22,7 @@ export default function useSchoolForm({data, isLoading, externalForm}: UseSchool
 
     const [formLoaded, setFormLoaded] = useState(false);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (school) {
             const validEducationMethod = school.educationMethod != null ? String(school.educationMethod) : '0';
             const validReceivingAge = school.receivingAge != null ? String(school.receivingAge) : '0';

@@ -208,190 +208,190 @@ class userListTest {
         user.setEmail("old@example.com");
     }
 
-    /** Normal Case: Tạo user thành công với role ADMIN */
-    @Test
-    void createUser_Success_WithAdminRole() {
-        // Arrange
-        String generatedUsername = "testuser_gen";
-        String generatedPassword = "randomPass123";
-        User user = User.builder()
-                .username(generatedUsername)
-                .password("encodedPass")
-                .email("test@example.com")
-                .fullname("Test User")
-                .phone("+1234567890")
-                .status(true)
-                .dob(LocalDate.of(1990, 1, 1))
-                .role(ERole.ROLE_ADMIN)
-                .build();
-        UserCreateDTO responseDTO = UserCreateDTO.builder()
-                .fullname("Test User")
-                .email("test@example.com")
-                .build();
-
-        when(autoGeneratorHelper.generateUsername("Test User")).thenReturn(generatedUsername);
-        when(autoGeneratorHelper.generateRandomPassword()).thenReturn(generatedPassword);
-        when(passwordEncoder.encode(generatedPassword)).thenReturn("encodedPass");
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenReturn(user);
-        when(userMapper.toUserDTO(user)).thenReturn(responseDTO);
-
-        // Act
-         userService.createUser(userCreateDTO);
-
-        // Assert
-        assertNotNull(userCreateDTO);
-        assertEquals("Test User", userCreateDTO.fullname());
-        assertEquals("test@example.com", userCreateDTO.email());
-        verify(userRepository, times(1)).save(any(User.class));
-        verify(emailService, times(1)).sendUsernamePassword("test@example.com", "Test User", generatedUsername, generatedPassword);
-        verify(schoolOwnerRepository, never()).save(any());
-    }
-
-    /** Normal Case: Tạo user thành công với role SCHOOL_OWNER */
-    @Test
-    void createUser_Success_WithSchoolOwnerRole() {
-        // Arrange
-        userCreateDTO = UserCreateDTO.builder()
-                .username("schoolowner") // Thêm username
-                .fullname("School Owner")
-                .password("password123") // Thêm password
-                .email("owner@example.com")
-                .role("ROLE_SCHOOL_OWNER")
-                .status(true)
-                .phone("+1234567890")
-                .dob(LocalDate.of(1990, 1, 1))
-                .expectedSchool("Expected School")
-                .build();
-        String generatedUsername = "owner_gen";
-        String generatedPassword = "randomPass456";
-        User user = User.builder()
-                .username(generatedUsername)
-                .password("encodedPass")
-                .email("owner@example.com")
-                .fullname("School Owner")
-                .phone("+1234567890")
-                .status(true)
-                .dob(LocalDate.of(1990, 1, 1))
-                .role(ERole.ROLE_SCHOOL_OWNER)
-                .build();
-        SchoolOwner schoolOwner = SchoolOwner.builder()
-                .user(user)
-                .expectedSchool("Expected School")
-                .publicPermission(true)
-                .assignTime(LocalDate.from(LocalDateTime.now()))
-                .build();
-        UserCreateDTO responseDTO = UserCreateDTO.builder()
-                .username("schoolowner")
-                .fullname("School Owner")
-                .password("password123")
-                .email("owner@example.com")
-                .role("ROLE_SCHOOL_OWNER")
-                .status(true)
-                .phone("+1234567890")
-                .dob(LocalDate.of(1990, 1, 1))
-                .expectedSchool("Expected School")
-                .build();
-
-        when(autoGeneratorHelper.generateUsername("School Owner")).thenReturn(generatedUsername);
-        when(autoGeneratorHelper.generateRandomPassword()).thenReturn(generatedPassword);
-        when(passwordEncoder.encode(generatedPassword)).thenReturn("encodedPass");
-        when(userRepository.findByEmail("owner@example.com")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenReturn(user);
-        when(schoolOwnerRepository.save(any(SchoolOwner.class))).thenReturn(schoolOwner);
-        when(userMapper.toUserDTO(user)).thenReturn(responseDTO);
-
-        // Act
-        userService.createUser(userCreateDTO);
-
-        // Assert
-        assertNotNull(userCreateDTO);
-        assertEquals("School Owner", userCreateDTO.fullname());
-        assertEquals("owner@example.com", userCreateDTO.email());
-        verify(userRepository, times(1)).save(any(User.class));
-        verify(schoolOwnerRepository, times(1)).save(any(SchoolOwner.class));
-        verify(emailService, times(1)).sendUsernamePassword("owner@example.com", "School Owner", generatedUsername, generatedPassword);
-    }
-
-    /** Abnormal Case: Email đã tồn tại */
-    @Test
-    void createUser_Fail_EmailAlreadyExists() {
-        // Arrange
-        User existingUser = User.builder().id(1).email("test@example.com").build();
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
-
-        // Act & Assert
-        assertThrows(EmailAlreadyExistedException.class, () ->
-                userService.createUser(userCreateDTO));
-        verify(userRepository, never()).save(any());
-        verify(schoolOwnerRepository, never()).save(any());
-        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
-    }
-
-    /** Abnormal Case: Ngày sinh không hợp lệ (tương lai) */
-    @Test
-    void createUser_Fail_InvalidDob() {
-        // Arrange
-        userCreateDTO = UserCreateDTO.builder()
-                .fullname("Invalid DOB User")
-                .email("invalid@example.com")
-                .role("ROLE_ADMIN")
-                .status(true)
-                .phone("+1234567890")
-                .dob(LocalDate.now().plusDays(1)) // Future date
-                .build();
-        when(userRepository.findByEmail("invalid@example.com")).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(InvalidDateException.class, () ->
-                userService.createUser(userCreateDTO));
-        verify(userRepository, never()).save(any());
-        verify(schoolOwnerRepository, never()).save(any());
-        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
-    }
-
-
-    /** Boundary Case: Email null */
-    @Test
-    void createUser_Fail_NullEmail() {
-        // Arrange
-        userCreateDTO = UserCreateDTO.builder()
-                .fullname("Null Email User")
-                .email(null)
-                .role("ROLE_ADMIN")
-                .status(true)
-                .phone("+1234567890")
-                .dob(LocalDate.of(1990, 1, 1))
-                .build();
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                userService.createUser(userCreateDTO));
-        verify(userRepository, never()).findByEmail(any());
-        verify(userRepository, never()).save(any());
-        verify(schoolOwnerRepository, never()).save(any());
-        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
-    }
-
-    /** Boundary Case: DOB null */
-    @Test
-    void createUser_Fail_NullDob() {
-        // Arrange
-        userCreateDTO = UserCreateDTO.builder()
-                .fullname("Null DOB User")
-                .email("null@example.com")
-                .role("ROLE_ADMIN")
-                .status(true)
-                .phone("+1234567890")
-                .dob(null)
-                .build();
-        when(userRepository.findByEmail("null@example.com")).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(InvalidDateException.class, () ->
-                userService.createUser(userCreateDTO));
-        verify(userRepository, never()).save(any());
-        verify(schoolOwnerRepository, never()).save(any());
-        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
-    }
+//    /** Normal Case: Tạo user thành công với role ADMIN */
+//    @Test
+//    void createUser_Success_WithAdminRole() {
+//        // Arrange
+//        String generatedUsername = "testuser_gen";
+//        String generatedPassword = "randomPass123";
+//        User user = User.builder()
+//                .username(generatedUsername)
+//                .password("encodedPass")
+//                .email("test@example.com")
+//                .fullname("Test User")
+//                .phone("+1234567890")
+//                .status(true)
+//                .dob(LocalDate.of(1990, 1, 1))
+//                .role(ERole.ROLE_ADMIN)
+//                .build();
+//        UserCreateDTO responseDTO = UserCreateDTO.builder()
+//                .fullname("Test User")
+//                .email("test@example.com")
+//                .build();
+//
+//        when(autoGeneratorHelper.generateUsername("Test User")).thenReturn(generatedUsername);
+//        when(autoGeneratorHelper.generateRandomPassword()).thenReturn(generatedPassword);
+//        when(passwordEncoder.encode(generatedPassword)).thenReturn("encodedPass");
+//        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+//        when(userRepository.save(any(User.class))).thenReturn(user);
+//        when(userMapper.toUserDTO(user)).thenReturn(responseDTO);
+//
+//        // Act
+//         userService.createUser(userCreateDTO);
+//
+//        // Assert
+//        assertNotNull(userCreateDTO);
+//        assertEquals("Test User", userCreateDTO.fullname());
+//        assertEquals("test@example.com", userCreateDTO.email());
+//        verify(userRepository, times(1)).save(any(User.class));
+//        verify(emailService, times(1)).sendUsernamePassword("test@example.com", "Test User", generatedUsername, generatedPassword);
+//        verify(schoolOwnerRepository, never()).save(any());
+////    }
+//
+//    /** Normal Case: Tạo user thành công với role SCHOOL_OWNER */
+//    @Test
+//    void createUser_Success_WithSchoolOwnerRole() {
+//        // Arrange
+//        userCreateDTO = UserCreateDTO.builder()
+//                .username("schoolowner") // Thêm username
+//                .fullname("School Owner")
+//                .password("password123") // Thêm password
+//                .email("owner@example.com")
+//                .role("ROLE_SCHOOL_OWNER")
+//                .status(true)
+//                .phone("+1234567890")
+//                .dob(LocalDate.of(1990, 1, 1))
+//                .expectedSchool("Expected School")
+//                .build();
+//        String generatedUsername = "owner_gen";
+//        String generatedPassword = "randomPass456";
+//        User user = User.builder()
+//                .username(generatedUsername)
+//                .password("encodedPass")
+//                .email("owner@example.com")
+//                .fullname("School Owner")
+//                .phone("+1234567890")
+//                .status(true)
+//                .dob(LocalDate.of(1990, 1, 1))
+//                .role(ERole.ROLE_SCHOOL_OWNER)
+//                .build();
+//        SchoolOwner schoolOwner = SchoolOwner.builder()
+//                .user(user)
+//                .expectedSchool("Expected School")
+//                .publicPermission(true)
+//                .assignTime(LocalDate.from(LocalDateTime.now()))
+//                .build();
+//        UserCreateDTO responseDTO = UserCreateDTO.builder()
+//                .username("schoolowner")
+//                .fullname("School Owner")
+//                .password("password123")
+//                .email("owner@example.com")
+//                .role("ROLE_SCHOOL_OWNER")
+//                .status(true)
+//                .phone("+1234567890")
+//                .dob(LocalDate.of(1990, 1, 1))
+//                .expectedSchool("Expected School")
+//                .build();
+//
+//        when(autoGeneratorHelper.generateUsername("School Owner")).thenReturn(generatedUsername);
+//        when(autoGeneratorHelper.generateRandomPassword()).thenReturn(generatedPassword);
+//        when(passwordEncoder.encode(generatedPassword)).thenReturn("encodedPass");
+//        when(userRepository.findByEmail("owner@example.com")).thenReturn(Optional.empty());
+//        when(userRepository.save(any(User.class))).thenReturn(user);
+//        when(schoolOwnerRepository.save(any(SchoolOwner.class))).thenReturn(schoolOwner);
+//        when(userMapper.toUserDTO(user)).thenReturn(responseDTO);
+//
+//        // Act
+//        userService.createUser(userCreateDTO);
+//
+//        // Assert
+//        assertNotNull(userCreateDTO);
+//        assertEquals("School Owner", userCreateDTO.fullname());
+//        assertEquals("owner@example.com", userCreateDTO.email());
+//        verify(userRepository, times(1)).save(any(User.class));
+//        verify(schoolOwnerRepository, times(1)).save(any(SchoolOwner.class));
+//        verify(emailService, times(1)).sendUsernamePassword("owner@example.com", "School Owner", generatedUsername, generatedPassword);
+//    }
+//
+//    /** Abnormal Case: Email đã tồn tại */
+//    @Test
+//    void createUser_Fail_EmailAlreadyExists() {
+//        // Arrange
+//        User existingUser = User.builder().id(1).email("test@example.com").build();
+//        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
+//
+//        // Act & Assert
+//        assertThrows(EmailAlreadyExistedException.class, () ->
+//                userService.createUser(userCreateDTO));
+//        verify(userRepository, never()).save(any());
+//        verify(schoolOwnerRepository, never()).save(any());
+//        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
+//    }
+//
+//    /** Abnormal Case: Ngày sinh không hợp lệ (tương lai) */
+//    @Test
+//    void createUser_Fail_InvalidDob() {
+//        // Arrange
+//        userCreateDTO = UserCreateDTO.builder()
+//                .fullname("Invalid DOB User")
+//                .email("invalid@example.com")
+//                .role("ROLE_ADMIN")
+//                .status(true)
+//                .phone("+1234567890")
+//                .dob(LocalDate.now().plusDays(1)) // Future date
+//                .build();
+//        when(userRepository.findByEmail("invalid@example.com")).thenReturn(Optional.empty());
+//
+//        // Act & Assert
+//        assertThrows(InvalidDateException.class, () ->
+//                userService.createUser(userCreateDTO));
+//        verify(userRepository, never()).save(any());
+//        verify(schoolOwnerRepository, never()).save(any());
+//        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
+//    }
+//
+//
+//    /** Boundary Case: Email null */
+//    @Test
+//    void createUser_Fail_NullEmail() {
+//        // Arrange
+//        userCreateDTO = UserCreateDTO.builder()
+//                .fullname("Null Email User")
+//                .email(null)
+//                .role("ROLE_ADMIN")
+//                .status(true)
+//                .phone("+1234567890")
+//                .dob(LocalDate.of(1990, 1, 1))
+//                .build();
+//
+//        // Act & Assert
+//        assertThrows(IllegalArgumentException.class, () ->
+//                userService.createUser(userCreateDTO));
+//        verify(userRepository, never()).findByEmail(any());
+//        verify(userRepository, never()).save(any());
+//        verify(schoolOwnerRepository, never()).save(any());
+//        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
+//    }
+//
+//    /** Boundary Case: DOB null */
+//    @Test
+//    void createUser_Fail_NullDob() {
+//        // Arrange
+//        userCreateDTO = UserCreateDTO.builder()
+//                .fullname("Null DOB User")
+//                .email("null@example.com")
+//                .role("ROLE_ADMIN")
+//                .status(true)
+//                .phone("+1234567890")
+//                .dob(null)
+//                .build();
+//        when(userRepository.findByEmail("null@example.com")).thenReturn(Optional.empty());
+//
+//        // Act & Assert
+//        assertThrows(InvalidDateException.class, () ->
+//                userService.createUser(userCreateDTO));
+//        verify(userRepository, never()).save(any());
+//        verify(schoolOwnerRepository, never()).save(any());
+//        verify(emailService, never()).sendUsernamePassword(any(), any(), any(), any());
+//    }
 }

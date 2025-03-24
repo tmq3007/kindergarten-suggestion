@@ -13,6 +13,7 @@ import {RootState} from "@/redux/store";
 import UserDropdown from "@/app/components/user/UserDropdown";
 import {motion} from 'framer-motion'
 import {useGetCountriesQuery} from '@/redux/services/registerApi';
+import NotificationDropdown from "@/app/components/user/NotificationDropdown";
 
 
 export default function Header() {
@@ -25,6 +26,7 @@ export default function Header() {
         return null;
     }
     const username = useSelector((state: RootState) => state.user?.username);
+    const role = useSelector((state: RootState) => state.user?.role);
     return (
         <motion.nav
             initial={{ y: -100, opacity: 0 }}
@@ -100,7 +102,11 @@ export default function Header() {
                  {/*Login & Signup*/}
                 {
                     username ?
-                        <UserDropdown username={username}/> :
+                        <Space className={'text-sm md:text-lg'}>
+                            {role === "ROLE_SCHOOL_OWNER" && <NotificationDropdown />}
+                            <UserDropdown username={username}/>
+                        </Space>
+                         :
                         <Space className={'text-sm md:text-lg'}>
                             <Link href=""
                                   onClick={() => setIsLoginModalOpen(true)}
