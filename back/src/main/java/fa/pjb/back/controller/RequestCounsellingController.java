@@ -8,16 +8,22 @@ import fa.pjb.back.service.RequestCounsellingReminderService;
 import fa.pjb.back.service.RequestCounsellingService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("counselling")
 public class RequestCounsellingController {
-     private final RequestCounsellingReminderService reminderService;
+    private static final Logger logger = LoggerFactory.getLogger(RequestCounsellingController.class);
+    private final RequestCounsellingReminderService reminderService;
     private final RequestCounsellingService requestCounsellingService;
 
     @Operation(summary = "Request Counselling Reminder", description = "Send email and notification to school owner and admin")
@@ -40,6 +46,24 @@ public class RequestCounsellingController {
                 .message("Counseling request created successfully!")
                 .data(createdRequest)
                 .build();
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<Page<RequestCounsellingVO>> getAllRequests(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) Byte status,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String phone,
+        @RequestParam(required = false) String schoolName,
+        @RequestParam(required = false) LocalDateTime dueDate) {
+
+        Page<RequestCounsellingVO> requests = requestCounsellingService.getAllRequests(
+            page, size, status, email, name, phone, schoolName, dueDate
+        );
+        logger.info("Pageable response: {}", requests);
+        return ResponseEntity.ok(requests);
     }
 
     @GetMapping("/{requestCounsellingId}")
