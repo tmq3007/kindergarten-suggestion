@@ -10,6 +10,7 @@ import { testApi } from "../services/testApi";
 import {schoolOwnerApi} from "@/redux/services/schoolOwnerApi";
 import {requestCounsellingApi} from "@/redux/services/requestCounsellingApi";
 
+
 const apiMiddlewares = [
     authApi.middleware,
     registerApi.middleware,
@@ -20,7 +21,7 @@ const apiMiddlewares = [
     schoolApi.middleware,
     testApi.middleware,
     schoolOwnerApi.middleware,
-    requestCounsellingApi.middleware
+    requestCounsellingApi.middleware,
 ];
 
 export default apiMiddlewares;

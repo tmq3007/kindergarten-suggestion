@@ -28,10 +28,11 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final ParentRepository parentRepository;
     private final SchoolRepository schoolRepository;
     private final SchoolMapper schoolMapper;
+
     @Override
     public RequestCounsellingVO createRequestCounselling(RequestCounsellingDTO request) {
         Parent parent = null;
-        if (request.userId() != null){
+        if (request.userId() != null) {
             parent = parentRepository.findParentByUserId(request.userId());
             if (parent == null) {
                 throw new UserNotFoundException();
@@ -39,33 +40,43 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         }
 
         Optional<School> school = schoolRepository.findSchoolBySchoolId(request.schoolId());
-
         if (school.isEmpty()) {
             throw new SchoolNotFoundException();
         }
 
-         RequestCounselling entity = RequestCounselling.builder()
-                  .parent(parent)
-                 .school(school.get())
-                .inquiry(request.inquiry())
-                .status(request.status())
-                .email(request.email())
-                .phone(request.phone())
-                .name(request.name())
-                .due_date(request.dueDate())
-                .build();
+        RequestCounselling entity = RequestCounselling.builder()
+            .parent(parent)
+            .school(school.get())
+            .inquiry(request.inquiry())
+            .status(request.status())
+            .email(request.email())
+            .phone(request.phone())
+            .name(request.name())
+            .due_date(request.dueDate())
+            .build();
 
-         RequestCounselling savedEntity = requestCounsellingRepository.save(entity);
+        RequestCounselling savedEntity = requestCounsellingRepository.save(entity);
         log.info("Created counseling request with ID: {}", savedEntity.getId());
 
-         return  RequestCounsellingVO.builder()
-                .school(schoolMapper.toSchoolDetailVO(school.get()))
-                .inquiry(savedEntity.getInquiry())
-                .status(savedEntity.getStatus())
-                .email(savedEntity.getEmail())
-                .phone(savedEntity.getPhone())
-                .name(savedEntity.getName())
-                .dueDate(savedEntity.getDue_date())
-                .build();
+        // Set parentName if parent exists
+        String parentName = null;
+        String phone = savedEntity.getPhone();
+        String name = savedEntity.getName();
+        if (parent != null) {
+            parentName = parent.getUser().getFullname();
+            name = parentName; // Use parentName as name (for fullName on frontend)
+            phone = parent.getUser().getPhone();
+        }
+
+        return RequestCounsellingVO.builder()
+            .id(savedEntity.getId())
+            .schoolName(school.get().getName()) // Set schoolName as the school's name
+            .inquiry(savedEntity.getInquiry())
+            .status(savedEntity.getStatus())
+            .email(savedEntity.getEmail())
+            .phone(phone)
+            .name(name)
+            .dueDate(savedEntity.getDue_date())
+            .build();
     }
 }
