@@ -5,7 +5,8 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 @Builder
 public record RequestCounsellingVO(
-        SchoolDetailVO school,
+        Integer id,
+        String schoolName,
         String inquiry,
         byte status,
         String email,

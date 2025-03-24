@@ -5,6 +5,7 @@ import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
+import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
@@ -12,6 +13,10 @@ import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.RequestCounsellingReminderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import jakarta.persistence.criteria.Predicate;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -29,12 +40,16 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
 
+    @Override
     public RequestCounsellingReminderVO checkOverdueForSchoolOwner(Integer userId) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime overdueThreshold = now.minusHours(24); // 24 hours ago
 
         Optional<SchoolOwner> schoolOwner = schoolOwnerRepository.findByUserId(userId);
-
+        if (schoolOwner.isEmpty()) {
+            log.warn("No SchoolOwner found for userId: {}", userId);
+            return null;
+        }
 
             Integer schoolId = schoolOwner.get().getSchool().getId();
 
@@ -60,7 +75,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     }
 
     // Runs every day at 9:00 AM
-    @Scheduled(cron = "0 28 10 * * ?")
+    @Scheduled(cron = "0 28 17 * * ?")
     @Override
     @Transactional(readOnly = true)
     public void checkDueDateAndSendEmail() {
