@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface SchoolRepository extends JpaRepository<School, Integer> {
+
     Optional<School> findByEmail(String email);
 
     @Query("SELECT s FROM School s  WHERE s.id = :schoolId")
@@ -53,4 +54,5 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
             @Param("email") String email,
             @Param("phone") String phone,
             Pageable pageable);
+
 }

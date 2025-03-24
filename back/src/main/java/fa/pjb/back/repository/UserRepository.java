@@ -3,7 +3,6 @@ package fa.pjb.back.repository;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserProjection;
-import fa.pjb.back.model.vo.UserVO;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+
     Optional<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);
@@ -41,7 +41,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "    p.province AS province " +
             "FROM User u " +
             "LEFT JOIN Parent p ON p.user = u " +
-            "WHERE (:roles IS NULL OR u.role IN :roles) "+
+            "WHERE (:roles IS NULL OR u.role IN :roles) " +
             "AND (:keyword IS NULL OR :keyword = '' OR " +
             "     (CASE :searchBy " +
             "         WHEN 'username' THEN LOWER(u.username) " +
@@ -55,7 +55,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             @Param("searchBy") String searchBy,
             @Param("keyword") String keyword,
             Pageable pageable);
-
 
     @Query("SELECT u.email FROM User u WHERE u.role = :role AND u.status = true")
     List<String> findActiveUserEmailsByRole(ERole role);
@@ -78,4 +77,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                                                     @Param("phone") String phone,
                                                     Pageable pageable,
                                                     @Param("schoolId") int schoolId);
+
 }

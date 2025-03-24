@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
+
     LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent);
 
     LoginVO loginAdmin(LoginDTO loginDTO);
@@ -24,4 +25,5 @@ public interface AuthService {
     void resetPassword(ResetPasswordDTO resetPasswordDTO, HttpServletRequest request);
 
     boolean checkEmailExists(String email);
+
 }

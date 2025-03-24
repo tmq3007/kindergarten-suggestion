@@ -6,6 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record ChangePasswordDTO(
+
         @NotBlank(message = "Old password cannot be empty")
         String oldPassword,
 
@@ -15,5 +16,6 @@ public record ChangePasswordDTO(
                 message = "New password must have at least one letter, one number, and be at least seven characters long"
         )
         String newPassword
+
 ) {
 }

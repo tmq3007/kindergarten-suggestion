@@ -2,8 +2,6 @@ package fa.pjb.back.model.entity;
 
 import fa.pjb.back.model.enums.ERole;
 import jakarta.persistence.*;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -25,6 +23,7 @@ import java.util.Set;
 @Table(name = "User")
 @ToString
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

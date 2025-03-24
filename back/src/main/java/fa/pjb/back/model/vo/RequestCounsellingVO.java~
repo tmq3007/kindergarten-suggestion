@@ -6,11 +6,14 @@ import java.time.LocalDateTime;
 
 @Builder
 public record RequestCounsellingVO(
-
+<<<<<<< Updated upstream
         Integer id,
-
         String schoolName,
+=======
 
+        SchoolDetailVO school,
+
+>>>>>>> Stashed changes
         String inquiry,
 
         byte status,
@@ -20,9 +23,11 @@ public record RequestCounsellingVO(
         String phone,
 
         String name,
-
+<<<<<<< Updated upstream
         String address,
+=======
 
+>>>>>>> Stashed changes
         LocalDateTime dueDate
 
 ) {

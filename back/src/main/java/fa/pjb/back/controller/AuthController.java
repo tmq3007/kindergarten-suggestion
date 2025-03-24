@@ -7,7 +7,6 @@ import fa.pjb.back.model.dto.ResetPasswordDTO;
 import fa.pjb.back.model.vo.ForgotPasswordVO;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
-import fa.pjb.back.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,12 +19,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("auth")
-@Tag(name = "Authentication", description = "This API provides user the capability to authentication")
+@Tag(name = "Authentication Controller", description = "This API provides user the capability to authentication")
 
 public class AuthController {
+
     private final AuthService authService;
 
-    @Operation(summary = "Login", description = "Login content website")
+    @Operation(summary = "Login", description = "Login into content website")
     @PostMapping("login/admin")
     public ApiResponse<LoginVO> loginByAdmin(@Valid @RequestBody LoginDTO loginDTO) {
         return ApiResponse.<LoginVO>builder()
@@ -35,7 +35,7 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Login", description = "Login public website")
+    @Operation(summary = "Login", description = "Login into public website")
     @PostMapping("login/public")
     public ApiResponse<LoginVO> loginByParent(@Valid @RequestBody LoginDTO loginDTO) {
         return ApiResponse.<LoginVO>builder()
@@ -45,7 +45,7 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Forgot Password", description = "Forgot Password")
+    @Operation(summary = "Forgot password", description = "Send forgot password link to user's email")
     @PostMapping("forgot-password")
     public ApiResponse<ForgotPasswordVO> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
         return ApiResponse.<ForgotPasswordVO>builder()
@@ -55,7 +55,7 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Reset Password", description = "Reset Password")
+    @Operation(summary = "Reset password", description = "Reset password when user forget password")
     @PostMapping("reset-password")
     public ApiResponse<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO,
                                         HttpServletRequest request) {
@@ -66,7 +66,7 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Logout", description = "Logout")
+    @Operation(summary = "Logout", description = "Logout user from the system")
     @PutMapping("logout")
     public ApiResponse<?> logout() {
         authService.logout();
@@ -76,6 +76,7 @@ public class AuthController {
                 .build();
     }
 
+    @Operation(summary = "Check email", description = "Check if the email used for registration is already in use")
     @GetMapping("check-email")
     public ApiResponse<String> checkEmailWhenRegister(@RequestParam String email) {
         return ApiResponse.<String>builder()
@@ -93,4 +94,5 @@ public class AuthController {
                 .data(authService.refresh(request))
                 .build();
     }
+
 }

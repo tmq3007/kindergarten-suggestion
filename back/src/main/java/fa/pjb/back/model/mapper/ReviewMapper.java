@@ -18,4 +18,5 @@ public interface ReviewMapper {
     ReviewVO toReviewVO(Review review);
 
     List<ReviewVO> toReviewVOList(List<Review> reviews);
+
 }

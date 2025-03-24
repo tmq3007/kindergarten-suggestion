@@ -5,7 +5,6 @@ import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
-import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
@@ -13,10 +12,6 @@ import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.RequestCounsellingReminderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,17 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import jakarta.persistence.criteria.Predicate;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class RequestCounsellingReminderServiceImpl implements RequestCounsellingReminderService {
+
     private final RequestCounsellingRepository requestCounsellingRepository;
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
@@ -51,25 +41,25 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
             return null;
         }
 
-            Integer schoolId = schoolOwner.get().getSchool().getId();
+        Integer schoolId = schoolOwner.get().getSchool().getId();
 
-            List<RequestCounselling> requests = requestCounsellingRepository.findBySchoolIdAndStatus(schoolId, (byte) 0);
-            int totalOverdueCount = 0;
+        List<RequestCounselling> requests = requestCounsellingRepository.findBySchoolIdAndStatus(schoolId, (byte) 0);
+        int totalOverdueCount = 0;
 
-            for (RequestCounselling request : requests) {
-                LocalDateTime dueDate = request.getDue_date();
-                if (dueDate.isBefore(overdueThreshold)) {
-                    totalOverdueCount++;
-                }
+        for (RequestCounselling request : requests) {
+            LocalDateTime dueDate = request.getDue_date();
+            if (dueDate.isBefore(overdueThreshold)) {
+                totalOverdueCount++;
             }
+        }
 
-            if (totalOverdueCount > 0) {
-                return RequestCounsellingReminderVO
-                        .builder()
-                        .title("Request Counselling Reminder")
-                        .description("You have " + totalOverdueCount + " request counselling that are overdue.")
-                        .build();
-            }
+        if (totalOverdueCount > 0) {
+            return RequestCounsellingReminderVO
+                    .builder()
+                    .title("Request Counselling Reminder")
+                    .description("You have " + totalOverdueCount + " request counselling that are overdue.")
+                    .build();
+        }
 
         return null;
     }

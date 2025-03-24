@@ -20,6 +20,7 @@ import java.util.Set;
 @Entity
 @Table(name = "School")
 public class School {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -123,4 +124,5 @@ public class School {
 
     @OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<SchoolOwner> schoolOwners;
+
 }
