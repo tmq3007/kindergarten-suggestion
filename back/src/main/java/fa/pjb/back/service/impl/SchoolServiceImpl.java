@@ -318,6 +318,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (originSchool == null) {
             throw new SchoolNotFoundException();
         }
+        log.info("1");
         Integer originSchoolId = originSchool.getId();
 
         // Check if draft exists or not
@@ -327,6 +328,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (originSchool.getStatus().equals(SUBMITTED.getValue()) || (draft != null && draft.getStatus().equals(SUBMITTED.getValue()))) {
             throw new IllegalStateException("Cannot update a submitted school or draft");
         }
+        log.info("2");
 
         if (draft == null) {
             draft = new School();
@@ -337,17 +339,29 @@ public class SchoolServiceImpl implements SchoolService {
         schoolMapper.toDraft(schoolDTO, draft);
         draft.setStatus(status);
         validateAndSetAssociations(schoolDTO, draft);
-        // Delete old images
+        log.info("3");
+
+        log.info("4");
+
+        // Delete old images in database
         if (draft.getImages() != null && !draft.getImages().isEmpty()) {
+            log.info("Delete old images in database");
+            deleteOldImages(draft);
             draft.getImages().clear();
         }
+        log.info("5");
+
         // Save new images
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, draft);
         }
+        log.info("6");
+
         draft.setPostedDate(LocalDate.now());
         draft = schoolRepository.save(draft);
-
+        log.info("7");
+        // Delete old images in cloud
+//        deleteOldImages(draft);
         return schoolMapper.toSchoolDetailVO(draft);
     }
 
