@@ -9,14 +9,4 @@ public interface RequestCounsellingReminderService {
     void checkDueDateAndSendEmail();
     RequestCounsellingReminderVO checkOverdueForSchoolOwner(Integer userId);
 
-    Page<RequestCounsellingVO> getAllRequests(
-        int page,
-        int size,
-        Byte status,
-        String email,
-        String name,
-        String phone,
-        String schoolName,
-        LocalDateTime dueDate
-    );
 }

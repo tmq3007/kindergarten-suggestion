@@ -59,7 +59,7 @@ public class RequestCounsellingController {
         @RequestParam(required = false) String schoolName,
         @RequestParam(required = false) LocalDateTime dueDate) {
 
-        Page<RequestCounsellingVO> requests = reminderService.getAllRequests(
+        Page<RequestCounsellingVO> requests = requestCounsellingService.getAllRequests(
             page, size, status, email, name, phone, schoolName, dueDate
         );
         logger.info("Pageable response: {}", requests);
