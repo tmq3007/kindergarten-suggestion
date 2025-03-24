@@ -39,7 +39,7 @@ public class Parent {
     private String province;
 
     @Size(max = 255)
-    @Column(name = "street", nullable = true)
+    @Column(name = "street")
     private String street;
 
     @OneToOne(cascade = CascadeType.ALL)

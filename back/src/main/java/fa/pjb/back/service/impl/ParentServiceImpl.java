@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
@@ -9,15 +10,14 @@ import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
-import fa.pjb.back.model.entity.Media;
-import fa.pjb.back.model.entity.Parent;
-import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.model.mapper.*;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.repository.ParentRepository;
+import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.*;
 import lombok.RequiredArgsConstructor;
@@ -43,14 +43,13 @@ import static fa.pjb.back.model.enums.ERole.ROLE_PARENT;
 public class ParentServiceImpl implements ParentService {
 
     private final AuthService authService;
-    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final ParentRepository parentRepository;
+    private final SchoolOwnerRepository schoolOwnerRepository;
     private final ParentMapper parentMapper;
     private final UserRepository userRepository;
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
-    private final UserMapper userMapper;
 
 
 //    @Override
@@ -270,13 +269,28 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public Page<ParentVO> getParentBySchool(int schoolId, int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getParentBySchool(User user, int page, int size, String searchBy, String keyword) {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
+        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(schoolId,searchBy, keyword, pageable);
+        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(so.getSchool().getId(),searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFronProjection);
+    }
+
+    @Override
+    public Page<ParentVO> getEnrollRequestBySchool(User user, int page, int size, String searchBy, String keyword) {
+        if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
+            throw new InvalidDataException("Invalid searchBy value: " + searchBy);
+        }
+//        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Parent> parents = parentRepository.findEnrollRequestBySchool(1,searchBy,keyword,pageable);
+        for(Parent p : parents) {
+            log.error(String.valueOf(p.getMedia()));
+        }
+        return parents.map(parentMapper::toParentVO);
     }
 
 
