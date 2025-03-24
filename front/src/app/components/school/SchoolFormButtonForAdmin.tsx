@@ -12,6 +12,7 @@ import {
 import {useSelector} from "react-redux";
 import {ButtonGroupProps} from "./SchoolFormButton";
 import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
+import MyEditor from "@/app/components/common/MyEditor";
 
 const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                                                                   form,
@@ -46,7 +47,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const [modalVisible, setModalVisible] = useState(false);
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
-    const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+    const [responseContent, setResponseContent] = useState<string>("");
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
@@ -139,6 +140,10 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         router.back();
     };
 
+    const handleResponseChange = (response: string) => {
+        setResponseContent(response);
+    };
+
     const handleConfirmAction = async () => {
         try {
             switch (activeButton) {
@@ -212,21 +217,21 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const getModalContent = () => {
         switch (activeButton) {
             case "update":
-                return {title: "Update School", desc: "Are you sure you want to update this school?"};
+                return { title: "Update School", desc: "Are you sure you want to update this school?", showEditor: false };
             case "approve-draft":
-                return {title: "Approve School", desc: "Are you sure you want to approve this school?"};
+                return { title: "Approve School", desc: "Are you sure you want to approve this school?", showEditor: false };
             case "publish":
-                return {title: "Publish School", desc: "Are you sure you want to publish this school?"};
+                return { title: "Publish School", desc: "Are you sure you want to publish this school?", showEditor: false };
             case "unpublish":
-                return {title: "Unpublish School", desc: "Are you sure you want to unpublish this school?"};
+                return { title: "Unpublish School", desc: "Are you sure you want to unpublish this school?", showEditor: false };
             case "delete":
-                return {title: "Delete School", desc: "Are you sure you want to delete this school?"};
+                return { title: "Delete School", desc: "Are you sure you want to delete this school? If yes, briefly describe the reason:cd f", showEditor: true };
             case "approve":
-                return {title: "Approve School", desc: "Are you sure you want to approve this school?"};
+                return { title: "Approve School", desc: "Are you sure you want to approve this school?", showEditor: false };
             case "reject":
-                return {title: "Reject School", desc: "Are you sure you want to reject this school?"};
+                return { title: "Reject School", desc: "Are you sure you want to reject this school? If yes, briefly describe the reason:", showEditor: true };
             default:
-                return {title: "", desc: ""};
+                return { title: "", desc: "", showEditor: false };
         }
     };
 
@@ -296,7 +301,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
 
             {/* Modal confirm */}
             <Modal
-                title={<p className={'font-bold text-3xl'}>{getModalContent().title}</p>}
+                title={<p className={'font-bold text-3xl text-start'}>{getModalContent().title}</p>}
                 open={modalVisible}
                 onOk={handleConfirmAction}
                 onCancel={() => {
@@ -308,7 +313,13 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                 confirmLoading={isUpdatingStatus}
                 getContainer={false}
             >
-                <p className={'text-lg'}>{getModalContent().desc}</p>
+                <p className={'text-lg text-start'}>{getModalContent().desc}</p>
+                {getModalContent().showEditor && (
+                    <MyEditor
+                        description={responseContent}
+                        onChange={handleResponseChange}
+                    />
+                )}
             </Modal>
         </div>
     );

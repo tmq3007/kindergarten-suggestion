@@ -65,4 +65,13 @@ public class RequestCounsellingController {
         logger.info("Pageable response: {}", requests);
         return ResponseEntity.ok(requests);
     }
+
+    @GetMapping("/{requestCounsellingId}")
+    public ApiResponse<RequestCounsellingVO> getRequestCounselling(@PathVariable Integer requestCounsellingId) {
+        return ApiResponse.<RequestCounsellingVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get request counselling successfully!")
+                .data(requestCounsellingService.getRequestCounselling(requestCounsellingId))
+                .build();
+    }
 }

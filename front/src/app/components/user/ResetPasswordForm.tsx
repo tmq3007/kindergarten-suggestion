@@ -75,7 +75,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetPassword, isLo
         <>
             {contextHolder}
             <Form
-                className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/3 sm:w-full shadow-xl`}
+                className={`${nunito.className} p-10 rounded-lg bg-white md:w-1/2 sm:w-full shadow-xl`}
                 name="reset-password-form"
                 labelCol={{span: 8}}
                 wrapperCol={{span: 16}}
@@ -144,14 +144,14 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProp> = ({resetPassword, isLo
                     <Space className={'flex flex-col md:flex-row justify-center'}>
 
                         <Button
-                            className={'block w-80 md:w-36 mx-4 font-bold bg-white text-custom border border-custom hover:!border-custom-500 hover:!text-custom-500 transition'}
+                            className={'block w-72 md:w-28 mx-4 font-bold bg-white text-custom border border-custom hover:!border-custom-500 hover:!text-custom-500 transition'}
                             onClick={handleCancel}
                         >
                             Cancel
                         </Button>
 
                         <Button
-                            className={'block w-80 md:w-36 mx-4 font-bold bg-custom hover:!bg-custom-700 text-white hover:!text-white border-none'}
+                            className={'block w-72 md:w-28 mx-4 font-bold bg-custom hover:!bg-custom-700 text-white hover:!text-white border-none'}
                             htmlType="submit"
                             loading={isLoading} // Show loading when submitting
                         >

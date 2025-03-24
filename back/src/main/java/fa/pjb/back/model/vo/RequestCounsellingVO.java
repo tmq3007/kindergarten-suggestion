@@ -12,6 +12,7 @@ public record RequestCounsellingVO(
         String email,
         String phone,
         String name,
+        String address,
         LocalDateTime dueDate
 ) {
 }

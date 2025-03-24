@@ -31,6 +31,7 @@ export interface RequestCounsellingVO {
   phone: string;
   name: string;
   dueDate: string;
+  address: string;
 }
 
 // Types for Pageable (from requestApi)
@@ -147,6 +148,14 @@ export const requestCounsellingApi = createApi({
       },
       providesTags: ["RequestList"],
     }),
+      getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+          query: (requestCounsellingId) => ({
+              url: `counselling/${requestCounsellingId}`,
+              method: "GET",
+          }),
+          transformErrorResponse: (response: { status: string | number }) => response.status,
+          providesTags: ["RequestCounselling"],
+      }),
   }),
 });
 
@@ -155,4 +164,5 @@ export const {
   useAlertReminderQuery,
   useCreateRequestCounsellingMutation,
   useGetAllRequestsQuery,
+    useGetRequestCounsellingQuery
 } = requestCounsellingApi;

@@ -2,11 +2,13 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
+import fa.pjb.back.common.exception._14xx_data.MissingDataException;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
+import fa.pjb.back.model.mapper.RequestCounsellingMapper;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.ParentRepository;
@@ -36,6 +38,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final ParentRepository parentRepository;
     private final SchoolRepository schoolRepository;
     private final SchoolMapper schoolMapper;
+    private final RequestCounsellingMapper requestCounsellingMapper;
 
     @Override
     public RequestCounsellingVO createRequestCounselling(RequestCounsellingDTO request) {
@@ -148,5 +151,15 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
             .name(name)
             .dueDate(request.getDue_date())
             .build();
+    }
+
+    @Override
+    public RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId) {
+        RequestCounselling requestCounselling = requestCounsellingRepository.findByIdWithParent(requestCounsellingId);
+        if (requestCounselling == null) {
+            throw new MissingDataException("Request counselling not found");
+        }
+
+        return requestCounsellingMapper.toRequestCounsellingVO(requestCounselling);
     }
 }

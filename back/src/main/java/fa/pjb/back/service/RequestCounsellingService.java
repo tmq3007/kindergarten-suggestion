@@ -18,4 +18,7 @@ public interface RequestCounsellingService {
         String schoolName,
         LocalDateTime dueDate
     );
+
+    RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId);
+
 }
