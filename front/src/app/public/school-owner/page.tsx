@@ -12,6 +12,7 @@ import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 import DetailPageSkeleton from "@/app/components/skeleton/DetailPageSkeleton";
 import useSchoolForm from "@/lib/hook/useSchoolForm";
+import Link from "next/link";
 
 export default function SchoolDetail() {
     const router = useRouter();
@@ -69,7 +70,7 @@ export default function SchoolDetail() {
     }
 
     return (
-        <div className="pt-2">
+        <div className="pt-2 ">
             <MyBreadcrumb
                 paths={[
                     {label: "My School", href: "/public/school-owner"},
@@ -77,6 +78,14 @@ export default function SchoolDetail() {
                 ]}
             />
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
+
+            {/*View Rating and Feedback Link*/}
+            <div className="my-4 flex justify-end">
+                <Link href={`/public/school-owner/rating-feedback/${data?.data.id}`}
+                      className="text-blue-500 hover:underline">
+                    View Rating & Feedback
+                </Link>
+            </div>
 
             <div className="read-only-form email-locked">
                 <SchoolFormWrapper form={form} school={school!} isDetailPage={true}/>

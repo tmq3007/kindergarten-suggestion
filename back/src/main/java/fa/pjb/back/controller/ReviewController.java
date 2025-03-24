@@ -3,6 +3,7 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    @Operation(summary = "Get reviews", description = "Get review of school in date range")
     @GetMapping("/{schoolId}")
     public ApiResponse<List<ReviewVO>> getReviews(
             @PathVariable  Integer schoolId,
@@ -32,7 +34,7 @@ public class ReviewController {
                 .build();
     }
 
-
+    @Operation(summary = "Get top 4 review", description = "Get top 4 review of school which has five star rating recently")
     @GetMapping("/top4")
     public ApiResponse<List<ReviewVO>> getTop4Reviews() {
             List<ReviewVO> reviewVO = reviewService.getTop4RecentFiveStarFeedbacks();

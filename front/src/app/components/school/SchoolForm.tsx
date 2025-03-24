@@ -137,7 +137,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
 
     const [mainImage, setMainImage] = useState(imageList[0]?.url || images[0]); // Default to first image
     const handleThumbnailClick = (index: number) => {
-        setMainImage(imageList[index]?.url || images[index]);
+        const displayImages = [...imageList.map(img => img.url)];
+        if (displayImages.length < 5) {
+            const remainingCount = 5 - displayImages.length;
+            displayImages.push(...images.slice(0, remainingCount));
+        }
+        setMainImage(displayImages[index]);
     };
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
@@ -321,21 +326,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                         },
                                     ]}
                                 >
-                                    {imageList.length > 0
-                                        ? imageList.map((img, index) => (
-                                            <div
-                                                key={index}
-                                                onClick={() => handleThumbnailClick(index)}
-                                                className="cursor-pointer flex justify-center items-center h-full w-full"
-                                            >
-                                                <img
-                                                    src={img.url}
-                                                    alt={`Thumbnail ${index + 1}`}
-                                                    className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"
-                                                />
-                                            </div>
-                                        ))
-                                        : images.map((src, index) => (
+                                    {(() => {
+                                        const displayImages = [...imageList.map(img => img.url)];
+                                        if (displayImages.length < 5) {
+                                            const remainingCount = 5 - displayImages.length;
+                                            displayImages.push(...images.slice(0, remainingCount));
+                                        }
+
+                                        return displayImages.map((src, index) => (
                                             <div
                                                 key={index}
                                                 onClick={() => handleThumbnailClick(index)}
@@ -347,7 +345,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"
                                                 />
                                             </div>
-                                        ))}
+                                        ));
+                                    })()}
                                 </Carousel>
 
                             </Card>
