@@ -275,7 +275,7 @@ public class ParentServiceImpl implements ParentService {
         }
         SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(so.getSchool().getId(),searchBy, keyword, pageable);
+        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(1,searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFronProjection);
     }
 
@@ -286,11 +286,8 @@ public class ParentServiceImpl implements ParentService {
         }
 //        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<Parent> parents = parentRepository.findEnrollRequestBySchool(1,searchBy,keyword,pageable);
-        for(Parent p : parents) {
-            log.error(String.valueOf(p.getMedia()));
-        }
-        return parents.map(parentMapper::toParentVO);
+        Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(1,searchBy, keyword, pageable);
+        return parentProjections.map(parentMapper::toParentVOFronProjection);
     }
 
 
