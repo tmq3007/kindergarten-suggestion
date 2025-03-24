@@ -23,7 +23,7 @@ export default function EditSchool() {
         data: data?.data,
         isLoading,
     });
-
+    console.log("1: ",formLoaded);
     if (isLoading) {
         return (
             <>
@@ -67,7 +67,7 @@ export default function EditSchool() {
                 hasUpdateSaveButton={true}
                 isEdit={true}
                 triggerCheckEmail={null}
-                formLoaded={formLoaded || false}
+                formLoaded={formLoaded}
             />
         </>
     );
