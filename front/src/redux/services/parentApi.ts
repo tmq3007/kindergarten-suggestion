@@ -114,13 +114,29 @@ export const parentApi = createApi({
             {page?: number; size?: number; searchBy?: string; keyword?: string}
         >({
             query: ({ page = 1, size = 15, searchBy, keyword }) => ({
-                url: `parent/get-parents-admin`,
+                url: `parent/get-all-parents`,
                 method: "GET",
                 params: {
                     page,
                     size,
                     searchBy,
                     keyword
+                },
+            }),
+            providesTags: ["Parent"],
+        }),
+        listParentBySchoolWithFilter: build.query<
+            ApiResponse<{ content: ParentVO[]; page: Pageable }>,
+            {page?: number; size?: number; searchBy?: string; keyword?: string}
+        >({
+            query: ({ page = 1, size = 15, searchBy, keyword}) => ({
+                url: `parent/get-parent-by-school`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    searchBy,
+                    keyword,
                 },
             }),
             providesTags: ["Parent"],
@@ -132,5 +148,6 @@ export const {
     useGetParentByIdQuery,
     useEditParentMutation,
     useListAllParentWithFilterQuery,
-    useChangePasswordMutation
+    useChangePasswordMutation,
+    useListParentBySchoolWithFilterQuery
 } = parentApi;

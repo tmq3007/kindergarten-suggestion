@@ -15,17 +15,14 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "Parent_In_School")
 public class ParentInSchool {
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "parent_id", nullable = false)
     private Parent parent;
@@ -38,8 +35,11 @@ public class ParentInSchool {
     private LocalDate to;
 
     @NotNull
-    @ColumnDefault("b'1'")
+    @ColumnDefault("b'0'")
     @Column(name = "status", nullable = false)
-    private Boolean status = false;
+    private Byte status;
+
+    @EmbeddedId
+    private ParentInSchoolId primaInSchoolId;
 
 }
