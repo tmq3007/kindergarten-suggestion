@@ -2,111 +2,66 @@
 
 import Link from "next/link";
 import UserList from "@/app/components/user/UserList";
-import React, { useState } from "react";
-import { Card, Input } from "antd";
-import { useGetUserListQuery } from "@/redux/services/userApi";
+import React, {useState} from "react";
+import {Card} from "antd";
+import {useGetUserListQuery} from "@/redux/services/userApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import SearchByComponent from "@/app/components/common/SearchByComponent";
 
-const { Search } = Input;
+
+// Search options for the SearchByComponent
+const searchOptions = [
+    {value: "username", label: "Username"},
+    {value: "fullname", label: "Fullname"},
+    {value: "email", label: "Email"},
+    {value: "phone", label: "Phone"},
+];
+
 
 export default function Page() {
-    const [currentPage, setCurrentPage] = useState(1); // State to manage the current pagination page
-    const [currentPageSize, setCurrentPageSize] = useState(15); // State to manage the number of items per page
+    
+    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPageSize, setCurrentPageSize] = useState(15);
     const [searchCriteria, setSearchCriteria] = useState({
-        role: undefined as string | undefined, // Search criteria for role
-        email: undefined as string | undefined, // Search criteria for email
-        name: undefined as string | undefined, // Search criteria for name
-        phone: undefined as string | undefined, // Search criteria for phone number
+        searchBy: searchOptions[0].value,
+        keyword: undefined as string | undefined, // Search term
     });
 
-    // Query data based on the current page and search criteria
-    const { data, isLoading, error, isFetching } = useGetUserListQuery({
+    const { data, isLoading, isFetching, error } = useGetUserListQuery({
         page: currentPage,
-        size: currentPageSize, // Number of items per page
-        ...searchCriteria, // Spread the search criteria (role, email, name, phone)
+        size: currentPageSize,
+        ...searchCriteria,
     });
 
-    // Function to fetch data for the specified page
     const fetchPage = (page: number, size: number) => {
         setCurrentPage(page);
         setCurrentPageSize(size);
     };
 
-    // Function to handle the search input
-    const handleSearch = (value: string) => {
-        if (!value.trim()) {
-            // If search input is empty, reset all search criteria to fetch all users
-            setSearchCriteria({
-                role: undefined,
-                email: undefined,
-                name: undefined,
-                phone: undefined,
-            });
-        } else {
-            // Analyze and map the input value to specific search fields
-            const lowerValue = value.trim().toLowerCase();
-            setSearchCriteria({
-                role: normalizeRole(lowerValue) || undefined, // Map search value to a backend-defined role if valid
-                email: lowerValue.includes("@") ? lowerValue : undefined, // Assume email contains '@'
-                name: lowerValue && !lowerValue.includes("@") && !/^\d+$/.test(lowerValue) && !isRole(lowerValue) ? lowerValue : undefined, // Assume name is not numeric, not email, not a valid role
-                phone: /^\d+$/.test(lowerValue) ? lowerValue : undefined, // Assume phone contains only numbers
-            });
-        }
-        setCurrentPage(1); // Reset to the first page on a new search
-    };
-
-    // Function to check if the value is a valid role
-    const isRole = (value: string): boolean => {
-        const roles = ["admin", "parent", "school owner"];
-        return roles.some((role) => role === value);
-    };
-
-    // Function to normalize the role to the format expected by the backend (e.g., ROLE_ADMIN)
-    const normalizeRole = (value: string): string | undefined => {
-        switch (value) {
-            case "admin":
-            case "role_admin":
-                return "ROLE_ADMIN";
-            case "parent":
-            case "role_parent":
-                return "ROLE_PARENT";
-            case "school owner":
-            case "role_school_owner":
-                return "ROLE_SCHOOL_OWNER";
-            default:
-                return undefined; // Return undefined if no matching role is found
-        }
+    const handleSearch = (criteria: { searchBy: string; keyword: string | undefined }) => {
+        setSearchCriteria(criteria);
+        setCurrentPage(1);
     };
 
     return (
         <div>
-            {/* Breadcrumb navigation */}
             <MyBreadcrumb
                 paths={[
-                    { label: "User Management", href: "/admin/management/user/user-list" },
-                    { label: "User List" },
+                    {label: "User Management", href: "/admin/management/user/user-list"},
+                    {label: "User List"},
                 ]}
             />
-            <Card title={
-                <>
-                    {/* Page header with search bar and add user button */}
+            <Card
+                title={
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                        <SchoolManageTitle title={"User List"} />
+                        <SchoolManageTitle title={"User List"}/>
                         <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
-                            <div className="w-full md:w-80 relative">
-                                <Search
-                                    placeholder="Search user (e.g., name, email, phone, or role: admin/parent/school owner)"
-                                    enterButton="Search"
-                                    size="large"
-                                    onSearch={handleSearch} // Trigger search on button click or Enter key
-                                    loading={isFetching} // Show loading state during data fetch
-                                    className="w-full"
-                                    onChange={(e) => {
-                                        if (!e.target.value.trim()) {
-                                            handleSearch(""); // Reset search criteria on empty input
-                                        }
-                                    }} // Handle input changes
+                            <div className="w-full md:w-80">
+                                <SearchByComponent
+                                    onSearch={handleSearch}
+                                    options={searchOptions}
+                                    initialSearchBy="fullname"
                                 />
                             </div>
                             <Link
@@ -117,17 +72,15 @@ export default function Page() {
                             </Link>
                         </div>
                     </div>
-                </>
-            }
+                }
             >
-                {/* User List component */}
                 <div className="mt-4">
                     <UserList
-                        fetchPage={fetchPage} // Handle pagination
-                        data={data} // User data fetched from API
-                        error={error} // Error state for the API query
-                        isLoading={isLoading} // Loading state
-                        isFetching={isFetching} // Fetching state during API interaction
+                        fetchPage={fetchPage}
+                        data={data}
+                        error={error}
+                        isLoading={isLoading}
+                        isFetching={isFetching}
                     />
                 </div>
             </Card>

@@ -13,7 +13,6 @@ import {parentApi} from "@/redux/services/parentApi";
 import {userApi} from "@/redux/services/userApi";
 import {reviewApi} from "@/redux/services/reviewApi";
 import {schoolApi} from "@/redux/services/schoolApi";
-import {testApi} from "./services/testApi";
 import {schoolOwnerApi} from "@/redux/services/schoolOwnerApi";
 import {requestCounsellingApi} from "@/redux/services/requestCounsellingApi";
 
@@ -28,7 +27,6 @@ const rootReducer = combineReducers({
     [userApi.reducerPath]: userApi.reducer,
     [reviewApi.reducerPath]: reviewApi.reducer,
     [schoolApi.reducerPath]: schoolApi.reducer,
-    [testApi.reducerPath]: testApi.reducer,
     [schoolOwnerApi.reducerPath]: schoolOwnerApi.reducer,
     [requestCounsellingApi.reducerPath]: requestCounsellingApi.reducer,
     // Reducers managing state

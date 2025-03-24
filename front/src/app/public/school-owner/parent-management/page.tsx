@@ -4,7 +4,7 @@ import { Card } from "antd";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import ParentList from "@/app/components/parent/ParentList";
-import { useListAllParentWithFilterQuery } from "@/redux/services/parentApi";
+import {useListAllParentWithFilterQuery, useListParentBySchoolWithFilterQuery} from "@/redux/services/parentApi";
 import { useState } from "react";
 import SearchByComponent from "@/app/components/common/SearchByComponent";
 
@@ -24,7 +24,7 @@ export default function Page() {
         keyword: undefined as string | undefined,
     });
 
-    const { data, isLoading, isFetching, error } = useListAllParentWithFilterQuery({
+    const { data, isLoading, isFetching, error } = useListParentBySchoolWithFilterQuery({
         page: currentPage,
         size: currentPageSize,
         ...searchCriteria,
@@ -44,7 +44,7 @@ export default function Page() {
         <>
             <MyBreadcrumb
                 paths={[
-                    { label: "Parent Management", href: "/admin/management/parent/parent-list" },
+                    { label: "Parent Management", href: "/public/school-owner/parent-management" },
                     { label: "Parent List" },
                 ]}
             />

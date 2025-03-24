@@ -10,5 +10,6 @@ public record UserVO(
     String phone,
     String address,
     String role,
-    String status) {
+    String status
+) {
 }

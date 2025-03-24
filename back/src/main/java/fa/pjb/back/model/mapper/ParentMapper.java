@@ -2,6 +2,8 @@ package fa.pjb.back.model.mapper;
 
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
+import fa.pjb.back.model.entity.ParentInSchool;
+import fa.pjb.back.model.vo.ParentInSchoolVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import org.mapstruct.Mapper;
@@ -37,4 +39,16 @@ public interface ParentMapper {
     @Mapping(target = "dob", source = "user.dob")
     @Mapping(target = "media", source = "media")
     ParentVO toParentVO(Parent parent);
+
+    // Mapping for ParentProjection to ParentVO
+    @Mapping(source = "userId", target = "id")
+    @Mapping(source = "status", target = "status")
+    @Mapping(source = "parentDistrict", target = "district")
+    @Mapping(source = "parentWard", target = "ward")
+    @Mapping(source = "parentProvince", target = "province")
+    @Mapping(source = "parentStreet", target = "street")
+    @Mapping(source = "userEnrollStatus", target = "userEnrollStatus")
+    @Mapping(target = "media", expression = "java(projection.getMediaId() != null ? new MediaVO(projection.getMediaUrl(),projection.getMediaId() ,null) : null)")
+    ParentVO toParentVOFronProjection(ParentProjection projection);
+
 }

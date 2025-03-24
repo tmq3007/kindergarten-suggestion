@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -37,11 +39,14 @@ public class Parent {
     private String province;
 
     @Size(max = 255)
-    @Column(name = "street", nullable = true)
+    @Column(name = "street")
     private String street;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "image",referencedColumnName = "id")
     private Media media;
+
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
+    private Set<ParentInSchool> parentInSchools;
 
 }

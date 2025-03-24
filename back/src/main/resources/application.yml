@@ -9,6 +9,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        format_sql: true  # Format SQL for better readability
+        generate_statistics: true  # Enable Hibernate statistics for query execution times
   datasource:
     hikari:
       maximum-pool-size: 10
@@ -42,6 +44,8 @@ logging:
     org.springframework.transaction.interceptor: TRACE
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
     org.hibernate.engine.transaction.internal.TransactionImpl: DEBUG
+    org.hibernate.stat: DEBUG  # Log query execution times and statistics
+
 error:
   handling:
     search-super-class-hierarchy: true
