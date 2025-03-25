@@ -55,12 +55,14 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/update")
+    @Operation(summary = "Update User", description = "Update user details, including optional images for SchoolOwner")
+    @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<UserDetailDTO> updateUser(
-            @Valid @RequestBody UserUpdateDTO userUpdateDTO
+        @RequestPart("data") @Valid UserUpdateDTO userUpdateDTO,
+        @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) {
         try {
-            UserDetailDTO updatedUser = userService.updateUser(userUpdateDTO);
+            UserDetailDTO updatedUser = userService.updateUser(userUpdateDTO, images);
             return ApiResponse.<UserDetailDTO>builder()
                 .code(HttpStatus.OK.value())
                 .message("User updated successfully")

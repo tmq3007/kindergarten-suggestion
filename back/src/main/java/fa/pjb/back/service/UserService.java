@@ -16,7 +16,7 @@ public interface UserService {
 
     UserDetailDTO getUserDetailById(int userId);
 
-    UserDetailDTO updateUser(UserUpdateDTO dto);
+    UserDetailDTO updateUser(UserUpdateDTO dto, List<MultipartFile> imageList);
 
     UserDetailDTO toggleStatus(int userId);
 

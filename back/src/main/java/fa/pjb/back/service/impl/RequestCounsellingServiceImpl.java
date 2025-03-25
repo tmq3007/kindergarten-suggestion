@@ -91,66 +91,20 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
             .build();
     }
 
-    @Override
     public Page<RequestCounsellingVO> getAllRequests(
         int page, int size, Byte status, String email, String name, String phone,
         String schoolName, LocalDateTime dueDate) {
 
         Pageable pageable = PageRequest.of(page - 1, size);
         Specification<RequestCounselling> specification = (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (status != null) {
-                predicates.add(criteriaBuilder.equal(root.get("status"), status));
-            }
-            if (email != null && !email.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("email"), email));
-            }
             if (name != null && !name.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("name"), name));
+                return criteriaBuilder.like(root.get("name"), "%" + name + "%");
             }
-            if (phone != null && !phone.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("phone"), phone));
-            }
-            if (schoolName != null && !schoolName.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("school").get("name"), schoolName));
-            }
-            if (dueDate != null) {
-                predicates.add(criteriaBuilder.equal(root.get("dueDate"), dueDate));
-            }
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            return null;
         };
 
-        // Fetch the paginated data with parent and school
         Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(specification, pageable);
-
-        // Map the entities to VOs
-        return requestPage.map(this::convertToVO);
-    }
-
-    private RequestCounsellingVO convertToVO(RequestCounselling request) {
-        // Fetch parentName and phone from Parent if parent exists
-        String phone = request.getPhone();
-        String name = request.getName();
-
-        // Fetch schoolName from School if school exists
-        String schoolName = null;
-        if (request.getSchool() != null) {
-            schoolName = request.getSchool().getName();
-        }
-
-        // Build the RequestCounsellingVO
-        return RequestCounsellingVO.builder()
-            .id(request.getId())
-            .schoolName(schoolName != null ? schoolName : "Unknown")
-            .inquiry(request.getInquiry())
-            .status(request.getStatus())
-            .email(request.getEmail())
-            .phone(phone)
-            .name(name)
-            .dueDate(request.getDue_date())
-            .build();
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
     }
 
     @Override

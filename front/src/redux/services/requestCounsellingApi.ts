@@ -1,15 +1,14 @@
-import {baseQueryWithReauth} from "./config/baseQuery";
-import {createApi} from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./config/baseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { DateTime } from "luxon";
 
-
-// Types for RequestCounsellingReminderVO (from requestCounsellingApi)
+// Types for RequestCounsellingReminderVO
 export type RequestCounsellingReminderVO = {
   title: string;
   description: string;
 };
 
-// Types for RequestCounsellingDTO (from requestCounsellingApi)
+// Types for RequestCounsellingDTO
 export type RequestCounsellingDTO = {
   userId?: number;
   schoolId: number;
@@ -21,7 +20,7 @@ export type RequestCounsellingDTO = {
   dueDate: DateTime;
 };
 
-// Types for RequestCounsellingVO (merged from both files)
+// Types for RequestCounsellingVO
 export interface RequestCounsellingVO {
   id?: number;
   schoolName?: string | null;
@@ -34,7 +33,7 @@ export interface RequestCounsellingVO {
   address: string;
 }
 
-// Types for Pageable (from requestApi)
+// Types for Pageable
 export interface Pageable {
   pageNumber: number;
   pageSize: number;
@@ -42,7 +41,7 @@ export interface Pageable {
   totalPages: number;
 }
 
-// Types for ApiResponse (from requestApi)
+// Types for ApiResponse
 export interface ApiResponse<T> {
   data: T;
   status: number;
@@ -52,9 +51,8 @@ export interface ApiResponse<T> {
 export const requestCounsellingApi = createApi({
   reducerPath: "requestCounsellingApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["RequestCounselling", "RequestList"], // Combined tagTypes from both APIs
+  tagTypes: ["RequestCounselling", "RequestList"],
   endpoints: (builder) => ({
-    // Endpoint: alertReminder (from requestCounsellingApi)
     alertReminder: builder.query<ApiResponse<RequestCounsellingReminderVO>, number>({
       query: (userId) => ({
         url: `counselling/alert-reminder?userId=${userId}`,
@@ -64,7 +62,6 @@ export const requestCounsellingApi = createApi({
       providesTags: ["RequestCounselling"],
     }),
 
-    // Endpoint: createRequestCounselling (from requestCounsellingApi)
     createRequestCounselling: builder.mutation<
         ApiResponse<RequestCounsellingVO>,
         RequestCounsellingDTO
@@ -74,10 +71,9 @@ export const requestCounsellingApi = createApi({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["RequestCounselling", "RequestList"], // Invalidate both tags to refresh lists
+      invalidatesTags: ["RequestCounselling", "RequestList"],
     }),
 
-    // Endpoint: getAllRequests (from requestApi)
     getAllRequests: builder.query<
         ApiResponse<{ content: RequestCounsellingVO[]; pageable: Pageable }>,
         {
@@ -106,7 +102,7 @@ export const requestCounsellingApi = createApi({
         },
       }),
       transformResponse: (response: any) => {
-        console.log("Original Server Response:", response); // Log phản hồi gốc từ server
+        console.log("Original Server Response:", response);
         if (!response) {
           console.warn("Empty API response:", response);
           return {
@@ -148,21 +144,79 @@ export const requestCounsellingApi = createApi({
       },
       providesTags: ["RequestList"],
     }),
-      getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
-          query: (requestCounsellingId) => ({
-              url: `counselling/${requestCounsellingId}`,
-              method: "GET",
-          }),
-          transformErrorResponse: (response: { status: string | number }) => response.status,
-          providesTags: ["RequestCounselling"],
+
+    getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+      query: (requestCounsellingId) => ({
+        url: `counselling/${requestCounsellingId}`,
+        method: "GET",
       }),
+      transformErrorResponse: (response: { status: string | number }) => response.status,
+      providesTags: ["RequestCounselling"],
+    }),
+
+    getAllReminder: builder.query<
+        ApiResponse<{ content: RequestCounsellingVO[]; pageable: Pageable }>,
+        { page?: number; size?: number; statuses?: number[] }
+    >({
+      query: ({ page = 1, size = 10, statuses }) => ({
+        url: "counselling/all-reminder",
+        method: "GET",
+        params: {
+          page,
+          size,
+          ...(statuses && statuses.length > 0 && { statuses }),
+        },
+      }),
+      transformResponse: (response: any) => {
+        console.log("Original Server Response for getAllReminder:", response);
+        if (!response) {
+          console.warn("Empty API response:", response);
+          return {
+            status: 500,
+            message: "No data returned from API",
+            data: {
+              content: [],
+              pageable: { pageNumber: 1, pageSize: 10, totalElements: 0, totalPages: 0 },
+            },
+          };
+        }
+
+        const responseData = response.data || response;
+        if (!responseData.content) {
+          console.warn("No content in response:", responseData);
+          return {
+            status: 500,
+            message: "No content returned from API",
+            data: {
+              content: [],
+              pageable: { pageNumber: 1, pageSize: 10, totalElements: 0, totalPages: 0 },
+            },
+          };
+        }
+
+        return {
+          status: response.status || 200,
+          message: response.message,
+          data: {
+            content: responseData.content,
+            pageable: {
+              pageNumber: responseData.pageable?.pageNumber || 0,
+              pageSize: responseData.pageable?.pageSize || 10,
+              totalElements: responseData.totalElements || 0,
+              totalPages: responseData.pageable?.totalPages || 0,
+            },
+          },
+        };
+      },
+      providesTags: ["RequestList"],
+    }),
   }),
 });
 
-// Export hooks for all endpoints
 export const {
   useAlertReminderQuery,
   useCreateRequestCounsellingMutation,
   useGetAllRequestsQuery,
-    useGetRequestCounsellingQuery
+  useGetRequestCounsellingQuery,
+  useGetAllReminderQuery,
 } = requestCounsellingApi;

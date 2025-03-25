@@ -9,6 +9,7 @@ import fa.pjb.back.service.RequestCounsellingService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -73,5 +74,17 @@ public class RequestCounsellingController {
                 .message("Get request counselling successfully!")
                 .data(requestCounsellingService.getRequestCounselling(requestCounsellingId))
                 .build();
+    }
+
+    @GetMapping("/all-reminder")
+    public ResponseEntity<Page<RequestCounsellingVO>> getAllReminder(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+        Page<RequestCounsellingVO> requests = reminderService.getAllReminder(
+            page, size, Arrays.asList((byte) 0, (byte) 2)
+        );
+        logger.info("Pageable response: {}", requests);
+        return ResponseEntity.ok(requests);
     }
 }

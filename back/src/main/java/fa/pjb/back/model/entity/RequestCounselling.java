@@ -58,4 +58,8 @@ public class RequestCounselling {
     @NotNull
     @Column(name = "due_date", nullable = false)
     private LocalDateTime due_date;
+
+    @Lob
+    @Column(name = "response")
+    private String response;
 }

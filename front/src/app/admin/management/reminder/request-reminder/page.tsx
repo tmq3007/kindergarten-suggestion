@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import { useGetAllRequestsQuery, RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
+import { useGetAllReminderQuery, RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
 
 interface Pageable {
   pageNumber: number;
@@ -66,10 +66,10 @@ export default function RequestList() {
     notificationApi[type]({ message, description, placement: "topRight" });
   };
 
-  const { data, isLoading, error } = useGetAllRequestsQuery({
+  const { data, isLoading, error } = useGetAllReminderQuery({
     page: page,
     size: pageSize,
-    name: searchText || undefined,
+    statuses: [0, 2],
   });
 
   useEffect(() => {
