@@ -11,9 +11,12 @@ import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.event.model.SchoolApprovedEvent;
 import fa.pjb.back.event.model.SchoolPublishedEvent;
 import fa.pjb.back.event.model.SchoolRejectedEvent;
-import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
-import fa.pjb.back.model.entity.*;
+import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.entity.Media;
+import fa.pjb.back.model.entity.School;
+import fa.pjb.back.model.entity.SchoolOwner;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
@@ -49,9 +52,9 @@ import static fa.pjb.back.model.enums.SchoolStatusEnum.*;
 @RequiredArgsConstructor
 @Service
 public class SchoolServiceImpl implements SchoolService {
+
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
-
     private final SchoolRepository schoolRepository;
     private final FacilityRepository facilityRepository;
     private final UtilityRepository utilityRepository;
@@ -317,7 +320,6 @@ public class SchoolServiceImpl implements SchoolService {
         if (originSchool == null) {
             throw new SchoolNotFoundException();
         }
-        log.info("1");
         Integer originSchoolId = originSchool.getId();
 
         // Check if draft exists or not
@@ -327,7 +329,6 @@ public class SchoolServiceImpl implements SchoolService {
         if (originSchool.getStatus().equals(SUBMITTED.getValue()) || (draft != null && draft.getStatus().equals(SUBMITTED.getValue()))) {
             throw new IllegalStateException("Cannot update a submitted school or draft");
         }
-        log.info("2");
 
         if (draft == null) {
             draft = new School();
@@ -338,29 +339,20 @@ public class SchoolServiceImpl implements SchoolService {
         schoolMapper.toDraft(schoolDTO, draft);
         draft.setStatus(status);
         validateAndSetAssociations(schoolDTO, draft);
-        log.info("3");
-
-        log.info("4");
 
         // Delete old images in database
         if (draft.getImages() != null && !draft.getImages().isEmpty()) {
-            log.info("Delete old images in database");
+            // Delete old images in cloud
             deleteOldImages(draft);
             draft.getImages().clear();
         }
-        log.info("5");
 
         // Save new images
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, draft);
         }
-        log.info("6");
-
         draft.setPostedDate(LocalDate.now());
         draft = schoolRepository.save(draft);
-        log.info("7");
-        // Delete old images in cloud
-//        deleteOldImages(draft);
         return schoolMapper.toSchoolDetailVO(draft);
     }
 
@@ -546,7 +538,6 @@ public class SchoolServiceImpl implements SchoolService {
         return draft.getOriginalSchool() != null;
     }
 
-
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
                                             String street, String email, String phone, Pageable pageable) {
@@ -575,7 +566,6 @@ public class SchoolServiceImpl implements SchoolService {
     /**
      * Updates the status of a school based on the provided status code.
      **/
-
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     @Transactional
@@ -735,6 +725,5 @@ public class SchoolServiceImpl implements SchoolService {
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
     }
-
 
 }

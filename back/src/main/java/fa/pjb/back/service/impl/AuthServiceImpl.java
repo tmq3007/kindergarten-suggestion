@@ -1,11 +1,11 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
 import fa.pjb.back.common.exception._12xx_auth.AccessDeniedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
 import fa.pjb.back.common.exception._14xx_data.MissingDataException;
-import fa.pjb.back.common.exception._11xx_email.EmailNotFoundException;
-import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
@@ -43,6 +43,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class AuthServiceImpl implements AuthService {
+
     private final JwtHelper jwtHelper;
     private final HttpRequestHelper httpRequestHelper;
     private final AuthenticationManager authenticationManager;
@@ -62,7 +63,6 @@ public class AuthServiceImpl implements AuthService {
     private int FORGOT_TOKEN_EXP;
     @Value("${reset-password-link-header}")
     private String resetLinkHeader;
-
 
     @Override
     public LoginVO loginWithCondition(LoginDTO loginDTO, boolean checkParent) {
@@ -183,7 +183,6 @@ public class AuthServiceImpl implements AuthService {
 
         // Remove token from Redis
         tokenService.deleteTokenFromRedis("REFRESH_TOKEN", username);
-
     }
 
     @Override
@@ -244,4 +243,5 @@ public class AuthServiceImpl implements AuthService {
     public boolean checkEmailExists(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
+
 }

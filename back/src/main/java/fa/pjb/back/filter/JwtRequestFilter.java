@@ -1,7 +1,7 @@
 package fa.pjb.back.filter;
 
-import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
 import fa.pjb.back.common.util.HttpRequestHelper;
 import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.entity.User;
@@ -28,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
+
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtHelper jwtHelper;
     private final HttpRequestHelper httpRequestHelper;
@@ -103,4 +104,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Continue passing the request through other filters
         filterChain.doFilter(request, response);
     }
+
 }

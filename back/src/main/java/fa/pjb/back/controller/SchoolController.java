@@ -9,6 +9,8 @@ import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +22,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,12 +32,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("school")
+@Tag(name = "School Controller", description = "This API provides user the capability to CRUD school")
 public class SchoolController {
+
     private final SchoolService schoolService;
     private final GGDriveImageService imageService;
     private final RestClient.Builder builder;
 
-
+    @Operation(summary = "Get school info", description = "Get school information")
     @GetMapping("/{schoolId}")
     public ApiResponse<SchoolDetailVO> getSchoolInfo(@PathVariable Integer schoolId) {
         return ApiResponse.<SchoolDetailVO>builder()
@@ -85,15 +88,7 @@ public class SchoolController {
                 .build();
     }
 
-    @GetMapping("/check-phone/{phone}")
-    public ApiResponse<String> checkPhone(@PathVariable String phone) {
-        return ApiResponse.<String>builder()
-                .code(HttpStatus.OK.value())
-                .message("Email checked!")
-                .data(String.valueOf(schoolService.checkPhoneExists(phone)))
-                .build();
-    }
-
+    @Operation(summary = "Add school", description = "This API will add a new school")
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolDetailVO> addSchool(
             @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
@@ -105,6 +100,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school by admin", description = "Admin can update school information directly")
     @PostMapping(value = "/update/by-admin", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolDetailVO> updateSchoolByAdmin(
             @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
@@ -116,6 +112,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school by school owner", description = "School owner can update school information by creating draft with SUBMITTED status")
     @PostMapping(value = "/update/by-so", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolDetailVO> updateSchoolBySchoolOwner(
             @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
@@ -127,6 +124,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Save school by school owner", description = "School owner can save updated school information by creating draft with SAVED status")
     @PostMapping(value = "/save/by-so", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SchoolDetailVO> saveSchoolBySchoolOwner(
             @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
@@ -161,6 +159,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Get school owner list for add school", description = "Get school owner list for specified expected school")
     @GetMapping("/get-so-list")
     public ApiResponse<List<SchoolOwnerVO>> searchSchoolOwnersForAddSchool(@RequestParam("q") String expectedSchool) {
         return ApiResponse.<List<SchoolOwnerVO>>builder()
@@ -170,6 +169,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Search expected school", description = "Search the specified expected school names for creating school")
     @GetMapping("/search-expected-school/{id}")
     public ApiResponse<List<ExpectedSchoolVO>> searchExpectedSchoolForAddSchool(@PathVariable Integer id) {
         return ApiResponse.<List<ExpectedSchoolVO>>builder()
@@ -179,6 +179,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Merge draft", description = "Admin approve updated school information by merging draft")
     @PutMapping("/merger-draft/{schoolId}")
     public ApiResponse<Boolean> mergerDraft(@PathVariable Integer schoolId) {
         return ApiResponse.<Boolean>builder()
@@ -188,6 +189,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Is Draft", description = "Check record is draft or not")
     @GetMapping("/isDraft/{schoolId}")
     public ApiResponse<Boolean> isDraft(@PathVariable Integer schoolId) {
         return ApiResponse.<Boolean>builder()

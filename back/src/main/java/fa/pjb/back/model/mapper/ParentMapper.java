@@ -10,15 +10,13 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ParentMapper {
 
-
     @Mapping(target = "email", expression = "java(parent.getUser().getEmail())")
     @Mapping(target = "registrationDate", expression = "java(java.time.LocalDateTime.now())")
     RegisterVO toRegisterVO(Parent parent);
 
-
     @Mapping(target = "username", source = "user.username")
     @Mapping(target = "fullname", source = "user.fullname")
-   // @Mapping(target = "password", source = "user.password")
+    // @Mapping(target = "password", source = "user.password")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "role", source = "user.role")
     @Mapping(target = "status", source = "user.status")
@@ -37,4 +35,16 @@ public interface ParentMapper {
     @Mapping(target = "dob", source = "user.dob")
     @Mapping(target = "media", source = "media")
     ParentVO toParentVO(Parent parent);
+
+    // Mapping for ParentProjection to ParentVO
+    @Mapping(source = "userId", target = "id")
+    @Mapping(source = "status", target = "status")
+    @Mapping(source = "parentDistrict", target = "district")
+    @Mapping(source = "parentWard", target = "ward")
+    @Mapping(source = "parentProvince", target = "province")
+    @Mapping(source = "parentStreet", target = "street")
+    @Mapping(source = "userEnrollStatus", target = "userEnrollStatus")
+    @Mapping(target = "media", expression = "java(projection.getMediaId() != null ? new MediaVO(projection.getMediaUrl(),projection.getMediaId() ,null) : null)")
+    ParentVO toParentVOFromProjection(ParentProjection projection);
+
 }

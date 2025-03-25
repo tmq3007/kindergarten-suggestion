@@ -1,9 +1,6 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -18,6 +15,7 @@ import java.util.List;
 @Table(name = "School_Owner")
 @ToString(exclude = {"user", "school", "images"})
 public class SchoolOwner {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -27,14 +25,14 @@ public class SchoolOwner {
 //    @Max(value = 255)
     private String expectedSchool;
 
-    @Column(name = "public_permission" )
+    @Column(name = "public_permission")
     private Boolean publicPermission;
 
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY, optional = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "school_id")
     private School school;
 

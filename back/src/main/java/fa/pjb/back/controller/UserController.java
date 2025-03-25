@@ -20,24 +20,25 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("user")
 public class UserController {
+
     private final UserService userService;
     private final AuthService authService;
 
+    @Operation(summary = "Get user list", description = "Get user list for admin")
     @GetMapping()
     public ApiResponse<Page<UserVO>> getUsers(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String phone
+            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false) String keyword
     ) {
-        Page<UserVO> users = userService.getAllUsersAdmin(page, size, role, email, name, phone);
+        Page<UserVO> users = userService.getAllUsersAdmin(page, size, searchBy, keyword);
         return ApiResponse.<Page<UserVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Users retrieved successfully")
@@ -64,16 +65,16 @@ public class UserController {
         try {
             UserDetailDTO updatedUser = userService.updateUser(userUpdateDTO, images);
             return ApiResponse.<UserDetailDTO>builder()
-                .code(HttpStatus.OK.value())
-                .message("User updated successfully")
-                .data(updatedUser)
-                .build();
+                    .code(HttpStatus.OK.value())
+                    .message("User updated successfully")
+                    .data(updatedUser)
+                    .build();
         } catch (IllegalArgumentException e) {
             return ApiResponse.<UserDetailDTO>builder()
-                .code(HttpStatus.BAD_REQUEST.value())
-                .message(e.getMessage())
-                .data(null)
-                .build();
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
         }
     }
 
@@ -88,11 +89,11 @@ public class UserController {
     }
 
     @Operation(summary = "Create User", description = "Create school owner and admin")
-    @PostMapping(value = "/create",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<UserCreateDTO> createUser(
             @RequestPart(value = "data") @Valid UserCreateDTO userCreateDTO,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        UserCreateDTO createdUser = userService.createUser(userCreateDTO,images);
+        UserCreateDTO createdUser = userService.createUser(userCreateDTO, images);
         log.info("Received UserDTO: {}", userCreateDTO);
         return ApiResponse.<UserCreateDTO>builder()
                 .code(200)

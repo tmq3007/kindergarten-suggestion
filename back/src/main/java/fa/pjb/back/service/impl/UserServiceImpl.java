@@ -2,6 +2,7 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
@@ -9,7 +10,9 @@ import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserCreateDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
-import fa.pjb.back.model.entity.*;
+import fa.pjb.back.model.entity.Media;
+import fa.pjb.back.model.entity.SchoolOwner;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.mapper.UserProjection;
@@ -35,9 +38,15 @@ import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static fa.pjb.back.model.enums.ERole.*;
 import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
@@ -46,12 +55,12 @@ import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
+
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
     private final GGDriveImageService imageService;
     private static final Tika tika = new Tika();
     private final MediaRepository mediaRepository;
-
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
@@ -59,17 +68,16 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
 
-
     @Override
-    public Page<UserVO> getAllUsersAdmin(int page, int size, String role, String email, String name, String phone) {
-        Pageable pageable = PageRequest.of(page-1, size);
-        ERole roleEnum = (role != null && !role.isEmpty()) ? convertRole2(role) : null;
-        List<ERole> roleList = roleEnum != null ? Collections.singletonList(roleEnum) : Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
-    
-        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, email, name, phone, pageable);
+    public Page<UserVO> getAllUsersAdmin(int page, int size, String searchBy, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
+            throw new InvalidDataException("Invalid searchBy value: " + searchBy);
+        }
+        List<ERole> roleList = Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, searchBy, keyword, pageable);
         return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
-
 
     public ERole convertRole2(String role) {
         if (role == null || role.trim().isEmpty()) {
@@ -294,7 +302,7 @@ public class UserServiceImpl implements UserService {
             imageVOList = imageService.uploadListFiles(
                     imageService.convertMultiPartFileToFile(files),
                     "School_Owner_" + schoolOwner.getId() + "Image_",
-                    SO_IMAGES,imageService::uploadFile
+                    SO_IMAGES, imageService::uploadFile
             );
         } catch (IOException e) {
             throw new UploadFileException("Error while uploading images: " + e.getMessage());
@@ -317,6 +325,7 @@ public class UserServiceImpl implements UserService {
         mediaRepository.saveAll(mediaList);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     public UserCreateDTO createUser(UserCreateDTO userCreateDTO, List<MultipartFile> image) {
         if (userCreateDTO.email() == null || userCreateDTO.email().isBlank()) {
@@ -334,7 +343,7 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        if ( schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number()) ) {
+        if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number())) {
             throw new BRNAlreadyExistedException("Business registration number already exists.");
         }
 
@@ -377,7 +386,6 @@ public class UserServiceImpl implements UserService {
 
         // Save User to database
         userRepository.save(user);
-
 
         //UserCreateDTO responseDTO = userMapper.toUserDTO(user);
 

@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Table(name = "Media")
 @ToString
 public class Media {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",nullable = false)

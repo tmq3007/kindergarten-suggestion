@@ -4,15 +4,20 @@ import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangePasswordDTO;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,9 +25,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("parent")
 public class ParentController {
+
     private final ParentService parentService;
 
-    @Operation(summary = "Register", description = "Register")
+    @Operation(summary = "Register", description = "This api will be used to register new parent")
     @PostMapping("register")
     public ApiResponse<RegisterVO> register(@Valid @RequestBody RegisterDTO registerDTO) {
         RegisterVO registerVO = parentService.saveNewParent(registerDTO);
@@ -69,4 +75,53 @@ public class ParentController {
                 .build();
     }
 
+    @Operation(summary = "Get All Parents" , description = "This api will be used to retrieve all parents")
+    @GetMapping("/get-all-parents")
+    public ApiResponse<Page<ParentVO>> getAllParents(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
+            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false) String keyword
+    ) {
+        Page<ParentVO> parents = parentService.getAllParent(page, size, searchBy, keyword);
+        return ApiResponse.<Page<ParentVO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("All parents retrieved successfully")
+                .data(parents)
+                .build();
+    }
+
+    @Operation(summary = "Get All Parents By School", description = "This api will be used to retrieve all enrolled parents by school")
+    @GetMapping("/get-parent-by-school")
+    public ApiResponse<Page<ParentVO>> getParentsBySchool(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
+            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false) String keyword,
+            @AuthenticationPrincipal User user
+    ) {
+        Page<ParentVO> parents = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        return ApiResponse.<Page<ParentVO>>builder()
+                 .code(HttpStatus.OK.value())
+                 .message("Parents retrieved successfully")
+                 .data(parents)
+                 .build();
+    }
+
+    @Operation(summary = "Get All Enroll Request By School", description = "This api will be used to retrieve all enroll request of parents by school")
+    @GetMapping("/get-enroll-request-by-school")
+    public ApiResponse<Page<ParentVO>> getEnrollRequestBySchool(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
+            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false) String keyword,
+            @AuthenticationPrincipal User user
+    ) {
+        Page<ParentVO> parents = parentService.getEnrollRequestBySchool(user, page, size, searchBy, keyword);
+        return ApiResponse.<Page<ParentVO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parents retrieved successfully")
+                .data(parents)
+                .build();
+    }
 }

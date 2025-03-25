@@ -5,8 +5,10 @@ import lombok.Builder;
 @Builder
 
 public record RequestCounsellingReminderVO(
-    String title,
-    String description
-) {
 
+        String title,
+
+        String description
+
+) {
 }

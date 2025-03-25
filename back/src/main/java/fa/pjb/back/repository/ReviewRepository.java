@@ -1,7 +1,6 @@
 package fa.pjb.back.repository;
 
 import fa.pjb.back.model.entity.Review;
-import fa.pjb.back.model.vo.ReviewVO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,13 +26,11 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate);
 
-
     @Query("SELECT r FROM Review r " +
             "WHERE (r.learningProgram + r.facilitiesAndUtilities + r.extracurricularActivities + " +
             "r.teacherAndStaff + r.hygieneAndNutrition) / 5.0 = 5 " +
             "AND r.feedback IS NOT NULL " +
             "ORDER BY r.receiveDate DESC")
     List<Review> getTop4RecentFiveStarFeedbacks(Pageable pageable);
-
 
 }

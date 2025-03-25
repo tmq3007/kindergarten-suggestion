@@ -11,8 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface UserService {
-    Page<UserVO> getAllUsersAdmin(int page, int size, String role, String email, String name, String phone);
 
+    Page<UserVO> getAllUsersAdmin(int page, int size, String searchBy, String keyword);
 
     UserDetailDTO getUserDetailById(int userId);
 
@@ -23,4 +23,5 @@ public interface UserService {
     UserCreateDTO createUser(UserCreateDTO userCreateDTO, List<MultipartFile> image);
 
     ERole convertRole2(String role);
+
 }
