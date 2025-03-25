@@ -1,4 +1,4 @@
-package fa.pjb.back.service.impl;
+package fa.pjb.back.service.parent_service;
 
  import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
  import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
@@ -16,6 +16,7 @@ import fa.pjb.back.repository.ParentRepository;
  import fa.pjb.back.repository.UserRepository;
  import fa.pjb.back.service.GGDriveImageService;
  import fa.pjb.back.service.UserService;
+ import fa.pjb.back.service.impl.ParentServiceImpl;
  import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

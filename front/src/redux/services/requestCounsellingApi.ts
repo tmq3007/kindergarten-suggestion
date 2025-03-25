@@ -164,5 +164,5 @@ export const {
   useAlertReminderQuery,
   useCreateRequestCounsellingMutation,
   useGetAllRequestsQuery,
-    useGetRequestCounsellingQuery
+  useGetRequestCounsellingQuery
 } = requestCounsellingApi;

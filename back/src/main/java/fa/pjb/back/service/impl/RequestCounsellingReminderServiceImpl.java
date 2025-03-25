@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
@@ -37,7 +38,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         Optional<SchoolOwner> schoolOwner = schoolOwnerRepository.findByUserId(userId);
         if (schoolOwner.isEmpty()) {
             log.warn("No SchoolOwner found for userId: {}", userId);
-            return null;
+            throw new UserNotFoundException();
         }
 
         Integer schoolId = schoolOwner.get().getSchool().getId();
