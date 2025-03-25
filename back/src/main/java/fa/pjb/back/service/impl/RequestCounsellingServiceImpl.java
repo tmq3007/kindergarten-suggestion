@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -153,6 +154,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
             .build();
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SCHOOL_OWNER')")
     @Override
     public RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId) {
         RequestCounselling requestCounselling = requestCounsellingRepository.findByIdWithParent(requestCounsellingId);
