@@ -15,14 +15,22 @@ const NotificationDropdown = () => {
         skip: !isSchoolOwner || !userId,
     });
 
+    // const enrollData = {
+    //     id: 'enrolled', // Đặt ID tạm thời để tránh trùng lặp
+    //     title: 'Enrollment Successful',
+    //     description: 'You have successfully enrolled.',
+    // };
+
     const reminderData = data?.data;
 
-    // Normalize notifications to an array
-    const notifications = reminderData
-        ? Array.isArray(reminderData)
-            ? reminderData
-            : [reminderData]
-        : [];
+    const notifications = [
+        ...(reminderData
+            ? Array.isArray(reminderData)
+                ? reminderData
+                : [reminderData]
+            : []),
+        // enrollData, // Add enroll data
+    ];
 
     const menu = (
         <Menu className="w-[300px] rounded-md shadow-lg">
@@ -35,12 +43,17 @@ const NotificationDropdown = () => {
                     <div className="py-2 text-center">Error loading notifications</div>
                 </Menu.Item>
             ) : notifications.length > 0 ? (
-                notifications.map((notification) => (
-                    <Menu.Item key={notification.id || Math.random()}>
+                notifications.map((item) => (
+                    <Menu.Item key={item.id || Math.random()}>
                         <div className="py-2">
-                            <div className="font-bold">{notification.title || 'Untitled'}</div>
-                            <div>{notification.description || 'No description'}</div>
-                            <Link className={'text-center flex justify-center text-blue-500'} href={'/public/school-owner'}>Show Details</Link>
+                            <div className="font-bold">{item.title || 'Untitled'}</div>
+                            <div>{item.description || 'No description'}</div>
+                            <Link
+                                className="text-center flex justify-center text-blue-500"
+                                href="/public/school-owner"
+                            >
+                                Show Details
+                            </Link>
                         </div>
                     </Menu.Item>
                 ))

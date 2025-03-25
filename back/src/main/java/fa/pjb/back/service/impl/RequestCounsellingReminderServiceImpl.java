@@ -32,8 +32,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
 
     @Override
     public RequestCounsellingReminderVO checkOverdueForSchoolOwner(Integer userId) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime overdueThreshold = now.minusHours(24); // 24 hours ago
+        LocalDateTime overdueThreshold = LocalDateTime.now().minusHours(24);
 
         Optional<SchoolOwner> schoolOwner = schoolOwnerRepository.findByUserId(userId);
         if (schoolOwner.isEmpty()) {
@@ -42,20 +41,10 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         }
 
         Integer schoolId = schoolOwner.get().getSchool().getId();
-
-        List<RequestCounselling> requests = requestCounsellingRepository.findBySchoolIdAndStatus(schoolId, (byte) 0);
-        int totalOverdueCount = 0;
-
-        for (RequestCounselling request : requests) {
-            LocalDateTime dueDate = request.getDue_date();
-            if (dueDate.isBefore(overdueThreshold)) {
-                totalOverdueCount++;
-            }
-        }
+        long totalOverdueCount = requestCounsellingRepository.countOverdueRequestsBySchoolId(schoolId, (byte) 2, overdueThreshold);
 
         if (totalOverdueCount > 0) {
-            return RequestCounsellingReminderVO
-                    .builder()
+            return RequestCounsellingReminderVO.builder()
                     .title("Request Counselling Reminder")
                     .description("You have " + totalOverdueCount + " request counselling that are overdue.")
                     .build();
@@ -64,50 +53,45 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         return null;
     }
 
+
     // Runs every day at 9:00 AM
-    @Scheduled(cron = "0 28 17 * * ?")
+    @Scheduled(cron = "0 50 10 * * ?")
     @Override
     @Transactional(readOnly = true)
     public void checkDueDateAndSendEmail() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime overdueThreshold = now.minusHours(24);
+        LocalDateTime overdueThreshold = LocalDateTime.now().minusHours(24);
 
-        List<RequestCounselling> requests = requestCounsellingRepository.findByStatus((byte) 0);
-        int totalOverdueCount = 0;
+        // Lấy số lượng yêu cầu quá hạn cho tất cả các trường
+        List<Object[]> results = requestCounsellingRepository.countOverdueRequestsForAllSchools((byte) 2, overdueThreshold);
         Map<Integer, Integer> schoolOverdueCounts = new HashMap<>();
+        int totalOverdueCount = 0;
 
-        for (RequestCounselling request : requests) {
-            LocalDateTime dueDate = request.getDue_date();
-            if (dueDate.isBefore(overdueThreshold)) {
-                totalOverdueCount++;
-                Integer schoolId = request.getSchool().getId();
-                schoolOverdueCounts.put(schoolId, schoolOverdueCounts.getOrDefault(schoolId, 0) + 1);
-            }
+        for (Object[] result : results) {
+            Integer schoolId = (Integer) result[0];
+            int overdueCount = ((Number) result[1]).intValue();
+            schoolOverdueCounts.put(schoolId, overdueCount);
+            totalOverdueCount += overdueCount;
         }
 
         List<CompletableFuture<Void>> emailFutures = new ArrayList<>();
 
-        // Send email to Admin
         if (totalOverdueCount > 0) {
             emailFutures.addAll(sendToAllAdmins(totalOverdueCount));
         } else {
             log.info("No overdue requests found (over 24 hours).");
         }
 
-        // Send email to School Owners
         for (Map.Entry<Integer, Integer> entry : schoolOverdueCounts.entrySet()) {
-            Integer schoolId = entry.getKey();
-            int overdueCountForSchool = entry.getValue();
-            emailFutures.addAll(sendToSchoolOwner(schoolId, overdueCountForSchool));
+            emailFutures.addAll(sendToSchoolOwner(entry.getKey(), entry.getValue()));
         }
 
-        //Wait all email sent
         CompletableFuture.allOf(emailFutures.toArray(new CompletableFuture[0]))
                 .exceptionally(throwable -> {
                     log.error("Error occurred while sending emails: {}", throwable.getMessage());
                     return null;
-                }).join(); // wait all complete
+                }).join();
     }
+
 
     private List<CompletableFuture<Void>> sendToAllAdmins(int overdueCount) {
         List<User> admins = userRepository.findActiveUserByRole(ERole.ROLE_ADMIN);

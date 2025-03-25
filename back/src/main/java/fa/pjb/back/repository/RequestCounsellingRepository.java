@@ -6,9 +6,17 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RequestCounsellingRepository extends JpaRepository<RequestCounselling, Integer>, JpaSpecificationExecutor<RequestCounselling> {
+
+    @Query("SELECT COUNT(r) FROM RequestCounselling r WHERE r.school.id = :schoolId AND r.status = :status AND r.due_date < :threshold")
+    long countOverdueRequestsBySchoolId(@Param("schoolId") Integer schoolId, @Param("status") byte status, @Param("threshold") LocalDateTime threshold);
+
+    @Query("SELECT r.school.id, COUNT(r) FROM RequestCounselling r WHERE r.status = :status AND r.due_date < :threshold GROUP BY r.school.id")
+    List<Object[]> countOverdueRequestsForAllSchools(@Param("status") byte status, @Param("threshold") LocalDateTime threshold);
+
 
     List<RequestCounselling> findByStatus(byte status);
 
