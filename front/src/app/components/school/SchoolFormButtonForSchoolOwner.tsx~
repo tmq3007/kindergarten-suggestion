@@ -114,8 +114,14 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             if (!hasDraft) {
                 dispatch(updateHasDraft(true));
             }
-            messageApi.success('School saved successfully!');
+            openNotificationWithIcon(
+                'success',
+                'School saved successfully!',
+                'The school has been saved successfully!',
+                2,
+            );
         } catch (error) {
+            console.log("error==================")
             console.log(error)
             messageApi.error("Failed to save school. Please try again.");
         }

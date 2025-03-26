@@ -181,7 +181,7 @@ public class SchoolController {
 
     @Operation(summary = "Merge draft", description = "Admin approve updated school information by merging draft")
     @PutMapping("/merger-draft/{schoolId}")
-    public ApiResponse<Boolean> mergerDraft(@PathVariable Integer schoolId) {
+    public ApiResponse<Boolean> mergeDraft(@PathVariable Integer schoolId) {
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Merge draft successfully.")

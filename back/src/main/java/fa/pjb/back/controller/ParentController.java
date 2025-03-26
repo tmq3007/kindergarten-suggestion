@@ -124,4 +124,15 @@ public class ParentController {
                 .data(parents)
                 .build();
     }
+
+    @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
+    @PostMapping("/enroll/{userId}")
+    public ApiResponse<Boolean> enrollParent(@PathVariable Integer userId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent enrolled successfully")
+                .data(parentService.enrollParent(userId))
+                .build();
+    }
+
 }
