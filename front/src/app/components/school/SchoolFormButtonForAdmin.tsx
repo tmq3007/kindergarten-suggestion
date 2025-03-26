@@ -105,11 +105,23 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
         if (!schoolData) return;
         try {
             await updateSchoolByAdmin({id: Number(schoolId), ...schoolData}).unwrap();
-            messageApi.success('School updated successfully!');
-            getSchoolByIdRefetch();
+            openNotificationWithIcon(
+                'success',
+                'School updated successfully!',
+                'The school has been updated successfully!',
+                2,
+                () => getSchoolByIdRefetch()
+            );
         } catch (error) {
             console.log(error)
-            messageApi.error("Failed to update school. Please try again.");
+            openNotificationWithIcon(
+                'error',
+                'Failed to update school',
+                'There was an error while updating the school. Please try again.',
+                2,
+                () => {
+                }
+            );
         }
     };
 
@@ -123,11 +135,24 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             const mergeData = await mergeDraft(Number(schoolId)).unwrap();
             const isSuccess = mergeData?.data;
             if (isSuccess) {
-                messageApi.success('Draft merged successfully!');
+                openNotificationWithIcon(
+                    'success',
+                    'Draft merged successfully!',
+                    'The draft has been merged successfully!',
+                    2,
+                    () => getSchoolByIdRefetch()
+                );
             }
-            getSchoolByIdRefetch();
+
         } catch (error) {
-            messageApi.error('Failed to merge draft. Please try again.');
+            openNotificationWithIcon(
+                'error',
+                'Failed to merge draft',
+                'There was an error while merging the school. Please try again.',
+                2,
+                () => {
+                }
+            );
         }
     };
 

@@ -14,7 +14,7 @@ import UserDropdown from "@/app/components/user/UserDropdown";
 import {motion} from 'framer-motion'
 import {useGetCountriesQuery} from '@/redux/services/registerApi';
 import NotificationDropdown from "@/app/components/user/NotificationDropdown";
-
+import logo from '@public/KSS.png';
 
 export default function Header() {
     const path = usePathname();
@@ -41,11 +41,9 @@ export default function Header() {
                 {/* Logo */}
                 <div className="flex items-center">
                     <Image
-                        className={'hidden md:block mr-4'}
-                        src="/logo2-removebg-preview.png"
+                        className={'hidden md:block mr-4 h-12 w-12 scale-[240%]'}
+                        src={logo}
                         alt="Best School Logo"
-                        width={50}
-                        height={50}
                     />
                     <ConfigProvider
                         theme={{

@@ -25,6 +25,7 @@ import fa.pjb.back.repository.*;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
+import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -61,32 +62,17 @@ public class SchoolServiceImpl implements SchoolService {
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
     private final UserRepository userRepository;
+    private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
     private final GGDriveImageService imageService;
-    private final SchoolOwnerRepository schoolOwnerRepository;
+    private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private static final Tika tika = new Tika();
-    //    private final CountedAspect countedAspect;
     @Value("${school-detailed-link}")
     private String schoolDetailedLink;
     @Value("${school-detail-link-admin}")
     private String schoolDetailedLinkAdmin;
 
-    private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // Check if principal is an instance of User entity
-        if (principal instanceof User user) {
-            return user;
-        } else {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
-    }
-
-    private SchoolOwner getCurrentSchoolOwner() {
-        User user = getCurrentUser();
-        return schoolOwnerRepository.findWithSchoolAndDraftByUserId(user.getId())
-                .orElseThrow(UserNotFoundException::new);
-    }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
@@ -246,7 +232,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO addSchool(SchoolDTO schoolDTO, List<MultipartFile> image) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         //  Map DTO to School entity
         School school = prepareSchoolData(schoolDTO, new School());
@@ -308,7 +294,7 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     private SchoolDetailVO processSchoolUpdate(SchoolDTO schoolDTO, List<MultipartFile> images, Byte status) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         // Find School Owner from UserID
         SchoolOwner schoolOwner = schoolOwnerRepository
@@ -387,7 +373,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO updateSchoolByAdmin(SchoolDTO schoolDTO, List<MultipartFile> images) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         if (user == null) return null;
         // Check if the school exists
         School oldSchool = schoolRepository.findById(schoolDTO.id()).orElseThrow(SchoolNotFoundException::new);
@@ -583,7 +569,7 @@ public class SchoolServiceImpl implements SchoolService {
         String currentSchoolEmail = school.getEmail();
         String currentSchoolName = school.getName();
 
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         String username = user.getUsername();
 
         switch (preparedStatus) {
@@ -660,7 +646,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     @Transactional
     public void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         String username = user.getUsername();
         Boolean publicPermission = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getPublicPermission();
         Integer ownedSchoolID = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getSchool().getId();
