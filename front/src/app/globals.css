@@ -1,52 +1,55 @@
- @tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --foreground: #171717;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
 }
- @media (max-width: 428px) {
-   .navbar-icons {
-     justify-content: flex-end !important;
-     width: 100%;
-   }
- }
+
+@media (max-width: 428px) {
+    .navbar-icons {
+        justify-content: flex-end !important;
+        width: 100%;
+    }
+}
 
 
- .logo-responsive {
-     width: auto  ; /* Đảm bảo logo không bị co nhỏ */
-     height: auto  ;
-     max-width: 100px; /* Giới hạn kích thước tối đa */
-     max-height: 60px; /* Giới hạn chiều cao */
- }
- @media (max-width: 425px) {
-     .logo-responsive {
-         width: 30px  !important;
-         height: 34px !important;
-     }
- }
- 
- .ant-table-body::-webkit-scrollbar {
-  width: 6px;  /* Adjust width */
+.logo-responsive {
+    width: auto; /* Đảm bảo logo không bị co nhỏ */
+    height: auto;
+    max-width: 100px; /* Giới hạn kích thước tối đa */
+    max-height: 60px; /* Giới hạn chiều cao */
+}
+
+@media (max-width: 425px) {
+    .logo-responsive {
+        width: 30px !important;
+        height: 34px !important;
+    }
+}
+
+.ant-table-body::-webkit-scrollbar {
+    width: 6px; /* Adjust width */
 }
 
 .ant-table-body::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.3); /* Change color */
-  border-radius: 3px; /* Round edges */
+    background-color: rgba(0, 0, 0, 0.3); /* Change color */
+    border-radius: 3px; /* Round edges */
 }
 
 .ant-table-body::-webkit-scrollbar-track {
-  background-color: #f0f0f0; /* Change track color */
+    background-color: #f0f0f0; /* Change track color */
 }
- /*body {*/
+
+/*body {*/
 /*  color: var(--foreground);*/
 /*  background: var(--background);*/
 /*  font-family: Arial, Helvetica, sans-serif;*/
@@ -107,8 +110,6 @@
 /*}*/
 
 
-
-
 /* .header-icon {*/
 /*   font-size: 20px;*/
 /*   color: #7db9e0;*/
@@ -155,22 +156,22 @@
 /*     padding: 10px;*/
 /*   }*/
 /* }*/
- /* CSS cho bảng xen kẽ */
- .table-row-light {
-   background-color: #ffffff; /* Màu trắng cho dòng chẵn */
- }
+/* CSS cho bảng xen kẽ */
+.table-row-light {
+    background-color: #ffffff; /* Màu trắng cho dòng chẵn */
+}
 
- .table-row-dark {
-   background-color: #e6f0fa; /* Màu xanh lam nhạt cho dòng lẻ */
- }
+.table-row-dark {
+    background-color: #e6f0fa; /* Màu xanh lam nhạt cho dòng lẻ */
+}
 
- /* Đảm bảo các ô trong cột cố định cũng có màu nền xen kẽ */
- .ant-table-tbody > tr.table-row-light > td.ant-table-cell-fix-left,
- .ant-table-tbody > tr.table-row-light > td.ant-table-cell-fix-right {
-   background-color: #ffffff; /* Đồng bộ với table-row-light */
- }
+/* Đảm bảo các ô trong cột cố định cũng có màu nền xen kẽ */
+.ant-table-tbody > tr.table-row-light > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr.table-row-light > td.ant-table-cell-fix-right {
+    background-color: #ffffff; /* Đồng bộ với table-row-light */
+}
 
- .ant-table-tbody > tr.table-row-dark > td.ant-table-cell-fix-left,
- .ant-table-tbody > tr.table-row-dark > td.ant-table-cell-fix-right {
-   background-color: #e6f0fa; /* Đồng bộ với table-row-dark */
- }
+.ant-table-tbody > tr.table-row-dark > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr.table-row-dark > td.ant-table-cell-fix-right {
+    background-color: #e6f0fa; /* Đồng bộ với table-row-dark */
+}

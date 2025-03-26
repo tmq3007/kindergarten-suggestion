@@ -24,4 +24,6 @@ public interface ParentService {
 
     Page<ParentVO> getEnrollRequestBySchool(User user, int page, int size, String searchBy, String keyword);
 
+    Boolean enrollParent(Integer userId);
+
 }

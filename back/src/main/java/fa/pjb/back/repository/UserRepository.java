@@ -16,6 +16,9 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.Parent WHERE u.id = :userId")
+    Optional<User> findByIdWithParent(Integer userId);
+
     Optional<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);

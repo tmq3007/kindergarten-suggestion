@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-public class UpdateSchoolStatusBySchoolOwner {
+public class UpdateSchoolStatusBySchoolOwnerTest {
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
