@@ -1,8 +1,11 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react';
-import { Form, Input, Select, Button, message } from 'antd';
+import {Form, Input, Select, Button, message, notification} from 'antd';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import MyEditor from "@/app/components/common/MyEditor";
+import {useParams} from "next/navigation";
+import {useUpdateRequestCounsellingMutation} from "@/redux/services/requestCounsellingApi";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -14,7 +17,7 @@ interface RequestCounsellingFieldType {
     address: string;
     requested_school: string;
     inquiries: string;
-    response: string;
+    responses: string;
 }
 
 
@@ -22,18 +25,47 @@ interface RequestCounsellingFormFields {
     isReadOnly?: boolean;
     form?: any;
     formLoaded?: boolean;
+    hasResolveButton: boolean;
 }
 
 const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
                                                                             isReadOnly,
                                                                             form: externalForm,
                                                                             formLoaded = false,
+                                                                            hasResolveButton = true
                                                                         }) => {
     const [form] = Form.useForm(externalForm);
+    const [responseContent, setResponseContent] = useState<string>("");
+    const params = useParams();
+    const requestCounsellingId = Number(params.id as string);
+    const [updateRequestCounselling, {isLoading}] = useUpdateRequestCounsellingMutation();
+    const [notificationApi, contextHolder] = notification.useNotification();
+
+    const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
+        notificationApi[type]({ message, description, placement: "topRight" });
+    };
+
+    const handleResponseChange = (response: string) => {
+        setResponseContent(response);
+    };
+
+    const handleResolveButton = async () => {
+        try {
+            await updateRequestCounselling({
+                requestCounsellingId: requestCounsellingId,
+                response: responseContent
+            }).unwrap()
+            openNotificationWithIcon("success", "Success", "Request resolved successfully!")
+        } catch (e) {
+            openNotificationWithIcon("error", "Error", "Failed to resolve request!")
+        }
+    }
 
     return (
+        <>
+            {contextHolder}
         <div className="w-1/2 mx-auto p-6 bg-white rounded-lg shadow-md">
-            <Form<RequestCounsellingFormFields>
+            <Form<RequestCounsellingFieldType>
                 size="middle"
                 form={form}
                 labelCol={{ span: 6, className: 'font-bold' }}
@@ -47,6 +79,7 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
                 <Form.Item
                     name="full_name"
                     label="Full Name"
+
                 >
                     <Input placeholder="Enter your name..." readOnly={isReadOnly} />
                 </Form.Item>
@@ -75,7 +108,6 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
                 <Form.Item
                     name="requested_school"
                     label="Requested school"
-                    rules={[{ required: true, message: 'Please select a school' }]}
                 >
                     <Input placeholder="Enter your phone number..." readOnly={isReadOnly} />
                 </Form.Item>
@@ -83,7 +115,6 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
                 <Form.Item
                     name="inquiries"
                     label="Inquiries"
-                    rules={[{ required: true, message: 'Please enter your inquiry' }]}
                 >
                     <TextArea
                         rows={4}
@@ -94,6 +125,51 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
 
             </Form>
         </div>
+
+    <div className="w-1/2 mx-auto p-6 bg-white rounded-lg shadow-md mt-5">
+        <Form<RequestCounsellingFieldType>
+            size="middle"
+            form={form}
+            labelCol={{ span: 6, className: 'font-bold' }}
+            labelAlign="left"
+            labelWrap
+            layout="horizontal"
+            className="space-y-6 h-auto"
+        >
+
+            {(hasResolveButton && (
+                <Form.Item
+                    name="responses"
+                    label="Responses"
+                >
+                <MyEditor
+                    description={responseContent}
+                    onChange={handleResponseChange} />
+                </Form.Item>
+
+            ) || <Form.Item
+                name="responses"
+                label="Responses"
+            >
+                <div
+                    className="text-gray-800"
+                    dangerouslySetInnerHTML={{__html: form.getFieldValue("responses") || "N/A"}}
+                />
+
+            </Form.Item>)}
+            {hasResolveButton && (
+            <Form.Item className={'flex justify-end'}>
+                <Button htmlType="button" onClick={handleResolveButton}
+                        className={'bg-emerald-600 hover:!bg-emerald-500 text-white hover:!text-white border-none'}>
+                    Resolve
+                </Button>
+            </Form.Item>
+            )}
+        </Form>
+        </div>
+
+
+            </>
     );
 };
 

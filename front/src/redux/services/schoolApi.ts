@@ -70,6 +70,7 @@ export type SchoolDTO = {
 export type ChangeSchoolStatusDTO = {
     schoolId: number;
     status: number;
+    response?: string;
 }
 
 export interface SchoolUpdateDTO extends SchoolDTO {

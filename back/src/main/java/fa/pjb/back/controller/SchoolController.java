@@ -138,6 +138,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school status", description = "Update school status by admin")
     @PutMapping("/change-status/by-admin")
     public ApiResponse<?> updateSchoolStatusByAdmin(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
@@ -149,6 +150,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school status", description = "Update school status by school owner")
     @PutMapping("/change-status/by-school-owner")
     public ApiResponse<?> updateSchoolStatusBySchoolOwner(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 

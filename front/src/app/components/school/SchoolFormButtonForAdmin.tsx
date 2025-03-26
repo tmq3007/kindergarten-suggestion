@@ -181,24 +181,54 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                     await approveDraft();
                     break;
                 case "publish":
-                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 4}).unwrap();
-                    messageApi.success('School published successfully!');
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 4, response: ''}).unwrap();
+                    openNotificationWithIcon(
+                        "success",
+                        "School published successfully!",
+                        "The school has been published successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
                 case "unpublish":
-                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 5}).unwrap();
-                    messageApi.success('School unpublished successfully!');
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 5, response: ''}).unwrap();
+                    openNotificationWithIcon(
+                        "success",
+                        "School unpublished successfully!",
+                        "The school has been unpublished successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
                 case "delete":
-                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 6}).unwrap();
-                    messageApi.success('School deleted successfully!');
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 6, response: responseContent}).unwrap();
+                    openNotificationWithIcon(
+                        "success",
+                        "School deleted successfully!",
+                        "The school has been deleted successfully!",
+                        2,
+                        () => {router.push("/admin/management/school/school-list")}
+                    );
                     break;
                 case "approve":
-                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 2}).unwrap();
-                    messageApi.success('School approved successfully!');
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 2, response: ''}).unwrap();
+                    openNotificationWithIcon(
+                        "success",
+                        "School approved successfully!",
+                        "The school has been approved successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
                 case "reject":
-                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 3}).unwrap();
-                    messageApi.success('School rejected successfully!');
+                    await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 3, response: responseContent}).unwrap();
+                    openNotificationWithIcon(
+                        "success",
+                        "School rejected successfully!",
+                        "The school has been rejected successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
             }
             getSchoolByIdRefetch();
@@ -268,7 +298,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             case "delete":
                 return {
                     title: "Delete School",
-                    desc: "Are you sure you want to delete this school? If yes, briefly describe the reason:cd f",
+                    desc: "Are you sure you want to delete this school? If yes, briefly describe the reason:",
                     showEditor: true
                 };
             case "approve":

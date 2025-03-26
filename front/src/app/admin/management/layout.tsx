@@ -158,7 +158,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                     {
                                         key: '5',
                                         icon: <WindowsOutlined/>,
-                                        label: <Link href="/request-management">Request Management</Link>,
+                                        label: <Link href="/admin/management/request/request-list">Request Management</Link>,
                                     },
                                 ]}
                             />

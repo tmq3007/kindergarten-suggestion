@@ -23,7 +23,9 @@ public record RequestCounsellingVO(
 
         String address,
 
-        LocalDateTime dueDate
+        LocalDateTime dueDate,
+
+        String response
 
 ) {
 }
