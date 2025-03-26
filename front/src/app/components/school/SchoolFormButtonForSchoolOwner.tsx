@@ -194,15 +194,33 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     break;
                 case "publish":
                     await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 4}).unwrap();
-                    messageApi.success('School published successfully!');
+                    openNotificationWithIcon(
+                        "success",
+                        "School published successfully!",
+                        "The school has been published successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
                 case "unpublish":
                     await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 5}).unwrap();
-                    messageApi.success('School unpublished successfully!');
+                    openNotificationWithIcon(
+                        "success",
+                        "School unpublished successfully!",
+                        "The school has been unpublished successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
                 case "delete":
                     await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 6}).unwrap();
-                    messageApi.success('School deleted successfully!');
+                    openNotificationWithIcon(
+                        "success",
+                        "School deleted successfully!",
+                        "The school has been deleted successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
             }
             refetch();

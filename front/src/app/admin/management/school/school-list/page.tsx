@@ -1,6 +1,6 @@
 "use client";
 
-import {Input, Button, Table, Tag, Space, notification, ConfigProvider} from "antd";
+import {Input, Button, Table, Tag, Space, notification, ConfigProvider, Modal} from "antd";
 import {SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined} from "@ant-design/icons";
 import Link from "next/link";
 import React, {useState, useEffect} from "react";
@@ -9,7 +9,8 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
-import {useGetSchoolListQuery} from "@/redux/services/schoolApi";
+import {useGetSchoolListQuery, useUpdateSchoolStatusByAdminMutation} from "@/redux/services/schoolApi";
+import MyEditor from "@/app/components/common/MyEditor";
 
 interface SchoolVO {
    id: number;
@@ -70,6 +71,11 @@ export default function SchoolList() {
    const [filteredSchools, setFilteredSchools] = useState<SchoolVO[]>([]);
    const [totalElements, setTotalElements] = useState(0);
 
+   const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [responseContent, setResponseContent] = useState<string>("");
+    const [schoolId, setSchoolId] = useState<number>(0);
+
 
    //check login
    if (!userId) {
@@ -88,6 +94,28 @@ export default function SchoolList() {
        });
    };
 
+   const handleOpenModalDelete = (id: number) => {
+       setModalVisible(true);
+       setSchoolId(id);
+   }
+
+    const handleResponseChange = (response: string) => {
+        setResponseContent(response);
+    };
+
+   const handleDelete = async () => {
+       try {
+           await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 6, response: responseContent}).unwrap();
+           setModalVisible(false);
+           openNotificationWithIcon(
+               "success",
+               "School deleted successfully!",
+               "The school has been deleted successfully!"
+           );
+       } catch (error) {
+           console.log("error==================")
+       }
+   }
 
    //get all school list
    const {data, isLoading, error} = useGetSchoolListQuery({
@@ -263,7 +291,7 @@ export default function SchoolList() {
                    <Link href={`/admin/management/school/edit-school/${record.id}`}>
                        <Button type="link" icon={<EditOutlined/>}/>
                    </Link>
-                   <Button type="link" icon={<DeleteOutlined/>} danger/>
+                   <Button type="link" onClick={() => handleOpenModalDelete(record.id)} icon={<DeleteOutlined/>} danger/>
                </Space>
            ),
        },
@@ -326,6 +354,25 @@ export default function SchoolList() {
                    />
                </ConfigProvider>
            </div>
+
+           <Modal
+               title={<p className={'font-bold text-3xl text-start'}>{"Delete School"}</p>}
+               open={modalVisible}
+               onOk={handleDelete}
+               onCancel={() => {
+                   setModalVisible(false);
+               }}
+               okText="Yes"
+               cancelText="No, Take me back!"
+               confirmLoading={isUpdatingStatus}
+               getContainer={false}
+           >
+               <p className={'text-lg text-start'}>{"Are you sure you want to delete this school? If yes, briefly describe the reason:"}</p>
+                   <MyEditor
+                       description={responseContent}
+                       onChange={handleResponseChange}
+                   />
+           </Modal>
        </div>
    );
 }

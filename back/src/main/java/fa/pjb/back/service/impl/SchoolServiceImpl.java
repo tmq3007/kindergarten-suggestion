@@ -638,6 +638,12 @@ public class SchoolServiceImpl implements SchoolService {
             case 6 -> {
                 // Change to "Deleted" status
                 school.setStatus(preparedStatus);
+                List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
+
+                for (SchoolOwner so : schoolOwners) {
+                    so.setSchool(null);
+                    schoolOwnerRepository.saveAndFlush(so);
+                }
                 eventPublisher.publishEvent(new SchoolDeletedEvent(currentSchoolEmail, currentSchoolName, response));
             }
 
@@ -652,8 +658,9 @@ public class SchoolServiceImpl implements SchoolService {
     public void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
         User user = userService.getCurrentUser();
         String username = user.getUsername();
-        Boolean publicPermission = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getPublicPermission();
-        Integer ownedSchoolID = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getSchool().getId();
+        SchoolOwner currentOwner = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow();
+        Boolean publicPermission = currentOwner.getPublicPermission();
+        Integer ownedSchoolID = currentOwner.getSchool().getId();
 
         School school = schoolRepository.findById(ownedSchoolID)
                 .orElseThrow(SchoolNotFoundException::new);
@@ -688,8 +695,13 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 6 -> {
                 if (school.getStatus() != 2) {
-
                     school.setStatus(changeSchoolStatusDTO.status());
+                    List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(ownedSchoolID);
+
+                    for (SchoolOwner so : schoolOwners) {
+                        so.setSchool(null);
+                        schoolOwnerRepository.saveAndFlush(so);
+                    }
 
                 } else {
                     throw new InappropriateSchoolStatusException();
