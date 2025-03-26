@@ -6,6 +6,7 @@ import Testimonial from "@/app/components/common/Testimonial";
 import Information from "@/app/components/common/Information";
 
 export default function Page() {
+
     return (
         <motion.div
             initial={{opacity: 0}}
@@ -13,7 +14,6 @@ export default function Page() {
             transition={{duration: 1.8, ease: "easeInOut"}}
             className="w-full min-h-[800px] relative"
         >
-
             <div
                 style={{
                     backgroundImage: `url(${background.src})`,
@@ -32,4 +32,5 @@ export default function Page() {
             <Information/>
         </motion.div>
     );
+
 }
