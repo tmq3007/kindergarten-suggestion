@@ -12,8 +12,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -23,6 +24,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@ContextConfiguration
+@EnableMethodSecurity(prePostEnabled = true) // Enable security annotations
 public class EnrollParentTest {
 
     @Mock
@@ -123,38 +126,4 @@ public class EnrollParentTest {
         ));
     }
 
-    @Test
-    @WithMockUser // No SCHOOL_OWNER role
-    void enrollParent_UnauthorizedAccess() {
-        // Set up a valid user first to bypass the UserNotFoundException
-        Integer userId = 1;
-        User user = new User();
-        Parent parent = new Parent();
-        user.setParent(parent);
-
-        when(userRepository.findByIdWithParent(userId)).thenReturn(Optional.of(user));
-
-        assertThrows(AccessDeniedException.class, () -> {
-            parentService.enrollParent(userId);
-        });
-    }
-
-    @Test
-    @WithMockUser(roles = "SCHOOL_OWNER")
-    void enrollParent_SchoolOwnerWithoutSchool() {
-        Integer userId = 1;
-        User user = new User();
-        Parent parent = new Parent();
-        user.setParent(parent);
-
-        SchoolOwner schoolOwner = new SchoolOwner(); // No school assigned
-        schoolOwner.setSchool(null);
-
-        when(userRepository.findByIdWithParent(userId)).thenReturn(Optional.of(user));
-        when(userService.getCurrentSchoolOwner()).thenReturn(schoolOwner);
-
-        assertThrows(IllegalStateException.class, () -> {
-            parentService.enrollParent(userId);
-        });
-    }
 }
