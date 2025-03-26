@@ -5,8 +5,8 @@ import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ParentInSchoolEnum;
 import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.ParentService;
 import fa.pjb.back.service.UserService;
+import fa.pjb.back.service.impl.ParentServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,7 +35,7 @@ public class EnrollParentTest {
     private UserService userService;
 
     @InjectMocks
-    private ParentService parentService; // Changed to implementation class
+    private ParentServiceImpl parentService; // Changed to implementation class
 
     @Test
     @WithMockUser(roles = "SCHOOL_OWNER")
@@ -126,8 +126,16 @@ public class EnrollParentTest {
     @Test
     @WithMockUser // No SCHOOL_OWNER role
     void enrollParent_UnauthorizedAccess() {
+        // Set up a valid user first to bypass the UserNotFoundException
+        Integer userId = 1;
+        User user = new User();
+        Parent parent = new Parent();
+        user.setParent(parent);
+
+        when(userRepository.findByIdWithParent(userId)).thenReturn(Optional.of(user));
+
         assertThrows(AccessDeniedException.class, () -> {
-            parentService.enrollParent(1);
+            parentService.enrollParent(userId);
         });
     }
 
