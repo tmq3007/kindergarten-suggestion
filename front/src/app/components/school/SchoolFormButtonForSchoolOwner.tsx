@@ -44,7 +44,6 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const [updateSchoolBySO, {isLoading: isUpdatingBySO}] = useUpdateSchoolBySchoolOwnerMutation();
     const [saveSchoolBySO, {isLoading: isSavingBySO}] = useSaveSchoolBySchoolOwnerMutation();
 
-
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
     const [activeButton, setActiveButton] = useState<string | null>(null);
@@ -108,6 +107,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const updateSave = async () => {
         const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
+        console.log("school data:")
+        console.log(schoolData)
         try {
             await saveSchoolBySO({id: undefined, ...schoolData}).unwrap();
             if (!hasDraft) {

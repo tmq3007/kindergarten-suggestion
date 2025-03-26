@@ -33,8 +33,8 @@ public interface SchoolMapper {
     @Mapping(target = "schoolOwners", ignore = true)
     School toSchool(SchoolDTO schoolDTO, @MappingTarget School school);
 
-    @Mapping(target = "facilities", ignore = true)
-    @Mapping(target = "utilities", ignore = true)
+    @Mapping(source = "facilities", target = "facilities", qualifiedByName = "mapFacilityIds")
+    @Mapping(source = "utilities", target = "utilities", qualifiedByName = "mapUtilityIds")
     @Mapping(target = "schoolOwners", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "id", ignore = true)

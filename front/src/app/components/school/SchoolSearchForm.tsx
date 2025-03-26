@@ -28,7 +28,6 @@ export default function SchoolSearchForm() {
     const [provinceCode, setProvinceCode] = useState<number>(-1);
     const {data: districts} = useGetDistrictsQuery(provinceCode, {skip: provinceCode === -1});
 
-
     const handleSelect = (value: string) => {
         const selectedProvince = provinces?.find(p => p.name === value);
         setProvinceCode(selectedProvince ? selectedProvince.code : -1);
