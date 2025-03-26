@@ -84,13 +84,14 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         try {
             await addSchool(finalValues).unwrap();
             console.log(finalValues);
+            refetch();
             form.resetFields();
             openNotificationWithIcon(
                 'success',
                 'School Added Successfully',
                 'The school has been added to the system successfully! Please wait for the admins to review.',
                 2,
-                () => router.push("/public/school-owner")
+                () => {router.push("/public/school-owner")}
             );
         } catch (error: unknown) {
             const errorMessage = formatErrorMessage(error);
