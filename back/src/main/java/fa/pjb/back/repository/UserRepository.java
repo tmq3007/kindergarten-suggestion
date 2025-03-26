@@ -20,13 +20,14 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByEmail(String email);
 
-    boolean existsUserByEmail(String email);
-
     long countByUsernameStartingWith(String baseUsername);
 
-    boolean existsByEmailAndIdNot(String email, int id);
+    @Query("SELECT u.username FROM User u WHERE u.username LIKE CONCAT(:prefix, '%')")
+    List<String> findUsernamesStartingWith(@Param("prefix") String prefix);
 
-    boolean existsByPhoneAndIdNot(String phone, int id);
+
+
+    boolean existsByEmailAndIdNot(String email, int id);
 
     @Query("SELECT " +
             "    u.id AS id, " +

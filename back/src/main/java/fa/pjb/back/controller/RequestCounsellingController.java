@@ -9,6 +9,7 @@ import fa.pjb.back.service.RequestCounsellingReminderService;
 import fa.pjb.back.service.RequestCounsellingService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,13 +31,15 @@ public class RequestCounsellingController {
 
     @Operation(summary = "Request Counselling Reminder", description = "Send email and notification to school owner and admin")
     @GetMapping("/alert-reminder")
-    public ApiResponse<RequestCounsellingReminderVO> checkOverdueForUser(@RequestParam("userId") Integer userId) {
+    public ApiResponse<RequestCounsellingReminderVO> checkOverdueForUser(
+            @RequestParam("userId") @Min(1) Integer userId) {
         return ApiResponse.<RequestCounsellingReminderVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Reminder checked!")
                 .data(reminderService.checkOverdueForSchoolOwner(userId))
                 .build();
     }
+
 
     @Operation(summary = "Request counselling", description = "Parents make request counselling to school owner")
     @PostMapping("/request")
