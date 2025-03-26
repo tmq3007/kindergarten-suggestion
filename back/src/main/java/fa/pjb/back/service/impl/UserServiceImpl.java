@@ -71,24 +71,6 @@ public class UserServiceImpl implements UserService {
         return userEntitiesPage.map(userMapper::toUserVOFromProjection);
     }
 
-    public ERole convertRole2(String role) {
-        if (role == null || role.trim().isEmpty()) {
-            return null;
-        }
-        return switch (role.toUpperCase()) {
-            case "ROLE_PARENT" -> ERole.ROLE_PARENT;
-            case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-            case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
-            case "PARENT", "SCHOOL OWNER", "ADMIN" -> { // Handle both formats for flexibility
-                if (role.equalsIgnoreCase("PARENT")) yield ERole.ROLE_PARENT;
-                if (role.equalsIgnoreCase("SCHOOL OWNER")) yield ERole.ROLE_SCHOOL_OWNER;
-                if (role.equalsIgnoreCase("ADMIN")) yield ERole.ROLE_ADMIN;
-                throw new IllegalArgumentException("Invalid role: " + role);
-            }
-            default -> throw new IllegalArgumentException("Invalid role: " + role);
-        };
-    }
-
     @Override
     public UserDetailDTO getUserDetailById(int userId) {
         User user = userRepository.findById(userId)

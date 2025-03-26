@@ -22,6 +22,4 @@ public interface UserService {
 
     UserCreateDTO createUser(UserCreateDTO userCreateDTO, List<MultipartFile> image);
 
-    ERole convertRole2(String role);
-
 }

@@ -44,13 +44,14 @@ export default function SchoolDetail() {
         skip: !hasSchool,
     });
 
+    console.log("main sid", data?.data.id);
+
     const [form] = Form.useForm();
     const {school, schoolStatus} = useSchoolForm({
         data: data?.data,
         isLoading,
         externalForm: form,
     });
-
 
     useEffect(() => {
         if (isError) {

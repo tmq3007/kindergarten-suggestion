@@ -49,20 +49,22 @@ interface EnhancedReview extends ReviewWithDayjs {
 const RatingsDashboard = () => {
     const params = useParams();
     const router = useRouter();
-    const urlSchoolId = Number(params.schoolId);
+    const urlSchoolId = Number(params.id as string);
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
-//get school by user id
+    //get school by user id
     const {data: schoolData, isError} = useGetSchoolOfSchoolOwnerQuery(undefined, {});
     // Get the authenticated user's schoolId from Redux
     const ownedSchoolId = schoolData?.data.id; // Assuming schoolId is stored in Redux under user
 
+    console.log("sid", ownedSchoolId);
+    console.log("sid url", urlSchoolId);
     // Validate ownership
     useEffect(() => {
         if (!ownedSchoolId || urlSchoolId !== ownedSchoolId) {
             const redirectPath = ownedSchoolId
-                ? `/public/school-owner/rating-feedback/${ownedSchoolId}`
+                ? `/public/school-owner/rating-feedback/${urlSchoolId}`
                 : "/public/school-owner";
             router.push(redirectPath)
         }
@@ -78,7 +80,7 @@ const RatingsDashboard = () => {
         return params;
     }, [ownedSchoolId, dateRange]);
 
-    const {data, isLoading, error, refetch} = useGetReviewBySchoolIdQuery(queryParams);
+    const { data, isLoading, error, refetch } = useGetReviewBySchoolIdQuery(queryParams);
 
     // Transform reviews data to use Dayjs for receiveDate and calculate reviewAverage
     const reviews: EnhancedReview[] = useMemo(

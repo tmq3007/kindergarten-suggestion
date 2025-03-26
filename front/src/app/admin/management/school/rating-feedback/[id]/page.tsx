@@ -27,14 +27,6 @@ import NoData from "@/app/components/common/NoData";
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
-interface ApiError {
-    data: {
-        code: string;
-        message: string;
-    };
-    status?: number;
-}
-
 interface ReviewWithDayjs extends Omit<ReviewVO, "receiveDate"> {
     receiveDate: Dayjs;
 }
