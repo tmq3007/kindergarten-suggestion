@@ -10,8 +10,6 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @Entity
 @Table(name = "Parent_In_School")
 public class ParentInSchool {
