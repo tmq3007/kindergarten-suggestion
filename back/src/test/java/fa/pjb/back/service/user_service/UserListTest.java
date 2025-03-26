@@ -1,11 +1,8 @@
 package fa.pjb.back.service.user_service;
 
-import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
-import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserCreateDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
-import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
@@ -21,13 +18,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class userListTest {
+class UserListTest {
 
     @Mock
     private UserRepository userRepository;

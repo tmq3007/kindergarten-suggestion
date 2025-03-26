@@ -10,22 +10,22 @@ import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
-import fa.pjb.back.model.entity.Media;
-import fa.pjb.back.model.entity.Parent;
-import fa.pjb.back.model.entity.SchoolOwner;
-import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.FileFolderEnum;
+import fa.pjb.back.model.enums.ParentInSchoolEnum;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.mapper.ParentProjection;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
+import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.ParentService;
+import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -53,26 +53,12 @@ public class ParentServiceImpl implements ParentService {
     private final PasswordEncoder passwordEncoder;
     private final ParentRepository parentRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
-    private final ParentMapper parentMapper;
     private final UserRepository userRepository;
+    private final ParentInSchoolRepository parentInSchoolRepository;
+    private final ParentMapper parentMapper;
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
-
-//    @Override
-//    public Page<UserVO> getParentByAdmin(int page, int size, String email, String name, String phone) {
-//        Pageable pageable = PageRequest.of(page-1, size);
-//
-//        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(List.of(ROLE_PARENT), email, name, phone, pageable);
-//        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
-//    }
-
-//    @Override
-//    public Page<UserVO> getParentBySchool(int page, int size, String role, String email, String name, String phone, int schoolId) {
-//        Pageable pageable = PageRequest.of(page-1, size);
-//
-//        Page<UserProjection> userEntitiesPage = userRepository.findAllBySchoolAndCriteria(List.of(ROLE_PARENT), email, name, phone, pageable,schoolId);
-//        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
-//    }
+    private final UserService userService;
 
     @Transactional
     @Override
@@ -293,6 +279,36 @@ public class ParentServiceImpl implements ParentService {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(1, searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public Boolean enrollParent(Integer userId) {
+        // Get user by userId
+        User user = userRepository.findByIdWithParent(userId).orElseThrow(UserNotFoundException::new);
+
+        // Get parent from user
+        Parent parent = user.getParent();
+        if (parent == null) {
+            return false;
+        }
+
+        // Get current school owner
+        SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
+
+        // Get school of current school owner
+        School school = schoolOwner.getSchool();
+
+        ParentInSchool parentInSchool = ParentInSchool.builder()
+                .school(school)
+                .parent(parent)
+                .from(LocalDate.now())
+                .status(ParentInSchoolEnum.ACTIVE.getValue())
+                .build();
+
+        parentInSchoolRepository.save(parentInSchool);
+        return true;
     }
 
 }

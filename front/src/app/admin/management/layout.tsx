@@ -1,6 +1,6 @@
 'use client';
 import React, {useEffect, useRef, useState} from 'react';
-import logo from '@public/logo2-removebg-preview.png';
+import logo from '@public/KSS.png';
 import {
     BellOutlined,
     HomeOutlined,

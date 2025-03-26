@@ -110,15 +110,27 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         if (!schoolData) return;
         try {
             await saveSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            refetch();
             if (!hasDraft) {
                 dispatch(updateHasDraft(true));
             }
-            messageApi.success('School saved successfully!');
+            openNotificationWithIcon(
+                'success',
+                'School saved successfully!',
+                'The school has been saved successfully!',
+                2,
+                () => refetch()
+            );
         } catch (error) {
             console.log("error==================")
             console.log(error)
-            messageApi.error("Failed to save school. Please try again.");
+            openNotificationWithIcon(
+                'error',
+                'Failed to save school',
+                'There was an error while saving the school. Please try again.',
+                2,
+                () => {
+                }
+            );
         }
     };
 
@@ -136,14 +148,26 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         if (!schoolData) return;
         try {
             await updateSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            refetch();
             if (!hasDraft) {
                 dispatch(updateHasDraft(true));
             }
-            messageApi.success('School updated successfully!');
+            openNotificationWithIcon(
+                'success',
+                'School submitted successfully!',
+                'The school has been submitted successfully!',
+                2,
+                () => refetch()
+            );
         } catch (error) {
             console.log(error)
-            messageApi.error("Failed to update school. Please try again.");
+            openNotificationWithIcon(
+                'error',
+                'Failed to submit school',
+                'There was an error while submitting the school. Please try again.',
+                2,
+                () => {
+                }
+            );
         }
     };
 
