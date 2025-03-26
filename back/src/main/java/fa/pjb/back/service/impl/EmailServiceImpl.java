@@ -76,7 +76,7 @@ public class EmailServiceImpl implements EmailService {
             model.put("resetLink", resetLink);
 
             // Send mail using the "password-reset.html" template
-            sendEmailWithTemplate(to, "Password Reset", "password-reset", model);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Reset Password>", "password-reset", model);
 
             // Return a message indicating the success of the email sending
             return "Link password reset sent successfully!";
@@ -98,7 +98,7 @@ public class EmailServiceImpl implements EmailService {
             model.put("password", password);
 
             //gui mail
-            sendEmailWithTemplate(to, "Username Password", "create-user", model);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Username and Password>", "create-user", model);
             return "send username password successfully!";
         } catch (MessagingException | IOException | TemplateException e) {
 
@@ -123,7 +123,7 @@ public class EmailServiceImpl implements EmailService {
             model.put("detailsLink", detailLink);
 
             // Send the email with the template
-            sendEmailWithTemplate(to, "School Approved", "approved-school", model);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Approve School>", "approved-school", model);
             return "send school approved successfully!";
         } catch (MessagingException | IOException | TemplateException e) {
 
@@ -140,7 +140,7 @@ public class EmailServiceImpl implements EmailService {
             model.put("schoolName", schoolName);
 
             // Send the email with the template
-            sendEmailWithTemplate(to, "School Rejected", "rejected-school", model);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Reject School>", "rejected-school", model);
             return "send school rejected successfully!";
         } catch (MessagingException | IOException | TemplateException e) {
 
@@ -159,7 +159,7 @@ public class EmailServiceImpl implements EmailService {
             model.put("detailsLink", detailLink);
 
             // Send the email with the template
-            sendEmailWithTemplate(to, "School Published", "published-school", model);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Publish School>", "published-school", model);
             return "send school published successfully!";
         } catch (MessagingException | IOException | TemplateException e) {
 
@@ -176,7 +176,7 @@ public class EmailServiceImpl implements EmailService {
             model.put("username", username);
             model.put("detailsLink", detailLink);
             //Send email
-            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Interview schedule title>", "submit-school", model);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Submit School>", "submit-school", model);
             return true;
         } catch (MessagingException | IOException | TemplateException e) {
             return false;
@@ -225,13 +225,26 @@ public class EmailServiceImpl implements EmailService {
                 model.put("totalRequest", totalRequest);
                 model.put("dueDateString", dueDateString);
                 model.put("detailsLink", detailsLink);
-                sendEmailWithTemplate(to, "no-reply-email-KTS-system <Request counselling reminder>", "request-counselling-reminder", model);
+                sendEmailWithTemplate(to, "no-reply-email-KTS-system <Remind Counselling Request>", "request-counselling-reminder", model);
                 log.info("Email sent successfully to {}", to);
             } catch (Exception e) {
                 log.error("Error sending request counselling reminder to {}: {}", to, e.getMessage());
                 throw new RuntimeException(e); // throw exception
             }
         });
+    }
+
+    @Override
+    public String sendCounsellingRequestUpdateEmail(String to, String username, String response) {
+        try {
+            Map<String, Object> model = new HashMap<>();
+            model.put("username", username);
+            model.put("response", response);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Update Counselling Request>", "update-counselling-request", model);
+            return "send counselling request update successfully!";
+        } catch (MessagingException | IOException | TemplateException e) {
+            return "Error while sending email: " + e.getMessage();
+        }
     }
 
 }

@@ -20,4 +20,5 @@ public interface EmailService {
 
     CompletableFuture<Void> sendRequestCounsellingReminder(String to, String name, int totalRequest, String dueDateString, String detailsLink);
 
+    String sendCounsellingRequestUpdateEmail(String to, String username, String response);
 }

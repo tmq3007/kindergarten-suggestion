@@ -21,6 +21,11 @@ export type RequestCounsellingDTO = {
   dueDate: DateTime;
 };
 
+export type RequestCounsellingUpdateDTO = {
+  requestCounsellingId?: number,
+  response?: string,
+}
+
 // Types for RequestCounsellingVO (merged from both files)
 export interface RequestCounsellingVO {
   id?: number;
@@ -32,6 +37,7 @@ export interface RequestCounsellingVO {
   name: string;
   dueDate: string;
   address: string;
+  response: string | null;
 }
 
 // Types for Pageable (from requestApi)
@@ -148,7 +154,7 @@ export const requestCounsellingApi = createApi({
       },
       providesTags: ["RequestList"],
     }),
-      getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+    getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
           query: (requestCounsellingId) => ({
               url: `counselling/${requestCounsellingId}`,
               method: "GET",
@@ -156,6 +162,14 @@ export const requestCounsellingApi = createApi({
           transformErrorResponse: (response: { status: string | number }) => response.status,
           providesTags: ["RequestCounselling"],
       }),
+    updateRequestCounselling: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
+      query: (data) => ({
+        url: `/counselling/update-request-counselling`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["RequestCounselling", "RequestList"],
+    }),
   }),
 });
 
@@ -164,5 +178,6 @@ export const {
   useAlertReminderQuery,
   useCreateRequestCounsellingMutation,
   useGetAllRequestsQuery,
-    useGetRequestCounsellingQuery
+  useGetRequestCounsellingQuery,
+  useUpdateRequestCounsellingMutation
 } = requestCounsellingApi;

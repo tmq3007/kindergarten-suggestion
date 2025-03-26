@@ -1,5 +1,6 @@
 package fa.pjb.back.event.listener;
 
+import fa.pjb.back.event.model.CounsellingRequestUpdateEvent;
 import fa.pjb.back.event.model.SchoolApprovedEvent;
 import fa.pjb.back.event.model.SchoolPublishedEvent;
 import fa.pjb.back.event.model.SchoolRejectedEvent;
@@ -31,6 +32,12 @@ public class SchoolEventListener {
     @EventListener
     public void handleSchoolPublishedEvent(SchoolPublishedEvent event) {
         emailService.sendSchoolPublishedEmail(event.email(), event.schoolName(), event.username(), event.schoolDetailedLink());
+    }
+
+    @Async
+    @EventListener
+    public void handleCounsellingRequestUpdateEvent(CounsellingRequestUpdateEvent event) {
+        emailService.sendCounsellingRequestUpdateEmail(event.to(), event.username(), event.response());
     }
 
 }
