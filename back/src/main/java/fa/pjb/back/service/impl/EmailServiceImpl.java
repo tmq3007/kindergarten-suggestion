@@ -133,11 +133,12 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public String sendSchoolRejectedEmail(String to, String schoolName) {
+    public String sendSchoolRejectedEmail(String to, String schoolName, String response) {
         try {
             // Create a model to hold the data to be sent in the email
             Map<String, Object> model = new HashMap<>();
             model.put("schoolName", schoolName);
+            model.put("response", response);
 
             // Send the email with the template
             sendEmailWithTemplate(to, "no-reply-email-KTS-system <Reject School>", "rejected-school", model);
@@ -242,6 +243,19 @@ public class EmailServiceImpl implements EmailService {
             model.put("response", response);
             sendEmailWithTemplate(to, "no-reply-email-KTS-system <Update Counselling Request>", "update-counselling-request", model);
             return "send counselling request update successfully!";
+        } catch (MessagingException | IOException | TemplateException e) {
+            return "Error while sending email: " + e.getMessage();
+        }
+    }
+
+    @Override
+    public String sendSchoolDeletedEmail(String to, String schoolName, String response) {
+        try {
+            Map<String, Object> model = new HashMap<>();
+            model.put("schoolName", schoolName);
+            model.put("response", response);
+            sendEmailWithTemplate(to, "no-reply-email-KTS-system <Deleted School>", "deleted-school", model);
+            return "send school deleted successfully!";
         } catch (MessagingException | IOException | TemplateException e) {
             return "Error while sending email: " + e.getMessage();
         }

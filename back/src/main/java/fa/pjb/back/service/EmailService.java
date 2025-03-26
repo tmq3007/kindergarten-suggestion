@@ -10,7 +10,7 @@ public interface EmailService {
 
     String sendSchoolApprovedEmail(String to, String schoolName, String detailLink);
 
-    String sendSchoolRejectedEmail(String to, String schoolName);
+    String sendSchoolRejectedEmail(String to, String schoolName, String response);
 
     String sendSchoolPublishedEmail(String to, String schoolName, String username, String detailLink);
 
@@ -21,4 +21,6 @@ public interface EmailService {
     CompletableFuture<Void> sendRequestCounsellingReminder(String to, String name, int totalRequest, String dueDateString, String detailsLink);
 
     String sendCounsellingRequestUpdateEmail(String to, String username, String response);
+
+    String sendSchoolDeletedEmail(String to, String schoolName, String response);
 }
