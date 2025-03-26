@@ -190,6 +190,9 @@ const RatingsDashboard = () => {
         return <RatingSkeleton />;
     }
 
+    if (error) {
+        return <NoData />;
+    }
 
     return (
         <div className={'pt-2'}>

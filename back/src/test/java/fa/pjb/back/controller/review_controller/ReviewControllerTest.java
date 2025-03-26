@@ -52,7 +52,7 @@ class ReviewControllerTest {
                 new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg", (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5, "Great school", LocalDate.now())
         );
 
-        lenient().when(reviewService.getAllReview(eq(100), any(), any())).thenReturn(reviews);
+        lenient().when(reviewService.getAllReviewByAdmin(eq(100), any(), any())).thenReturn(reviews);
 
         mockMvc.perform(get("/school/review/100")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -63,7 +63,7 @@ class ReviewControllerTest {
 
     @Test
     void getReviews_AbnormalCase_ReviewNotFound() throws Exception {
-        lenient().when(reviewService.getAllReview(eq(999), any(), any())).thenReturn(Collections.emptyList());
+        lenient().when(reviewService.getAllReviewByAdmin(eq(999), any(), any())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/school/review/999")
                         .contentType(MediaType.APPLICATION_JSON))

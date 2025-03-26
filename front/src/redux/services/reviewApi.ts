@@ -3,7 +3,7 @@ import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQu
 
 export type ReviewVO = {
     id: number;
-    schoolId: number;
+    schoolId?: number;
     schoolName: string;
     parentId: number;
     parentName: string;
@@ -19,7 +19,7 @@ export type ReviewVO = {
 };
 
 type ReviewRequest = {
-    schoolId: number;
+    schoolId?: number;
     fromDate?: string; // Chuỗi ISO date, ví dụ: "2024-01-01"
     toDate?: string;   // Chuỗi ISO date
 };
@@ -42,6 +42,21 @@ export const reviewApi = createApi({
             providesTags: ["Review"],
         }),
 
+        getReviewBySchoolOwner: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
+            query: ({ fromDate, toDate }) => {
+                const params = new URLSearchParams();
+                if (fromDate) params.append("fromDate", fromDate);
+                if (toDate) params.append("toDate", toDate);
+
+                const queryString = params.toString();
+                return {
+                    url: `/school/review/${queryString ? `?${queryString}` : ''}`,
+                    method: "GET",
+                };
+            },
+            providesTags: ["Review"],
+        }),
+
         getTop4Reviews: build.query<ApiResponse<ReviewVO[]>, void>({
             query: () => ({
                 url: `/school/review/top4`,
@@ -52,4 +67,4 @@ export const reviewApi = createApi({
     }),
 });
 
-export const { useGetReviewBySchoolIdQuery, useGetTop4ReviewsQuery } = reviewApi;
+export const { useGetReviewBySchoolIdQuery, useGetTop4ReviewsQuery,useGetReviewBySchoolOwnerQuery } = reviewApi;

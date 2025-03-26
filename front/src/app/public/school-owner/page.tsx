@@ -44,8 +44,6 @@ export default function SchoolDetail() {
         skip: !hasSchool,
     });
 
-    console.log("main sid", data?.data.id);
-
     const [form] = Form.useForm();
     const {school, schoolStatus} = useSchoolForm({
         data: data?.data,
@@ -82,7 +80,7 @@ export default function SchoolDetail() {
 
             {/*View Rating and Feedback Link*/}
             <div className="my-4 flex justify-end">
-                <Link href={`/public/school-owner/rating-feedback/${data?.data.id}`}
+                <Link href={`/public/school-owner/rating-feedback`}
                       className="text-blue-500 hover:underline">
                     View Rating & Feedback
                 </Link>

@@ -19,14 +19,28 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @Operation(summary = "Get reviews", description = "Get review of school in date range")
+    @Operation(summary = "Get reviews by admin", description = "Get review of school in date range")
     @GetMapping("/{schoolId}")
     public ApiResponse<List<ReviewVO>> getReviews(
             @PathVariable  Integer schoolId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
 
-        List<ReviewVO> reviews = reviewService.getAllReview(schoolId, fromDate, toDate);
+        List<ReviewVO> reviews = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate);
+        return ApiResponse.<List<ReviewVO>>builder()
+                .code(200)
+                .message("Reviews retrieved successfully")
+                .data(reviews)
+                .build();
+    }
+
+    @Operation(summary = "Get reviews by school owner", description = "Get review of school in date range")
+    @GetMapping("/")
+    public ApiResponse<List<ReviewVO>> getReviewsBySchoolOwner(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+
+        List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner( fromDate, toDate);
         return ApiResponse.<List<ReviewVO>>builder()
                 .code(200)
                 .message("Reviews retrieved successfully")
