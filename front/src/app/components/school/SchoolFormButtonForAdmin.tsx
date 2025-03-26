@@ -272,21 +272,49 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
     const getModalContent = () => {
         switch (activeButton) {
             case "update":
-                return { title: "Update School", desc: "Are you sure you want to update this school?", showEditor: false };
+                return {
+                    title: "Update School",
+                    desc: "Are you sure you want to update this school?",
+                    showEditor: false
+                };
             case "approve-draft":
-                return { title: "Approve School", desc: "Are you sure you want to approve this school?", showEditor: false };
+                return {
+                    title: "Approve School",
+                    desc: "Are you sure you want to approve this school?",
+                    showEditor: false
+                };
             case "publish":
-                return { title: "Publish School", desc: "Are you sure you want to publish this school?", showEditor: false };
+                return {
+                    title: "Publish School",
+                    desc: "Are you sure you want to publish this school?",
+                    showEditor: false
+                };
             case "unpublish":
-                return { title: "Unpublish School", desc: "Are you sure you want to unpublish this school?", showEditor: false };
+                return {
+                    title: "Unpublish School",
+                    desc: "Are you sure you want to unpublish this school?",
+                    showEditor: false
+                };
             case "delete":
-                return { title: "Delete School", desc: "Are you sure you want to delete this school? If yes, briefly describe the reason:", showEditor: true };
+                return {
+                    title: "Delete School",
+                    desc: "Are you sure you want to delete this school? If yes, briefly describe the reason:",
+                    showEditor: true
+                };
             case "approve":
-                return { title: "Approve School", desc: "Are you sure you want to approve this school?", showEditor: false };
+                return {
+                    title: "Approve School",
+                    desc: "Are you sure you want to approve this school?",
+                    showEditor: false
+                };
             case "reject":
-                return { title: "Reject School", desc: "Are you sure you want to reject this school? If yes, briefly describe the reason:", showEditor: true };
+                return {
+                    title: "Reject School",
+                    desc: "Are you sure you want to reject this school? If yes, briefly describe the reason:",
+                    showEditor: true
+                };
             default:
-                return { title: "", desc: "", showEditor: false };
+                return {title: "", desc: "", showEditor: false};
         }
     };
 
@@ -337,7 +365,14 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                         className={'bg-yellow-400 hover:!bg-yellow-300 text-white hover:!text-white border-none'}
                         loading={isMerging}
                 >
-                    Approve2
+                    Approve
+                </Button>
+            )}
+            {isDraftLoading && (hasApproveButton || hasApproveDraftButton) && (
+                <Button htmlType="button"
+                        disabled={true}
+                >
+                    Approve
                 </Button>
             )}
             {hasPublishButton && (

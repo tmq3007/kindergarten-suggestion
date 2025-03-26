@@ -129,7 +129,8 @@ public class SchoolController {
     public ApiResponse<SchoolDetailVO> saveSchoolBySchoolOwner(
             @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
             @RequestPart(value = "image", required = false) List<MultipartFile> images) {
-        log.info("dto: {}", schoolDTO);
+        log.info("FACILITIES: {}", schoolDTO.facilities());
+        log.info("UTILITIES: {}", schoolDTO.utilities());
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("School updated successfully")
