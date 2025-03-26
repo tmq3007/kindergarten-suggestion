@@ -120,8 +120,9 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School saved successfully!',
                 'The school has been saved successfully!',
                 2,
-                () => refetch()
+                () => {}
             );
+            refetch();
         } catch (error) {
             console.log("error==================")
             console.log(error)
@@ -158,17 +159,18 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School submitted successfully!',
                 'The school has been submitted successfully!',
                 2,
-                () => refetch()
+                () => {}
             );
+            refetch();
         } catch (error) {
+            console.log("error==================")
             console.log(error)
             openNotificationWithIcon(
                 'error',
                 'Failed to submit school',
-                'There was an error while submitting the school. Please try again.',
+                'xxxxx',
                 2,
-                () => {
-                }
+                () => {}
             );
         }
     };
