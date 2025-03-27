@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Input, Select, Space } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import type {SizeType} from "antd/es/config-provider/SizeContext";
+import useIsMobile from "@/lib/hook/useIsMobile";
 
 interface SearchCriteria {
     searchBy: string;
@@ -31,7 +32,7 @@ const SearchByComponent: React.FC<SearchComponentProps> = ({
         searchBy: initialSearchBy || options[0]?.value || "",
         keyword: undefined as string | undefined,
     });
-
+    const isMobile = useIsMobile();
     const handleSearch = (value: string) => {
         const newCriteria = {
             ...searchCriteria,
@@ -50,7 +51,7 @@ const SearchByComponent: React.FC<SearchComponentProps> = ({
 
     return (
         <div className="flex flex-col sm:flex-row w-full">
-            <Space.Compact className="w-full flex" size={size}>
+            <Space.Compact className="w-full flex" size={size} direction={isMobile ? "vertical":"horizontal"}>
                 <Select
                     value={searchCriteria.searchBy}
                     onChange={handleSearchFieldChange}

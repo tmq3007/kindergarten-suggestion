@@ -59,6 +59,7 @@ public class ParentServiceImpl implements ParentService {
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
     private final UserService userService;
+    private final ParentInSchoolRepository pisRepository;
 
     @Transactional
     @Override
@@ -264,7 +265,7 @@ public class ParentServiceImpl implements ParentService {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
-        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
+//        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(1, searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
@@ -310,6 +311,18 @@ public class ParentServiceImpl implements ParentService {
         parentInSchoolRepository.save(parentInSchool);
         return true;
     }
+
+    @Transactional
+    @Override
+    public void deleteParent(Integer id) {
+        pisRepository.deleteParentInSchoolById(id);
+    }
+
+    @Override
+    public Integer getSchoolRequestCount(User user) {
+        return pisRepository.countParentInSchoolBySchoolIdAndStatus(1,(byte)0);
+    }
+
 
 }
 
