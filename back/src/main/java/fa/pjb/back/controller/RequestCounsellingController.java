@@ -2,6 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
+import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.service.RequestCounsellingReminderService;
@@ -55,7 +56,7 @@ public class RequestCounsellingController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<RequestCounsellingVO>> getAllRequests(
+    public ApiResponse<Page<RequestCounsellingVO>> getAllRequests(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) Byte status,
@@ -68,9 +69,14 @@ public class RequestCounsellingController {
         Page<RequestCounsellingVO> requests = requestCounsellingService.getAllRequests(
             page, size, status, email, name, phone, schoolName, dueDate
         );
-        logger.info("Pageable response: {}", requests);
-        return ResponseEntity.ok(requests);
+        return ApiResponse.<Page<RequestCounsellingVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("All parents retrieved successfully")
+            .data(requests)
+            .build();
     }
+
+
 
     @GetMapping("/{requestCounsellingId}")
     public ApiResponse<RequestCounsellingVO> getRequestCounselling(@PathVariable Integer requestCounsellingId) {
@@ -82,14 +88,20 @@ public class RequestCounsellingController {
     }
 
     @GetMapping("/all-reminder")
-    public ResponseEntity<Page<RequestCounsellingVO>> getAllReminder(
+    public ApiResponse<Page<RequestCounsellingVO>> getAllReminder(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size) {
 
         Page<RequestCounsellingVO> requests = reminderService.getAllReminder(
             page, size, Arrays.asList((byte) 0, (byte) 2)
         );
-        logger.info("Pageable response: {}", requests);
-        return ResponseEntity.ok(requests);
+
+        return ApiResponse.<Page<RequestCounsellingVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Fetched reminders successfully")
+            .data(requests)
+            .build();
     }
+
+
 }

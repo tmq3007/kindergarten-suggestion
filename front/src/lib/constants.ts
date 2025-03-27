@@ -94,3 +94,10 @@ export const UTILITIES = {
     PICNIC_ACTIVITIES: {code: 16, name: 'Picnic activities'},
     E_CONTACT_BOOK: {code: 17, name: 'E-contact book'},
 } as const;
+
+export const REQUEST_STATUS = {
+    Open: 0,
+    Closed: 1,
+    Expired: 2,
+    Unknown: -1,
+} as const;

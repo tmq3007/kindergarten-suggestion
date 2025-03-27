@@ -1,6 +1,7 @@
-import { baseQueryWithReauth } from "./config/baseQuery";
+import {ApiResponse, baseQueryWithReauth} from "./config/baseQuery";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { DateTime } from "luxon";
+import {Pageable} from "@/redux/services/userApi";
 
 // Types for RequestCounsellingReminderVO
 export type RequestCounsellingReminderVO = {
@@ -22,7 +23,7 @@ export type RequestCounsellingDTO = {
 
 // Types for RequestCounsellingVO
 export interface RequestCounsellingVO {
-  id?: number;
+  id: number;
   schoolName?: string | null;
   inquiry: string | null;
   status: number;
@@ -33,20 +34,7 @@ export interface RequestCounsellingVO {
   address: string;
 }
 
-// Types for Pageable
-export interface Pageable {
-  pageNumber: number;
-  pageSize: number;
-  totalElements: number;
-  totalPages: number;
-}
 
-// Types for ApiResponse
-export interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message?: string;
-}
 
 export const requestCounsellingApi = createApi({
   reducerPath: "requestCounsellingApi",
@@ -58,7 +46,6 @@ export const requestCounsellingApi = createApi({
         url: `counselling/alert-reminder?userId=${userId}`,
         method: "GET",
       }),
-      transformErrorResponse: (response: { status: string | number }) => response.status,
       providesTags: ["RequestCounselling"],
     }),
 
@@ -75,7 +62,7 @@ export const requestCounsellingApi = createApi({
     }),
 
     getAllRequests: builder.query<
-        ApiResponse<{ content: RequestCounsellingVO[]; pageable: Pageable }>,
+        ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
         {
           page?: number;
           size?: number;
@@ -101,47 +88,6 @@ export const requestCounsellingApi = createApi({
           ...(dueDate && { dueDate }),
         },
       }),
-      transformResponse: (response: any) => {
-        console.log("Original Server Response:", response);
-        if (!response) {
-          console.warn("Empty API response:", response);
-          return {
-            status: 500,
-            message: "No data returned from API",
-            data: {
-              content: [],
-              pageable: { pageNumber: 1, pageSize: 10, totalElements: 0, totalPages: 0 },
-            },
-          };
-        }
-
-        const responseData = response.data || response;
-        if (!responseData.content) {
-          console.warn("No content in response:", responseData);
-          return {
-            status: 500,
-            message: "No content returned from API",
-            data: {
-              content: [],
-              pageable: { pageNumber: 1, pageSize: 10, totalElements: 0, totalPages: 0 },
-            },
-          };
-        }
-
-        return {
-          status: response.status || 200,
-          message: response.message,
-          data: {
-            content: responseData.content,
-            pageable: {
-              pageNumber: responseData.pageable?.pageNumber || 0,
-              pageSize: responseData.pageable?.pageSize || 10,
-              totalElements: responseData.totalElements || 0,
-              totalPages: responseData.pageable?.totalPages || 0,
-            },
-          },
-        };
-      },
       providesTags: ["RequestList"],
     }),
 
@@ -150,12 +96,11 @@ export const requestCounsellingApi = createApi({
         url: `counselling/${requestCounsellingId}`,
         method: "GET",
       }),
-      transformErrorResponse: (response: { status: string | number }) => response.status,
       providesTags: ["RequestCounselling"],
     }),
 
     getAllReminder: builder.query<
-        ApiResponse<{ content: RequestCounsellingVO[]; pageable: Pageable }>,
+        ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
         { page?: number; size?: number; statuses?: number[] }
     >({
       query: ({ page = 1, size = 10, statuses }) => ({
@@ -167,47 +112,6 @@ export const requestCounsellingApi = createApi({
           ...(statuses && statuses.length > 0 && { statuses }),
         },
       }),
-      transformResponse: (response: any) => {
-        console.log("Original Server Response for getAllReminder:", response);
-        if (!response) {
-          console.warn("Empty API response:", response);
-          return {
-            status: 500,
-            message: "No data returned from API",
-            data: {
-              content: [],
-              pageable: { pageNumber: 1, pageSize: 10, totalElements: 0, totalPages: 0 },
-            },
-          };
-        }
-
-        const responseData = response.data || response;
-        if (!responseData.content) {
-          console.warn("No content in response:", responseData);
-          return {
-            status: 500,
-            message: "No content returned from API",
-            data: {
-              content: [],
-              pageable: { pageNumber: 1, pageSize: 10, totalElements: 0, totalPages: 0 },
-            },
-          };
-        }
-
-        return {
-          status: response.status || 200,
-          message: response.message,
-          data: {
-            content: responseData.content,
-            pageable: {
-              pageNumber: responseData.pageable?.pageNumber || 0,
-              pageSize: responseData.pageable?.pageSize || 10,
-              totalElements: responseData.totalElements || 0,
-              totalPages: responseData.pageable?.totalPages || 0,
-            },
-          },
-        };
-      },
       providesTags: ["RequestList"],
     }),
   }),

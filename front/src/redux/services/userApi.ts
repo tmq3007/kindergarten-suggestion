@@ -23,7 +23,7 @@ export type UserUpdateDTO = {
     dob: string;
     phone: string;
     role: string;
-    status: string;
+    status: boolean;
 };
 
 export type UserVO = {

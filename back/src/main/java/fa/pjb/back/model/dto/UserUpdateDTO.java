@@ -30,17 +30,17 @@ public record UserUpdateDTO(
         @NotBlank(message = "Role cannot be null or empty")
         String role,
 
-    @NotNull(message = "Status cannot be null") // Đổi @NotBlank thành @NotNull
-    Boolean status,
+        @NotNull(message = "Status cannot be null")
+        Boolean status,
 
-    @Nullable // Optional, không bắt buộc
-    String expectedSchool,
+        @Nullable
+        String expectedSchool,
 
-    @Nullable // Optional, không bắt buộc
-    @Size(min = 10, max = 10, message = "Business registration number must have 10 characters")
-    String business_registration_number,
+        @Nullable
+        @Size(min = 10, max = 10, message = "Business registration number must have 10 characters")
+        String business_registration_number,
 
-    @Nullable // Optional, không bắt buộc
-    List<MultipartFile> imageList
+        @Nullable
+        List<MultipartFile> imageList
 ) {
 }

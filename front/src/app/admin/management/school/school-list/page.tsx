@@ -264,6 +264,7 @@ export default function SchoolList() {
                        <Button type="link" icon={<EditOutlined/>}/>
                    </Link>
                    <Button type="link" icon={<DeleteOutlined/>} danger/>
+
                </Space>
            ),
        },
