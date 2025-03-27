@@ -1,7 +1,9 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
@@ -10,7 +12,9 @@ import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserCreateDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
-import fa.pjb.back.model.entity.*;
+import fa.pjb.back.model.entity.Media;
+import fa.pjb.back.model.entity.SchoolOwner;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.mapper.UserProjection;
@@ -22,21 +26,22 @@ import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.UserService;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static fa.pjb.back.model.enums.ERole.*;
 import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
@@ -45,12 +50,12 @@ import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
+
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
     private final GGDriveImageService imageService;
     private static final Tika tika = new Tika();
     private final MediaRepository mediaRepository;
-
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
@@ -58,6 +63,21 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
 
+    public User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Check if principal is an instance of User entity
+        if (principal instanceof User user) {
+            return user;
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+    }
+
+    public SchoolOwner getCurrentSchoolOwner() {
+        User user = getCurrentUser();
+        return schoolOwnerRepository.findWithSchoolAndDraftByUserId(user.getId())
+                .orElseThrow(UserNotFoundException::new);
+    }
 
     @Override
     public Page<UserVO> getAllUsersAdmin(int page, int size, String searchBy, String keyword) {
@@ -66,27 +86,8 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
         List<ERole> roleList = Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
-        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, searchBy,keyword, pageable);
+        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, searchBy, keyword, pageable);
         return userEntitiesPage.map(userMapper::toUserVOFromProjection);
-    }
-
-
-    public ERole convertRole2(String role) {
-        if (role == null || role.trim().isEmpty()) {
-            return null;
-        }
-        return switch (role.toUpperCase()) {
-            case "ROLE_PARENT" -> ERole.ROLE_PARENT;
-            case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-            case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
-            case "PARENT", "SCHOOL OWNER", "ADMIN" -> { // Handle both formats for flexibility
-                if (role.equalsIgnoreCase("PARENT")) yield ERole.ROLE_PARENT;
-                if (role.equalsIgnoreCase("SCHOOL OWNER")) yield ERole.ROLE_SCHOOL_OWNER;
-                if (role.equalsIgnoreCase("ADMIN")) yield ERole.ROLE_ADMIN;
-                throw new IllegalArgumentException("Invalid role: " + role);
-            }
-            default -> throw new IllegalArgumentException("Invalid role: " + role);
-        };
     }
 
     @Override
@@ -214,6 +215,7 @@ public class UserServiceImpl implements UserService {
         mediaRepository.saveAll(mediaList);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     public UserCreateDTO createUser(UserCreateDTO userCreateDTO, List<MultipartFile> image) {
         if (userCreateDTO.email() == null || userCreateDTO.email().isBlank()) {
@@ -274,7 +276,6 @@ public class UserServiceImpl implements UserService {
 
         // Save User to database
         userRepository.save(user);
-
 
         //UserCreateDTO responseDTO = userMapper.toUserDTO(user);
 

@@ -8,13 +8,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.springframework.data.domain.Page;
 
-import static fa.pjb.back.model.enums.ERole.*;
+import static fa.pjb.back.model.enums.ERole.ROLE_PARENT;
+import static fa.pjb.back.model.enums.ERole.ROLE_SCHOOL_OWNER;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-
     UserVO toUserVO(User user);
+
     UserCreateDTO toUserDTO(User user);
 
     // Ánh xạ Page bằng cách ánh xạ danh sách trước

@@ -1,18 +1,20 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
-import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
-import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
-import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.FileFolderEnum;
-import fa.pjb.back.model.mapper.*;
+import fa.pjb.back.model.enums.ParentInSchoolEnum;
+import fa.pjb.back.model.mapper.ParentMapper;
+import fa.pjb.back.model.mapper.ParentProjection;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
@@ -20,12 +22,16 @@ import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.*;
+import fa.pjb.back.service.AuthService;
+import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.ParentService;
+import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,29 +53,13 @@ public class ParentServiceImpl implements ParentService {
     private final PasswordEncoder passwordEncoder;
     private final ParentRepository parentRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
-    private final ParentMapper parentMapper;
     private final UserRepository userRepository;
+    private final ParentInSchoolRepository parentInSchoolRepository;
+    private final ParentMapper parentMapper;
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
+    private final UserService userService;
     private final ParentInSchoolRepository pisRepository;
-
-
-//    @Override
-//    public Page<UserVO> getParentByAdmin(int page, int size, String email, String name, String phone) {
-//        Pageable pageable = PageRequest.of(page-1, size);
-//
-//        Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(List.of(ROLE_PARENT), email, name, phone, pageable);
-//        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
-//    }
-
-//    @Override
-//    public Page<UserVO> getParentBySchool(int page, int size, String role, String email, String name, String phone, int schoolId) {
-//        Pageable pageable = PageRequest.of(page-1, size);
-//
-//        Page<UserProjection> userEntitiesPage = userRepository.findAllBySchoolAndCriteria(List.of(ROLE_PARENT), email, name, phone, pageable,schoolId);
-//        return userEntitiesPage.map(userMapper::toUserVOFromProjection);
-//    }
-
 
     @Transactional
     @Override
@@ -96,9 +86,9 @@ public class ParentServiceImpl implements ParentService {
         } catch (Exception e) {
             throw new UserNotCreatedException("Registration failed!" + e);
         }
-
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public ParentVO editParent(Integer userId, ParentUpdateDTO parentUpdateDTO, MultipartFile image) {
         // Fetch the existing Parent entity from the repository
@@ -266,7 +256,7 @@ public class ParentServiceImpl implements ParentService {
         }
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable);
-        return parentProjections.map(parentMapper::toParentVOFronProjection);
+        return parentProjections.map(parentMapper::toParentVOFromProjection);
 
     }
 
@@ -277,8 +267,8 @@ public class ParentServiceImpl implements ParentService {
         }
 //        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(1,searchBy, keyword, pageable);
-        return parentProjections.map(parentMapper::toParentVOFronProjection);
+        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(1, searchBy, keyword, pageable);
+        return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
 
     @Override
@@ -288,8 +278,38 @@ public class ParentServiceImpl implements ParentService {
         }
 //        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(1,searchBy, keyword, pageable);
-        return parentProjections.map(parentMapper::toParentVOFronProjection);
+        Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(1, searchBy, keyword, pageable);
+        return parentProjections.map(parentMapper::toParentVOFromProjection);
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public Boolean enrollParent(Integer userId) {
+        // Get user by userId
+        User user = userRepository.findByIdWithParent(userId).orElseThrow(UserNotFoundException::new);
+
+        // Get parent from user
+        Parent parent = user.getParent();
+        if (parent == null) {
+            return false;
+        }
+
+        // Get current school owner
+        SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
+
+        // Get school of current school owner
+        School school = schoolOwner.getSchool();
+
+        ParentInSchool parentInSchool = ParentInSchool.builder()
+                .school(school)
+                .parent(parent)
+                .from(LocalDate.now())
+                .status(ParentInSchoolEnum.ACTIVE.getValue())
+                .build();
+
+        parentInSchoolRepository.save(parentInSchool);
+        return true;
     }
 
     @Transactional

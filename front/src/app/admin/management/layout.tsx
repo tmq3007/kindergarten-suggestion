@@ -1,6 +1,6 @@
 'use client';
 import React, {useEffect, useRef, useState} from 'react';
-import logo from '@public/logo2-removebg-preview.png';
+import logo from '@public/KSS.png';
 import {
     BellOutlined,
     HomeOutlined,
@@ -158,7 +158,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                     {
                                         key: '5',
                                         icon: <WindowsOutlined/>,
-                                        label: <Link href="/request-management">Request Management</Link>,
+                                        label: <Link href="/admin/management/request/request-list">Request Management</Link>,
                                     },
                                 ]}
                             />

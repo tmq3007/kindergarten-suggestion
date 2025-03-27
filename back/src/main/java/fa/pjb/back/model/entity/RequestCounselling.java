@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder
@@ -17,6 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Request_Counselling")
 public class RequestCounselling {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -58,4 +58,8 @@ public class RequestCounselling {
     @NotNull
     @Column(name = "due_date", nullable = false)
     private LocalDateTime due_date;
+
+    @Lob
+    @Column(name = "response")
+    private String response;
 }

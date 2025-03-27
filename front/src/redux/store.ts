@@ -55,7 +55,8 @@ export const makeStore = () => {
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {
-                    ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+                    ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER, 'some/non-serializable-action'],
+                    ignoredPaths: ['some.non.serializable.path'],
                 },
             }).concat(...apiMiddlewares) // Middlewares help update the state when data is returned.
     });

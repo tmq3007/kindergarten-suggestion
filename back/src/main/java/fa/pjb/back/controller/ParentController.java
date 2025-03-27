@@ -21,12 +21,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("parent")
 public class ParentController {
+
     private final ParentService parentService;
 
     @Operation(summary = "Register", description = "This api will be used to register new parent")
@@ -125,6 +124,17 @@ public class ParentController {
                 .data(parents)
                 .build();
     }
+
+    @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
+    @PostMapping("/enroll/{userId}")
+    public ApiResponse<Boolean> enrollParent(@PathVariable Integer userId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent enrolled successfully")
+                .data(parentService.enrollParent(userId))
+                .build();
+    }
+
 
     @GetMapping("/get-school-request-count")
     public ApiResponse<Integer> getSchoolRequestCount(@AuthenticationPrincipal User user) {

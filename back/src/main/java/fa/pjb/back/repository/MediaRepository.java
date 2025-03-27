@@ -7,9 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public interface MediaRepository extends JpaRepository<Media,Long> {
+public interface MediaRepository extends JpaRepository<Media, Long> {
+
     @Transactional
     void deleteAllBySchool(School school);
 
     List<Media> getAllBySchool(School school);
+
 }

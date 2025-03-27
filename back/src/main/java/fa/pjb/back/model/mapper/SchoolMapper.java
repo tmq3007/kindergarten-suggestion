@@ -33,9 +33,8 @@ public interface SchoolMapper {
     @Mapping(target = "schoolOwners", ignore = true)
     School toSchool(SchoolDTO schoolDTO, @MappingTarget School school);
 
-
-    @Mapping(target = "facilities", ignore = true)
-    @Mapping(target = "utilities", ignore = true)
+    @Mapping(source = "facilities", target = "facilities", qualifiedByName = "mapFacilityIds")
+    @Mapping(source = "utilities", target = "utilities", qualifiedByName = "mapUtilityIds")
     @Mapping(target = "schoolOwners", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "id", ignore = true)
@@ -53,6 +52,7 @@ public interface SchoolMapper {
                 })
                 .collect(Collectors.toSet());
     }
+
     // Convert Set<String> to Set<SchoolOwner>
     @Named("mapSchoolOwnerIds")
     default Set<SchoolOwner> mapSchoolOwnerIds(Set<Integer> schoolOwnerIds) {
@@ -65,6 +65,7 @@ public interface SchoolMapper {
                 })
                 .collect(Collectors.toSet());
     }
+
     // Convert List<Integer> to Set<Utility>
     @Named("mapUtilityIds")
     default Set<Utility> mapUtilityIds(Set<Integer> utilityIds) {

@@ -4,7 +4,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
-public record RequestCounsellingDTO (
+public record RequestCounsellingDTO(
+
         Integer userId,
 
         @NotNull(message = "School ID is required")
@@ -26,5 +27,6 @@ public record RequestCounsellingDTO (
 
         @NotNull(message = "Due date is required")
         LocalDateTime dueDate
-){
+
+) {
 }

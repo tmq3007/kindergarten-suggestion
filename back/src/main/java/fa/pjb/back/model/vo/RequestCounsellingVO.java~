@@ -1,0 +1,34 @@
+package fa.pjb.back.model.vo;
+
+import lombok.Builder;
+
+import java.time.LocalDateTime;
+
+@Builder
+public record RequestCounsellingVO(
+<<<<<<< Updated upstream
+        Integer id,
+        String schoolName,
+=======
+
+        SchoolDetailVO school,
+
+>>>>>>> Stashed changes
+        String inquiry,
+
+        byte status,
+
+        String email,
+
+        String phone,
+
+        String name,
+<<<<<<< Updated upstream
+        String address,
+=======
+
+>>>>>>> Stashed changes
+        LocalDateTime dueDate
+
+) {
+}

@@ -1,6 +1,5 @@
 package fa.pjb.back.model.dto;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -17,6 +16,7 @@ import java.util.Set;
 @Builder
 @ValidFeeRange
 public record SchoolDTO(
+
         Integer id,
 
         @NotBlank(message = "School name is required")
@@ -85,20 +85,22 @@ public record SchoolDTO(
 ) {
 }
 
-
 //Custom validations fee from and fee to
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = FeeRangeValidator.class)
 @interface ValidFeeRange {
+
     String message() default "Fee From must be less than Fee To";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
 }
 
 class FeeRangeValidator implements ConstraintValidator<ValidFeeRange, SchoolDTO> {
+
     @Override
     public boolean isValid(SchoolDTO school, ConstraintValidatorContext context) {
         if (school.feeFrom() != null && school.feeTo() != null) {
@@ -106,5 +108,6 @@ class FeeRangeValidator implements ConstraintValidator<ValidFeeRange, SchoolDTO>
         }
         return true;
     }
+
 }
 

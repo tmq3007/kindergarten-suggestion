@@ -3,6 +3,7 @@
 import {RequestCounsellingVO} from "@/redux/services/requestCounsellingApi";
 import {Form} from "antd";
 import {useEffect, useState} from "react";
+import {REQUEST_COUNSELLING_STATUS_OPTIONS} from "@/lib/constants";
 
 interface UseRequestCounsellingFormProps {
     data?: RequestCounsellingVO;
@@ -12,6 +13,10 @@ interface UseRequestCounsellingFormProps {
 
 export default function useRequestCounsellingForm({data, isLoading, externalForm}: UseRequestCounsellingFormProps) {
     const requestCounselling = data;
+    const requestCounsellingStatus =
+        REQUEST_COUNSELLING_STATUS_OPTIONS.find(
+            (option) => option.value === String(requestCounselling?.status))?.label || undefined;
+
 
     const [form] = Form.useForm();
     const usedForm = externalForm || form;
@@ -27,11 +32,13 @@ export default function useRequestCounsellingForm({data, isLoading, externalForm
                 address: requestCounselling.address || '',
                 requested_school: requestCounselling.schoolName || '',
                 inquiries: requestCounselling.inquiry || '',
+                responses: requestCounselling.response || '',
             });
 
             setFormLoaded(true);
         }
+
     }, [requestCounselling, usedForm]);
 
-    return {form: usedForm, formLoaded, requestCounselling, isLoading};
+    return {form: usedForm, formLoaded, requestCounselling, requestCounsellingStatus, isLoading};
 }

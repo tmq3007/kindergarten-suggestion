@@ -13,8 +13,8 @@ import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import fa.pjb.back.common.util.UploadFileInterface;
 import fa.pjb.back.model.enums.FileFolderEnum;
-import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.model.vo.FileUploadVO;
+import fa.pjb.back.service.GGDriveImageService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -36,10 +36,10 @@ import java.util.concurrent.Executors;
 @Service
 @Slf4j
 public class GGDriveImageServiceImpl implements GGDriveImageService {
+
     private static final Dotenv dotenv = Dotenv.load();
     private static final String SERVICE_ACCOUNT_KEY_PATH = dotenv.get("GOOGLE_APPLICATION_CREDENTIALS");
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-
     private Drive driveService;
 
     // Caching Drive Service to avoid redundant API calls

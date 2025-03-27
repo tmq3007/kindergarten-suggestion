@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AutoGeneratorHelper {
@@ -14,7 +16,6 @@ public class AutoGeneratorHelper {
         return RandomStringUtils.randomAlphanumeric(8) + "a";
     }
 
-    //Generate username from fullname
     public String generateUsername(String fullName) {
         String[] parts = fullName.trim().split("\\s+");
 
@@ -28,9 +29,20 @@ public class AutoGeneratorHelper {
 
         String baseUsername = firstName + initials.toString().toUpperCase();
 
-        // Count the number of usernames that already exist with this prefix
-        long count = userRepository.countByUsernameStartingWith(baseUsername);
+        // Lấy danh sách username bắt đầu bằng baseUsername
+        List<String> existingUsernames = userRepository.findUsernamesStartingWith(baseUsername);
 
-        return count == 0 ? baseUsername + 1 : baseUsername + (count + 1);
+        // Tìm số lớn nhất hiện có
+        int maxNumber = 0;
+        for (String username : existingUsernames) {
+            String numberPart = username.substring(baseUsername.length()); // Lấy phần số
+            if (numberPart.matches("\\d+")) { // Kiểm tra có phải số không
+                maxNumber = Math.max(maxNumber, Integer.parseInt(numberPart));
+            }
+        }
+
+        return baseUsername + (maxNumber + 1);
     }
+
+
 }

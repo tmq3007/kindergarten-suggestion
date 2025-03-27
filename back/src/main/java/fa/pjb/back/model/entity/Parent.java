@@ -1,7 +1,6 @@
 package fa.pjb.back.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -17,12 +16,13 @@ import java.util.Set;
 @Entity
 @Table(name = "Parent")
 public class Parent {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "parent_id", nullable = false)
     private Integer id;
 
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY, optional = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -43,7 +43,7 @@ public class Parent {
     private String street;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "image",referencedColumnName = "id")
+    @JoinColumn(name = "image", referencedColumnName = "id")
     private Media media;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)

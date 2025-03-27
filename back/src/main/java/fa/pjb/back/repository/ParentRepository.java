@@ -4,7 +4,6 @@ import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.mapper.ParentProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,8 +11,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface ParentRepository extends JpaRepository<Parent, Integer> {
-    Parent findParentByUserId(Integer id);
 
+    Parent findParentByUserId(Integer id);
 
     @Query(
             value = "SELECT DISTINCT " +
@@ -102,7 +101,6 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
             @Param("keyword") String keyword,
             Pageable pageable
     );
-
 
     @Query(
             "SELECT " +

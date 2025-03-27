@@ -10,6 +10,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Service
 public class TokenServiceImpl implements TokenService {
+
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
@@ -29,4 +30,5 @@ public class TokenServiceImpl implements TokenService {
         String key = prefix + ":" + postfix;
         redisTemplate.delete(key);
     }
+
 }

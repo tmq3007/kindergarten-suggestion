@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +21,7 @@ public class SchoolOwnerController {
 
     private final SchoolService schoolService;
 
+    @Operation(summary = "Get school info", description = "Get information of school owner's school")
     @GetMapping("/school-info")
     public ApiResponse<SchoolDetailVO> getSchoolInfo(
             @AuthenticationPrincipal User user) {
@@ -38,7 +38,6 @@ public class SchoolOwnerController {
     public ApiResponse<SchoolDetailVO> getSchoolDraftInfo(
             @AuthenticationPrincipal User user
     ) {
-        log.info("User draft: {}", user.toString());
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Get school information successfully.")
@@ -46,6 +45,7 @@ public class SchoolOwnerController {
                 .build();
     }
 
+    @Operation(summary = "Get draft info", description = "Get draft information of school owner's school")
     @GetMapping("/draft-info")
     public ApiResponse<SchoolDetailVO> getDraftInfo(
             @AuthenticationPrincipal User user) {
@@ -55,4 +55,5 @@ public class SchoolOwnerController {
                 .data(schoolService.getDraft(user))
                 .build();
     }
+
 }
