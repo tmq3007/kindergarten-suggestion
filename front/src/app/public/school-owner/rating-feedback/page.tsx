@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Card, List, Typography, Avatar, Button, DatePicker, Select } from "antd";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, List, Typography, Avatar, Button, DatePicker, Select, message } from "antd";
 import { StarFilled, SyncOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
 import { motion } from "framer-motion";
@@ -17,13 +17,15 @@ import {
     Tooltip as RechartsTooltip,
 } from "recharts";
 import dayjs, { Dayjs } from "dayjs";
-import { ReviewVO, useGetReviewBySchoolOwnerQuery } from "@/redux/services/reviewApi";
-import NoData from "../../../components/common/NoData";
+import {ReviewVO, useGetReviewBySchoolOwnerQuery, useReportReviewMutation} from "@/redux/services/reviewApi";
+import NoData from "../../../components/review/NoData";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
-import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { REVIEW_STATUS } from "@/lib/constants";
+import { MakeReportButton, ReviewButton } from "@/app/components/review/ReviewButton";
+import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -41,19 +43,59 @@ interface QueryParams {
     toDate?: string;
 }
 
+interface Report {
+    id: number;
+    reason: string | undefined;
+}
 const RatingsDashboard = () => {
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
     const [queryParams, setQueryParams] = useState<QueryParams>({});
+    const [reviews, setReviews] = useState<EnhancedReview[]>([]);
 
     const { data, isLoading, isFetching, error, refetch } = useGetReviewBySchoolOwnerQuery(queryParams);
-    const [reviews, setReviews] = useState<EnhancedReview[]>([]);
-    const user = useSelector((state: RootState) => state.user);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+
+    const [reportReview, { isLoading: isReporting }] = useReportReviewMutation();
+
+    const [loadingReviewId, setLoadingReviewId] = useState<number | null>(null);
+
+    const handleSubmitReport = async (reportContent: string, reviewId: number | null) => {
+        if (!reviewId || !reportContent) return;
+
+        try {
+            setLoadingReviewId(reviewId); // Set the specific review ID that's loading
+            const reportDTO = {
+                id: reviewId,
+                reason: reportContent
+            };
+            await reportReview(reportDTO).unwrap();
+            message.success('Report submitted successfully');
+            setIsModalOpen(false);
+            setSelectedReport(null);
+            refetch();
+        } catch (error) {
+            message.error('Failed to submit report');
+            console.error('Report submission failed:', error);
+        }
+    };
 
     useEffect(() => {
-        refetch();
-    }, [user, refetch]);
+        if (!isFetching) {
+            setLoadingReviewId(null);
+        }
+    }, [isFetching]);
+
+    const openModal = (report: { id: number; reason: string | undefined } | null) => {
+        setSelectedReport(report);
+        setIsModalOpen(true);
+    };
+
+
+    const handleCancelModal = () => setIsModalOpen(false);
 
     useEffect(() => {
         const params: QueryParams = {};
@@ -86,16 +128,14 @@ const RatingsDashboard = () => {
         }
     }, [data]);
 
-    const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
-        setDateRange(dates);
-    };
-
+    const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => setDateRange(dates);
     const handleRefresh = () => {
         setDateRange(null);
         refetch();
     };
 
-    const metrics = (() => {
+    // Sử dụng useMemo để tính toán metrics
+    const metrics = useMemo(() => {
         if (!reviews.length) {
             return {
                 totalReviews: 0,
@@ -147,24 +187,29 @@ const RatingsDashboard = () => {
             totalTeacherAndStaff: Number((totals.teacherAndStaff / totalReviews).toFixed(2)),
             totalHygieneAndNutrition: Number((totals.hygieneAndNutrition / totalReviews).toFixed(2)),
         };
-    })();
+    }, [reviews]);
 
-    const pieData = [
-        { name: "Learning Program", value: metrics.totalLearningProgram },
-        { name: "Facilities & Utilities", value: metrics.totalFacilitiesAndUtilities },
-        { name: "Extracurricular Activities", value: metrics.totalExtracurricularActivities },
-        { name: "Teacher & Staff", value: metrics.totalTeacherAndStaff },
-        { name: "Hygiene & Nutrition", value: metrics.totalHygieneAndNutrition },
-    ];
+    // Sử dụng useMemo để tính toán pieData
+    const pieData = useMemo(
+        () => [
+            { name: "Learning Program", value: metrics.totalLearningProgram },
+            { name: "Facilities & Utilities", value: metrics.totalFacilitiesAndUtilities },
+            { name: "Extracurricular Activities", value: metrics.totalExtracurricularActivities },
+            { name: "Teacher & Staff", value: metrics.totalTeacherAndStaff },
+            { name: "Hygiene & Nutrition", value: metrics.totalHygieneAndNutrition },
+        ],
+        [metrics]
+    );
 
-    const barData = (() => {
+    // Sử dụng useMemo để tính toán barData
+    const barData = useMemo(() => {
         const monthlyData = reviews.reduce((acc, review) => {
             const month = review.receiveDate.format("MMMM YYYY");
             acc[month] = (acc[month] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
         return Object.entries(monthlyData).map(([month, reviews]) => ({ month, reviews }));
-    })();
+    }, [reviews]);
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
@@ -180,56 +225,70 @@ const RatingsDashboard = () => {
         );
     };
 
-    const displayedReviews = showAll ? filteredReviews : filteredReviews.slice(0, 5);
+    const displayedReviews = useMemo(
+        () => (showAll ? filteredReviews : filteredReviews.slice(0, 5)),
+        [filteredReviews, showAll]
+    );
 
-    // Kiểm tra các trạng thái: loading, fetching, hoặc error
-    if (isLoading || isFetching) {
-        return <RatingSkeleton />;
-    }
-
-    if (error) {
-        return <NoData />;
-    }
+    if (isLoading) return <RatingSkeleton />;
 
     return (
-        <div className={'pt-2'}>
+        <div className="pt-2 px-4 sm:px-6 lg:px-8">
             <MyBreadcrumb
                 paths={[
                     { label: "My School", href: "/public/school-owner" },
                     { label: "Ratings & Feedback" },
                 ]}
             />
-            <SchoolManageTitle title={"Ratings & Feedback"} />
+            <SchoolManageTitle title="Ratings & Feedback" />
 
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen bg-gray-50 py-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex gap-4 mb-8 justify-center"
+                    className="flex flex-col sm:flex-row gap-4 mb-8 justify-center items-center"
                 >
-                    <RangePicker onChange={handleDateChange} value={dateRange} className="w-64" />
-                    <Button type="primary" icon={<SyncOutlined />} onClick={handleRefresh}>
+                    <RangePicker
+                        onChange={handleDateChange}
+                        value={dateRange}
+                        className="w-full sm:w-64"
+                    />
+                    <Button
+                        type="primary"
+                        icon={<SyncOutlined />}
+                        onClick={handleRefresh}
+                        className="w-full sm:w-auto"
+                    >
                         Refresh
                     </Button>
                 </motion.div>
 
-                {reviews.length === 0 ? (
+                {error ? (
                     <NoData />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
-                                <Card title="Rating Distribution">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Card title="Rating Distribution" className="w-full">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <PieChart>
                                             <Pie
                                                 data={pieData}
                                                 dataKey="value"
-                                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                label={({ name, percent }) =>
+                                                    `${name}: ${(percent * 100).toFixed(0)}%`
+                                                }
                                                 outerRadius={80}
                                             >
                                                 {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={COLORS[index % COLORS.length]}
+                                                    />
                                                 ))}
                                             </Pie>
                                             <RechartsTooltip />
@@ -237,8 +296,12 @@ const RatingsDashboard = () => {
                                     </ResponsiveContainer>
                                 </Card>
                             </motion.div>
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
-                                <Card title="Monthly Reviews">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Card title="Monthly Reviews" className="w-full">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <BarChart data={barData}>
                                             <CartesianGrid strokeDasharray="3 3" />
@@ -258,7 +321,11 @@ const RatingsDashboard = () => {
                                 { title: "Total Reviews", value: metrics.totalReviews, color: "blue" },
                                 { title: "Learning Program", value: metrics.totalLearningProgram, color: "green" },
                                 { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, color: "orange" },
-                                { title: "Extracurricular", value: metrics.totalExtracurricularActivities, color: "yellow" },
+                                {
+                                    title: "Extracurricular",
+                                    value: metrics.totalExtracurricularActivities,
+                                    color: "yellow",
+                                },
                                 { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, color: "red" },
                                 { title: "Hygiene", value: metrics.totalHygieneAndNutrition, color: "pink" },
                             ].map((stat) => (
@@ -266,9 +333,10 @@ const RatingsDashboard = () => {
                                     key={stat.title}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.1 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    className="w-full"
                                 >
-                                    <Card>
+                                    <Card className="w-full">
                                         <div className="flex items-center gap-4">
                                             <Avatar
                                                 size={40}
@@ -279,7 +347,7 @@ const RatingsDashboard = () => {
                                                 <Text strong className="text-lg">
                                                     {stat.value}
                                                 </Text>
-                                                <Text className="block text-gray-600">{stat.title}</Text>
+                                                <Text className="block text-gray-600 text-sm">{stat.title}</Text>
                                             </div>
                                         </div>
                                     </Card>
@@ -298,9 +366,10 @@ const RatingsDashboard = () => {
                                         value: n.toString(),
                                         label: `${n} Star${n !== 1 ? "s" : ""}`,
                                     }))}
-                                    className="w-48"
+                                    className="w-full sm:w-48"
                                 />
                             }
+                            className="w-full"
                         >
                             <List
                                 dataSource={displayedReviews}
@@ -314,34 +383,42 @@ const RatingsDashboard = () => {
                                             transition: { duration: 0.3, ease: "easeInOut" },
                                         }}
                                     >
-                                        <List.Item className="!px-3">
-                                            <List.Item.Meta
-                                                avatar={
-                                                    <Avatar src={item.parentImage} className="bg-blue-500">
-                                                        {item.parentImage || "A"}
-                                                    </Avatar>
-                                                }
-                                                title={
-                                                    <div className="flex justify-between items-center">
-                                                        <Text strong>{item.feedback || "No feedback provided"}</Text>
-                                                        <Text type="secondary" className="text-sm">
-                                                            {item.receiveDate.isValid()
-                                                                ? item.receiveDate.format("D MMMM YYYY")
-                                                                : "Date unavailable"}
+                                        <List.Item className="!px-3 flex flex-col sm:flex-row sm:items-center">
+                                            <div className="flex items-center mb-2 sm:mb-0">
+                                                <Avatar src={item.parentImage} className="bg-blue-500 mr-2">
+                                                    {item.parentImage || "A"}
+                                                </Avatar>
+                                                <div>
+                                                    <Text strong>{item.feedback || "No feedback provided"}</Text>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Text type="secondary">
+                                                            {item.parentName || "Anonymous"}
                                                         </Text>
-                                                    </div>
-                                                }
-                                                description={
-                                                    <div className="flex items-center gap-2">
-                                                        <Text type="secondary">{item.parentName || "Anonymous"}</Text>
                                                         <div className="flex">
-                                                            {[...Array(Math.floor(item.reviewAverage || 0))].map((_, i) => (
-                                                                <StarFilled key={i} className="text-yellow-400 text-sm" />
-                                                            ))}
+                                                            {[...Array(Math.floor(item.reviewAverage || 0))].map(
+                                                                (_, i) => (
+                                                                    <StarFilled
+                                                                        key={i}
+                                                                        className="text-yellow-400 text-sm"
+                                                                    />
+                                                                )
+                                                            )}
                                                         </div>
                                                     </div>
-                                                }
-                                            />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:ml-auto">
+                                                {(item.status === REVIEW_STATUS.APPROVED) && (
+                                                    <MakeReportButton onFetching={isFetching && loadingReviewId === item.id}
+                                                                      onClick={() => openModal({ id: item.id, reason: item.report})} />
+                                                )}
+                                                <ReviewButton status={item.status} />
+                                                <Text type="secondary" className="text-sm">
+                                                    {item.receiveDate.isValid()
+                                                        ? item.receiveDate.format("D MMMM YYYY")
+                                                        : "Date unavailable"}
+                                                </Text>
+                                            </div>
                                         </List.Item>
                                     </motion.div>
                                 )}
@@ -353,6 +430,13 @@ const RatingsDashboard = () => {
                                     </Button>
                                 </div>
                             )}
+                            <SchoolOwnerReportModal
+                                open={isModalOpen}
+                                onSubmit={handleSubmitReport}
+                                onCancel={handleCancelModal}
+                                reviewId={selectedReport?.id || null}
+                                onReporting={isReporting}
+                            />
                         </Card>
                     </>
                 )}

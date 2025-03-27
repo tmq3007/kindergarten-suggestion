@@ -1,9 +1,12 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._13xx_school.ReviewNotFoundException;
+import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
+import fa.pjb.back.model.dto.ReviewReportDTO;
 import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
+import fa.pjb.back.model.enums.ReviewStatus;
 import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.repository.ReviewRepository;
@@ -33,7 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate) {
         List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate);
-        log.info("reviews: {}", reviews);
+        log.info("reviews: {}", reviews.get(0).getStatus());
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
         }
@@ -62,5 +65,49 @@ public class ReviewServiceImpl implements ReviewService {
         }
         return reviewMapper.toReviewVOList(reviews);
     }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    public ReviewVO makeReport(ReviewReportDTO reviewReportDTO) {
+        Review review = reviewRepository.findById(reviewReportDTO.id()).orElse(null);
+
+        if(review == null){
+            throw new ReviewNotFoundException();
+        }
+
+        if (review.getStatus() != ReviewStatus.APPROVED.getValue()) {
+            throw new IllegalStateException("Review is not approved");
+        }
+
+        review.setReport(reviewReportDTO.reason());
+        review.setStatus(ReviewStatus.PENDING.getValue());
+
+        return reviewMapper.toReviewVO((review));
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ReviewVO acceptReport(ReviewAcceptDenyDTO reviewAcceptDenyDTO) {
+        Review review = reviewRepository.findById(reviewAcceptDenyDTO.id()).orElse(null);
+
+        if(review == null){
+            throw new ReviewNotFoundException();
+        }
+
+        if (review.getStatus() != ReviewStatus.PENDING.getValue()) {
+            throw new IllegalStateException("Review is not pending");
+        }
+
+        if(reviewAcceptDenyDTO.decision()){
+            review.setStatus((byte) 1);
+        }else {
+            review.setStatus((byte) 0);
+        }
+
+        return reviewMapper.toReviewVO((review));
+    }
+
 
 }

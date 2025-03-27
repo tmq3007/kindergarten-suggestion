@@ -16,6 +16,8 @@ export type ReviewVO = {
     feedback: string;
     average: number;
     receiveDate: string;
+    report?: string;
+    status: number;
 };
 
 type ReviewRequest = {
@@ -23,6 +25,16 @@ type ReviewRequest = {
     fromDate?: string; // Chuỗi ISO date, ví dụ: "2024-01-01"
     toDate?: string;   // Chuỗi ISO date
 };
+
+export type ReviewReportDTO = {
+    id: number,
+    reason: string
+};
+
+export type ReviewAcceptDenyDTO = {
+    id: number,
+    decision: boolean
+}
 
 export const reviewApi = createApi({
     reducerPath: "reviewApi",
@@ -64,7 +76,30 @@ export const reviewApi = createApi({
             }),
             providesTags: ['Review'],
         }),
+
+        reportReview: build.mutation<ApiResponse<ReviewVO>, ReviewReportDTO>({
+            query: (ReviewReportDTO ) => ({
+                url: `/school/review/report`,
+                method: 'PUT',
+                body: ReviewReportDTO
+            }),
+            invalidatesTags: ['Review'],
+        }),
+
+        reportDecision: build.mutation<ApiResponse<ReviewVO>, ReviewAcceptDenyDTO>({
+            query: (ReviewAcceptDenyDTO ) => ({
+                url: `/school/review/report/decision`,
+                method: 'PUT',
+                body: ReviewAcceptDenyDTO
+            }),
+            invalidatesTags: ['Review'],
+        })
     }),
 });
 
-export const { useGetReviewBySchoolIdQuery, useGetTop4ReviewsQuery,useGetReviewBySchoolOwnerQuery } = reviewApi;
+export const {
+    useGetReviewBySchoolIdQuery,
+    useGetTop4ReviewsQuery,
+    useGetReviewBySchoolOwnerQuery,
+    useReportReviewMutation,
+    useReportDecisionMutation } = reviewApi;
