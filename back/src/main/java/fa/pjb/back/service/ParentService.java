@@ -22,4 +22,8 @@ public interface ParentService {
 
 
     Page<ParentVO> getEnrollRequestBySchool(User user, int page,  int size, String searchBy, String keyword);
+
+    void deleteParent(Integer id);
+
+    Integer getSchoolRequestCount(User user);
 }

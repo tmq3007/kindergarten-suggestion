@@ -6,6 +6,7 @@ import java.time.LocalDate;
 @Builder
 public record ParentVO(
         Integer id,
+        Integer userId,
         String username,
         String fullname,
         String password,
@@ -19,6 +20,7 @@ public record ParentVO(
         String province,
         String street,
         Boolean userEnrollStatus,
+        Integer pisId,
         MediaVO media
 ) {
 }

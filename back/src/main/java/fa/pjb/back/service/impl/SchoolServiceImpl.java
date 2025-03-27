@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -356,7 +357,7 @@ public class SchoolServiceImpl implements SchoolService {
         }
         log.info("6");
 
-        draft.setPostedDate(LocalDate.now());
+        draft.setPostedDate(LocalDateTime.now());
         draft = schoolRepository.save(draft);
         log.info("7");
         // Delete old images in cloud
@@ -379,7 +380,7 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         School school = schoolMapper.toSchool(schoolDTO, oldSchool);
-        school.setPostedDate(LocalDate.now());
+        school.setPostedDate(LocalDateTime.now());
 
         // Delete old images (only for updates)
         if (isUpdate) {

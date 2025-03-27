@@ -41,8 +41,6 @@ public interface ParentMapper {
     ParentVO toParentVO(Parent parent);
 
     // Mapping for ParentProjection to ParentVO
-    @Mapping(source = "userId", target = "id")
-    @Mapping(source = "status", target = "status")
     @Mapping(source = "parentDistrict", target = "district")
     @Mapping(source = "parentWard", target = "ward")
     @Mapping(source = "parentProvince", target = "province")

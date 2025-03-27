@@ -16,6 +16,7 @@ import fa.pjb.back.model.mapper.*;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
+import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
@@ -50,6 +51,7 @@ public class ParentServiceImpl implements ParentService {
     private final UserRepository userRepository;
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
+    private final ParentInSchoolRepository pisRepository;
 
 
 //    @Override
@@ -273,7 +275,7 @@ public class ParentServiceImpl implements ParentService {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
-        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
+//        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(1,searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFronProjection);
@@ -288,6 +290,17 @@ public class ParentServiceImpl implements ParentService {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(1,searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFronProjection);
+    }
+
+    @Transactional
+    @Override
+    public void deleteParent(Integer id) {
+        pisRepository.deleteParentInSchoolById(id);
+    }
+
+    @Override
+    public Integer getSchoolRequestCount(User user) {
+        return pisRepository.countParentInSchoolBySchoolIdAndStatus(1,(byte)0);
     }
 
 

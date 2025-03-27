@@ -17,6 +17,7 @@ public interface ParentProjection {
     Boolean getUserEnrollStatus();
     String getPhone();
     LocalDate getDob();
+    Integer getPisId();
     String getMediaId();
     String getMediaUrl();
 }

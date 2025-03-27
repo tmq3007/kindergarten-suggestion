@@ -8,6 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -97,7 +98,7 @@ public class School {
     @NotNull
     @Column(name = "posted_date")
     @ColumnDefault("CURRENT_DATE")
-    private LocalDate postedDate;
+    private LocalDateTime postedDate;
 
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
     private List<Media> images;
