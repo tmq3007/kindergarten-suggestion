@@ -15,6 +15,8 @@ import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
 import RequestCounsellingForm from "@/app/components/request_counselling/RequestCounsellingForm";
 import {useGetRequestCounsellingQuery} from "@/redux/services/requestCounsellingApi";
 import useRequestCounsellingForm from "@/lib/hook/useRequestCounsellingForm";
+import RequestCounsellingManageTitle from "@/app/components/request_counselling/RequestCounsellingManageTitle";
+import RequestCounsellingFormSkeleton from "@/app/components/skeleton/RequestCounsellingFormSkeleton";
 
 
 export default function RequestCounsellingDetail() {
@@ -22,7 +24,7 @@ export default function RequestCounsellingDetail() {
     const requestCounsellingId = Number(params.id as string);
     const router = useRouter();
     const {data, isLoading} = useGetRequestCounsellingQuery(requestCounsellingId);
-    const {form, formLoaded, requestCounselling} = useRequestCounsellingForm({
+    const {form, formLoaded, requestCounselling, requestCounsellingStatus} = useRequestCounsellingForm({
         data: data?.data,
         isLoading
     });
@@ -33,40 +35,52 @@ export default function RequestCounsellingDetail() {
     //     forbidden();
     // }
 
-    // if (isLoading) {
-    //     return (
-    //         <div className="pt-2">
-    //             <MyBreadcrumb
-    //                 paths={[
-    //                     {label: "School Management", href: "/admin/management/school/school-list"},
-    //                     {label: "School Detail"},
-    //                 ]}
-    //             />
-    //             <SchoolManageTitle title={"School details"}/>
-    //             <SchoolFormSkeleton/>
-    //         </div>
-    //     );
-    // }
+    if (isLoading || !requestCounselling) {
+        return (
+            <div className="pt-2">
+                <MyBreadcrumb
+                    paths={[
+                        {label: "Request Management"},
+                        {label: "Request Detail"},
+                    ]}
+                />
+                <RequestCounsellingManageTitle title={"Request details"} requestCounsellingStatus={requestCounsellingStatus || 'Loading...'}/>
+                <RequestCounsellingFormSkeleton/>
+            </div>
+        );
+    }
 
-    // if (!school) {
-    //     return <div>Can’t find any school</div>;
-    // }
+    if (!requestCounselling) {
+        return <div>Can’t find any request</div>;
+    }
 
     return (
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    {label: "School Management", href: "/admin/management/school/school-list"},
-                    {label: "School Detail"},
+                    {label: "Request Management", href: "/admin/management/request/request-list"},
+                    {label: "Request Detail"},
                 ]}
             />
-            {/*<SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>*/}
+            <RequestCounsellingManageTitle title={"Request details"} requestCounsellingStatus={requestCounsellingStatus!}/>
 
-            <div className="read-only-form email-locked">
-                <RequestCounsellingForm
-                    form={form}
-                    formLoaded={formLoaded}/>
-            </div>
+            {(requestCounsellingStatus === 'Closed' && (
+                <div className="read-only-form email-locked">
+                    <RequestCounsellingForm
+                        form={form}
+                        formLoaded={formLoaded}
+                        isReadOnly={true}
+                        hasResolveButton={false}/>
+
+                </div>
+            ) ||
+                <div className="read-only-form email-locked">
+                    <RequestCounsellingForm
+                        form={form}
+                        formLoaded={formLoaded}
+                        isReadOnly={true}
+                        hasResolveButton={true}/>
+                </div>)}
         </div>
     );
 }

@@ -44,7 +44,6 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const [updateSchoolBySO, {isLoading: isUpdatingBySO}] = useUpdateSchoolBySchoolOwnerMutation();
     const [saveSchoolBySO, {isLoading: isSavingBySO}] = useSaveSchoolBySchoolOwnerMutation();
 
-
     const [messageApi, messageContextHolder] = message.useMessage();
     const [api, notificationContextHolder] = notification.useNotification();
     const [activeButton, setActiveButton] = useState<string | null>(null);
@@ -84,13 +83,14 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         try {
             await addSchool(finalValues).unwrap();
             console.log(finalValues);
+            refetch();
             form.resetFields();
             openNotificationWithIcon(
                 'success',
                 'School Added Successfully',
                 'The school has been added to the system successfully! Please wait for the admins to review.',
                 2,
-                () => router.push("/public/school-owner")
+                () => {router.push("/public/school-owner")}
             );
         } catch (error: unknown) {
             const errorMessage = formatErrorMessage(error);
@@ -108,6 +108,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const updateSave = async () => {
         const schoolData = await prepareSchoolUpdateData(form, emailInputRef!, phoneInputRef!, messageApi);
         if (!schoolData) return;
+        console.log("school data:")
+        console.log(schoolData)
         try {
             await saveSchoolBySO({id: undefined, ...schoolData}).unwrap();
             if (!hasDraft) {
@@ -118,8 +120,9 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School saved successfully!',
                 'The school has been saved successfully!',
                 2,
-                () => refetch()
+                () => {}
             );
+            refetch();
         } catch (error) {
             console.log("error==================")
             console.log(error)
@@ -156,17 +159,18 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School submitted successfully!',
                 'The school has been submitted successfully!',
                 2,
-                () => refetch()
+                () => {}
             );
+            refetch();
         } catch (error) {
+            console.log("error==================")
             console.log(error)
             openNotificationWithIcon(
                 'error',
                 'Failed to submit school',
-                'There was an error while submitting the school. Please try again.',
+                'xxxxx',
                 2,
-                () => {
-                }
+                () => {}
             );
         }
     };
@@ -194,15 +198,33 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                     break;
                 case "publish":
                     await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 4}).unwrap();
-                    messageApi.success('School published successfully!');
+                    openNotificationWithIcon(
+                        "success",
+                        "School published successfully!",
+                        "The school has been published successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
                 case "unpublish":
                     await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 5}).unwrap();
-                    messageApi.success('School unpublished successfully!');
+                    openNotificationWithIcon(
+                        "success",
+                        "School unpublished successfully!",
+                        "The school has been unpublished successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
                 case "delete":
                     await updateSchoolStatusBySchoolOwner({schoolId: Number(null), status: 6}).unwrap();
-                    messageApi.success('School deleted successfully!');
+                    openNotificationWithIcon(
+                        "success",
+                        "School deleted successfully!",
+                        "The school has been deleted successfully!",
+                        2,
+                        () => {}
+                    );
                     break;
             }
             refetch();

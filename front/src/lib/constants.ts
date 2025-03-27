@@ -46,7 +46,6 @@ export const SCHOOL_STATUS = {
     Deleted: 6
 };
 
-
 export const EDUCATION_METHOD_OPTIONS = [
     {label: "Montessori", value: "0"},
     {label: "STEM", value: "1"},
@@ -69,6 +68,12 @@ export const CHILD_RECEIVING_AGE_OPTIONS = [
     {label: "6m - 1y", value: "0"},
     {label: "1y - 3y", value: "1"},
     {label: "3y - 6y", value: "2"}
+];
+
+export const REQUEST_COUNSELLING_STATUS_OPTIONS = [
+    {label: "Opened", value: "0"},
+    {label: "Closed", value: "1"},
+    {label: "Expired", value: "2"},
 ];
 
 export const REVIEW_STATUS = {

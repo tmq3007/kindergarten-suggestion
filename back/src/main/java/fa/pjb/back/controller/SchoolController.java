@@ -129,7 +129,8 @@ public class SchoolController {
     public ApiResponse<SchoolDetailVO> saveSchoolBySchoolOwner(
             @RequestPart(value = "data") @Valid SchoolDTO schoolDTO,
             @RequestPart(value = "image", required = false) List<MultipartFile> images) {
-        log.info("dto: {}", schoolDTO);
+        log.info("FACILITIES: {}", schoolDTO.facilities());
+        log.info("UTILITIES: {}", schoolDTO.utilities());
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("School updated successfully")
@@ -137,6 +138,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school status", description = "Update school status by admin")
     @PutMapping("/change-status/by-admin")
     public ApiResponse<?> updateSchoolStatusByAdmin(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 
@@ -148,6 +150,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "Update school status", description = "Update school status by school owner")
     @PutMapping("/change-status/by-school-owner")
     public ApiResponse<?> updateSchoolStatusBySchoolOwner(@Valid @RequestBody ChangeSchoolStatusDTO changeSchoolStatusDTO) {
 

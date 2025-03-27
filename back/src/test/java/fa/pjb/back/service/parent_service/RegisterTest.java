@@ -1,11 +1,7 @@
 package fa.pjb.back.service.parent_service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
-import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
+import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.Parent;
@@ -29,6 +25,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 @ExtendWith(MockitoExtension.class)
 class RegisterTest {
 
@@ -108,7 +109,7 @@ class RegisterTest {
         });
 
         assertEquals("Email already exists", thrown.getMessage());
-        verify(parentRepository,never()).save(Mockito.any());
+        verify(parentRepository, never()).save(Mockito.any());
     }
 
     @Test
@@ -121,6 +122,6 @@ class RegisterTest {
         });
 
         assertTrue(thrown.getMessage().contains("Registration failed!"));
-
     }
+
 }

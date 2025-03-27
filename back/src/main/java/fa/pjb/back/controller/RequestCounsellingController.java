@@ -2,6 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
+import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.service.RequestCounsellingReminderService;
@@ -70,12 +71,23 @@ public class RequestCounsellingController {
         return ResponseEntity.ok(requests);
     }
 
+    @Operation(summary = "Get request counselling", description = "Get detailed request counselling")
     @GetMapping("/{requestCounsellingId}")
     public ApiResponse<RequestCounsellingVO> getRequestCounselling(@PathVariable Integer requestCounsellingId) {
         return ApiResponse.<RequestCounsellingVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Get request counselling successfully!")
                 .data(requestCounsellingService.getRequestCounselling(requestCounsellingId))
+                .build();
+    }
+
+    @Operation(summary = "Update request counselling", description = "Update request counselling result")
+    @PutMapping("/update-request-counselling")
+    public ApiResponse<Void> updateRequestCounselling(@Valid @RequestBody RequestCounsellingUpdateDTO request) {
+        requestCounsellingService.updateRequestCounselling(request);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Update request counselling successfully!")
                 .build();
     }
 }

@@ -24,9 +24,10 @@ export default function SchoolFormWrapper({form, school, isEdit, isDetailPage}: 
             hasDeleteButton={
                 school.status === SCHOOL_STATUS.Submitted ||
                 school.status === SCHOOL_STATUS.Published ||
-                school.status === SCHOOL_STATUS.Unpublished
+                school.status === SCHOOL_STATUS.Unpublished ||
+                school.status === SCHOOL_STATUS.Rejected
             }
-            hasEditButton={true}
+            hasEditButton={school.status !== SCHOOL_STATUS.Deleted}
             hasRejectButton={school.status === SCHOOL_STATUS.Submitted}
             hasApproveButton={school.status === SCHOOL_STATUS.Submitted}
             hasApproveDraftButton={school.status === SCHOOL_STATUS.Submitted}
