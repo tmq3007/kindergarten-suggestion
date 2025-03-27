@@ -37,6 +37,8 @@ export type ParentVO = {
     province: string| null;
     street: string| null;
     role?: string;
+    userId: number;
+    pisId: number;
     userEnrollStatus?: boolean;
     media?: MediaVO;
 };
@@ -58,7 +60,7 @@ export type MediaVO = {
 export const parentApi = createApi({
     reducerPath: "parentApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Parent"],
+    tagTypes: ["Parent","ParentsList"],
     endpoints: (build) => ({
         getParentById: build.query<ApiResponse<ParentVO>, number>({
             query: (userId) => ({
@@ -123,7 +125,7 @@ export const parentApi = createApi({
                     keyword
                 },
             }),
-            providesTags: ["Parent"],
+            providesTags: ["ParentsList"],
         }),
         listParentBySchoolWithFilter: build.query<
             ApiResponse<{ content: ParentVO[]; page: Pageable }>,
@@ -139,8 +141,43 @@ export const parentApi = createApi({
                     keyword,
                 },
             }),
-            providesTags: ["Parent"],
-        })
+            providesTags: ["ParentsList"],
+        }),
+        listEnrollRequestBySchoolWithFilter: build.query<
+            ApiResponse<{ content: ParentVO[]; page: Pageable }>,
+            {page?: number; size?: number; searchBy?: string; keyword?: string}
+        >({
+            query: ({ page = 1, size = 15, searchBy, keyword}) => ({
+                url: `parent/get-enroll-request-by-school`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    searchBy,
+                    keyword,
+                },
+            }),
+            providesTags: ["ParentsList"],
+        }),
+        deleteParentRequest: build.mutation({
+            query: (id:number) => ({
+                url: `/parent/delete/${id}`,
+                method: 'DELETE',
+            }),
+            onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
+                await queryFulfilled;
+                setTimeout(() => {
+                    dispatch(parentApi.util.invalidateTags(['ParentsList']))
+                }, 300)
+            },
+        }),
+        getCountEnrollRequestBySchool: build.query<ApiResponse<number>, void>({
+            query: () => ({
+                url: "parent/get-school-request-count",
+                method: "GET",
+            }),
+            providesTags: ["ParentsList"],
+        }),
     }),
 });
 
@@ -149,5 +186,8 @@ export const {
     useEditParentMutation,
     useListAllParentWithFilterQuery,
     useChangePasswordMutation,
-    useListParentBySchoolWithFilterQuery
+    useListParentBySchoolWithFilterQuery,
+    useListEnrollRequestBySchoolWithFilterQuery,
+    useDeleteParentRequestMutation,
+    useGetCountEnrollRequestBySchoolQuery
 } = parentApi;

@@ -1,79 +1,143 @@
 'use client'
-// Page.jsx
-import { Card } from "antd";
-import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
-import ParentList from "@/app/components/parent/ParentList";
-import {useListAllParentWithFilterQuery, useListParentBySchoolWithFilterQuery} from "@/redux/services/parentApi";
-import { useState } from "react";
-import SearchByComponent from "@/app/components/common/SearchByComponent";
 
+import {Badge, Card, Segmented, Tabs} from "antd";
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import {
+    useGetCountEnrollRequestBySchoolQuery,
+    useListEnrollRequestBySchoolWithFilterQuery,
+    useListParentBySchoolWithFilterQuery
+} from "@/redux/services/parentApi";
+import {useState, useCallback, useMemo} from "react";
+import ParentListWrapper from "@/app/components/parent/ParentListWrapper";
+import {SegmentedValue} from "antd/es/segmented";
+import type {TabsProps} from 'antd';
+import useIsMobile from "@/lib/hook/useIsMobile";
+import {ClockCircleOutlined, UserOutlined} from "@ant-design/icons";
+import {setPendingRequestsCount} from "@/redux/features/parentSlice";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
 
 const searchOptions = [
-    { value: "username", label: "Username" },
-    { value: "fullname", label: "Fullname" },
-    { value: "email", label: "Email" },
-    { value: "phone", label: "Phone" },
+    {value: "username", label: "Username"},
+    {value: "fullname", label: "Fullname"},
+    {value: "email", label: "Email"},
+    {value: "phone", label: "Phone"},
 ];
 
-export default function Page() {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [currentPageSize, setCurrentPageSize] = useState(15);
-    const [searchCriteria, setSearchCriteria] = useState({
-        searchBy: searchOptions[0].value,
-        keyword: undefined as string | undefined,
-    });
+const TAB_KEYS = {
+    ACTIVE_PARENTS: "1",
+    PENDING_REQUESTS: "2"
+} as const;
 
-    const { data, isLoading, isFetching, error } = useListParentBySchoolWithFilterQuery({
-        page: currentPage,
-        size: currentPageSize,
-        ...searchCriteria,
-    });
+export default function ParentManagementPage() {
+    const [activeTabKey, setActiveTabKey] = useState<string>(TAB_KEYS.ACTIVE_PARENTS);
+    const dispatch = useDispatch();
+    const pendingRequestsCount = useSelector((state: RootState) => state.parent.pendingRequestsCount);
+    const isMobile = useIsMobile();
 
-    const fetchPage = (page: number, size: number) => {
-        setCurrentPage(page);
-        setCurrentPageSize(size);
-    };
+    // Fetch enroll requests data on page load
+    const {data: enrollRequestsData} = useGetCountEnrollRequestBySchoolQuery();
+    // Update pending requests count in Redux when data is available
+    useMemo(() => {
+        if (enrollRequestsData?.data !== undefined) {
+            dispatch(setPendingRequestsCount(enrollRequestsData.data));
+        }
+    }, [dispatch, enrollRequestsData?.data]);
 
-    const handleSearch = (criteria: { searchBy: string; keyword: string | undefined }) => {
-        setSearchCriteria(criteria);
-        setCurrentPage(1);
-    };
+
+    const handleTabChange = useCallback((value: SegmentedValue) => {
+        setActiveTabKey(value.toString());
+    }, []);
+
+    const segmentOptions = useMemo(() => [
+        {
+            label: isMobile ? (
+                <UserOutlined className="text-2xl"/>
+            ) : (
+                <span className="font-bold text-2xl flex content-center text-center justify-center gap-2">
+                    <UserOutlined/> Active Parents
+                </span>
+            ),
+            value: TAB_KEYS.ACTIVE_PARENTS
+        },
+        {
+            label: isMobile ? (
+                <Badge
+                    count={pendingRequestsCount}
+                    overflowCount={99}
+                    offset={[10, 0]}
+                >
+                    <ClockCircleOutlined className="text-2xl"/>
+                </Badge>
+            ) : (
+                <span className="font-bold text-2xl flex content-center text-center justify-center gap-2">
+                    <ClockCircleOutlined/>
+                    Pending Requests
+                    <Badge
+                        count={pendingRequestsCount}
+                        overflowCount={99}
+                        offset={[10, 0]}
+                    />
+                </span>
+            ),
+            value: TAB_KEYS.PENDING_REQUESTS
+        }
+    ], [isMobile, pendingRequestsCount]);
+
+
+    const tabItems: TabsProps['items'] = [
+        {
+            key: TAB_KEYS.ACTIVE_PARENTS,
+            label: 'Active Parents',
+            children: (
+                <ParentListWrapper
+                    title={"My School Parents"}
+                    useQueryTrigger={useListParentBySchoolWithFilterQuery}
+                    searchOptions={searchOptions}
+                />
+            ),
+        },
+        {
+            key: TAB_KEYS.PENDING_REQUESTS,
+            label: 'Pending Enrollment Requests',
+            children: (
+                <ParentListWrapper
+                    isEnrollPage={true}
+                    title={"Enroll Requests"}
+                    useQueryTrigger={useListEnrollRequestBySchoolWithFilterQuery}
+                    searchOptions={searchOptions}
+                />
+            ),
+        },
+    ];
 
     return (
-        <>
+        <div>
             <MyBreadcrumb
                 paths={[
-                    { label: "Parent Management", href: "/public/school-owner/parent-management" },
-                    { label: "Parent List" },
+                    {label: "Parent Management", href: "/public/school-owner/parent-management"},
+                    {label: "Parent List"},
                 ]}
             />
             <Card
                 title={
-                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                        <SchoolManageTitle title={"Parent List"} />
-                        <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
-                            <div className="w-full">
-                                <SearchByComponent
-                                    onSearch={handleSearch}
-                                    options={searchOptions}
-                                    initialSearchBy={searchOptions[0].value}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    <Segmented
+                        className="p-1"
+                        options={segmentOptions}
+                        value={activeTabKey}
+                        onChange={handleTabChange}
+                        block
+                    />
                 }
             >
-                <div className="mt-4">
-                    <ParentList
-                        fetchPage={fetchPage}
-                        data={data}
-                        error={error}
-                        isLoading={isLoading}
-                        isFetching={isFetching}
-                    />
-                </div>
+                <Tabs
+                    activeKey={activeTabKey}
+                    tabBarStyle={{display: "none"}}
+                    size="large"
+                    destroyInactiveTabPane
+                    items={tabItems}
+                />
             </Card>
-        </>
+        </div>
     );
 }

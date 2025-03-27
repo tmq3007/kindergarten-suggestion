@@ -1,7 +1,8 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
-import counterReducer from '@/redux/features/counterSlice'
+import counterReducer from '@/redux/features/counterSlice';
 import authReducer from '@/redux/features/authSlice';
-import userReducer from '@/redux/features/userSlice'
+import userReducer from '@/redux/features/userSlice';
+import parentReducer from '@/redux/features/parentSlice';
 import storage from "@/redux/ssr-safe-storage";
 import {persistReducer} from 'redux-persist';
 import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/es/constants";
@@ -29,10 +30,12 @@ const rootReducer = combineReducers({
     [schoolApi.reducerPath]: schoolApi.reducer,
     [schoolOwnerApi.reducerPath]: schoolOwnerApi.reducer,
     [requestCounsellingApi.reducerPath]: requestCounsellingApi.reducer,
+
     // Reducers managing state
     counter: counterReducer,
     auth: authReducer,
     user: userReducer,
+    parent: parentReducer,
 })
 
 // Config Redux Persist

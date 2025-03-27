@@ -35,7 +35,7 @@ public class UserController {
     public ApiResponse<Page<UserVO>> getUsers(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
-            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false, defaultValue = "username") String searchBy,
             @RequestParam(required = false) String keyword
     ) {
         Page<UserVO> users = userService.getAllUsersAdmin(page, size, searchBy, keyword);
