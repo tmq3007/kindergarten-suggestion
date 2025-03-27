@@ -72,6 +72,7 @@ interface ViewReportButtonProps {
 const ViewReportButton: React.FC<ViewReportButtonProps> = ({
                                                                onClick,
                                                                disabled = false,
+    onFetching = false
                                                            }) => {
     return (
         <Button
@@ -89,6 +90,7 @@ const ViewReportButton: React.FC<ViewReportButtonProps> = ({
              `}
             disabled={disabled}
             onClick={onClick}
+            loading={onFetching}
         >
             <span className="text-sm font-medium">View Report</span>
         </Button>

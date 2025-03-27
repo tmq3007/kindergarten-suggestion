@@ -60,6 +60,9 @@ const RatingsDashboard = () => {
     const [visibleModal, setVisibleModal] = useState(false);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
+    const [loadingReviewId, setLoadingReviewId] = useState<number | null>(null);
+
+
 
     const handleAccept = async () => {
         if (selectedReport && 'id' in selectedReport) {
@@ -70,6 +73,7 @@ const RatingsDashboard = () => {
                 };
                 await reportDecision(dto).unwrap();
                 console.log("Report accepted successfully");
+                setLoadingReviewId( selectedReport.id)
                 setVisibleModal(false);
                 setSelectedReport(null);
                 // Optionally refetch the reviews after successful decision
@@ -88,6 +92,7 @@ const RatingsDashboard = () => {
                     id: selectedReport.id,
                     decision: false
                 };
+                setLoadingReviewId( selectedReport.id)
                 await reportDecision(dto).unwrap();
                 console.log("Report denied successfully");
                 setVisibleModal(false);
@@ -114,8 +119,12 @@ const RatingsDashboard = () => {
         return params;
     }, [schoolId, dateRange]);
 
-    const { data, isLoading, error, refetch } = useGetReviewBySchoolIdQuery(queryParams);
-
+    const { data, isLoading, error,isFetching, refetch } = useGetReviewBySchoolIdQuery(queryParams);
+    useEffect(() => {
+        if (!isFetching) {
+            setLoadingReviewId(null);
+        }
+    }, [isFetching]);
     // Transform reviews data to use Dayjs for receiveDate and calculate reviewAverage
     const reviews: EnhancedReview[] = useMemo(
         () =>
@@ -394,17 +403,14 @@ const RatingsDashboard = () => {
                                                         </Text>
                                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                                                             {item.report && item.status === REVIEW_STATUS.PENDING && (
-                                                            <ViewReportButton onClick={() => openModal({
-                                                                id: item.id,
-                                                                report: item.report
-                                                            })} />
+                                                                <ViewReportButton onFetching={isFetching && loadingReviewId === item.id}
+                                                                                  onClick={() => openModal({
+                                                                    id: item.id,
+                                                                    report: item.report
+                                                                })} />
                                                             )}
                                                             <ReviewButton status={item.status} />
-                                                            <Text type="secondary" className="text-xs sm:text-sm">
-                                                                {item.receiveDate.isValid()
-                                                                    ? item.receiveDate.format("D MMMM YYYY")
-                                                                    : "Date unavailable"}
-                                                            </Text>
+
                                                         </div>
                                                     </div>
                                                 }
@@ -413,10 +419,20 @@ const RatingsDashboard = () => {
                                                         <div className="flex flex-wrap items-center gap-2">
                                                             <Text type="secondary">{item.parentName || "Anonymous"}</Text>
                                                             <div className="flex">
-                                                                {[...Array(Math.floor(item.average || 0))].map((_, i) => (
-                                                                    <StarFilled key={i} className="text-yellow-400 text-xs sm:text-sm" />
-                                                                ))}
+                                                                {[...Array(Math.floor(item.reviewAverage || 0))].map(
+                                                                    (_, i) => (
+                                                                        <StarFilled
+                                                                            key={i}
+                                                                            className="text-yellow-400 text-sm"
+                                                                        />
+                                                                    )
+                                                                )}
                                                             </div>
+                                                            <Text type="secondary" className="text-xs sm:text-sm">
+                                                                {item.receiveDate.isValid()
+                                                                    ? item.receiveDate.format("D MMMM YYYY")
+                                                                    : "Date unavailable"}
+                                                            </Text>
                                                         </div>
                                                     </div>
                                                 }

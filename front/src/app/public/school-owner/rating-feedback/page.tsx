@@ -404,6 +404,11 @@ const RatingsDashboard = () => {
                                                                 )
                                                             )}
                                                         </div>
+                                                        <Text type="secondary" className="text-sm">
+                                                            {item.receiveDate.isValid()
+                                                                ? item.receiveDate.format("D MMMM YYYY")
+                                                                : "Date unavailable"}
+                                                        </Text>
                                                     </div>
                                                 </div>
                                             </div>
@@ -413,11 +418,7 @@ const RatingsDashboard = () => {
                                                                       onClick={() => openModal({ id: item.id, reason: item.report})} />
                                                 )}
                                                 <ReviewButton status={item.status} />
-                                                <Text type="secondary" className="text-sm">
-                                                    {item.receiveDate.isValid()
-                                                        ? item.receiveDate.format("D MMMM YYYY")
-                                                        : "Date unavailable"}
-                                                </Text>
+
                                             </div>
                                         </List.Item>
                                     </motion.div>
