@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, List, Typography, Avatar, Button, DatePicker, Select } from "antd";
+import { Card, List, Typography, Avatar, Button, DatePicker, Select, message } from "antd";
 import { StarFilled, SyncOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
 import { motion } from "framer-motion";
@@ -17,30 +17,18 @@ import {
     Tooltip as RechartsTooltip,
 } from "recharts";
 import dayjs, { Dayjs } from "dayjs";
-import {
-    ReviewAcceptDenyDTO,
-    ReviewVO,
-    useGetReviewBySchoolIdQuery,
-    useReportDecisionMutation
-} from "@/redux/services/reviewApi";
-import { useParams } from "next/navigation";
+import {ReviewVO, useGetReviewBySchoolOwnerQuery, useReportReviewMutation} from "@/redux/services/reviewApi";
+import NoData from "../../../components/review/NoData";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
-import NoData from "@/app/components/review/NoData";
-import {REVIEW_STATUS} from "@/lib/constants";
-import AdminReportModal from "@/app/components/review/AdminReportModal";
-import  {ReviewButton,ViewReportButton} from "@/app/components/review/ReviewButton";
+import { RootState } from "@/redux/store";
+import { REVIEW_STATUS } from "@/lib/constants";
+import { MakeReportButton, ReviewButton } from "@/app/components/review/ReviewButton";
 import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
-
-
-interface Report {
-    id: number;
-    report: string | undefined;
-}
 
 interface ReviewWithDayjs extends Omit<ReviewVO, "receiveDate"> {
     receiveDate: Dayjs;
@@ -50,76 +38,77 @@ interface EnhancedReview extends ReviewWithDayjs {
     reviewAverage: number;
 }
 
+interface QueryParams {
+    fromDate?: string;
+    toDate?: string;
+}
+
+interface Report {
+    id: number;
+    reason: string | undefined;
+}
 const RatingsDashboard = () => {
-    const params = useParams();
-    const schoolId = Number(params.id as string);
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
+    const [queryParams, setQueryParams] = useState<QueryParams>({});
+    const [reviews, setReviews] = useState<EnhancedReview[]>([]);
 
-    const [visibleModal, setVisibleModal] = useState(false);
+    const { data, isLoading, isFetching, error, refetch } = useGetReviewBySchoolOwnerQuery(queryParams);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-    const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
 
-    const handleAccept = async () => {
-        if (selectedReport && 'id' in selectedReport) {
-            try {
-                const dto: ReviewAcceptDenyDTO = {
-                    id: selectedReport.id,
-                    decision: true
-                };
-                await reportDecision(dto).unwrap();
-                console.log("Report accepted successfully");
-                setVisibleModal(false);
-                setSelectedReport(null);
-                // Optionally refetch the reviews after successful decision
-                refetch();
-            } catch (error) {
-                console.error("Failed to accept report:", error);
-            }
+    const [reportReview, { isLoading: isReporting }] = useReportReviewMutation();
+
+    const [loadingReviewId, setLoadingReviewId] = useState<number | null>(null);
+
+    const handleSubmitReport = async (reportContent: string, reviewId: number | null) => {
+        if (!reviewId || !reportContent) return;
+
+        try {
+            setLoadingReviewId(reviewId); // Set the specific review ID that's loading
+            const reportDTO = {
+                id: reviewId,
+                reason: reportContent
+            };
+            await reportReview(reportDTO).unwrap();
+            message.success('Report submitted successfully');
+            setIsModalOpen(false);
+            setSelectedReport(null);
+            refetch();
+        } catch (error) {
+            message.error('Failed to submit report');
+            console.error('Report submission failed:', error);
         }
     };
 
-    const handleDeny = async () => {
-        if (selectedReport && 'id' in selectedReport) {
-            try {
-                // @ts-ignore
-                const dto: ReviewAcceptDenyDTO = {
-                    id: selectedReport.id,
-                    decision: false
-                };
-                await reportDecision(dto).unwrap();
-                console.log("Report denied successfully");
-                setVisibleModal(false);
-                setSelectedReport(null);
-                refetch();
-            } catch (error) {
-                console.error("Failed to deny report:", error);
-            }
+    useEffect(() => {
+        if (!isFetching) {
+            setLoadingReviewId(null);
         }
-    };
+    }, [isFetching]);
 
-    const openModal = (report: { id: number; report: string | undefined } | null) => {
+    const openModal = (report: { id: number; reason: string | undefined } | null) => {
         setSelectedReport(report);
-        setVisibleModal(true);
+        setIsModalOpen(true);
     };
 
-    // Memoize query parameters for the API call
-    const queryParams = useMemo(() => {
-        const params: { schoolId: number; fromDate?: string; toDate?: string } = { schoolId };
-        if (dateRange && dateRange[0] && dateRange[1]) {
+
+    const handleCancelModal = () => setIsModalOpen(false);
+
+    useEffect(() => {
+        const params: QueryParams = {};
+        if (dateRange?.[0] && dateRange?.[1]) {
             params.fromDate = dateRange[0].format("YYYY-MM-DD");
             params.toDate = dateRange[1].format("YYYY-MM-DD");
         }
-        return params;
-    }, [schoolId, dateRange]);
+        setQueryParams(params);
+    }, [dateRange]);
 
-    const { data, isLoading, error, refetch } = useGetReviewBySchoolIdQuery(queryParams);
-
-    // Transform reviews data to use Dayjs for receiveDate and calculate reviewAverage
-    const reviews: EnhancedReview[] = useMemo(
-        () =>
-            data?.data?.map((review) => ({
+    useEffect(() => {
+        if (data?.data) {
+            const transformedReviews = data.data.map((review) => ({
                 ...review,
                 receiveDate: dayjs(review.receiveDate).isValid() ? dayjs(review.receiveDate) : dayjs(),
                 reviewAverage: (
@@ -129,31 +118,25 @@ const RatingsDashboard = () => {
                     (review.teacherAndStaff || 0) +
                     (review.hygieneAndNutrition || 0)
                 ) / 5,
-            })) || [],
-        [data]
-    );
+            }));
+            const sortedReviews = [...transformedReviews].sort((a, b) => b.reviewAverage - a.reviewAverage);
+            setReviews(transformedReviews);
+            setFilteredReviews(sortedReviews);
+        } else {
+            setReviews([]);
+            setFilteredReviews([]);
+        }
+    }, [data]);
 
-    console.log("test",reviews[0]?.status);
-
-    // Sort reviews by reviewAverage in descending order
-    const sortedReviews = useMemo(() => {
-        return [...reviews].sort((a, b) => b.reviewAverage - a.reviewAverage);
-    }, [reviews]);
-
-    // Handle date range change
-    const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
-        setDateRange(dates);
-    };
-
-    // Handle refresh button click
+    const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => setDateRange(dates);
     const handleRefresh = () => {
-        setDateRange(null); // Reset date range
-        refetch(); // Trigger refetch with default params (no date filter)
+        setDateRange(null);
+        refetch();
     };
 
-    // Calculate metrics
+    // Sử dụng useMemo để tính toán metrics
     const metrics = useMemo(() => {
-        if (!reviews || reviews.length === 0) {
+        if (!reviews.length) {
             return {
                 totalReviews: 0,
                 totalAverage: 0,
@@ -206,7 +189,7 @@ const RatingsDashboard = () => {
         };
     }, [reviews]);
 
-    // Pie chart data
+    // Sử dụng useMemo để tính toán pieData
     const pieData = useMemo(
         () => [
             { name: "Learning Program", value: metrics.totalLearningProgram },
@@ -218,7 +201,7 @@ const RatingsDashboard = () => {
         [metrics]
     );
 
-    // Bar chart data
+    // Sử dụng useMemo để tính toán barData
     const barData = useMemo(() => {
         const monthlyData = reviews.reduce((acc, review) => {
             const month = review.receiveDate.format("MMMM YYYY");
@@ -230,16 +213,11 @@ const RatingsDashboard = () => {
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
-    // Update filtered reviews when reviews change
-    useEffect(() => {
-        setFilteredReviews(sortedReviews);
-    }, [sortedReviews]);
-
-    // Filter reviews by rating
     const filterFeedbackByRate = (selectedRates: string[]) => {
+        const sortedReviews = [...reviews].sort((a, b) => b.reviewAverage - a.reviewAverage);
         setFilteredReviews(
             selectedRates.length === 0
-                ? sortedReviews // If no rates selected, show all sorted reviews
+                ? sortedReviews
                 : sortedReviews.filter((review) => {
                     const reviewRating = Math.round(review.reviewAverage);
                     return selectedRates.includes(reviewRating.toString());
@@ -247,54 +225,70 @@ const RatingsDashboard = () => {
         );
     };
 
-    // Limit displayed reviews based on showAll state
-    const displayedReviews = showAll ? filteredReviews : filteredReviews.slice(0, 5);
+    const displayedReviews = useMemo(
+        () => (showAll ? filteredReviews : filteredReviews.slice(0, 5)),
+        [filteredReviews, showAll]
+    );
 
-    if (isLoading) {
-        return <RatingSkeleton />;
-    }
+    if (isLoading) return <RatingSkeleton />;
 
     return (
-        <div className={'pt-2'}>
+        <div className="pt-2 px-4 sm:px-6 lg:px-8">
             <MyBreadcrumb
                 paths={[
-                    { label: "School Management", href: "/admin/management/school/school-list" },
-                    { label: "School List", href: "/admin/management/school/school-list" },
-                    { label: "School Detail", href: `/admin/management/school/school-detail/${schoolId}` },
+                    { label: "My School", href: "/public/school-owner" },
                     { label: "Ratings & Feedback" },
                 ]}
             />
-            <SchoolManageTitle title={"Ratings & Feedback"} />
+            <SchoolManageTitle title="Ratings & Feedback" />
 
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen bg-gray-50 py-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex gap-4 mb-8 justify-center"
+                    className="flex flex-col sm:flex-row gap-4 mb-8 justify-center items-center"
                 >
-                    <RangePicker onChange={handleDateChange} value={dateRange} className="w-64" />
-                    <Button type="primary" icon={<SyncOutlined />} onClick={handleRefresh}>
+                    <RangePicker
+                        onChange={handleDateChange}
+                        value={dateRange}
+                        className="w-full sm:w-64"
+                    />
+                    <Button
+                        type="primary"
+                        icon={<SyncOutlined />}
+                        onClick={handleRefresh}
+                        className="w-full sm:w-auto"
+                    >
                         Refresh
                     </Button>
                 </motion.div>
 
-                {(error) ? (
+                {error ? (
                     <NoData />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
-                                <Card title="Rating Distribution">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Card title="Rating Distribution" className="w-full">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <PieChart>
                                             <Pie
                                                 data={pieData}
                                                 dataKey="value"
-                                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                label={({ name, percent }) =>
+                                                    `${name}: ${(percent * 100).toFixed(0)}%`
+                                                }
                                                 outerRadius={80}
                                             >
                                                 {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={COLORS[index % COLORS.length]}
+                                                    />
                                                 ))}
                                             </Pie>
                                             <RechartsTooltip />
@@ -302,8 +296,12 @@ const RatingsDashboard = () => {
                                     </ResponsiveContainer>
                                 </Card>
                             </motion.div>
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
-                                <Card title="Monthly Reviews">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Card title="Monthly Reviews" className="w-full">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <BarChart data={barData}>
                                             <CartesianGrid strokeDasharray="3 3" />
@@ -323,7 +321,11 @@ const RatingsDashboard = () => {
                                 { title: "Total Reviews", value: metrics.totalReviews, color: "blue" },
                                 { title: "Learning Program", value: metrics.totalLearningProgram, color: "green" },
                                 { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, color: "orange" },
-                                { title: "Extracurricular", value: metrics.totalExtracurricularActivities, color: "yellow" },
+                                {
+                                    title: "Extracurricular",
+                                    value: metrics.totalExtracurricularActivities,
+                                    color: "yellow",
+                                },
                                 { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, color: "red" },
                                 { title: "Hygiene", value: metrics.totalHygieneAndNutrition, color: "pink" },
                             ].map((stat) => (
@@ -331,9 +333,10 @@ const RatingsDashboard = () => {
                                     key={stat.title}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.1 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    className="w-full"
                                 >
-                                    <Card>
+                                    <Card className="w-full">
                                         <div className="flex items-center gap-4">
                                             <Avatar
                                                 size={40}
@@ -344,7 +347,7 @@ const RatingsDashboard = () => {
                                                 <Text strong className="text-lg">
                                                     {stat.value}
                                                 </Text>
-                                                <Text className="block text-gray-600">{stat.title}</Text>
+                                                <Text className="block text-gray-600 text-sm">{stat.title}</Text>
                                             </div>
                                         </div>
                                     </Card>
@@ -366,9 +369,10 @@ const RatingsDashboard = () => {
                                     className="w-full sm:w-48"
                                 />
                             }
+                            className="w-full"
                         >
                             <List
-                                dataSource={displayedReviews.slice(0, showAll ? displayedReviews.length : 5)}
+                                dataSource={displayedReviews}
                                 renderItem={(item) => (
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
@@ -378,80 +382,66 @@ const RatingsDashboard = () => {
                                             boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
                                             transition: { duration: 0.3, ease: "easeInOut" },
                                         }}
-                                        className="p-2 md:p-3"
                                     >
-                                        <List.Item className="!px-2 sm:!px-3">
-                                            <List.Item.Meta
-                                                avatar={
-                                                    <Avatar src={item.parentImage} className="bg-blue-500">
-                                                        {item.parentImage || "A"}
-                                                    </Avatar>
-                                                }
-                                                title={
-                                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                                                        <Text strong className="text-sm sm:text-base">
-                                                            {item.feedback || "No feedback provided"}
+                                        <List.Item className="!px-3 flex flex-col sm:flex-row sm:items-center">
+                                            <div className="flex items-center mb-2 sm:mb-0">
+                                                <Avatar src={item.parentImage} className="bg-blue-500 mr-2">
+                                                    {item.parentImage || "A"}
+                                                </Avatar>
+                                                <div>
+                                                    <Text strong>{item.feedback || "No feedback provided"}</Text>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Text type="secondary">
+                                                            {item.parentName || "Anonymous"}
                                                         </Text>
-                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                                                            {item.report && item.status === REVIEW_STATUS.PENDING && (
-                                                            <ViewReportButton onClick={() => openModal({
-                                                                id: item.id,
-                                                                report: item.report
-                                                            })} />
+                                                        <div className="flex">
+                                                            {[...Array(Math.floor(item.reviewAverage || 0))].map(
+                                                                (_, i) => (
+                                                                    <StarFilled
+                                                                        key={i}
+                                                                        className="text-yellow-400 text-sm"
+                                                                    />
+                                                                )
                                                             )}
-                                                            <ReviewButton status={item.status} />
-                                                            <Text type="secondary" className="text-xs sm:text-sm">
-                                                                {item.receiveDate.isValid()
-                                                                    ? item.receiveDate.format("D MMMM YYYY")
-                                                                    : "Date unavailable"}
-                                                            </Text>
                                                         </div>
                                                     </div>
-                                                }
-                                                description={
-                                                    <div className="flex flex-col gap-1">
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <Text type="secondary">{item.parentName || "Anonymous"}</Text>
-                                                            <div className="flex">
-                                                                {[...Array(Math.floor(item.average || 0))].map((_, i) => (
-                                                                    <StarFilled key={i} className="text-yellow-400 text-xs sm:text-sm" />
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                }
-                                            />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:ml-auto">
+                                                {(item.status === REVIEW_STATUS.APPROVED) && (
+                                                    <MakeReportButton onFetching={isFetching && loadingReviewId === item.id}
+                                                                      onClick={() => openModal({ id: item.id, reason: item.report})} />
+                                                )}
+                                                <ReviewButton status={item.status} />
+                                                <Text type="secondary" className="text-sm">
+                                                    {item.receiveDate.isValid()
+                                                        ? item.receiveDate.format("D MMMM YYYY")
+                                                        : "Date unavailable"}
+                                                </Text>
+                                            </div>
                                         </List.Item>
                                     </motion.div>
                                 )}
                             />
                             {filteredReviews.length > 5 && (
                                 <div className="text-center mt-4">
-                                    <Button
-                                        type="link"
-                                        onClick={() => setShowAll(!showAll)}
-                                        className={`${
-                                            filteredReviews.length <= 5 ? "blur-sm opacity-50 cursor-not-allowed" : "cursor-pointer"
-                                        }`}
-                                        disabled={filteredReviews.length <= 5}
-                                    >
+                                    <Button type="link" onClick={() => setShowAll(!showAll)}>
                                         {showAll ? "Show Less" : `View More (${filteredReviews.length - 5})`}
                                     </Button>
                                 </div>
                             )}
-                            <AdminReportModal
-                                open={visibleModal}
-                                onAccept={handleAccept}
-                                onDeny={handleDeny}
-                                reportContent={selectedReport?.report}
+                            <SchoolOwnerReportModal
+                                open={isModalOpen}
+                                onSubmit={handleSubmitReport}
+                                onCancel={handleCancelModal}
+                                reviewId={selectedReport?.id || null}
+                                onReporting={isReporting}
                             />
                         </Card>
-
                     </>
                 )}
             </div>
         </div>
-
     );
 };
 

@@ -51,7 +51,6 @@ export default function SchoolDetail() {
         externalForm: form,
     });
 
-
     useEffect(() => {
         if (isError) {
             message.error("Failed to load school details").then(r => {
@@ -80,8 +79,8 @@ export default function SchoolDetail() {
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
 
             {/*View Rating and Feedback Link*/}
-            <div className="my-4 flex justify-end">
-                <Link href={`/public/school-owner/rating-feedback/${data?.data.id}`}
+            <div className="my-4 flex justify-end mr-8">
+                <Link href={`/public/school-owner/rating-feedback`}
                       className="text-blue-500 hover:underline">
                     View Rating & Feedback
                 </Link>

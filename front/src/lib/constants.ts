@@ -70,9 +70,14 @@ export const CHILD_RECEIVING_AGE_OPTIONS = [
     {label: "3y - 6y", value: "2"}
 ];
 
-
 export const REQUEST_COUNSELLING_STATUS_OPTIONS = [
     {label: "Opened", value: "0"},
     {label: "Closed", value: "1"},
     {label: "Expired", value: "2"},
 ];
+
+export const REVIEW_STATUS = {
+    APPROVED: 0,
+    REJECTED: 1,
+    PENDING: 2
+};

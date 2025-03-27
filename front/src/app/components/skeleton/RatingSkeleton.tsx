@@ -84,29 +84,10 @@ const RatingSkeleton = () => {
                     </Select>
                 }
             >
-                <List
-                    dataSource={mockFeedback}
-                    renderItem={(item) => (
-                        <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.01 }}>
-                            <List.Item>
-                                <List.Item.Meta
-                                    avatar={<Skeleton.Avatar active />}
-                                    title={<Skeleton.Input active className="w-full" />}
-                                    description={
-                                        <div className="flex items-center gap-2">
-                                            <Skeleton.Input active className="w-16" />
-                                            <div className="flex">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <StarFilled key={i} className={i < item.rating ? "text-yellow-500 text-sm" : "text-gray-300 text-sm"} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    }
-                                />
-                            </List.Item>
-                        </motion.div>
-                    )}
-                />
+
+                <Skeleton.Input active className="!w-full !h-[500px]" />
+
+
 
                 {/* View More Button */}
                 <div className="text-center mt-4">
