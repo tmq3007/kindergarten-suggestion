@@ -47,7 +47,9 @@ public record SchoolDetailVO(
 
         List<MediaVO> imageList,
 
-        Date posted_date
+        Date posted_date,
+
+        ReviewVO review
 
 //        Set<SchoolOwnerVO> schoolOwners
 

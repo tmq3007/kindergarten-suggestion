@@ -23,7 +23,7 @@ const menuItems = [
 ];
 
 const Menu = ({ collapsed }: { collapsed: boolean }) => {
-    const pathname = usePathname(); // Lấy đường dẫn hiện tại để xác định mục nào đang được chọn
+    const pathname = usePathname();
 
     return (
         <div className="mt-4 text-sm">
@@ -37,7 +37,7 @@ const Menu = ({ collapsed }: { collapsed: boolean }) => {
                     )}
 
                     {section.items.map((item) => {
-                        const isActive = pathname === item.href; // Kiểm tra mục đang active
+                        const isActive = pathname === item.href;
 
                         return (
                             <Link

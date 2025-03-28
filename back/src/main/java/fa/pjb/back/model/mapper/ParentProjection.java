@@ -5,10 +5,10 @@ import java.time.LocalDate;
 public interface ParentProjection {
     Integer getId();
     Boolean getStatus();
-    String getParentDistrict();
-    String getParentWard();
-    String getParentProvince();
-    String getParentStreet();
+    String getDistrict();
+    String getWard();
+    String getProvince();
+    String getStreet();
     Integer getUserId();
     String getUsername();
     String getFullname();
@@ -20,4 +20,6 @@ public interface ParentProjection {
     Integer getPisId();
     String getMediaId();
     String getMediaUrl();
+    LocalDate getFromDate();
+    LocalDate getToDate();
 }

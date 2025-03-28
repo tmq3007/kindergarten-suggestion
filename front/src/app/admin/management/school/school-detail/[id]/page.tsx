@@ -71,7 +71,7 @@ export default function SchoolDetail() {
             </div>
 
             <div className="read-only-form email-locked">
-                <SchoolFormWrapper form={form} school={school}/>
+                <SchoolFormWrapper form={form} school={school} isAdmin={true}/>
             </div>
         </div>
     );

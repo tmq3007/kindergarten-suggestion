@@ -41,6 +41,7 @@ const SchoolOwnerReportModal: React.FC<SchoolOwnerReportModalProps> = ({
 
     return (
         <Modal
+            getContainer={false}
             title={`Create Report for Review #${reviewId || 'Unknown'}`}
             open={open}
             footer={[

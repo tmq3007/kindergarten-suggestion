@@ -7,6 +7,7 @@ import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
+import fa.pjb.back.common.exception._14xx_data.RecordNotFoundException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
@@ -257,58 +258,78 @@ public class ParentServiceImpl implements ParentService {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
-
     }
 
     @Override
-    public Page<ParentVO> getParentBySchool(User user, int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getParentBySchool( int page, int size, String searchBy, String keyword) {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
-//        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(1, searchBy, keyword, pageable);
+        Integer schoolId = schoolOwnerRepository.getSchoolIdByUserId(userService.getCurrentUser().getId());
+        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(schoolId, searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
 
     @Override
-    public Page<ParentVO> getEnrollRequestBySchool(User user, int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getEnrollRequestBySchool(int page, int size, String searchBy, String keyword) {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
-//        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(1, searchBy, keyword, pageable);
+        Integer schoolId = schoolOwnerRepository.getSchoolIdByUserId(userService.getCurrentUser().getId());
+        Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(schoolId, searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
     @Transactional
-    public Boolean enrollParent(Integer userId) {
-        // Get user by userId
-        User user = userRepository.findByIdWithParent(userId).orElseThrow(UserNotFoundException::new);
+    public Boolean enrollParent(Integer parentInSchoolId) {
+        // Get ParentInSchool by ID
+        ParentInSchool parentInSchool = parentInSchoolRepository
+                .findOneById(parentInSchoolId)
+                .orElseThrow(RecordNotFoundException::new);
 
-        // Get parent from user
-        Parent parent = user.getParent();
-        if (parent == null) {
-            return false;
-        }
+        // Change status from PENDING to ACTIVE
+        parentInSchool.setStatus(ParentInSchoolEnum.ACTIVE.getValue());
 
-        // Get current school owner
-        SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
-
-        // Get school of current school owner
-        School school = schoolOwner.getSchool();
-
-        ParentInSchool parentInSchool = ParentInSchool.builder()
-                .school(school)
-                .parent(parent)
-                .from(LocalDate.now())
-                .status(ParentInSchoolEnum.ACTIVE.getValue())
-                .build();
-
+        // Save the change
         parentInSchoolRepository.save(parentInSchool);
+
+        return true;
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public Boolean unEnrollParent(Integer parentInSchoolId) {
+        // Get ParentInSchool by ID
+        ParentInSchool parentInSchool = parentInSchoolRepository
+                .findOneById(parentInSchoolId)
+                .orElseThrow(RecordNotFoundException::new);
+
+        // Change status from ACTIVE to INACTIVE
+        parentInSchool.setStatus(ParentInSchoolEnum.INACTIVE.getValue());
+
+        // Save the change
+        parentInSchoolRepository.save(parentInSchool);
+
+        return true;
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public Boolean rejectParent(Integer parentInSchoolId) {
+        // Get ParentInSchool by ID
+        ParentInSchool parentInSchool = parentInSchoolRepository
+                .findOneById(parentInSchoolId)
+                .orElseThrow(RecordNotFoundException::new);
+
+        // Delete this record from database
+        parentInSchoolRepository.delete(parentInSchool);
+
         return true;
     }
 
@@ -319,8 +340,9 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public Integer getSchoolRequestCount(User user) {
-        return pisRepository.countParentInSchoolBySchoolIdAndStatus(1,(byte)0);
+    public Integer getSchoolRequestCount() {
+        Integer schoolId = schoolOwnerRepository.getSchoolIdByUserId(userService.getCurrentUser().getId());
+        return pisRepository.countParentInSchoolBySchoolIdAndStatus(schoolId,(byte)0);
     }
 
 

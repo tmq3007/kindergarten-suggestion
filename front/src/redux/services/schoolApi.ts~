@@ -5,6 +5,7 @@ import {UploadFile} from "antd";
 import {MediaVO} from "@/redux/services/parentApi";
 import {Pageable} from "@/redux/services/userApi";
 import {ReviewVO} from "@/redux/services/reviewApi";
+import {REHYDRATE} from "redux-persist/es/constants";
 
 export interface Facility {
     fid: number;
@@ -191,6 +192,11 @@ export const schoolApi = createApi({
     reducerPath: "schoolApi",
     baseQuery: baseQueryWithReauth,
     tagTypes: ["School", "SchoolList"],
+    extractRehydrationInfo(action, { reducerPath }) {
+        if (action.type === REHYDRATE) {
+            return action.payload[reducerPath];
+        }
+    },
     endpoints: (build) => ({
         // Get school list
         getSchoolList: build.query<

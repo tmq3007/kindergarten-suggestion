@@ -14,6 +14,7 @@ import fa.pjb.back.event.model.SchoolPublishedEvent;
 import fa.pjb.back.event.model.SchoolRejectedEvent;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.dto.SchoolSearchDTO;
 import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
@@ -23,6 +24,7 @@ import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
 import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
+import fa.pjb.back.repository.specification.SchoolSpecification;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
@@ -34,7 +36,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -524,6 +529,22 @@ public class SchoolServiceImpl implements SchoolService {
     public Boolean isDraft(Integer schoolId) {
         School draft = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
         return draft.getOriginalSchool() != null;
+    }
+
+    @Override
+    public Page<SchoolDetailVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO) {
+        Specification<School> spec = Specification
+                .where(SchoolSpecification.hasName(schoolSearchDTO.name()))
+                .and(SchoolSpecification.hasType(schoolSearchDTO.type()))
+                .and(SchoolSpecification.hasReceivingAge(schoolSearchDTO.age()))
+                .and(SchoolSpecification.hasFeeRange(schoolSearchDTO.minFee(), schoolSearchDTO.maxFee()))
+                .and(SchoolSpecification.hasAllFacilitiesAndUtilities(schoolSearchDTO.facilityIds(), schoolSearchDTO.utilityIds()))
+                .and(SchoolSpecification.hasProvince(schoolSearchDTO.province()))
+                .and(SchoolSpecification.hasDistrict(schoolSearchDTO.district()));
+
+        Pageable pageable = PageRequest.of(schoolSearchDTO.page(), schoolSearchDTO.size(), Sort.by(Sort.Direction.DESC, schoolSearchDTO.sortBy()));
+        Page<School> schoolPage = schoolRepository.findAll(spec, pageable);
+        return schoolPage.map(schoolMapper::toSchoolDetailVO);
     }
 
     @Override
