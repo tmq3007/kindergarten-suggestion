@@ -9,14 +9,17 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        default_batch_fetch_size: 20
   datasource:
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 20
+      minimum-idle: 10
       idle-timeout: 30000
-      connection-timeout: 30000
+      connection-timeout: 10000
       validation-timeout: 5000
       max-lifetime: 100000
+      connection-test-query: SELECT 1
+      leak-detection-threshold: 5000
   mail:
     host: smtp.gmail.com
     port: 587

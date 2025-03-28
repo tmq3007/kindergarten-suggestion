@@ -78,7 +78,7 @@ public class ParentController {
                 .build();
     }
 
-    @Operation(summary = "Get All Parents" , description = "This api will be used to retrieve all parents")
+    @Operation(summary = "Get All Parents", description = "This api will be used to retrieve all parents")
     @GetMapping("/get-all-parents")
     public ApiResponse<Page<ParentVO>> getAllParents(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
@@ -104,10 +104,10 @@ public class ParentController {
     ) {
         Page<ParentVO> parents = parentService.getParentBySchool(page, size, searchBy, keyword);
         return ApiResponse.<Page<ParentVO>>builder()
-                 .code(HttpStatus.OK.value())
-                 .message("Parents retrieved successfully")
-                 .data(parents)
-                 .build();
+                .code(HttpStatus.OK.value())
+                .message("Parents retrieved successfully")
+                .data(parents)
+                .build();
     }
 
     @Operation(summary = "Get All Enroll Request By School", description = "This api will be used to retrieve all enroll request of parents by school")
@@ -127,12 +127,32 @@ public class ParentController {
     }
 
     @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
-    @PostMapping("/enroll/{userId}")
-    public ApiResponse<Boolean> enrollParent(@PathVariable Integer userId) {
+    @PostMapping("/enroll/{parentInSchoolId}")
+    public ApiResponse<Boolean> enrollParent(@PathVariable Integer parentInSchoolId) {
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Parent enrolled successfully")
-                .data(parentService.enrollParent(userId))
+                .data(parentService.enrollParent(parentInSchoolId))
+                .build();
+    }
+
+    @Operation(summary = "Un-Enroll Parent", description = "This api will be used to un-enroll a parent from a school")
+    @PostMapping("/un-enroll/{parentInSchoolId}")
+    public ApiResponse<Boolean> unEnrollParent(@PathVariable Integer parentInSchoolId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent un-enrolled successfully")
+                .data(parentService.unEnrollParent(parentInSchoolId))
+                .build();
+    }
+
+    @Operation(summary = "Reject Parent", description = "This api will be used to reject a parent from enrolling a school")
+    @PostMapping("/reject/{parentInSchoolId}")
+    public ApiResponse<Boolean> rejectParent(@PathVariable Integer parentInSchoolId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent rejected successfully")
+                .data(parentService.rejectParent(parentInSchoolId))
                 .build();
     }
 

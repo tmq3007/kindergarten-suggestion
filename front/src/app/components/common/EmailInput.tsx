@@ -52,10 +52,12 @@ const EmailInput = forwardRef(({
         try {
             let response;
             if (schoolId) {
+                console.log("into schoolId")
                 // In case of EDITING a school,
                 // only need to validate the email if it is different from the current email in the database
                 response = await triggerCheckEditEmail({email, schoolId}).unwrap();
             } else {
+                console.log("not into schoolId")
                 // In case of ADD school, check all emails
                 response = await triggerCheckEmail(email).unwrap();
             }
@@ -70,6 +72,7 @@ const EmailInput = forwardRef(({
                 return true;
             }
         } catch (error) {
+            console.log('error {}', error);
             setEmailStatus('error');
             setEmailHelp('Cannot check email. Try again later!');
             return false;
