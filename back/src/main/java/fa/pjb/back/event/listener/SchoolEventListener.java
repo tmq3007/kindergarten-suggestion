@@ -34,7 +34,7 @@ public class SchoolEventListener {
     @Async
     @EventListener
     public void handleCounsellingRequestUpdateEvent(CounsellingRequestUpdateEvent event) {
-        emailService.sendCounsellingRequestUpdateEmail(event.to(), event.username(), event.response());
+        emailService.sendCounsellingRequestUpdateEmail(event.to(), event.response());
     }
 
     @Async

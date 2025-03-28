@@ -1,11 +1,14 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react';
-import {Form, Input, Select, Button, message, notification} from 'antd';
+import {Form, Input, Select, Button, message, notification, Modal} from 'antd';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import MyEditor from "@/app/components/common/MyEditor";
 import {useParams} from "next/navigation";
-import {useUpdateRequestCounsellingMutation} from "@/redux/services/requestCounsellingApi";
+import {
+    useUpdateRequestCounsellingByAdminMutation,
+    useUpdateRequestCounsellingBySchoolOwnerMutation
+} from "@/redux/services/requestCounsellingApi";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -26,19 +29,23 @@ interface RequestCounsellingFormFields {
     form?: any;
     formLoaded?: boolean;
     hasResolveButton: boolean;
+    isAdmin: boolean;
 }
 
 const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
                                                                             isReadOnly,
                                                                             form: externalForm,
                                                                             formLoaded = false,
-                                                                            hasResolveButton = true
+                                                                            hasResolveButton = true,
+                                                                            isAdmin = true
                                                                         }) => {
     const [form] = Form.useForm(externalForm);
     const [responseContent, setResponseContent] = useState<string>("");
     const params = useParams();
     const requestCounsellingId = Number(params.id as string);
-    const [updateRequestCounselling, {isLoading}] = useUpdateRequestCounsellingMutation();
+    const [updateRequestCounsellingByAdmin, {isLoading}] = useUpdateRequestCounsellingByAdminMutation();
+    const [updateRequestCounsellingBySchoolOwner, {isLoading: isLoading2}] = useUpdateRequestCounsellingBySchoolOwnerMutation();
+    const [modalVisible, setModalVisible] = useState(false);
     const [notificationApi, contextHolder] = notification.useNotification();
 
     const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
@@ -50,11 +57,29 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
     };
 
     const handleResolveButton = async () => {
+        setModalVisible(true);
+    }
+
+    const handleConfirmActionByAdmin = async () => {
         try {
-            await updateRequestCounselling({
+            await updateRequestCounsellingByAdmin({
                 requestCounsellingId: requestCounsellingId,
                 response: responseContent
             }).unwrap()
+            setModalVisible(false);
+            openNotificationWithIcon("success", "Success", "Request resolved successfully!")
+        } catch (e) {
+            openNotificationWithIcon("error", "Error", "Failed to resolve request!")
+        }
+    }
+
+    const handleConfirmActionBySchoolOwner = async () => {
+        try {
+            await updateRequestCounsellingBySchoolOwner({
+                requestCounsellingId: requestCounsellingId,
+                response: responseContent
+            }).unwrap()
+            setModalVisible(false);
             openNotificationWithIcon("success", "Success", "Request resolved successfully!")
         } catch (e) {
             openNotificationWithIcon("error", "Error", "Failed to resolve request!")
@@ -166,6 +191,21 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
             </Form.Item>
             )}
         </Form>
+
+        <Modal
+            title={<p className={'font-bold text-3xl text-start'}>{"Resolve request"}</p>}
+            open={modalVisible}
+            onOk={isAdmin ? handleConfirmActionByAdmin : handleConfirmActionBySchoolOwner}
+            onCancel={() => {
+                setModalVisible(false);
+            }}
+            okText="Yes"
+            cancelText="No, Take me back!"
+            confirmLoading={isLoading}
+            getContainer={false}
+        >
+            <p className={'text-lg text-start'}>{"Are you sure you want to resolve this request?"}</p>
+        </Modal>
         </div>
 
 

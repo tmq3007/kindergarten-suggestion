@@ -22,8 +22,12 @@ public interface RequestCounsellingService {
             LocalDateTime dueDate
     );
 
-    RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId);
+    RequestCounsellingVO getRequestCounsellingByAdmin(Integer requestCounsellingId);
 
-    void updateRequestCounselling(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
+    RequestCounsellingVO getRequestCounsellingBySchoolOwner(Integer requestCounsellingId);
+
+    void updateRequestCounsellingByAdmin(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
+
+    void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
 
 }

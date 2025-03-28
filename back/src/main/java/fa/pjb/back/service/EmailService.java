@@ -20,7 +20,7 @@ public interface EmailService {
 
     CompletableFuture<Void> sendRequestCounsellingReminder(String to, String name, int totalRequest, String dueDateString, String detailsLink);
 
-    String sendCounsellingRequestUpdateEmail(String to, String username, String response);
+    String sendCounsellingRequestUpdateEmail(String to, String response);
 
     String sendSchoolDeletedEmail(String to, String schoolName, String response);
 }

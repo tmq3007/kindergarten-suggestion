@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDateTime;
 
 @ExtendWith(MockitoExtension.class)
-class RequestCounsellingUpdateTest {
+class GetRequestCounsellingByAdminTest {
 
     private MockMvc mockMvc;
 
@@ -64,11 +64,11 @@ class RequestCounsellingUpdateTest {
                 .response("Test response content")
                 .build();
 
-        when(requestCounsellingService.getRequestCounselling(requestCounsellingId))
+        when(requestCounsellingService.getRequestCounsellingByAdmin(requestCounsellingId))
                 .thenReturn(mockVo);
 
         // Act & Assert
-        mockMvc.perform(get("/counselling/{requestCounsellingId}", requestCounsellingId)
+        mockMvc.perform(get("/counselling/get-by-admin/{requestCounsellingId}", requestCounsellingId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
@@ -95,11 +95,11 @@ class RequestCounsellingUpdateTest {
         // Arrange
         Integer nonExistentId = 999;
 
-        when(requestCounsellingService.getRequestCounselling(nonExistentId))
+        when(requestCounsellingService.getRequestCounsellingByAdmin(nonExistentId))
                 .thenThrow(new MissingDataException("Request counselling not found"));
 
         // Act & Assert
-        mockMvc.perform(get("/counselling/{requestCounsellingId}", nonExistentId)
+        mockMvc.perform(get("/counselling/get-by-admin/{requestCounsellingId}", nonExistentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
@@ -112,7 +112,7 @@ class RequestCounsellingUpdateTest {
     @Test
     void getRequestCounselling_WithInvalidIdFormat_ShouldReturnBadRequest() throws Exception {
         // Act & Assert
-        mockMvc.perform(get("/counselling/{requestCounsellingId}", "not_number")
+        mockMvc.perform(get("/counselling/get-by-admin/{requestCounsellingId}", "not_number")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
@@ -141,11 +141,11 @@ class RequestCounsellingUpdateTest {
                 .response(null) // Trường optional
                 .build();
 
-        when(requestCounsellingService.getRequestCounselling(requestCounsellingId))
+        when(requestCounsellingService.getRequestCounsellingByAdmin(requestCounsellingId))
                 .thenReturn(mockVo);
 
         // Act & Assert
-        mockMvc.perform(get("/counselling/{requestCounsellingId}", requestCounsellingId)
+        mockMvc.perform(get("/counselling/get-by-admin/{requestCounsellingId}", requestCounsellingId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))

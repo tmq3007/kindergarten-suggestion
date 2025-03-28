@@ -154,17 +154,33 @@ export const requestCounsellingApi = createApi({
       },
       providesTags: ["RequestList"],
     }),
-    getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+    getRequestCounsellingByAdmin: builder.query<ApiResponse<RequestCounsellingVO>, number>({
           query: (requestCounsellingId) => ({
-              url: `counselling/${requestCounsellingId}`,
+              url: `counselling/get-by-admin/${requestCounsellingId}`,
               method: "GET",
           }),
           transformErrorResponse: (response: { status: string | number }) => response.status,
           providesTags: ["RequestCounselling"],
       }),
-    updateRequestCounselling: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
+    getRequestCounsellingBySchoolOwner: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+      query: (requestCounsellingId) => ({
+        url: `counselling/get-by-school-owner/${requestCounsellingId}`,
+        method: "GET",
+      }),
+      transformErrorResponse: (response: { status: string | number }) => response.status,
+      providesTags: ["RequestCounselling"],
+    }),
+    updateRequestCounsellingByAdmin: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
       query: (data) => ({
-        url: `/counselling/update-request-counselling`,
+        url: `/counselling/update-request-counselling-by-admin`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["RequestCounselling", "RequestList"],
+    }),
+    updateRequestCounsellingBySchoolOwner: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
+      query: (data) => ({
+        url: `/counselling/update-request-counselling-by-school-owner`,
         method: "PUT",
         body: data,
       }),
@@ -178,6 +194,8 @@ export const {
   useAlertReminderQuery,
   useCreateRequestCounsellingMutation,
   useGetAllRequestsQuery,
-  useGetRequestCounsellingQuery,
-  useUpdateRequestCounsellingMutation
+  useGetRequestCounsellingByAdminQuery,
+  useGetRequestCounsellingBySchoolOwnerQuery,
+  useUpdateRequestCounsellingByAdminMutation,
+  useUpdateRequestCounsellingBySchoolOwnerMutation
 } = requestCounsellingApi;

@@ -7,10 +7,7 @@ import fa.pjb.back.common.exception._14xx_data.MissingDataException;
 import fa.pjb.back.event.model.CounsellingRequestUpdateEvent;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
-import fa.pjb.back.model.entity.Parent;
-import fa.pjb.back.model.entity.RequestCounselling;
-import fa.pjb.back.model.entity.School;
-import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
@@ -18,6 +15,7 @@ import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.RequestCounsellingService;
+import fa.pjb.back.service.UserService;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -28,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +46,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final SchoolMapper schoolMapper;
     private final RequestCounsellingMapper requestCounsellingMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserService userService;
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -161,9 +161,9 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
                 .build();
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SCHOOL_OWNER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
-    public RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId) {
+    public RequestCounsellingVO getRequestCounsellingByAdmin(Integer requestCounsellingId) {
         RequestCounselling requestCounselling = requestCounsellingRepository.findByIdWithParent(requestCounsellingId);
         if (requestCounselling == null) {
             throw new MissingDataException("Request counselling not found");
@@ -172,13 +172,30 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         return requestCounsellingMapper.toRequestCounsellingVO(requestCounselling);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SCHOOL_OWNER')")
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    public RequestCounsellingVO getRequestCounsellingBySchoolOwner(Integer requestCounsellingId) {
+
+        RequestCounselling requestCounselling = requestCounsellingRepository.findByIdWithParent(requestCounsellingId);
+        if (requestCounselling == null) {
+            throw new MissingDataException("Request counselling not found");
+        }
+
+        SchoolOwner currentSchoolOwner = userService.getCurrentSchoolOwner();
+        boolean isRequestManagedBySchoolOwner = requestCounsellingRepository.isRequestManagedByOwner(requestCounsellingId, currentSchoolOwner.getId());
+        if (!isRequestManagedBySchoolOwner) {
+            throw new AuthorizationDeniedException("You don't have permission to manage this request");
+        }
+
+        return requestCounsellingMapper.toRequestCounsellingVO(requestCounselling);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     @Transactional
-    public void updateRequestCounselling(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO) {
+    public void updateRequestCounsellingByAdmin(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO) {
 
-        User user = getCurrentUser();
-        String username = user.getUsername();
+        String currentRequestCounsellingResponse = requestCounsellingUpdateDTO.response();
 
         RequestCounselling requestCounselling = requestCounsellingRepository.findById(requestCounsellingUpdateDTO.requestCounsellingId())
                 .orElseThrow(() -> new MissingDataException("Request counselling not found"));
@@ -187,10 +204,35 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
 
 
         requestCounselling.setStatus(Byte.parseByte("1"));
-        requestCounselling.setResponse(requestCounsellingUpdateDTO.response());
+        requestCounselling.setResponse(currentRequestCounsellingResponse);
 
-        eventPublisher.publishEvent(new CounsellingRequestUpdateEvent(request_email, username, requestCounsellingUpdateDTO.response()));
+        eventPublisher.publishEvent(new CounsellingRequestUpdateEvent(request_email, currentRequestCounsellingResponse));
 
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    public void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO) {
+
+        Integer currentRequestCounsellingId = requestCounsellingUpdateDTO.requestCounsellingId();
+        String currentRequestCounsellingResponse = requestCounsellingUpdateDTO.response();
+
+        RequestCounselling requestCounselling = requestCounsellingRepository.findById(currentRequestCounsellingId)
+                .orElseThrow(() -> new MissingDataException("Request counselling not found"));
+
+        SchoolOwner currentSchoolOwner = userService.getCurrentSchoolOwner();
+        boolean isRequestManagedBySchoolOwner = requestCounsellingRepository.isRequestManagedByOwner(currentRequestCounsellingId, currentSchoolOwner.getId());
+        if (!isRequestManagedBySchoolOwner) {
+            throw new AuthorizationDeniedException("You don't have permission to manage this request");
+        }
+
+        String request_email = requestCounselling.getEmail();
+
+
+        requestCounselling.setStatus(Byte.parseByte("1"));
+        requestCounselling.setResponse(currentRequestCounsellingResponse);
+
+        eventPublisher.publishEvent(new CounsellingRequestUpdateEvent(request_email, currentRequestCounsellingResponse));
     }
 
 }
