@@ -36,6 +36,12 @@ export type ReviewAcceptDenyDTO = {
     decision: boolean
 }
 
+export type ReviewReportReminderVO = {
+    schoolId: number,
+    schoolName: string,
+    total: number
+}
+
 export const reviewApi = createApi({
     reducerPath: "reviewApi",
     baseQuery: baseQueryWithReauth,
@@ -93,6 +99,14 @@ export const reviewApi = createApi({
                 body: ReviewAcceptDenyDTO
             }),
             invalidatesTags: ['Review'],
+        }),
+
+        getReviewReportReminders: build.query<ApiResponse<ReviewReportReminderVO[]>, void>({
+            query: () => ({
+                url: `/school/review/count`,
+                method: 'GET',
+            }),
+            providesTags: ['Review'],
         })
     }),
 });
@@ -102,4 +116,6 @@ export const {
     useGetTop4ReviewsQuery,
     useGetReviewBySchoolOwnerQuery,
     useReportReviewMutation,
-    useReportDecisionMutation } = reviewApi;
+    useReportDecisionMutation,
+    useGetReviewReportRemindersQuery
+} = reviewApi;

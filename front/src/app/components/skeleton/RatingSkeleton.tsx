@@ -1,7 +1,14 @@
 "use client";
 import React from "react";
 import { Card, Skeleton, Avatar, Select, List, Typography } from "antd";
-import { StarFilled } from "@ant-design/icons";
+import {
+    BookOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    FileTextOutlined, HomeOutlined, MedicineBoxOutlined,
+    StarFilled, StarOutlined, TeamOutlined, TrophyOutlined
+} from "@ant-design/icons";
 import { motion } from "framer-motion";
 
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
@@ -21,7 +28,7 @@ const mockFeedback = [
 
 const RatingSkeleton = () => {
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen p-2">
             {/* Breadcrumb */}
             <MyBreadcrumb
                 paths={[
@@ -55,20 +62,42 @@ const RatingSkeleton = () => {
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {mockFeedback.map((item) => (
-                    <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.1 }}>
-                        <Card>
-                            <div className="flex items-center gap-4">
-                                <Skeleton.Avatar active size={40} />
-                                <div>
-                                    <Skeleton.Input active className="w-16" />
-                                    <Skeleton.Input active className="w-24 mt-2" />
-                                </div>
-                            </div>
-                        </Card>
-                    </motion.div>
-                ))}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* Card 1: Review Status (1/3 width) */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="col-span-1"
+                >
+                    <Card className="w-full p-0 min-h-[240px]">
+                        <Skeleton.Input className={'!w-full !h-[200px]'} active={true}/>
+                    </Card>
+                </motion.div>
+
+                {/* Card 2: Average Rating (1/3 width) */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="col-span-1"
+                >
+                    <Card className="w-full min-h-[240px]">
+                        <Skeleton.Input className={'!w-full !h-[200px]'} active={true}/>
+                    </Card>
+                </motion.div>
+
+                {/* Card 3: Category Ratings (1/3 width) */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="col-span-1"
+                >
+                    <Card className="w-full min-h-[240px]">
+                        <Skeleton.Input className={'!w-full !h-[200px]'} active={true}/>
+                    </Card>
+                </motion.div>
             </div>
 
             {/* Recent Feedback List */}

@@ -3,6 +3,7 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
 import fa.pjb.back.model.dto.ReviewReportDTO;
+import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -79,6 +80,16 @@ public class ReviewController {
                 .code(200)
                 .message("Unreported successfully")
                 .data(reportReview)
+                .build();
+    }
+
+    @GetMapping("/count")
+    public ApiResponse<List<ReviewReportReminderVO>> getReviewCount() {
+        List<ReviewReportReminderVO> count = reviewService.getReviewReportReminders();
+        return ApiResponse.<List<ReviewReportReminderVO>>builder()
+                .code(200)
+                .message("Review count retrieved successfully")
+                .data(count)
                 .build();
     }
 

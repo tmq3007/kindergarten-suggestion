@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Modal } from 'antd';
 
 // @ts-ignore
-const AdminReportModal = ({ open, onAccept, onDeny, reportContent }) => {
+const AdminReportModal = ({ open,onClose, onAccept, onDeny, reportContent }) => {
     const [loadingAccept, setLoadingAccept] = useState(false);
     const [loadingDeny, setLoadingDeny] = useState(false);
 
@@ -22,6 +22,7 @@ const AdminReportModal = ({ open, onAccept, onDeny, reportContent }) => {
         <Modal
             title="Report Details"
             open={open}
+            onCancel={onClose}
             footer={[
                 <Button key="deny" loading={loadingDeny} onClick={handleDeny}>
                     Deny

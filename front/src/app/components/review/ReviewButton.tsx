@@ -17,13 +17,13 @@ const ReviewButton: React.FC<ReviewButtonProps> = ({
     const getButtonStyles = () => {
         switch (Number(status)) {
             case REVIEW_STATUS.PENDING:
-                return "bg-yellow-300 text-yellow-700 border-yellow-300 hover:!bg-yellow-300 hover:!text-yellow-700";
+                return "bg-yellow-300 text-yellow-700 border-yellow-300 hover:!border-yellow-300 hover:!bg-yellow-300 hover:!text-yellow-700";
             case REVIEW_STATUS.APPROVED:
-                return "bg-green-300 text-green-700 border-green-300 hover:!bg-green-300 hover:!text-green-700";
+                return "bg-green-300 text-green-700 border-green-300 hover:!border-green-300 hover:!bg-green-300 hover:!text-green-700";
             case REVIEW_STATUS.REJECTED:
-                return "bg-red-300 text-red-700 border-red-300 hover:!bg-red-300 hover:!text-red-700";
+                return "bg-red-300 text-red-700 border-red-300 hover:!border-red-300 hover:!bg-red-300 hover:!text-red-700";
             default:
-                return "bg-gray-300 text-gray-700 border-gray-300 hover:!bg-gray-300 hover:!text-gray-700";
+                return "bg-gray-300 text-gray-700 border-gray-300 hover:!border-gray-300 hover:!bg-gray-300 hover:!text-gray-700";
         }
     };
 
@@ -72,6 +72,7 @@ interface ViewReportButtonProps {
 const ViewReportButton: React.FC<ViewReportButtonProps> = ({
                                                                onClick,
                                                                disabled = false,
+                                                               onFetching = false
                                                            }) => {
     return (
         <Button
@@ -89,6 +90,7 @@ const ViewReportButton: React.FC<ViewReportButtonProps> = ({
              `}
             disabled={disabled}
             onClick={onClick}
+            loading={onFetching}
         >
             <span className="text-sm font-medium">View Report</span>
         </Button>
@@ -99,7 +101,6 @@ const MakeReportButton: React.FC<ViewReportButtonProps> = ({
                                                                onClick,
                                                                onFetching = false,
                                                                disabled = false,
-
                                                            }) => {
     return (
         <Button
