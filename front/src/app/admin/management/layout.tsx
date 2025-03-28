@@ -15,7 +15,7 @@ import {Button, ConfigProvider, Layout, Menu, message, Modal, Space, theme} from
 import Image from 'next/image';
 import Link from 'next/link';
 import {useLogoutMutation} from '@/redux/services/authApi';
-import {forbidden, unauthorized, useRouter} from 'next/navigation';
+import {forbidden, unauthorized, usePathname, useRouter} from 'next/navigation';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '@/redux/store';
 import {ROLES} from '@/lib/constants';
@@ -51,6 +51,19 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     const {
         token: {colorBgContainer, borderRadiusLG},
     } = theme.useToken();
+
+    const pathname = usePathname();
+
+    let selectedKeys = ['1'];
+    if (pathname.startsWith('/admin/management/user/user-list')) {
+        selectedKeys = ['2'];
+    } else if (pathname.startsWith('/admin/management/reminder/request-reminder')) {
+        selectedKeys = ['3'];
+    } else if (pathname.startsWith('/admin/management/parent/parent-list')) {
+        selectedKeys = ['4'];
+    } else if (pathname.startsWith('/admin/management/request/request-list')) {
+        selectedKeys = ['5'];
+    }
 
     const handleLogout = async () => {
 
@@ -134,6 +147,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                 theme="dark"
                                 mode="inline"
                                 defaultSelectedKeys={['1']}
+                                selectedKeys={selectedKeys}
                                 items={[
                                     {
                                         key: '1',
@@ -195,13 +209,13 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             <Link href="/admin/management/user/user-list">
                                 <UserOutlined/>
                             </Link>
-                            <Link href="/reminder">
+                            <Link href="/admin/management/reminder/request-reminder">
                                 <BellOutlined/>
                             </Link>
                             <Link href="/admin/management/parent/parent-list">
                                 <UsergroupAddOutlined/>
                             </Link>
-                            <Link href="/request-management">
+                            <Link href="/admin/management/request/request-list">
                                 <WindowsOutlined/>
                             </Link>
                              <Link href="" onClick={() => setIsModalOpen(true)}>

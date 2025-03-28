@@ -14,7 +14,7 @@ export default function RequestCounsellingDetail() {
     const params = useParams();
     const requestCounsellingId = Number(params.id as string);
     const router = useRouter();
-    const {data, isLoading} = useGetRequestCounsellingByAdminQuery(requestCounsellingId);
+    const {data, isLoading, error} = useGetRequestCounsellingByAdminQuery(requestCounsellingId);
     const {form, formLoaded, requestCounselling, requestCounsellingStatus} = useRequestCounsellingForm({
         data: data?.data,
         isLoading

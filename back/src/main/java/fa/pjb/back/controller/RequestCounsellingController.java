@@ -102,7 +102,7 @@ public class RequestCounsellingController {
 
     @Operation(summary = "Update request counselling", description = "Update request counselling result by admin")
     @PutMapping("/update-request-counselling-by-admin")
-    public ApiResponse<Void> updateRequestCounselling(@Valid @RequestBody RequestCounsellingUpdateDTO request) {
+    public ApiResponse<Void> updateRequestCounsellingByAdmin(@Valid @RequestBody RequestCounsellingUpdateDTO request) {
         requestCounsellingService.updateRequestCounsellingByAdmin(request);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())

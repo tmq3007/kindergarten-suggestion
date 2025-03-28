@@ -43,8 +43,8 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
     const [responseContent, setResponseContent] = useState<string>("");
     const params = useParams();
     const requestCounsellingId = Number(params.id as string);
-    const [updateRequestCounsellingByAdmin, {isLoading}] = useUpdateRequestCounsellingByAdminMutation();
-    const [updateRequestCounsellingBySchoolOwner, {isLoading: isLoading2}] = useUpdateRequestCounsellingBySchoolOwnerMutation();
+    const [updateRequestCounsellingByAdmin, {isLoading, isError}] = useUpdateRequestCounsellingByAdminMutation();
+    const [updateRequestCounsellingBySchoolOwner, {isLoading: isLoading2, isError: isError2}] = useUpdateRequestCounsellingBySchoolOwnerMutation();
     const [modalVisible, setModalVisible] = useState(false);
     const [notificationApi, contextHolder] = notification.useNotification();
 
@@ -89,7 +89,7 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
     return (
         <>
             {contextHolder}
-        <div className="w-1/2 mx-auto p-6 bg-white rounded-lg shadow-md">
+        <div className="w-full lg:w-2/3 mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form<RequestCounsellingFieldType>
                 size="middle"
                 form={form}
@@ -99,8 +99,6 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
                 layout="horizontal"
                 className="space-y-6 h-auto"
             >
-
-
                 <Form.Item
                     name="full_name"
                     label="Full Name"
@@ -151,7 +149,7 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
             </Form>
         </div>
 
-    <div className="w-1/2 mx-auto p-6 bg-white rounded-lg shadow-md mt-5">
+    <div className="w-full lg:w-2/3 mx-auto p-6 bg-white rounded-lg shadow-md mt-5">
         <Form<RequestCounsellingFieldType>
             size="middle"
             form={form}
@@ -201,7 +199,7 @@ const RequestCounsellingForm: React.FC<RequestCounsellingFormFields> = ({
             }}
             okText="Yes"
             cancelText="No, Take me back!"
-            confirmLoading={isLoading}
+            confirmLoading={isAdmin ? isLoading : isLoading2}
             getContainer={false}
         >
             <p className={'text-lg text-start'}>{"Are you sure you want to resolve this request?"}</p>

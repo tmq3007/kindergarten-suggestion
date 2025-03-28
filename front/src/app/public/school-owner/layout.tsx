@@ -46,6 +46,8 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
         selectedKeys = ['2'];
     } else if (pathname.startsWith('/public/school-owner/edit-school')) {
         selectedKeys = hasDraft ? ['2'] : ['1'];
+    } else if (pathname.startsWith('/public/school-owner/view-request')) {
+        selectedKeys = ['3'];
     }
 
     return (

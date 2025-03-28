@@ -166,6 +166,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
+    @Transactional
     public void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO) {
 
         Integer currentRequestCounsellingId = requestCounsellingUpdateDTO.requestCounsellingId();
@@ -181,7 +182,6 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         }
 
         String request_email = requestCounselling.getEmail();
-
 
         requestCounselling.setStatus(Byte.parseByte("1"));
         requestCounselling.setResponse(currentRequestCounsellingResponse);

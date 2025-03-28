@@ -1,6 +1,6 @@
 "use client";
 
-import {useParams, useRouter} from "next/navigation";
+import {forbidden, useParams, useRouter} from "next/navigation";
 import React from "react";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import RequestCounsellingForm from "@/app/components/request_counselling/RequestCounsellingForm";
@@ -23,13 +23,7 @@ export default function RequestCounsellingDetail() {
         isLoading
     });
 
-
-    // Check role and status
-    // if (role === ROLES.ADMIN && school?.status === SCHOOL_STATUS.Saved) {
-    //     forbidden();
-    // }
-
-    if (isLoading || !requestCounselling) {
+    if (isLoading) {
         return (
             <div className="pt-2">
                 <MyBreadcrumb
@@ -45,14 +39,14 @@ export default function RequestCounsellingDetail() {
     }
 
     if (!requestCounselling) {
-        return <div>Can’t find any request</div>;
+        forbidden();
     }
 
     return (
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    {label: "Request Management", href: ""},
+                    {label: "Request Management", href: "/public/school-owner/view-request"},
                     {label: "Request Detail"},
                 ]}
             />
