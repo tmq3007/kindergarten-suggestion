@@ -10,9 +10,9 @@ public record ParentInSchoolVO(
 
         SchoolListVO school,
 
-        LocalDate startDate,
+        LocalDate fromDate,
 
-        LocalDate endDate,
+        LocalDate toDate,
 
         String status
 
