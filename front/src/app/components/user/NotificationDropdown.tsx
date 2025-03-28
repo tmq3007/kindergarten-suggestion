@@ -62,7 +62,7 @@ const NotificationDropdown = () => {
                             <div>{item.description || 'No description'}</div>
                             <Link
                                 className="text-center flex justify-center text-blue-500"
-                                href="/public/school-owner"
+                                href="/public/school-owner/view-request?tab=Overdue"
                             >
                                 Show Details
                             </Link>

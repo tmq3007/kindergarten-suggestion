@@ -8,7 +8,7 @@ import {
   useGetAllRequestsQuery,
   useGetRemindersBySchoolOwnerQuery
 } from "@/redux/services/requestCounsellingApi";
-import RequestListForm from "@/app/components/request_counselling/RequestListForm";
+import RequestListForSOForm from "@/app/components/request_counselling/RequestListForSOForm";
 import {Input, notification} from "antd";
 import {SearchOutlined} from "@ant-design/icons";
 import ReminderListForm from "@/app/components/reminder/ReminderListForm";
@@ -79,7 +79,7 @@ export default function Page() {
                   style={{ maxWidth: "300px", width: "100%" }}
               />
             </div>
-            <RequestListForm
+            <RequestListForSOForm
                 data={data}
                 isLoading={isLoading}
                 isFetching={isFetching}

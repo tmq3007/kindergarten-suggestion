@@ -1,12 +1,14 @@
 "use client";
 
-import { Table, Tag, notification, ConfigProvider, Card } from "antd";
-import React, { useState } from "react";
+import { Table, Tag, notification, ConfigProvider, Card, Tabs } from "antd";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { ApiResponse } from "@/redux/services/config/baseQuery";
 import { Pageable } from "@/redux/services/userApi";
 import { RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
 import { REQUEST_COUNSELLING_STATUS_OPTIONS } from "@/lib/constants";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface RequestListFormProps {
   data: ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined;
@@ -25,11 +27,24 @@ export default function RequestListForm({
                                           fetchPage,
                                           searchText,
                                         }: RequestListFormProps) {
+  const searchParams = useSearchParams();
   const [notificationApi, contextHolder] = notification.useNotification();
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [activeTab, setActiveTab] = useState("All");
 
   const totalElements = data?.data.page.totalElements || 0;
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && typeof tab === "string") {
+      const validTabs = ["All", "Open", "Overdue"];
+      const normalizedTab = tab.trim();
+      if (validTabs.includes(normalizedTab)) {
+        setActiveTab(normalizedTab);
+      }
+    }
+  }, [searchParams]);
 
   const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
     notificationApi[type]({ message, description, placement: "topRight" });
@@ -41,21 +56,32 @@ export default function RequestListForm({
     fetchPage(page, size);
   };
 
-  // Lọc dữ liệu dựa trên searchText
+  // Lọc dữ liệu dựa trên searchText và activeTab
   const filteredRequests = data?.data.content
-  ?.filter((request) =>
-      request.name ? request.name.toLowerCase().includes(searchText.toLowerCase()) : false
-  )
+  ?.filter((request) => {
+    const matchesSearch = request.name
+        ? request.name.toLowerCase().includes(searchText.toLowerCase())
+        : false;
+
+    const status = String(request.status);
+    if (activeTab === "All") {
+      return matchesSearch;
+    } else if (activeTab === "Open") {
+      return matchesSearch && status === "0";
+    } else if (activeTab === "Overdue") {
+      return matchesSearch && status === "2";
+    }
+    return false;
+  })
   .sort((a, b) => {
     const dateA = new Date(a.dueDate);
     const dateB = new Date(b.dueDate);
     return dateA.getTime() - dateB.getTime();
   }) || [];
 
-  // Chuyển đổi dữ liệu để hiển thị trong bảng
   const tableData = filteredRequests.map((request) => {
     const statusOption = REQUEST_COUNSELLING_STATUS_OPTIONS.find(
-        (option) => option.value === String(request.status) // Chuyển request.status thành string để so sánh
+        (option) => option.value === String(request.status)
     );
     return {
       key: request.id,
@@ -64,7 +90,7 @@ export default function RequestListForm({
       schoolName: request.schoolName ?? "N/A",
       email: request.email ?? "N/A",
       phone: request.phone ?? "N/A",
-      status: statusOption ? statusOption.label : "Unknown", // Lấy label nếu tìm thấy, nếu không thì "Unknown"
+      status: statusOption ? statusOption.label : "Unknown",
     };
   });
 
@@ -125,7 +151,7 @@ export default function RequestListForm({
       align: "center" as const,
       render: (status: string) => {
         const colorMap: { [key: string]: string } = {
-          Opened: "blue", // Sửa "Open" thành "Opened" để khớp với label
+          Opened: "blue",
           Closed: "green",
           Overdue: "red",
           Unknown: "default",
@@ -139,6 +165,12 @@ export default function RequestListForm({
     return index % 2 === 0 ? "table-row-light" : "table-row-dark";
   };
 
+  const tabItems = [
+    { key: "All", label: "All" },
+    { key: "Open", label: "Open" },
+    { key: "Overdue", label: "Overdue" },
+  ];
+
   if (error) {
     return <div>Error loading data</div>;
   }
@@ -147,6 +179,62 @@ export default function RequestListForm({
       <Card bordered={false} style={{ width: "100%", boxShadow: "none" }}>
         {contextHolder}
         <div className="px-6 py-4">
+          <Tabs
+              activeKey={activeTab}
+              onChange={(key) => setActiveTab(key)}
+              items={tabItems}
+              className="custom-tabs w-full"
+          />
+          <style jsx global>{`
+            .custom-tabs .ant-tabs-nav {
+              width: 100%;
+              border-bottom: 2px solid #e8e8e8;
+            }
+
+            .custom-tabs .ant-tabs-nav-list {
+              display: flex;
+              width: 100%;
+            }
+
+            .custom-tabs .ant-tabs-tab {
+              flex: 1;
+              margin: 0 !important;
+              border: 1px solid #e8e8e8;
+              border-bottom: none;
+              border-radius: 6px 6px 0 0;
+              transition: all 0.3s ease;
+            }
+
+            .custom-tabs .ant-tabs-tab:hover {
+              background-color: #f5f5f5;
+            }
+
+            .custom-tabs .ant-tabs-tab-active {
+              background-color: #1890ff;
+              border-color: #1890ff;
+            }
+
+            .custom-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+              color: white !important;
+            }
+
+            .custom-tabs .ant-tabs-tab-btn {
+              width: 100%;
+              text-align: center;
+              font-size: 12px;
+              font-weight: 500;
+              color: #595959;
+            }
+
+            .custom-tabs .ant-tabs-ink-bar {
+              background-color: #1890ff;
+              height: 2px;
+            }
+
+            .custom-tabs .ant-tabs-nav-operations {
+              display: none !important;
+            }
+          `}</style>
           <ConfigProvider
               theme={{
                 token: {
@@ -159,18 +247,18 @@ export default function RequestListForm({
                 columns={columns}
                 dataSource={tableData}
                 loading={isLoading || isFetching}
-                scroll={{ x: "max-content" }}
+                scroll={{x: "max-content"}}
                 pagination={{
                   current: current,
                   pageSize,
-                  total: totalElements,
+                  total: filteredRequests.length,
                   onChange: handlePageChange,
                   position: ["bottomCenter"],
                   responsive: true,
                   showSizeChanger: true,
                   pageSizeOptions: ["10", "20", "50", "100"],
                 }}
-                locale={{ emptyText: "No results found" }}
+                locale={{emptyText: "No results found"}}
                 rowClassName={getRowClassName}
             />
           </ConfigProvider>

@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { ApiResponse } from "@/redux/services/config/baseQuery";
 import { RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
 import { Pageable } from "@/redux/services/userApi";
-import {REQUEST_STATUS} from "@/lib/constants";
+import {REQUEST_COUNSELLING_STATUS_OPTIONS} from "@/lib/constants";
 
 interface ReminderListFormProps {
   data: ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined;
@@ -21,7 +21,7 @@ export default function ReminderListForm({data, isLoading, isFetching, error, fe
   const [notificationApi, contextHolder] = notification.useNotification();
   const [filteredRequests, setFilteredRequests] = useState<RequestCounsellingVO[]>([]);
   const [current, setCurrent] = useState(1);
-  const [pageSize] = useState(10); // Giữ pageSize cố định như trong RequestList
+  const [pageSize] = useState(10);
 
   const totalElements = data?.data.page.totalElements || 0;
 
@@ -52,8 +52,9 @@ export default function ReminderListForm({data, isLoading, isFetching, error, fe
     schoolName: request.schoolName ?? "N/A",
     email: request.email ?? "N/A",
     phone: request.phone ?? "N/A",
-    status: Object.keys(REQUEST_STATUS).find(
-        (key) => REQUEST_STATUS[key as keyof typeof REQUEST_STATUS] === request.status
+    status: Object.keys(REQUEST_COUNSELLING_STATUS_OPTIONS).find(
+        (key) => REQUEST_COUNSELLING_STATUS_OPTIONS[key as keyof typeof REQUEST_COUNSELLING_STATUS_OPTIONS ] === request.status
+
     ) || "Unknown",
     dueDate: new Date(request.dueDate).toLocaleDateString("vi-VN", {
       day: "2-digit",
