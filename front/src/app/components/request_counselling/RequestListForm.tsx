@@ -125,7 +125,7 @@ export default function RequestListForm({
       align: "center" as const,
       render: (status: string) => {
         const colorMap: { [key: string]: string } = {
-          Opened: "blue", // Sửa "Open" thành "Opened" để khớp với label
+          Opened: "blue",
           Closed: "green",
           Overdue: "red",
           Unknown: "default",
