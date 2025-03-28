@@ -5,21 +5,31 @@ import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.RequestCounsellingMapper;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
+import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.RequestCounsellingReminderService;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -30,6 +40,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
+    private final RequestCounsellingMapper requestCounsellingMapper;
 
     @Override
     public RequestCounsellingReminderVO checkOverdueForSchoolOwner(Integer userId) {
@@ -159,5 +170,38 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         }
         return futures;
     }
+
+    @Override
+    public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
+        Page<RequestCounselling> requestPage = requestCounsellingRepository.findByStatusIn(statusList, pageable);
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+    }
+
+    @Override
+    public Page<RequestCounsellingVO> getRemindersBySchoolOwner(int page, int size, Integer schoolOwnerId, List<Byte> statuses) {
+        Optional<SchoolOwner> schoolOwnerOpt = schoolOwnerRepository.findByUserId(schoolOwnerId);
+        if (schoolOwnerOpt.isEmpty()) {
+            log.warn("No SchoolOwner found for id: {}", schoolOwnerId);
+        }
+
+        SchoolOwner schoolOwner = schoolOwnerOpt.get();
+        if (schoolOwner.getSchool() == null) {
+            log.warn("No School associated with SchoolOwner id: {}", schoolOwnerId);
+            return Page.empty(PageRequest.of(page - 1, size));
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
+
+        Integer schoolId = schoolOwner.getSchool().getId();
+        Page<RequestCounselling> requestPage = requestCounsellingRepository.findBySchoolIdAndStatusIn(
+            schoolId, statusList, pageable
+        );
+
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+    }
+
 
 }

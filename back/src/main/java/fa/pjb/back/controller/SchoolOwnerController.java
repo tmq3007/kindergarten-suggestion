@@ -5,6 +5,7 @@ import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.service.SchoolService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("school-owner")
+@Tag(name = "School Owner Controller", description = "This API provides for School Owner some actions relate with manage school.")
 public class SchoolOwnerController {
 
     private final SchoolService schoolService;

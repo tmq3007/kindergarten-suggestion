@@ -6,10 +6,13 @@ export type UserDetailDTO = {
     username: string;
     fullname: string;
     email: string;
-    dob: string | null;
+    dob: string;
     phone: string;
     role: string;
-    status: string;
+    status: boolean;
+    expectedSchool?: string;
+    business_registration_number?: string;
+    imageList?: MediaVO[];
 };
 
 export type UserUpdateDTO = {
@@ -20,7 +23,7 @@ export type UserUpdateDTO = {
     dob: string;
     phone: string;
     role: string;
-    status: string;
+    status: boolean;
 };
 
 export type UserVO = {
@@ -92,12 +95,21 @@ export const userApi = createApi({
             providesTags: ["UserDetail"],
         }),
 
-        updateUser: build.mutation<ApiResponse<UserDetailDTO>, UserUpdateDTO>({
-            query: (userUpdateDTO) => ({
-                url: '/user/update',
-                method: 'POST',
-                body: userUpdateDTO,
-            }),
+        updateUser: build.mutation<ApiResponse<UserDetailDTO>, { data: UserUpdateDTO; imageList?: File[] }>({
+            query: ({ data, imageList }) => {
+                const formData = new FormData();
+                formData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
+                if (imageList && imageList.length > 0) {
+                    imageList.forEach((file) => {
+                        formData.append("images", file);
+                    });
+                }
+                return {
+                    url: "/user/update",
+                    method: "POST",
+                    body: formData,
+                };
+            },
             invalidatesTags: ["UserDetail", "User"],
         }),
 

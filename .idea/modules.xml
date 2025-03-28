@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Kindergarten Suggestion System.iml" filepath="$PROJECT_DIR$/.idea/Kindergarten Suggestion System.iml" />
-      <module fileurl="file://$PROJECT_DIR$/back/back.iml" filepath="$PROJECT_DIR$/back/back.iml" />
     </modules>
   </component>
 </project>

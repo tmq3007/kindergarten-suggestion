@@ -33,4 +33,11 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "ORDER BY r.receiveDate DESC")
     List<Review> getTop4RecentFiveStarFeedbacks(Pageable pageable);
 
+    @Query("SELECT r FROM Review r " +
+            "JOIN FETCH r.school s " +
+            "JOIN FETCH r.parent p " +
+            "JOIN FETCH p.user u " +
+            "WHERE r.status = :status " )
+    List<Review> findAllByStatus(byte status);
+
 }

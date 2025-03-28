@@ -44,4 +44,12 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
             "WHERE so.user.id = :userId")
     Optional<SchoolOwner> findWithSchoolAndDraftByUserId(@Param("userId") Integer userId);
 
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
+        "FROM SchoolOwner s " +
+        "WHERE s.business_registration_number = :brn " +
+        "AND s.user.id != :userId")
+    boolean existsSchoolOwnerByBusinessRegistrationNumberAndUserIdNot(
+        @Param("brn") String business_registration_number,
+        @Param("userId") Integer userId
+    );
 }

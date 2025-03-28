@@ -1,4 +1,4 @@
-package fa.pjb.back.service.impl;
+package fa.pjb.back.service.user_service;
 
 import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
@@ -6,7 +6,6 @@ import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.UserCreateDTO;
-import fa.pjb.back.model.entity.Media;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
@@ -16,6 +15,7 @@ import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

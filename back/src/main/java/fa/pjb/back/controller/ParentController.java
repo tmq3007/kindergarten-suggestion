@@ -9,6 +9,7 @@ import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("parent")
+@Tag(name = "Parent Controller", description = "This API provides action relate to Parent Action")
+
 public class ParentController {
 
     private final ParentService parentService;

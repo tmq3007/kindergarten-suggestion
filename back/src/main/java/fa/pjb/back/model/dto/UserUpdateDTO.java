@@ -1,6 +1,10 @@
 package fa.pjb.back.model.dto;
 
+import fa.pjb.back.model.vo.MediaVO;
 import jakarta.validation.constraints.*;
+import java.util.List;
+import jakarta.annotation.Nullable;
+import org.springframework.web.multipart.MultipartFile;
 
 public record UserUpdateDTO(
 
@@ -26,8 +30,17 @@ public record UserUpdateDTO(
         @NotBlank(message = "Role cannot be null or empty")
         String role,
 
-        @NotBlank(message = "Status cannot be null or empty")
-        String status
+        @NotNull(message = "Status cannot be null")
+        Boolean status,
 
+        @Nullable
+        String expectedSchool,
+
+        @Nullable
+        @Size(min = 10, max = 10, message = "Business registration number must have 10 characters")
+        String business_registration_number,
+
+        @Nullable
+        List<MultipartFile> imageList
 ) {
 }
