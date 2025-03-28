@@ -3,6 +3,8 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.dto.SchoolSearchDTO;
+import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
@@ -200,6 +202,47 @@ public class SchoolController {
                 .code(HttpStatus.OK.value())
                 .message("Check draft successfully.")
                 .data(schoolService.isDraft(schoolId))
+                .build();
+    }
+
+    @Operation(summary = "Search schools by criteria", description = "This api allow user to filter school with criteria")
+    @GetMapping("/search-by-criteria")
+    public ApiResponse<Page<SchoolDetailVO>> searchSchools(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Byte type,
+            @RequestParam(required = false) Byte age,
+            @RequestParam(required = false) Long minFee,
+            @RequestParam(required = false) Long maxFee,
+            @RequestParam(required = false) List<Integer> facilityIds,
+            @RequestParam(required = false) List<Integer> utilityIds,
+            @RequestParam(required = false) String province,
+            @RequestParam(required = false) String district,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "postedDate") String sortBy) {
+
+        SchoolSearchDTO searchDTO = SchoolSearchDTO.builder()
+                .name(name)
+                .type(type)
+                .age(age)
+                .minFee(minFee)
+                .maxFee(maxFee)
+                .facilityIds(facilityIds)
+                .utilityIds(utilityIds)
+                .province(province)
+                .district(district)
+                .page(page)
+                .size(size)
+                .sortBy(sortBy)
+                .build();
+
+        log.info("=============================");
+        log.info("province: {}", province);
+        log.info("searchDTO: {}", searchDTO);
+        return ApiResponse.<Page<SchoolDetailVO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Search results")
+                .data(schoolService.searchSchoolByCriteria(searchDTO))
                 .build();
     }
 

@@ -2,6 +2,8 @@ package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
+import fa.pjb.back.model.dto.SchoolSearchDTO;
+import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
@@ -49,5 +51,7 @@ public interface SchoolService {
     Boolean mergeDraft(Integer schoolId);
 
     Boolean isDraft(Integer schoolId);
+
+    Page<SchoolDetailVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO);
 
 }
