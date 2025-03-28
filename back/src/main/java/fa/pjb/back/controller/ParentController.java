@@ -100,10 +100,9 @@ public class ParentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
             @RequestParam(required = false) String searchBy,
-            @RequestParam(required = false) String keyword,
-            @AuthenticationPrincipal User user
+            @RequestParam(required = false) String keyword
     ) {
-        Page<ParentVO> parents = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> parents = parentService.getParentBySchool(page, size, searchBy, keyword);
         return ApiResponse.<Page<ParentVO>>builder()
                  .code(HttpStatus.OK.value())
                  .message("Parents retrieved successfully")
@@ -117,10 +116,9 @@ public class ParentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
             @RequestParam(required = false, defaultValue = "username") String searchBy,
-            @RequestParam(required = false) String keyword,
-            @AuthenticationPrincipal User user
+            @RequestParam(required = false) String keyword
     ) {
-        Page<ParentVO> parents = parentService.getEnrollRequestBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> parents = parentService.getEnrollRequestBySchool( page, size, searchBy, keyword);
         return ApiResponse.<Page<ParentVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Parents retrieved successfully")
@@ -140,11 +138,11 @@ public class ParentController {
 
 
     @GetMapping("/get-school-request-count")
-    public ApiResponse<Integer> getSchoolRequestCount(@AuthenticationPrincipal User user) {
+    public ApiResponse<Integer> getSchoolRequestCount() {
         return ApiResponse.<Integer>builder()
                 .code(HttpStatus.OK.value())
                 .message("School request count retrieved successfully")
-                .data(parentService.getSchoolRequestCount(user))
+                .data(parentService.getSchoolRequestCount())
                 .build();
     }
 

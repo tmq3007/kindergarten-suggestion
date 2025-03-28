@@ -260,24 +260,24 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public Page<ParentVO> getParentBySchool(User user, int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getParentBySchool( int page, int size, String searchBy, String keyword) {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
-//        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(1, searchBy, keyword, pageable);
+        Integer schoolId = schoolOwnerRepository.getSchoolIdByUserId(userService.getCurrentUser().getId());
+        Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(schoolId, searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
 
     @Override
-    public Page<ParentVO> getEnrollRequestBySchool(User user, int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getEnrollRequestBySchool(int page, int size, String searchBy, String keyword) {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
-//        SchoolOwner so = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow(SchoolNotFoundException::new);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(1, searchBy, keyword, pageable);
+        Integer schoolId = schoolOwnerRepository.getSchoolIdByUserId(userService.getCurrentUser().getId());
+        Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(schoolId, searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
 
@@ -318,8 +318,9 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Override
-    public Integer getSchoolRequestCount(User user) {
-        return pisRepository.countParentInSchoolBySchoolIdAndStatus(1,(byte)0);
+    public Integer getSchoolRequestCount() {
+        Integer schoolId = schoolOwnerRepository.getSchoolIdByUserId(userService.getCurrentUser().getId());
+        return pisRepository.countParentInSchoolBySchoolIdAndStatus(schoolId,(byte)0);
     }
 
 
