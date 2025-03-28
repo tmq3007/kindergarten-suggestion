@@ -2,6 +2,7 @@ package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
 import fa.pjb.back.model.dto.ReviewReportDTO;
+import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
 
 import java.time.LocalDate;
@@ -18,5 +19,7 @@ public interface ReviewService {
     ReviewVO makeReport(ReviewReportDTO reviewReportDTO);
 
     ReviewVO acceptReport(ReviewAcceptDenyDTO reviewAcceptDenyDTO);
+
+    List<ReviewReportReminderVO> getReviewReportReminders();
 
 }

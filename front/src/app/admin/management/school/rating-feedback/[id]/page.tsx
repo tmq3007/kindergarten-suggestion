@@ -62,7 +62,10 @@ const RatingsDashboard = () => {
     const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
     const [loadingReviewId, setLoadingReviewId] = useState<number | null>(null);
 
-
+    const closeModal = () => {
+        setVisibleModal(false);
+        setSelectedReport(null);
+    };
 
     const handleAccept = async () => {
         if (selectedReport && 'id' in selectedReport) {
@@ -457,6 +460,7 @@ const RatingsDashboard = () => {
                             )}
                             <AdminReportModal
                                 open={visibleModal}
+                                onClose={closeModal}
                                 onAccept={handleAccept}
                                 onDeny={handleDeny}
                                 reportContent={selectedReport?.report}
