@@ -92,6 +92,7 @@ export default function ParentManagementPage() {
             children: (
                 <ParentListWrapper
                     title={"My School Parents"}
+                    isEnrollPage={false}
                     useQueryTrigger={useListParentBySchoolWithFilterQuery}
                     searchOptions={searchOptions}
                 />
@@ -112,32 +113,35 @@ export default function ParentManagementPage() {
     ];
 
     return (
-        <div>
-            <MyBreadcrumb
-                paths={[
-                    {label: "Parent Management", href: "/public/school-owner/parent-management"},
-                    {label: "Parent List"},
-                ]}
-            />
-            <Card
-                title={
-                    <Segmented
-                        className="p-1"
-                        options={segmentOptions}
-                        value={activeTabKey}
-                        onChange={handleTabChange}
-                        block
-                    />
-                }
-            >
-                <Tabs
-                    activeKey={activeTabKey}
-                    tabBarStyle={{display: "none"}}
-                    size="large"
-                    destroyInactiveTabPane
-                    items={tabItems}
+        <>
+            <div>
+                <MyBreadcrumb
+                    paths={[
+                        {label: "Parent Management", href: "/public/school-owner/parent-management"},
+                        {label: "Parent List"},
+                    ]}
                 />
-            </Card>
-        </div>
+                <Card
+                    title={
+                        <Segmented
+                            className="p-1"
+                            options={segmentOptions}
+                            value={activeTabKey}
+                            onChange={handleTabChange}
+                            block
+                        />
+                    }
+                >
+                    <Tabs
+                        activeKey={activeTabKey}
+                        tabBarStyle={{display: "none"}}
+                        size="large"
+                        destroyInactiveTabPane
+                        items={tabItems}
+                    />
+                </Card>
+            </div>
+
+        </>
     );
 }
