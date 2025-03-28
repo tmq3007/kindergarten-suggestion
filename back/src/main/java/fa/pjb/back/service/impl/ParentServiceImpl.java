@@ -257,7 +257,6 @@ public class ParentServiceImpl implements ParentService {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable);
         return parentProjections.map(parentMapper::toParentVOFromProjection);
-
     }
 
     @Override

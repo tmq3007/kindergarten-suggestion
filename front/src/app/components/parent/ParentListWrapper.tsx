@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from 'react';
+import React, {memo, useCallback, useEffect, useState} from 'react';
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SearchByComponent from "@/app/components/common/SearchByComponent";
 import ParentList from "@/app/components/parent/ParentList";
@@ -9,9 +9,10 @@ interface ParentListWraperProps {
     searchOptions: {label: string, value: string}[];
     title?: string;
     isEnrollPage?: boolean;
+    isAdminPage?: boolean;
 }
 
-const ParentListWrapper: React.FC<ParentListWraperProps> = ({useQueryTrigger, searchOptions,isEnrollPage=false,title=""}) => {
+const ParentListWrapper: React.FC<ParentListWraperProps> = ({useQueryTrigger, searchOptions,isEnrollPage=false,isAdminPage=false,title=""}) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPageSize, setCurrentPageSize] = useState(15);
     const [searchCriteria, setSearchCriteria] = useState({
@@ -29,45 +30,50 @@ const ParentListWrapper: React.FC<ParentListWraperProps> = ({useQueryTrigger, se
         ...searchCriteria,
     });
 
-    const fetchPage = (page: number, size: number) => {
+    const fetchPage = useCallback((page: number, size: number) => {
         setCurrentPage(page);
         setCurrentPageSize(size);
-    };
+    }, []);
 
-    const handleSearch = (criteria: { searchBy: string; keyword: string | undefined }) => {
-        setSearchCriteria(criteria);
-        setCurrentPage(1);
-    };
-  return (
-      <Card
-          title={
-              <div className="flex flex-col md:flex-row items-start md:items-center text-wrap justify-between">
-                  <SchoolManageTitle title={title}/>
-                  <div
-                      className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
-                      <div className="w-full">
-                          <SearchByComponent
-                              onSearch={handleSearch}
-                              options={searchOptions}
-                              initialSearchBy={searchOptions[0].value}
-                          />
-                      </div>
-                  </div>
-              </div>
-          }
-      >
-          <div className="mt-4">
-              <ParentList
-                  isEnrollPage={isEnrollPage}
-                  fetchPage={fetchPage}
-                  data={data}
-                  error={error}
-                  isLoading={isLoading}
-                  isFetching={isFetching}
-              />
-          </div>
-      </Card>
-  );
+    const handleSearch = useCallback(
+        (criteria: { searchBy: string; keyword: string | undefined }) => {
+            setSearchCriteria(criteria);
+            setCurrentPage(1);
+        },
+        []
+    );
+
+    return (
+        <Card
+            title={
+                <div className="flex flex-col md:flex-row items-start md:items-center text-wrap justify-between">
+                    <SchoolManageTitle title={title}/>
+                    <div
+                        className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
+                        <div className="w-full">
+                            <SearchByComponent
+                                onSearch={handleSearch}
+                                options={searchOptions}
+                                initialSearchBy={searchOptions[0].value}
+                            />
+                        </div>
+                    </div>
+                </div>
+            }
+        >
+            <div className="mt-4">
+                <ParentList
+                    isAdminPage={isAdminPage}
+                    isEnrollPage={isEnrollPage}
+                    fetchPage={fetchPage}
+                    data={data}
+                    error={error}
+                    isLoading={isLoading}
+                    isFetching={isFetching}
+                />
+            </div>
+        </Card>
+    );
 };
 
-export default ParentListWrapper;
+export default memo(ParentListWrapper);

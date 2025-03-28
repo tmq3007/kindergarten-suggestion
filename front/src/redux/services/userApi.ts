@@ -65,7 +65,7 @@ export type MediaVO = {
 export const userApi = createApi({
     reducerPath: "userApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["User", "UserDetail","Admin"],
+    tagTypes: ["User", "UserDetail","UserList","Admin"],
     endpoints: (build) => ({
         getUserList: build.query<
             ApiResponse<{ content: UserVO[]; page: Pageable }>,
@@ -81,7 +81,7 @@ export const userApi = createApi({
                     keyword,
                 },
             }),
-            providesTags: ["User"],
+            providesTags: ["UserList"],
         }),
 
         getUserDetail: build.query<ApiResponse<UserDetailDTO>, number>({
@@ -106,7 +106,7 @@ export const userApi = createApi({
                 url: `/user/toggle?userId=${userId}`,
                 method: 'PUT',
             }),
-            invalidatesTags: ["UserDetail", "User"],
+            invalidatesTags: ["UserList", "User"],
         }),
         createUser: build.mutation<ApiResponse<UserCreateDTO>, { data: UserCreateDTO; imageList?: File[] }>({
             query: ({ data, imageList }) => {
