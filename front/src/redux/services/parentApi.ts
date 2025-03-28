@@ -1,7 +1,8 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 import {SchoolVO} from "@/redux/services/schoolApi";
 import {Pageable, UserDetailDTO} from "@/redux/services/userApi";
+import {ReviewVO} from "@/redux/services/reviewApi";
 
 interface ChangePasswordDTO {
     oldPassword: string;
@@ -17,9 +18,9 @@ export type ParentUpdateDTO = {
     phone: string;
     dob: string;
     district: string | null;
-    ward: string| null;
-    province: string| null;
-    street: string| null;
+    ward: string | null;
+    province: string | null;
+    street: string | null;
     role: string;
     media?: File;
 };
@@ -33,25 +34,25 @@ export type ParentVO = {
     phone: string;
     dob?: string;
     district: string | null;
-    ward: string| null;
-    province: string| null;
-    street: string| null;
+    ward: string | null;
+    province: string | null;
+    street: string | null;
     role?: string;
     userId: number;
     media?: MediaVO;
     pis?: ParentInSchoolVO;
-    pisList?: ParentInSchoolVO[];
 };
 
 export type ParentInSchoolVO = {
     id: number;
     parent?: ParentVO;
-    School?: SchoolVO;
+    school?: SchoolVO;
     fromDate: Date;
     toDate?: Date;
-    status: boolean,
+    status: number,
+    providedRating?: number;
+    comment?: string;
 }
-
 export type MediaVO = {
     url: string;
     filename: string;
@@ -60,7 +61,7 @@ export type MediaVO = {
 export const parentApi = createApi({
     reducerPath: "parentApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Parent","ParentsList"],
+    tagTypes: ["Parent", "ParentsList", "AcademicHistory"],
     endpoints: (build) => ({
         getParentById: build.query<ApiResponse<ParentVO>, number>({
             query: (userId) => ({
@@ -74,14 +75,14 @@ export const parentApi = createApi({
             ApiResponse<ParentVO>,
             { parentId: string; data: ParentUpdateDTO; image?: File }
         >({
-            query: ({ parentId, data, image }) => {
+            query: ({parentId, data, image}) => {
                 const formData = new FormData();
 
-                const { media, ...parentDataWithoutImage } = data;
+                const {media, ...parentDataWithoutImage} = data;
 
                 formData.append(
                     "data",
-                    new Blob([JSON.stringify(parentDataWithoutImage)], { type: "application/json" })
+                    new Blob([JSON.stringify(parentDataWithoutImage)], {type: "application/json"})
                 );
 
                 if (image instanceof File) {
@@ -100,7 +101,7 @@ export const parentApi = createApi({
             ApiResponse<void>,
             { parentId: number; data: ChangePasswordDTO }
         >({
-            query: ({ parentId, data }) => ({
+            query: ({parentId, data}) => ({
                 url: `parent/${parentId}/change-password`,
                 method: "PUT",
                 body: data,
@@ -112,9 +113,9 @@ export const parentApi = createApi({
         }),
         listAllParentWithFilter: build.query<
             ApiResponse<{ content: ParentVO[]; page: Pageable }>,
-            {page?: number; size?: number; searchBy?: string; keyword?: string}
+            { page?: number; size?: number; searchBy?: string; keyword?: string }
         >({
-            query: ({ page = 1, size = 15, searchBy, keyword }) => ({
+            query: ({page = 1, size = 15, searchBy, keyword}) => ({
                 url: `parent/get-all-parents`,
                 method: "GET",
                 params: {
@@ -128,9 +129,9 @@ export const parentApi = createApi({
         }),
         listParentBySchoolWithFilter: build.query<
             ApiResponse<{ content: ParentVO[]; page: Pageable }>,
-            {page?: number; size?: number; searchBy?: string; keyword?: string}
+            { page?: number; size?: number; searchBy?: string; keyword?: string }
         >({
-            query: ({ page = 1, size = 15, searchBy, keyword}) => ({
+            query: ({page = 1, size = 15, searchBy, keyword}) => ({
                 url: `parent/get-parent-by-school`,
                 method: "GET",
                 params: {
@@ -144,9 +145,9 @@ export const parentApi = createApi({
         }),
         listEnrollRequestBySchoolWithFilter: build.query<
             ApiResponse<{ content: ParentVO[]; page: Pageable }>,
-            {page?: number; size?: number; searchBy?: string; keyword?: string}
+            { page?: number; size?: number; searchBy?: string; keyword?: string }
         >({
-            query: ({ page = 1, size = 15, searchBy, keyword}) => ({
+            query: ({page = 1, size = 15, searchBy, keyword}) => ({
                 url: `parent/get-enroll-request-by-school`,
                 method: "GET",
                 params: {
@@ -159,16 +160,11 @@ export const parentApi = createApi({
             providesTags: ["ParentsList"],
         }),
         deleteParentRequest: build.mutation({
-            query: (id:number) => ({
+            query: (id: number) => ({
                 url: `/parent/delete/${id}`,
                 method: 'DELETE',
             }),
-            onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
-                await queryFulfilled;
-                setTimeout(() => {
-                    dispatch(parentApi.util.invalidateTags(['ParentsList']))
-                }, 300)
-            },
+            invalidatesTags: ["ParentsList"],
         }),
         getCountEnrollRequestBySchool: build.query<ApiResponse<number>, void>({
             query: () => ({
@@ -184,6 +180,13 @@ export const parentApi = createApi({
             }),
             invalidatesTags: ["ParentsList"],
         }),
+        getAcademicHistoryByParent: build.query<ApiResponse<ParentInSchoolVO []>, { parentId: number }>({
+            query: ({parentId}) => ({
+                url: `parent/get-academic-history/${parentId}`,
+                method: "GET",
+            }),
+            providesTags: ["AcademicHistory"],
+        }),
     }),
 });
 
@@ -196,5 +199,6 @@ export const {
     useListEnrollRequestBySchoolWithFilterQuery,
     useDeleteParentRequestMutation,
     useGetCountEnrollRequestBySchoolQuery,
-    useToggleParentStatusMutation
+    useToggleParentStatusMutation,
+    useGetAcademicHistoryByParentQuery
 } = parentApi;

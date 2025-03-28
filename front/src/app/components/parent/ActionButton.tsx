@@ -6,7 +6,7 @@ import {decrementPendingRequestsCount} from "@/redux/features/parentSlice";
 import Lottie from "lottie-react";
 import approveCheckAnimation from "@public/lottie/CheckedAnimation.json";
 interface ActionButtonsProps {
-    id: number;
+    id?: number;
     onDeleteSuccess?: (id: number) => void;
     isEnrollPage?: boolean;
     isAdminPage?: boolean

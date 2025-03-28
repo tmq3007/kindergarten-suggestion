@@ -46,7 +46,7 @@ function ParentList({
         y: pageSize > 15 ? 600 : undefined,
     }), [pageSize]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedParent, setSelectedParent] = useState<ParentVO | null>(null);
+    const [selectedParent, setSelectedParent] = useState<ParentVO | undefined>(undefined);
 
     useEffect(() => {
         setLocalData(
@@ -88,7 +88,7 @@ function ParentList({
 
     const handleModalClose = () => {
         setIsModalOpen(false);
-        setSelectedParent(null);
+        setSelectedParent(undefined);
     };
     const columns = [
         {
@@ -142,8 +142,8 @@ function ParentList({
                     key: "status",
                     width: 150,
                     render: (_: any, record: ParentVO) => (
-                        <Tag color={record.pis?.status ? "green" : "default"}>
-                            {record.pis?.status ? "ENROLLED" : "Not Enroll Yet"}
+                        <Tag color={record.pis?.status === 1 ? "green" : "default"}>
+                            {record.pis?.status === 1 ? "ENROLLED" : "Not Enroll Yet"}
                         </Tag>
                     ),
                 },
@@ -220,7 +220,8 @@ function ParentList({
             </div>
             <ParentDetailsModal
                 isOpen={isModalOpen}
-                parent={selectedParent}
+                parentInfor={selectedParent}
+                isAdminPage={isAdminPage}
                 onClose={handleModalClose}
                 onDeleteSuccess={handleDeleteSuccess}
                 isEnrollPage={isEnrollPage}

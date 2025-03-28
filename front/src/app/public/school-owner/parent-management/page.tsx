@@ -32,7 +32,7 @@ const TAB_KEYS = {
 export default function ParentManagementPage() {
     const [activeTabKey, setActiveTabKey] = useState<string>(TAB_KEYS.ACTIVE_PARENTS);
     const dispatch = useDispatch();
-    const pendingRequestsCount = useSelector((state: RootState) => state.parent.pendingRequestsCount);
+    const pendingRequestsCount = useSelector((state: RootState) => state.parentInfor.pendingRequestsCount);
     const isMobile = useIsMobile();
 
     // Fetch enroll requests data on page load
