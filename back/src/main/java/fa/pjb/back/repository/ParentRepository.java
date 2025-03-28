@@ -86,7 +86,7 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
             "LEFT JOIN p.user u " +
             "LEFT JOIN p.media m " +
             "LEFT JOIN p.parentInSchools pis " +
-            "ON pis.status = 1 AND pis.school.id = :schoolId " +
+            "WHERE pis.status = 1 AND pis.school.id = :schoolId " +
             "AND (:keyword IS NULL OR :keyword = '' OR " +
             "     (CASE :searchBy " +
             "         WHEN 'username' THEN LOWER(u.username) " +
@@ -119,11 +119,13 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "    m.id AS mediaId, " +
                     "    m.url AS mediaUrl, " +
                     "    u.status AS status, " +
-                    "    pis.status AS userEnrollStatus " +
+                    "    pis.id AS pisId, " +
+                    "    (pis.status = 1) AS userEnrollStatus " +
                     "FROM Parent p " +
                     "LEFT JOIN p.user u " +
                     "LEFT JOIN p.media m " +
-                    "LEFT JOIN p.parentInSchools pis ON pis.status = 0 AND pis.school.id = :schoolId " +
+                    "LEFT JOIN p.parentInSchools pis " +
+                    "WHERE pis.status = 0 AND pis.school.id = :schoolId " +
                     "AND (:keyword IS NULL OR :keyword = '' OR " +
                     "     (CASE :searchBy " +
                     "         WHEN 'username' THEN LOWER(u.username) " +

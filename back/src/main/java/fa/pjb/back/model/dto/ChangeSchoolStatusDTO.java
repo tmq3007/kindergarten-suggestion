@@ -9,7 +9,9 @@ public record ChangeSchoolStatusDTO(
         Integer schoolId,
 
         @NotNull(message = "Status cannot be null or empty")
-        Byte status
+        Byte status,
+        
+        String response
 
 ) {
 }

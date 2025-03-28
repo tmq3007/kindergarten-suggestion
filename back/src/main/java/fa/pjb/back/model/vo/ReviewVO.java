@@ -1,5 +1,7 @@
 package fa.pjb.back.model.vo;
 
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -31,7 +33,11 @@ public record ReviewVO(
 
         String feedback,
 
-        LocalDate receiveDate
+        LocalDate receiveDate,
+
+        String report,
+
+        Byte status
 
 ) {
 }

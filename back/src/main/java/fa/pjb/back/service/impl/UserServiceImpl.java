@@ -1,7 +1,9 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
@@ -38,6 +40,7 @@ import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -68,6 +71,22 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
 
+    public User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Check if principal is an instance of User entity
+        if (principal instanceof User user) {
+            return user;
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+    }
+
+    public SchoolOwner getCurrentSchoolOwner() {
+        User user = getCurrentUser();
+        return schoolOwnerRepository.findWithSchoolAndDraftByUserId(user.getId())
+                .orElseThrow(UserNotFoundException::new);
+    }
+
     @Override
     public Page<UserVO> getAllUsersAdmin(int page, int size, String searchBy, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -77,24 +96,6 @@ public class UserServiceImpl implements UserService {
         List<ERole> roleList = Arrays.asList(ROLE_ADMIN, ROLE_SCHOOL_OWNER);
         Page<UserProjection> userEntitiesPage = userRepository.findAllByCriteria(roleList, searchBy, keyword, pageable);
         return userEntitiesPage.map(userMapper::toUserVOFromProjection);
-    }
-
-    public ERole convertRole2(String role) {
-        if (role == null || role.trim().isEmpty()) {
-            return null;
-        }
-        return switch (role.toUpperCase()) {
-            case "ROLE_PARENT" -> ERole.ROLE_PARENT;
-            case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-            case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
-            case "PARENT", "SCHOOL OWNER", "ADMIN" -> { // Handle both formats for flexibility
-                if (role.equalsIgnoreCase("PARENT")) yield ERole.ROLE_PARENT;
-                if (role.equalsIgnoreCase("SCHOOL OWNER")) yield ERole.ROLE_SCHOOL_OWNER;
-                if (role.equalsIgnoreCase("ADMIN")) yield ERole.ROLE_ADMIN;
-                throw new IllegalArgumentException("Invalid role: " + role);
-            }
-            default -> throw new IllegalArgumentException("Invalid role: " + role);
-        };
     }
 
     @Override

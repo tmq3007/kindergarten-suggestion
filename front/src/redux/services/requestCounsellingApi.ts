@@ -22,6 +22,12 @@ export type RequestCounsellingDTO = {
 };
 
 // Types for RequestCounsellingVO
+export type RequestCounsellingUpdateDTO = {
+  requestCounsellingId?: number,
+  response?: string,
+}
+
+// Types for RequestCounsellingVO (merged from both files)
 export interface RequestCounsellingVO {
   id: number;
   schoolName?: string | null;
@@ -32,6 +38,7 @@ export interface RequestCounsellingVO {
   name: string;
   dueDate: string;
   address: string;
+  response: string | null;
 }
 
 
@@ -111,16 +118,34 @@ export const requestCounsellingApi = createApi({
           size,
           ...(statuses && statuses.length > 0 && { statuses }),
         },
+    getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+          query: (requestCounsellingId) => ({
+              url: `counselling/${requestCounsellingId}`,
+              method: "GET",
+          }),
+          transformErrorResponse: (response: { status: string | number }) => response.status,
+          providesTags: ["RequestCounselling"],
       }),
+    updateRequestCounselling: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
+      query: (data) => ({
+        url: `/counselling/update-request-counselling`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["RequestCounselling", "RequestList"],
+    }),
       providesTags: ["RequestList"],
     }),
   }),
 });
 
+// Export hooks for all endpoints
 export const {
   useAlertReminderQuery,
   useCreateRequestCounsellingMutation,
   useGetAllRequestsQuery,
   useGetRequestCounsellingQuery,
   useGetAllReminderQuery,
+  useGetRequestCounsellingQuery,
+  useUpdateRequestCounsellingMutation
 } = requestCounsellingApi;

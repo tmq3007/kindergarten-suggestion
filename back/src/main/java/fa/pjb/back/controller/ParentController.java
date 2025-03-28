@@ -113,7 +113,7 @@ public class ParentController {
     public ApiResponse<Page<ParentVO>> getEnrollRequestBySchool(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
-            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false, defaultValue = "username") String searchBy,
             @RequestParam(required = false) String keyword,
             @AuthenticationPrincipal User user
     ) {
@@ -122,6 +122,35 @@ public class ParentController {
                 .code(HttpStatus.OK.value())
                 .message("Parents retrieved successfully")
                 .data(parents)
+                .build();
+    }
+
+    @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
+    @PostMapping("/enroll/{userId}")
+    public ApiResponse<Boolean> enrollParent(@PathVariable Integer userId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent enrolled successfully")
+                .data(parentService.enrollParent(userId))
+                .build();
+    }
+
+
+    @GetMapping("/get-school-request-count")
+    public ApiResponse<Integer> getSchoolRequestCount(@AuthenticationPrincipal User user) {
+        return ApiResponse.<Integer>builder()
+                .code(HttpStatus.OK.value())
+                .message("School request count retrieved successfully")
+                .data(parentService.getSchoolRequestCount(user))
+                .build();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ApiResponse<Void> deleteParent(@PathVariable Integer id) {
+        parentService.deleteParent(id);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent deleted successfully")
                 .build();
     }
 }

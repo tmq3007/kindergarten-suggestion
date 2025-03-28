@@ -17,22 +17,29 @@ import {
     Tooltip as RechartsTooltip,
 } from "recharts";
 import dayjs, { Dayjs } from "dayjs";
-import { ReviewVO, useGetReviewBySchoolIdQuery } from "@/redux/services/reviewApi";
+import {
+    ReviewAcceptDenyDTO,
+    ReviewVO,
+    useGetReviewBySchoolIdQuery,
+    useReportDecisionMutation
+} from "@/redux/services/reviewApi";
 import { useParams } from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
-import NoData from "@/app/components/common/NoData";
+import NoData from "@/app/components/review/NoData";
+import {REVIEW_STATUS} from "@/lib/constants";
+import AdminReportModal from "@/app/components/review/AdminReportModal";
+import  {ReviewButton,ViewReportButton} from "@/app/components/review/ReviewButton";
+import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
-interface ApiError {
-    data: {
-        code: string;
-        message: string;
-    };
-    status?: number;
+
+interface Report {
+    id: number;
+    report: string | undefined;
 }
 
 interface ReviewWithDayjs extends Omit<ReviewVO, "receiveDate"> {
@@ -49,6 +56,53 @@ const RatingsDashboard = () => {
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
+
+    const [visibleModal, setVisibleModal] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+    const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
+
+    const handleAccept = async () => {
+        if (selectedReport && 'id' in selectedReport) {
+            try {
+                const dto: ReviewAcceptDenyDTO = {
+                    id: selectedReport.id,
+                    decision: true
+                };
+                await reportDecision(dto).unwrap();
+                console.log("Report accepted successfully");
+                setVisibleModal(false);
+                setSelectedReport(null);
+                // Optionally refetch the reviews after successful decision
+                refetch();
+            } catch (error) {
+                console.error("Failed to accept report:", error);
+            }
+        }
+    };
+
+    const handleDeny = async () => {
+        if (selectedReport && 'id' in selectedReport) {
+            try {
+                // @ts-ignore
+                const dto: ReviewAcceptDenyDTO = {
+                    id: selectedReport.id,
+                    decision: false
+                };
+                await reportDecision(dto).unwrap();
+                console.log("Report denied successfully");
+                setVisibleModal(false);
+                setSelectedReport(null);
+                refetch();
+            } catch (error) {
+                console.error("Failed to deny report:", error);
+            }
+        }
+    };
+
+    const openModal = (report: { id: number; report: string | undefined } | null) => {
+        setSelectedReport(report);
+        setVisibleModal(true);
+    };
 
     // Memoize query parameters for the API call
     const queryParams = useMemo(() => {
@@ -78,6 +132,8 @@ const RatingsDashboard = () => {
             })) || [],
         [data]
     );
+
+    console.log("test",reviews[0]?.status);
 
     // Sort reviews by reviewAverage in descending order
     const sortedReviews = useMemo(() => {
@@ -198,7 +254,6 @@ const RatingsDashboard = () => {
         return <RatingSkeleton />;
     }
 
-
     return (
         <div className={'pt-2'}>
             <MyBreadcrumb
@@ -223,7 +278,7 @@ const RatingsDashboard = () => {
                     </Button>
                 </motion.div>
 
-                {reviews.length === 0 ? (
+                {(error) ? (
                     <NoData />
                 ) : (
                     <>
@@ -308,12 +363,12 @@ const RatingsDashboard = () => {
                                         value: n.toString(),
                                         label: `${n} Star${n !== 1 ? "s" : ""}`,
                                     }))}
-                                    className="w-48"
+                                    className="w-full sm:w-48"
                                 />
                             }
                         >
                             <List
-                                dataSource={displayedReviews}
+                                dataSource={displayedReviews.slice(0, showAll ? displayedReviews.length : 5)}
                                 renderItem={(item) => (
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
@@ -323,8 +378,9 @@ const RatingsDashboard = () => {
                                             boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
                                             transition: { duration: 0.3, ease: "easeInOut" },
                                         }}
+                                        className="p-2 md:p-3"
                                     >
-                                        <List.Item className="!px-3">
+                                        <List.Item className="!px-2 sm:!px-3">
                                             <List.Item.Meta
                                                 avatar={
                                                     <Avatar src={item.parentImage} className="bg-blue-500">
@@ -332,22 +388,35 @@ const RatingsDashboard = () => {
                                                     </Avatar>
                                                 }
                                                 title={
-                                                    <div className="flex justify-between items-center">
-                                                        <Text strong>{item.feedback || "No feedback provided"}</Text>
-                                                        <Text type="secondary" className="text-sm">
-                                                            {item.receiveDate.isValid()
-                                                                ? item.receiveDate.format("D MMMM YYYY")
-                                                                : "Date unavailable"}
+                                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                                        <Text strong className="text-sm sm:text-base">
+                                                            {item.feedback || "No feedback provided"}
                                                         </Text>
+                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                                                            {item.report && item.status === REVIEW_STATUS.PENDING && (
+                                                            <ViewReportButton onClick={() => openModal({
+                                                                id: item.id,
+                                                                report: item.report
+                                                            })} />
+                                                            )}
+                                                            <ReviewButton status={item.status} />
+                                                            <Text type="secondary" className="text-xs sm:text-sm">
+                                                                {item.receiveDate.isValid()
+                                                                    ? item.receiveDate.format("D MMMM YYYY")
+                                                                    : "Date unavailable"}
+                                                            </Text>
+                                                        </div>
                                                     </div>
                                                 }
                                                 description={
-                                                    <div className="flex items-center gap-2">
-                                                        <Text type="secondary">{item.parentName || "Anonymous"}</Text>
-                                                        <div className="flex">
-                                                            {[...Array(Math.floor(item.reviewAverage || 0))].map((_, i) => (
-                                                                <StarFilled key={i} className="text-yellow-400 text-sm" />
-                                                            ))}
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <Text type="secondary">{item.parentName || "Anonymous"}</Text>
+                                                            <div className="flex">
+                                                                {[...Array(Math.floor(item.average || 0))].map((_, i) => (
+                                                                    <StarFilled key={i} className="text-yellow-400 text-xs sm:text-sm" />
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 }
@@ -358,12 +427,26 @@ const RatingsDashboard = () => {
                             />
                             {filteredReviews.length > 5 && (
                                 <div className="text-center mt-4">
-                                    <Button type="link" onClick={() => setShowAll(!showAll)}>
+                                    <Button
+                                        type="link"
+                                        onClick={() => setShowAll(!showAll)}
+                                        className={`${
+                                            filteredReviews.length <= 5 ? "blur-sm opacity-50 cursor-not-allowed" : "cursor-pointer"
+                                        }`}
+                                        disabled={filteredReviews.length <= 5}
+                                    >
                                         {showAll ? "Show Less" : `View More (${filteredReviews.length - 5})`}
                                     </Button>
                                 </div>
                             )}
+                            <AdminReportModal
+                                open={visibleModal}
+                                onAccept={handleAccept}
+                                onDeny={handleDeny}
+                                reportContent={selectedReport?.report}
+                            />
                         </Card>
+
                     </>
                 )}
             </div>

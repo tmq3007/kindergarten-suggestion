@@ -16,6 +16,9 @@ import java.time.LocalDate;
 @Table(name = "Parent_In_School")
 public class ParentInSchool {
 
+    @EmbeddedId
+    private ParentInSchoolId primaInSchoolId;
+
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -38,8 +41,5 @@ public class ParentInSchool {
     @ColumnDefault("b'0'")
     @Column(name = "status", nullable = false)
     private Byte status;
-
-    @EmbeddedId
-    private ParentInSchoolId primaInSchoolId;
 
 }

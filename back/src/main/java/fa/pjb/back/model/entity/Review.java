@@ -58,4 +58,11 @@ public class Review {
     @Column(name = "receive_date", nullable = false)
     private LocalDate receiveDate;
 
+    @Column(name = "report")
+    private String report;
+
+    @NotNull
+    @Column(name = "status", nullable = false)
+    private Byte status;
+
 }

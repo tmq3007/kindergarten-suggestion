@@ -9,6 +9,7 @@ import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.event.model.SchoolApprovedEvent;
+import fa.pjb.back.event.model.SchoolDeletedEvent;
 import fa.pjb.back.event.model.SchoolPublishedEvent;
 import fa.pjb.back.event.model.SchoolRejectedEvent;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
@@ -25,6 +26,7 @@ import fa.pjb.back.repository.*;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
+import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -42,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,32 +64,17 @@ public class SchoolServiceImpl implements SchoolService {
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
     private final UserRepository userRepository;
+    private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
     private final GGDriveImageService imageService;
-    private final SchoolOwnerRepository schoolOwnerRepository;
+    private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private static final Tika tika = new Tika();
-    //    private final CountedAspect countedAspect;
     @Value("${school-detailed-link}")
     private String schoolDetailedLink;
     @Value("${school-detail-link-admin}")
     private String schoolDetailedLinkAdmin;
 
-    private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // Check if principal is an instance of User entity
-        if (principal instanceof User user) {
-            return user;
-        } else {
-            throw new AuthenticationFailedException("Cannot authenticate");
-        }
-    }
-
-    private SchoolOwner getCurrentSchoolOwner() {
-        User user = getCurrentUser();
-        return schoolOwnerRepository.findWithSchoolAndDraftByUserId(user.getId())
-                .orElseThrow(UserNotFoundException::new);
-    }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
@@ -246,7 +234,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO addSchool(SchoolDTO schoolDTO, List<MultipartFile> image) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         //  Map DTO to School entity
         School school = prepareSchoolData(schoolDTO, new School());
@@ -308,7 +296,7 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     private SchoolDetailVO processSchoolUpdate(SchoolDTO schoolDTO, List<MultipartFile> images, Byte status) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
 
         // Find School Owner from UserID
         SchoolOwner schoolOwner = schoolOwnerRepository
@@ -351,7 +339,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, draft);
         }
-        draft.setPostedDate(LocalDate.now());
+        draft.setPostedDate(LocalDateTime.now());
         draft = schoolRepository.save(draft);
         return schoolMapper.toSchoolDetailVO(draft);
     }
@@ -371,7 +359,7 @@ public class SchoolServiceImpl implements SchoolService {
         }
 
         School school = schoolMapper.toSchool(schoolDTO, oldSchool);
-        school.setPostedDate(LocalDate.now());
+        school.setPostedDate(LocalDateTime.now());
 
         // Delete old images (only for updates)
         if (isUpdate) {
@@ -387,7 +375,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO updateSchoolByAdmin(SchoolDTO schoolDTO, List<MultipartFile> images) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         if (user == null) return null;
         // Check if the school exists
         School oldSchool = schoolRepository.findById(schoolDTO.id()).orElseThrow(SchoolNotFoundException::new);
@@ -574,6 +562,7 @@ public class SchoolServiceImpl implements SchoolService {
         int schoolID = changeSchoolStatusDTO.schoolId();
 
         Byte preparedStatus = changeSchoolStatusDTO.status();
+        String response = changeSchoolStatusDTO.response();
 
         // Retrieve the school entity by ID, or throw an exception if not found
         School school = schoolRepository.findById(schoolID)
@@ -583,7 +572,7 @@ public class SchoolServiceImpl implements SchoolService {
         String currentSchoolEmail = school.getEmail();
         String currentSchoolName = school.getName();
 
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         String username = user.getUsername();
 
         switch (preparedStatus) {
@@ -602,7 +591,7 @@ public class SchoolServiceImpl implements SchoolService {
                 // Change to "Rejected" status if current status is "Submitted"
                 if (currentSchoolStatus == 1) {
                     school.setStatus(preparedStatus);
-                    eventPublisher.publishEvent(new SchoolRejectedEvent(currentSchoolEmail, school.getName()));
+                    eventPublisher.publishEvent(new SchoolRejectedEvent(currentSchoolEmail, currentSchoolName, response));
                 } else {
                     throw new InappropriateSchoolStatusException();
                 }
@@ -647,9 +636,17 @@ public class SchoolServiceImpl implements SchoolService {
                 }
             }
 
-            case 6 ->
+            case 6 -> {
                 // Change to "Deleted" status
-                    school.setStatus(preparedStatus);
+                school.setStatus(preparedStatus);
+                List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(schoolID);
+
+                for (SchoolOwner so : schoolOwners) {
+                    so.setSchool(null);
+                    schoolOwnerRepository.saveAndFlush(so);
+                }
+                eventPublisher.publishEvent(new SchoolDeletedEvent(currentSchoolEmail, currentSchoolName, response));
+            }
 
             default -> throw new StatusNotExistException("Status does not exist");
 
@@ -660,10 +657,11 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     @Transactional
     public void updateSchoolStatusBySchoolOwner(ChangeSchoolStatusDTO changeSchoolStatusDTO) {
-        User user = getCurrentUser();
+        User user = userService.getCurrentUser();
         String username = user.getUsername();
-        Boolean publicPermission = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getPublicPermission();
-        Integer ownedSchoolID = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow().getSchool().getId();
+        SchoolOwner currentOwner = schoolOwnerRepository.findByUserId(user.getId()).orElseThrow();
+        Boolean publicPermission = currentOwner.getPublicPermission();
+        Integer ownedSchoolID = currentOwner.getSchool().getId();
 
         School school = schoolRepository.findById(ownedSchoolID)
                 .orElseThrow(SchoolNotFoundException::new);
@@ -698,8 +696,13 @@ public class SchoolServiceImpl implements SchoolService {
 
             case 6 -> {
                 if (school.getStatus() != 2) {
-
                     school.setStatus(changeSchoolStatusDTO.status());
+                    List<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllBySchoolId(ownedSchoolID);
+
+                    for (SchoolOwner so : schoolOwners) {
+                        so.setSchool(null);
+                        schoolOwnerRepository.saveAndFlush(so);
+                    }
 
                 } else {
                     throw new InappropriateSchoolStatusException();

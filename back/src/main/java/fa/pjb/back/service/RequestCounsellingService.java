@@ -1,6 +1,7 @@
 package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
+import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import org.springframework.data.domain.Page;
 
@@ -22,5 +23,7 @@ public interface RequestCounsellingService {
     );
 
     RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId);
+
+    void updateRequestCounselling(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
 
 }

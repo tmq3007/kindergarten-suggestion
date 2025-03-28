@@ -1,12 +1,16 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.MissingDataException;
+import fa.pjb.back.event.model.CounsellingRequestUpdateEvent;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
+import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.entity.School;
+import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
@@ -15,12 +19,16 @@ import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.RequestCounsellingService;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,6 +46,17 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final SchoolRepository schoolRepository;
     private final SchoolMapper schoolMapper;
     private final RequestCounsellingMapper requestCounsellingMapper;
+    private final ApplicationEventPublisher eventPublisher;
+
+    private User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Check if principal is an instance of User entity
+        if (principal instanceof User user) {
+            return user;
+        } else {
+            throw new AuthenticationFailedException("Cannot authenticate");
+        }
+    }
 
     @Override
     public RequestCounsellingVO createRequestCounselling(RequestCounsellingDTO request) {
@@ -96,6 +115,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SCHOOL_OWNER')")
     @Override
     public RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId) {
         RequestCounselling requestCounselling = requestCounsellingRepository.findByIdWithParent(requestCounsellingId);
@@ -105,4 +125,26 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
 
         return requestCounsellingMapper.toRequestCounsellingVO(requestCounselling);
     }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public void updateRequestCounselling(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO) {
+
+        User user = getCurrentUser();
+        String username = user.getUsername();
+
+        RequestCounselling requestCounselling = requestCounsellingRepository.findById(requestCounsellingUpdateDTO.requestCounsellingId())
+                .orElseThrow(() -> new MissingDataException("Request counselling not found"));
+
+        String request_email = requestCounselling.getEmail();
+
+
+        requestCounselling.setStatus(Byte.parseByte("1"));
+        requestCounselling.setResponse(requestCounsellingUpdateDTO.response());
+
+        eventPublisher.publishEvent(new CounsellingRequestUpdateEvent(request_email, username, requestCounsellingUpdateDTO.response()));
+
+    }
+
 }
