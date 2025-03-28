@@ -17,9 +17,10 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"images", "facilities", "utilities", "originalSchool", "schoolOwners"})
+@ToString(exclude = {"images", "facilities", "utilities", "originalSchool", "schoolOwners", "reviews"})
 @Entity
 @Table(name = "School")
+
 public class School {
 
     @Id
@@ -125,5 +126,8 @@ public class School {
 
     @OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<SchoolOwner> schoolOwners;
+
+    @OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Review> reviews;
 
 }

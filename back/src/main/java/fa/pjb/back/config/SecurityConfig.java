@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/counselling/request").permitAll()
                         .requestMatchers("/api/v3/api-doc/**").permitAll()
                         .requestMatchers("/api/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/school/search-by-criteria").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)

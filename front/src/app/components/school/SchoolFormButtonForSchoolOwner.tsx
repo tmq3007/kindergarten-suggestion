@@ -124,7 +124,6 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             );
             refetch();
         } catch (error) {
-            console.log("error==================")
             console.log(error)
             openNotificationWithIcon(
                 'error',
@@ -163,12 +162,11 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             );
             refetch();
         } catch (error) {
-            console.log("error==================")
             console.log(error)
             openNotificationWithIcon(
                 'error',
                 'Failed to submit school',
-                'xxxxx',
+                'There was an error while submitting the school. Please try again.',
                 2,
                 () => {}
             );

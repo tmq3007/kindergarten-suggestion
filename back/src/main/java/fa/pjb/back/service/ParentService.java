@@ -22,7 +22,13 @@ public interface ParentService {
 
     Page<ParentVO> getParentBySchool(User user, int page, int size, String searchBy, String keyword);
 
-    Boolean enrollParent(Integer userId);
+    Page<ParentVO> getEnrollRequestBySchool(User user, int page, int size, String searchBy, String keyword);
+
+    Boolean enrollParent(Integer parentInSchoolId);
+
+    Boolean unEnrollParent(Integer parentInSchoolId);
+
+    Boolean rejectParent(Integer parentInSchoolId);
 
 
     Page<ParentVO> getEnrollRequestBySchool(User user, int page,  int size, String searchBy, String keyword);

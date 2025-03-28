@@ -7,6 +7,7 @@ import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._14xx_data.IncorrectPasswordException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
+import fa.pjb.back.common.exception._14xx_data.RecordNotFoundException;
 import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
@@ -285,30 +286,51 @@ public class ParentServiceImpl implements ParentService {
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     @Override
     @Transactional
-    public Boolean enrollParent(Integer userId) {
-        // Get user by userId
-        User user = userRepository.findByIdWithParent(userId).orElseThrow(UserNotFoundException::new);
+    public Boolean enrollParent(Integer parentInSchoolId) {
+        // Get ParentInSchool by ID
+        ParentInSchool parentInSchool = parentInSchoolRepository
+                .findOneById(parentInSchoolId)
+                .orElseThrow(RecordNotFoundException::new);
 
-        // Get parent from user
-        Parent parent = user.getParent();
-        if (parent == null) {
-            return false;
-        }
+        // Change status from PENDING to ACTIVE
+        parentInSchool.setStatus(ParentInSchoolEnum.ACTIVE.getValue());
 
-        // Get current school owner
-        SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
-
-        // Get school of current school owner
-        School school = schoolOwner.getSchool();
-
-        ParentInSchool parentInSchool = ParentInSchool.builder()
-                .school(school)
-                .parent(parent)
-                .from(LocalDate.now())
-                .status(ParentInSchoolEnum.ACTIVE.getValue())
-                .build();
-
+        // Save the change
         parentInSchoolRepository.save(parentInSchool);
+
+        return true;
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public Boolean unEnrollParent(Integer parentInSchoolId) {
+        // Get ParentInSchool by ID
+        ParentInSchool parentInSchool = parentInSchoolRepository
+                .findOneById(parentInSchoolId)
+                .orElseThrow(RecordNotFoundException::new);
+
+        // Change status from ACTIVE to INACTIVE
+        parentInSchool.setStatus(ParentInSchoolEnum.INACTIVE.getValue());
+
+        // Save the change
+        parentInSchoolRepository.save(parentInSchool);
+
+        return true;
+    }
+
+    @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
+    @Override
+    @Transactional
+    public Boolean rejectParent(Integer parentInSchoolId) {
+        // Get ParentInSchool by ID
+        ParentInSchool parentInSchool = parentInSchoolRepository
+                .findOneById(parentInSchoolId)
+                .orElseThrow(RecordNotFoundException::new);
+
+        // Delete this record from database
+        parentInSchoolRepository.delete(parentInSchool);
+
         return true;
     }
 
