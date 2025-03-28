@@ -127,7 +127,4 @@ public class School {
     @OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<SchoolOwner> schoolOwners;
 
-    @OneToMany(mappedBy = "school", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Review> reviews;
-
 }
