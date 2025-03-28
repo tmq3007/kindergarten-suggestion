@@ -3,6 +3,8 @@ package fa.pjb.back.model.vo;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.util.List;
+
 @Builder
 public record ParentVO(
         Integer id,
@@ -19,8 +21,8 @@ public record ParentVO(
         String ward,
         String province,
         String street,
-        Boolean userEnrollStatus,
-        Integer pisId,
-        MediaVO media
+        MediaVO media,
+        ParentInSchoolVO pis,
+        List<ParentInSchoolVO> pisList
 ) {
 }

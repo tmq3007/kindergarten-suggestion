@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import ErrorComponent from "../common/ErrorComponent";
 import {Pageable, UserVO, useToggleUserStatusMutation} from "@/redux/services/userApi";
 import message from "antd/lib/message";
+import {useToggleParentStatusMutation} from "@/redux/services/parentApi";
+import UserActionButtons from "@/app/components/user/UserActionButtons";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; page: Pageable }> | undefined;
@@ -19,23 +21,14 @@ interface UserListProps {
 export default function UserList({ fetchPage, data, error, isFetching }: UserListProps) {
     const [current, setCurrent] = useState(1);
     const [pageSize, setPageSize] = useState(15);
-    const [toggleUserStatus] = useToggleUserStatusMutation();
-    const router = useRouter();
     const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
     const totalElements = data?.data.page.totalElements || 0;
+    const[useToggleUserStatus] = useToggleUserStatusMutation();
+
     const handlePageChange = (page: number, size: number) => {
         setPageSize(size);
         setCurrent(page);
         fetchPage(page, size);
-    };
-    const handleToggleStatus = async (userId: number) => {
-        try {
-            await toggleUserStatus(userId).unwrap();
-            handlePageChange(current, pageSize);
-            message.success("User status updated successfully!");
-        } catch (error) {
-            message.error("Failed to update user status!");
-        }
     };
 
     //table layout
@@ -61,19 +54,8 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
             key: "action",
             width: 100,
             render: (_: any, record: UserVO) => (
-                <Space size="middle" className="flex justify-center">
-                    <Link href={`edit-user?userId=${record.id}`}>
-                        <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
-                    </Link>
-                    <Popconfirm
-                        title="Are you sure you want to change this user's status?"
-                        onConfirm={() => handleToggleStatus(Number(record.id))}
-                        okText="Yes"
-                        cancelText="No"
-                    >
-                        <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
-                    </Popconfirm>
-                </Space>
+                <UserActionButtons id={record.id}
+                                   triggerStatus={useToggleUserStatus}/>
             ),
         },
     ];

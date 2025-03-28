@@ -16,7 +16,6 @@ interface ReminderListFormProps {
   searchText: string;
 }
 
-
 export default function ReminderListForm({data, isLoading, isFetching, error, fetchPage, searchText,}: ReminderListFormProps) {
   const [notificationApi, contextHolder] = notification.useNotification();
   const [filteredRequests, setFilteredRequests] = useState<RequestCounsellingVO[]>([]);

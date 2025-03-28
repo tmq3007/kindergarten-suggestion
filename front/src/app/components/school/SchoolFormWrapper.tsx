@@ -9,9 +9,11 @@ interface SchoolFormWrapperProps {
     school: SchoolVO | SchoolDetailVO;
     isEdit?: boolean;
     isDetailPage?: boolean;
+    isAdmin?: boolean;
 }
 
-export default function SchoolFormWrapper({form, school, isEdit, isDetailPage}: SchoolFormWrapperProps) {
+export default function SchoolFormWrapper({form, school, isEdit, isDetailPage, isAdmin}: SchoolFormWrapperProps) {
+
     return (
         <SchoolForm
             isDetailPage={isDetailPage}
@@ -22,9 +24,10 @@ export default function SchoolFormWrapper({form, school, isEdit, isDetailPage}: 
             imageList={school.imageList || []}
             hasCancelButton={false}
             hasDeleteButton={
+                (isAdmin && school.status === SCHOOL_STATUS.Approved) ||
                 school.status === SCHOOL_STATUS.Submitted ||
-                school.status === SCHOOL_STATUS.Published ||
-                school.status === SCHOOL_STATUS.Unpublished ||
+                (isAdmin && school.status === SCHOOL_STATUS.Published) ||
+                (isAdmin && school.status === SCHOOL_STATUS.Unpublished) ||
                 school.status === SCHOOL_STATUS.Rejected
             }
             hasEditButton={school.status !== SCHOOL_STATUS.Deleted}

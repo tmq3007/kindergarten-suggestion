@@ -21,6 +21,7 @@ import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
@@ -60,15 +61,34 @@ public class GGDriveImageServiceImpl implements GGDriveImageService {
     //Process resize images
     //TODO: remake this to return webp file
     private java.io.File processImage(java.io.File file) throws IOException {
-        BufferedImage originalImage = ImageIO.read(file);
+        // Validate file before processing
+        if (file == null || !file.exists() || !file.canRead()) {
+            throw new IOException("Invalid input file: " + (file != null ? file.getAbsolutePath() : "null"));
+        }
+
+        if (file.length() == 0) {
+            throw new IOException("Empty input file: " + file.getAbsolutePath());
+        }
+
+        BufferedImage originalImage;
+        try {
+            originalImage = ImageIO.read(file);
+        } catch (IIOException e) {
+            throw new IOException("Failed to read image file: " + file.getAbsolutePath(), e);
+        }
+
+        if (originalImage == null) {
+            throw new IOException("Unsupported image format: " + file.getAbsolutePath());
+        }
+
         String newFileName = file.getName().replaceAll("\\.tmp$", ".png");
         java.io.File resizedFile = new java.io.File("resized_" + newFileName);
 
         try (OutputStream os = new FileOutputStream(resizedFile)) {
             Thumbnails.of(originalImage)
-                    .size(600, 600)  // Resize to max 600px w/h
-                    .outputFormat("png") // Ensure output format is JPG
-                    .outputQuality(0.9) // Maintain quality while reducing file size
+                    .size(600, 600)
+                    .outputFormat("png")
+                    .outputQuality(0.9)
                     .toOutputStream(os);
         }
         return resizedFile;

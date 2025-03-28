@@ -17,10 +17,10 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
     @Query(
             value = "SELECT DISTINCT " +
                     "    p.id AS id, " +
-                    "    p.district AS parentDistrict, " +
-                    "    p.ward AS parentWard, " +
-                    "    p.province AS parentProvince, " +
-                    "    p.street AS parentStreet, " +
+                    "    p.district AS district, " +
+                    "    p.ward AS ward, " +
+                    "    p.province AS province, " +
+                    "    p.street AS street, " +
                     "    u.id AS userId, " +
                     "    u.username AS username, " +
                     "    u.fullname AS fullname, " +
@@ -31,11 +31,14 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "    m.id AS mediaId, " +
                     "    m.url AS mediaUrl, " +
                     "    u.status AS status, " +
-                    "    CASE WHEN pisEnroll.id IS NOT NULL THEN true ELSE false END AS userEnrollStatus " +
+                    "    pis.id AS pisId, " +
+                    "    CASE WHEN pis.id IS NOT NULL THEN true ELSE false END AS userEnrollStatus, " +
+                    "    pis.from AS fromDate, " +
+                    "    pis.to AS toDate " +
                     "FROM Parent p " +
                     "LEFT JOIN p.user u " +
                     "LEFT JOIN p.media m " +
-                    "LEFT JOIN p.parentInSchools pisEnroll ON pisEnroll.parent = p AND pisEnroll.status = 1 " +
+                    "LEFT JOIN p.parentInSchools pis ON pis.parent = p AND pis.status = 1 " +
                     "WHERE (:keyword IS NULL OR :keyword = '' OR " +
                     "       LOWER(CASE :searchBy " +
                     "           WHEN 'username' THEN u.username " +
@@ -44,7 +47,6 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "           WHEN 'phone' THEN u.phone " +
                     "           ELSE '' " +
                     "       END) LIKE LOWER(CONCAT('%', :keyword, '%')))",
-
             countQuery = "SELECT COUNT(DISTINCT p.id) " +
                     "FROM Parent p " +
                     "LEFT JOIN p.user u " +
@@ -67,10 +69,10 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
 
     @Query(value = "SELECT " +
             "    p.id AS id, " +
-            "    p.district AS parentDistrict, " +
-            "    p.ward AS parentWard, " +
-            "    p.province AS parentProvince, " +
-            "    p.street AS parentStreet, " +
+            "    p.district AS district, " +
+            "    p.ward AS ward, " +
+            "    p.province AS province, " +
+            "    p.street AS street, " +
             "    u.id AS userId, " +
             "    u.username AS username, " +
             "    u.fullname AS fullname, " +
@@ -81,11 +83,14 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
             "    m.id AS mediaId, " +
             "    m.url AS mediaUrl, " +
             "    u.status AS status, " +
-            "    true AS userEnrollStatus " +
-            "FROM Parent p " +
+            "    pis.id AS pisId, " +
+            "    true AS userEnrollStatus, " +
+            "    pis.from AS fromDate, " +
+            "    pis.to AS toDate " +
+            "FROM ParentInSchool pis " +
+            "LEFT JOIN pis.parent p " +
             "LEFT JOIN p.user u " +
             "LEFT JOIN p.media m " +
-            "LEFT JOIN p.parentInSchools pis " +
             "WHERE pis.status = 1 AND pis.school.id = :schoolId " +
             "AND (:keyword IS NULL OR :keyword = '' OR " +
             "     (CASE :searchBy " +
@@ -105,10 +110,10 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
     @Query(
             "SELECT " +
                     "    p.id AS id, " +
-                    "    p.district AS parentDistrict, " +
-                    "    p.ward AS parentWard, " +
-                    "    p.province AS parentProvince, " +
-                    "    p.street AS parentStreet, " +
+                    "    p.district AS district, " +
+                    "    p.ward AS ward, " +
+                    "    p.province AS province, " +
+                    "    p.street AS street, " +
                     "    u.id AS userId, " +
                     "    u.username AS username, " +
                     "    u.fullname AS fullname, " +
@@ -120,11 +125,13 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "    m.url AS mediaUrl, " +
                     "    u.status AS status, " +
                     "    pis.id AS pisId, " +
-                    "    (pis.status = 1) AS userEnrollStatus " +
-                    "FROM Parent p " +
+                    "    (pis.status = 1) AS userEnrollStatus, " +
+                    "    pis.from AS fromDate, " +
+                    "    pis.to AS toDate " +
+                    "FROM ParentInSchool pis " +
+                    "LEFT JOIN pis.parent p " +
                     "LEFT JOIN p.user u " +
                     "LEFT JOIN p.media m " +
-                    "LEFT JOIN p.parentInSchools pis " +
                     "WHERE pis.status = 0 AND pis.school.id = :schoolId " +
                     "AND (:keyword IS NULL OR :keyword = '' OR " +
                     "     (CASE :searchBy " +

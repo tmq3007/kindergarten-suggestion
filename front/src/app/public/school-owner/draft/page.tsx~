@@ -24,20 +24,19 @@ export default function Draft() {
     const user = useSelector((state: RootState) => state.user);
     const role = useSelector((state: RootState) => state.user?.role);
     const hasDraft = user.hasDraft;
-    const {data, isLoading} = useGetDraftOfSchoolOwnerQuery(undefined, {
-        skip: !hasDraft,
-    });
-    const draft = data?.data;
-    if (!hasDraft || !draft) {
+    if (!hasDraft) {
         return (
             <div className={'h-full flex items-center justify-center'}>
                 <Empty/>
             </div>
         )
     }
+    const {data, isLoading} = useGetDraftOfSchoolOwnerQuery();
+    const draft = data?.data;
     const draftStatus = SCHOOL_STATUS_OPTIONS.find(s => s.value === String(draft?.status))?.label || undefined;
     const [form] = Form.useForm();
 
+    console.log("draft: ", draft);
     useEffect(() => {
         if (draft) {
             //assign value in string for education and receiving age

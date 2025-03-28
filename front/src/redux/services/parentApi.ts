@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
 import {SchoolVO} from "@/redux/services/schoolApi";
-import {Pageable} from "@/redux/services/userApi";
+import {Pageable, UserDetailDTO} from "@/redux/services/userApi";
 
 interface ChangePasswordDTO {
     oldPassword: string;
@@ -38,17 +38,17 @@ export type ParentVO = {
     street: string| null;
     role?: string;
     userId: number;
-    pisId: number;
-    userEnrollStatus?: boolean;
     media?: MediaVO;
+    pis?: ParentInSchoolVO;
+    pisList?: ParentInSchoolVO[];
 };
 
 export type ParentInSchoolVO = {
     id: number;
-    parent: ParentVO,
-    School: SchoolVO,
-    fromDate: Date,
-    toDate: Date,
+    parent?: ParentVO;
+    School?: SchoolVO;
+    fromDate: Date;
+    toDate?: Date;
     status: boolean,
 }
 
@@ -92,7 +92,6 @@ export const parentApi = createApi({
                     url: `parent/edit/${Number(parentId)}`,
                     method: "PUT",
                     body: formData,
-                    // Không cần set header Content-Type, browser sẽ tự động set multipart/form-data
                 };
             },
             invalidatesTags: ["Parent"],
@@ -178,6 +177,13 @@ export const parentApi = createApi({
             }),
             providesTags: ["ParentsList"],
         }),
+        toggleParentStatus: build.mutation<ApiResponse<UserDetailDTO>, number>({
+            query: (userId) => ({
+                url: `/user/toggle?userId=${userId}`,
+                method: 'PUT',
+            }),
+            invalidatesTags: ["ParentsList"],
+        }),
     }),
 });
 
@@ -189,5 +195,6 @@ export const {
     useListParentBySchoolWithFilterQuery,
     useListEnrollRequestBySchoolWithFilterQuery,
     useDeleteParentRequestMutation,
-    useGetCountEnrollRequestBySchoolQuery
+    useGetCountEnrollRequestBySchoolQuery,
+    useToggleParentStatusMutation
 } = parentApi;

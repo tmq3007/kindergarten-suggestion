@@ -78,7 +78,7 @@ public class ParentController {
                 .build();
     }
 
-    @Operation(summary = "Get All Parents" , description = "This api will be used to retrieve all parents")
+    @Operation(summary = "Get All Parents", description = "This api will be used to retrieve all parents")
     @GetMapping("/get-all-parents")
     public ApiResponse<Page<ParentVO>> getAllParents(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
@@ -100,15 +100,14 @@ public class ParentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
             @RequestParam(required = false) String searchBy,
-            @RequestParam(required = false) String keyword,
-            @AuthenticationPrincipal User user
+            @RequestParam(required = false) String keyword
     ) {
-        Page<ParentVO> parents = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> parents = parentService.getParentBySchool(page, size, searchBy, keyword);
         return ApiResponse.<Page<ParentVO>>builder()
-                 .code(HttpStatus.OK.value())
-                 .message("Parents retrieved successfully")
-                 .data(parents)
-                 .build();
+                .code(HttpStatus.OK.value())
+                .message("Parents retrieved successfully")
+                .data(parents)
+                .build();
     }
 
     @Operation(summary = "Get All Enroll Request By School", description = "This api will be used to retrieve all enroll request of parents by school")
@@ -117,10 +116,9 @@ public class ParentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
             @RequestParam(required = false, defaultValue = "username") String searchBy,
-            @RequestParam(required = false) String keyword,
-            @AuthenticationPrincipal User user
+            @RequestParam(required = false) String keyword
     ) {
-        Page<ParentVO> parents = parentService.getEnrollRequestBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> parents = parentService.getEnrollRequestBySchool( page, size, searchBy, keyword);
         return ApiResponse.<Page<ParentVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Parents retrieved successfully")
@@ -129,22 +127,42 @@ public class ParentController {
     }
 
     @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
-    @PostMapping("/enroll/{userId}")
-    public ApiResponse<Boolean> enrollParent(@PathVariable Integer userId) {
+    @PostMapping("/enroll/{parentInSchoolId}")
+    public ApiResponse<Boolean> enrollParent(@PathVariable Integer parentInSchoolId) {
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Parent enrolled successfully")
-                .data(parentService.enrollParent(userId))
+                .data(parentService.enrollParent(parentInSchoolId))
+                .build();
+    }
+
+    @Operation(summary = "Un-Enroll Parent", description = "This api will be used to un-enroll a parent from a school")
+    @PostMapping("/un-enroll/{parentInSchoolId}")
+    public ApiResponse<Boolean> unEnrollParent(@PathVariable Integer parentInSchoolId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent un-enrolled successfully")
+                .data(parentService.unEnrollParent(parentInSchoolId))
+                .build();
+    }
+
+    @Operation(summary = "Reject Parent", description = "This api will be used to reject a parent from enrolling a school")
+    @PostMapping("/reject/{parentInSchoolId}")
+    public ApiResponse<Boolean> rejectParent(@PathVariable Integer parentInSchoolId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent rejected successfully")
+                .data(parentService.rejectParent(parentInSchoolId))
                 .build();
     }
 
 
     @GetMapping("/get-school-request-count")
-    public ApiResponse<Integer> getSchoolRequestCount(@AuthenticationPrincipal User user) {
+    public ApiResponse<Integer> getSchoolRequestCount() {
         return ApiResponse.<Integer>builder()
                 .code(HttpStatus.OK.value())
                 .message("School request count retrieved successfully")
-                .data(parentService.getSchoolRequestCount(user))
+                .data(parentService.getSchoolRequestCount())
                 .build();
     }
 

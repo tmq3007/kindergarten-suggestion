@@ -68,7 +68,7 @@ export default function EditSchool() {
                 isEdit={true}
                 triggerCheckEmail={null}
                 formLoaded={formLoaded}
-                schoolId={-1}
+                schoolId={1}
             />
         </>
     );
