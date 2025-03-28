@@ -8,6 +8,7 @@ import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -25,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("user")
+@Tag(name = "User Controller", description = "This API provides some actions relate with User action")
 public class UserController {
 
     private final UserService userService;
@@ -46,6 +48,7 @@ public class UserController {
                 .build();
     }
 
+    @Operation(summary = "User Detail", description = "Print out all information of user")
     @GetMapping("/detail")
     public ApiResponse<UserDetailDTO> getUserDetail(@RequestParam int userId) {
         UserDetailDTO userDetail = userService.getUserDetailById(userId);
@@ -78,6 +81,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Change Status", description = "Change status of user (Switch between Active and Inactive)")
     @PutMapping("/toggle")
     public ApiResponse<UserDetailDTO> toggleUserStatus(@RequestParam int userId) {
         UserDetailDTO updatedUser = userService.toggleStatus(userId);

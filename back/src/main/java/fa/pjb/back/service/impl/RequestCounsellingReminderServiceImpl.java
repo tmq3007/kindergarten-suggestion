@@ -179,5 +179,29 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
     }
 
+    @Override
+    public Page<RequestCounsellingVO> getRemindersBySchoolOwner(int page, int size, Integer schoolOwnerId, List<Byte> statuses) {
+        Optional<SchoolOwner> schoolOwnerOpt = schoolOwnerRepository.findByUserId(schoolOwnerId);
+        if (schoolOwnerOpt.isEmpty()) {
+            log.warn("No SchoolOwner found for id: {}", schoolOwnerId);
+        }
+
+        SchoolOwner schoolOwner = schoolOwnerOpt.get();
+        if (schoolOwner.getSchool() == null) {
+            log.warn("No School associated with SchoolOwner id: {}", schoolOwnerId);
+            return Page.empty(PageRequest.of(page - 1, size));
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
+
+        Integer schoolId = schoolOwner.getSchool().getId();
+        Page<RequestCounselling> requestPage = requestCounsellingRepository.findBySchoolIdAndStatusIn(
+            schoolId, statusList, pageable
+        );
+
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+    }
+
 
 }

@@ -9,6 +9,7 @@ import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.service.RequestCounsellingReminderService;
 import fa.pjb.back.service.RequestCounsellingService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("counselling")
+@Tag(name = "Request Counselling Controller", description = "This API provides some actions relate with request counselling")
 public class RequestCounsellingController {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestCounsellingController.class);
@@ -56,6 +58,7 @@ public class RequestCounsellingController {
                 .build();
     }
 
+    @Operation(summary = "List All Request Counselling", description = "Admin can see all request counselling that parents requested for all School Owner")
     @GetMapping("/all")
     public ApiResponse<Page<RequestCounsellingVO>> getAllRequests(
         @RequestParam(defaultValue = "1") int page,
@@ -97,6 +100,7 @@ public class RequestCounsellingController {
                 .build();
     }
 
+    @Operation(summary = "List All Reminder", description = "List all reminder request that are waiting School Owner solve or expired")
     @GetMapping("/all-reminder")
     public ApiResponse<Page<RequestCounsellingVO>> getAllReminder(
         @RequestParam(defaultValue = "1") int page,
@@ -109,6 +113,25 @@ public class RequestCounsellingController {
         return ApiResponse.<Page<RequestCounsellingVO>>builder()
             .code(HttpStatus.OK.value())
             .message("Fetched reminders successfully")
+            .data(requests)
+            .build();
+    }
+
+    @Operation(summary = "List Reminders by School Owner",
+        description = "List all reminder requests for a specific school owner based on their ID")
+    @GetMapping("/school-owner-reminders")
+    public ApiResponse<Page<RequestCounsellingVO>> getRemindersBySchoolOwner(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestHeader("School-Owner-Id") Integer schoolOwnerId) {
+
+        Page<RequestCounsellingVO> requests = reminderService.getRemindersBySchoolOwner(
+            page, size, schoolOwnerId, Arrays.asList((byte) 0, (byte) 2)
+        );
+
+        return ApiResponse.<Page<RequestCounsellingVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Fetched reminders for school owner successfully")
             .data(requests)
             .build();
     }

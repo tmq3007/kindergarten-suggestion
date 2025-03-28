@@ -7,6 +7,7 @@ import { Pageable } from "@/redux/services/userApi";
 import { RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import {REQUEST_STATUS} from "@/lib/constants";
+import Link from "next/link";
 
 interface RequestListFormProps {
   data: ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined;
@@ -14,7 +15,7 @@ interface RequestListFormProps {
   isFetching: boolean;
   error: any;
   fetchPage: (page: number, size: number) => void;
-  searchText: string; // Thêm prop searchText
+  searchText: string;
 }
 
 export default function RequestListForm({data, isLoading, isFetching, error, fetchPage, searchText,}: RequestListFormProps) {
@@ -62,6 +63,11 @@ export default function RequestListForm({data, isLoading, isFetching, error, fet
       dataIndex: "fullName",
       key: "fullName",
       width: 150,
+      render: (fullName: string, record: { id: number }) => (
+          <Link href={`/admin/management/request/request-detail/${record.id}`}>
+            <span className="text-blue-500 hover:underline">{fullName}</span>
+          </Link>
+      ),
     },
     {
       title: <div className="text-center">School Name</div>,

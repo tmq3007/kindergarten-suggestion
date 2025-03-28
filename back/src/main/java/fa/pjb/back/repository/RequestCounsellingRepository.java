@@ -26,8 +26,11 @@ public interface RequestCounsellingRepository extends JpaRepository<RequestCouns
 
     @Query("SELECT rc FROM RequestCounselling rc LEFT JOIN FETCH rc.parent WHERE rc.id = :requestCounsellingId")
     RequestCounselling findByIdWithParent(@Param("requestCounsellingId") Integer id);
-  @Query("SELECT rc FROM RequestCounselling rc LEFT JOIN FETCH rc.school s")
-  List<RequestCounselling> findAllWithParentAndSchool();
+
+    @Query("SELECT rc FROM RequestCounselling rc LEFT JOIN FETCH rc.school s")
+    List<RequestCounselling> findAllWithParentAndSchool();
 
     Page<RequestCounselling> findByStatusIn(List<Byte> statuses, Pageable pageable);
+
+    Page<RequestCounselling> findBySchoolIdAndStatusIn(Integer schoolId, List<Byte> statuses, Pageable pageable);
 }

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import ReminderListForm from "@/app/components/reminder/ReminderListForm"; // Import component mới
+import ReminderListForm from "@/app/components/reminder/ReminderListForm";
 import { useGetAllReminderQuery } from "@/redux/services/requestCounsellingApi";
 import {Input, notification} from "antd";
 import {SearchOutlined} from "@ant-design/icons";

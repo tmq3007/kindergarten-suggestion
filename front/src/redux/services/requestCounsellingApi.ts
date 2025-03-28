@@ -21,13 +21,13 @@ export type RequestCounsellingDTO = {
   dueDate: DateTime;
 };
 
-// Types for RequestCounsellingVO
+// Types for RequestCounsellingUpdateDTO
 export type RequestCounsellingUpdateDTO = {
   requestCounsellingId?: number,
   response?: string,
 }
 
-// Types for RequestCounsellingVO (merged from both files)
+// Types for RequestCounsellingVO
 export interface RequestCounsellingVO {
   id: number;
   schoolName?: string | null;
@@ -40,8 +40,6 @@ export interface RequestCounsellingVO {
   address: string;
   response: string | null;
 }
-
-
 
 export const requestCounsellingApi = createApi({
   reducerPath: "requestCounsellingApi",
@@ -118,14 +116,10 @@ export const requestCounsellingApi = createApi({
           size,
           ...(statuses && statuses.length > 0 && { statuses }),
         },
-    getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
-          query: (requestCounsellingId) => ({
-              url: `counselling/${requestCounsellingId}`,
-              method: "GET",
-          }),
-          transformErrorResponse: (response: { status: string | number }) => response.status,
-          providesTags: ["RequestCounselling"],
       }),
+      providesTags: ["RequestList"],
+    }),
+
     updateRequestCounselling: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
       query: (data) => ({
         url: `/counselling/update-request-counselling`,
@@ -134,6 +128,22 @@ export const requestCounsellingApi = createApi({
       }),
       invalidatesTags: ["RequestCounselling", "RequestList"],
     }),
+
+    getRemindersBySchoolOwner: builder.query<
+        ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
+        { page?: number; size?: number; schoolOwnerId: number }
+    >({
+      query: ({ page = 1, size = 10, schoolOwnerId }) => ({
+        url: "counselling/school-owner-reminders",
+        method: "GET",
+        headers: {
+          "School-Owner-Id": String(schoolOwnerId),
+        },
+        params: {
+          page,
+          size,
+        },
+      }),
       providesTags: ["RequestList"],
     }),
   }),
@@ -146,6 +156,6 @@ export const {
   useGetAllRequestsQuery,
   useGetRequestCounsellingQuery,
   useGetAllReminderQuery,
-  useGetRequestCounsellingQuery,
-  useUpdateRequestCounsellingMutation
+  useUpdateRequestCounsellingMutation,
+  useGetRemindersBySchoolOwnerQuery,
 } = requestCounsellingApi;
