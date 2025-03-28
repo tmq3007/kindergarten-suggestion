@@ -19,6 +19,7 @@ import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.UserMapper;
 import fa.pjb.back.model.mapper.UserProjection;
 import fa.pjb.back.model.vo.FileUploadVO;
+import fa.pjb.back.model.vo.MediaVO;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
@@ -26,6 +27,13 @@ import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.UserService;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -92,18 +100,41 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailDTO getUserDetailById(int userId) {
+        // Tìm User theo ID
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        return new UserDetailDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getFullname(),
-                user.getEmail(),
-                user.getDob() != null ? user.getDob().toString() : null,
-                user.getPhone(),
-                formatRole(user.getRole()),
-                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+        // Lấy thông tin cơ bản từ User
+        UserDetailDTO.UserDetailDTOBuilder builder = UserDetailDTO.builder()
+            .id(user.getId())
+            .username(user.getUsername())
+            .fullname(user.getFullname())
+            .email(user.getEmail())
+            .dob(user.getDob() != null ? user.getDob().toString() : "")
+            .phone(user.getPhone())
+            .role(formatRole(user.getRole()))
+            .status(Boolean.TRUE.equals(user.getStatus()));
+
+        // Kiểm tra role và lấy thông tin từ SchoolOwner nếu là ROLE_SCHOOL_OWNER
+        if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
+            SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + userId));
+
+            builder.expectedSchool(schoolOwner.getExpectedSchool())
+                .business_registration_number(schoolOwner.getBusiness_registration_number())
+                .imageList(schoolOwner.getImages() != null
+                    ? schoolOwner.getImages().stream()
+                    .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
+                    .collect(Collectors.toList())
+                    : null);
+        } else {
+            // Nếu không phải ROLE_SCHOOL_OWNER, các trường bổ sung để null
+            builder.expectedSchool(null)
+                .business_registration_number(null)
+                .imageList(null);
+        }
+
+        return builder.build();
     }
 
     //Covert ERole to String
@@ -127,48 +158,128 @@ public class UserServiceImpl implements UserService {
 
     // Update User Detail
     @Override
-    public UserDetailDTO updateUser(UserUpdateDTO dto) {
+    public UserDetailDTO updateUser(UserUpdateDTO dto, List<MultipartFile> imageList) {
+        // Tìm user theo ID
         User user = userRepository.findById(dto.id())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
 
+        // Kiểm tra email trùng lặp
         if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
             throw new EmailAlreadyExistedException("Email already exists.");
         }
 
-        user.setFullname(dto.fullname());
+        // Cập nhật thông tin cơ bản của User
         user.setUsername(dto.username());
+        user.setFullname(dto.fullname());
         user.setEmail(dto.email());
-        user.setDob(LocalDate.parse(dto.dob()));
+        user.setDob(LocalDate.parse(dto.dob())); // Chuyển String thành LocalDate
         user.setPhone(dto.phone());
-        user.setRole(convertRole(dto.role()));
-        user.setStatus(dto.status().equalsIgnoreCase("ACTIVE"));
+        user.setRole(convertRole(dto.role())); // Hàm convertRole chuyển String thành ERole
+        user.setStatus(dto.status());
 
+        // Xử lý SchoolOwner nếu role là ROLE_SCHOOL_OWNER
+        if (dto.role().equals("ROLE_SCHOOL_OWNER")) {
+            if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumberAndUserIdNot(
+                dto.business_registration_number(), dto.id())) {
+                throw new BRNAlreadyExistedException("Business registration number already exists.");
+            }
+
+            // Tìm hoặc tạo mới SchoolOwner
+            SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(dto.id())
+                .orElseGet(() -> SchoolOwner.builder()
+                    .user(user)
+                    .publicPermission(true)
+                    .assignTime(LocalDate.from(LocalDateTime.now()))
+                    .build());
+
+            // Cập nhật thông tin SchoolOwner
+            schoolOwner.setExpectedSchool(dto.expectedSchool());
+            schoolOwner.setBusiness_registration_number(dto.business_registration_number());
+
+            // Xử lý và lưu ảnh nếu có
+            if (imageList != null && !imageList.isEmpty()) {
+                processAndSaveFile(imageList, schoolOwner);
+            }
+
+            // Lưu SchoolOwner
+            schoolOwnerRepository.save(schoolOwner);
+        }
+
+        // Lưu User
         userRepository.save(user);
 
-        return new UserDetailDTO(
-                user.getId(), user.getUsername(), user.getFullname(), user.getEmail(),
-                user.getDob().toString(), user.getPhone(), formatRole(user.getRole()),
-                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
-    }
+        // Trả về UserDetailDTO
+        UserDetailDTO.UserDetailDTOBuilder builder = UserDetailDTO.builder()
+            .id(user.getId())
+            .username(user.getUsername())
+            .fullname(user.getFullname())
+            .email(user.getEmail())
+            .dob(user.getDob() != null ? user.getDob().toString() : "")
+            .phone(user.getPhone())
+            .role(formatRole(user.getRole()))
+            .status(Boolean.TRUE.equals(user.getStatus()));
 
+        // Nếu là ROLE_SCHOOL_OWNER, thêm thông tin từ SchoolOwner
+        if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
+            SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + user.getId()));
+
+            builder.expectedSchool(schoolOwner.getExpectedSchool())
+                .business_registration_number(schoolOwner.getBusiness_registration_number())
+                .imageList(schoolOwner.getImages() != null
+                    ? schoolOwner.getImages().stream()
+                    .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
+                    .collect(Collectors.toList())
+                    : null);
+        } else {
+            builder.expectedSchool(null)
+                .business_registration_number(null)
+                .imageList(null);
+        }
+
+        return builder.build();
+    }
     // Active or Deactivate user status
     @Override
     public UserDetailDTO toggleStatus(int userId) {
+        // Tìm User theo ID
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        user.setStatus(!user.getStatus());
+        // Đảo ngược trạng thái
+        user.setStatus(!Boolean.TRUE.equals(user.getStatus())); // Xử lý trường hợp null
         userRepository.save(user);
 
-        return new UserDetailDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getFullname(),
-                user.getEmail(),
-                user.getDob() != null ? user.getDob().toString() : null,
-                user.getPhone(),
-                formatRole(user.getRole()),
-                Boolean.TRUE.equals(user.getStatus()) ? "Active" : "Inactive");
+        // Trả về UserDetailDTO với builder
+        UserDetailDTO.UserDetailDTOBuilder builder = UserDetailDTO.builder()
+            .id(user.getId())
+            .username(user.getUsername())
+            .fullname(user.getFullname())
+            .email(user.getEmail())
+            .dob(user.getDob() != null ? user.getDob().toString() : "") // Thay null bằng ""
+            .phone(user.getPhone())
+            .role(formatRole(user.getRole()))
+            .status(Boolean.TRUE.equals(user.getStatus())); // Trả về Boolean
+
+        // Nếu là ROLE_SCHOOL_OWNER, thêm thông tin từ SchoolOwner
+        if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
+            SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + userId));
+
+            builder.expectedSchool(schoolOwner.getExpectedSchool())
+                .business_registration_number(schoolOwner.getBusiness_registration_number())
+                .imageList(schoolOwner.getImages() != null
+                    ? schoolOwner.getImages().stream()
+                    .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
+                    .collect(Collectors.toList())
+                    : null);
+        } else {
+            builder.expectedSchool(null)
+                .business_registration_number(null)
+                .imageList(null);
+        }
+
+        return builder.build();
     }
 
     private void processAndSaveFile(List<MultipartFile> files, SchoolOwner schoolOwner) {

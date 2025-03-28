@@ -9,6 +9,7 @@ import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("parent")
+@Tag(name = "Parent Controller", description = "This API provides action relate to Parent Action")
+
 public class ParentController {
 
     private final ParentService parentService;
@@ -113,7 +116,7 @@ public class ParentController {
     public ApiResponse<Page<ParentVO>> getEnrollRequestBySchool(
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
             @RequestParam(defaultValue = "15") @Max(value = 100, message = "Page size exceeds the maximum limit") int size,
-            @RequestParam(required = false) String searchBy,
+            @RequestParam(required = false, defaultValue = "username") String searchBy,
             @RequestParam(required = false) String keyword,
             @AuthenticationPrincipal User user
     ) {
@@ -135,4 +138,22 @@ public class ParentController {
                 .build();
     }
 
+
+    @GetMapping("/get-school-request-count")
+    public ApiResponse<Integer> getSchoolRequestCount(@AuthenticationPrincipal User user) {
+        return ApiResponse.<Integer>builder()
+                .code(HttpStatus.OK.value())
+                .message("School request count retrieved successfully")
+                .data(parentService.getSchoolRequestCount(user))
+                .build();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ApiResponse<Void> deleteParent(@PathVariable Integer id) {
+        parentService.deleteParent(id);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Parent deleted successfully")
+                .build();
+    }
 }

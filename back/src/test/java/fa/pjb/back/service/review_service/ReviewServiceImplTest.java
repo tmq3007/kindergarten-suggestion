@@ -10,10 +10,8 @@ import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.service.impl.ReviewServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
 
@@ -70,7 +68,7 @@ class ReviewServiceImplTest {
     }
 
     @Test
-    void getAllReview_success() {
+    void getAllReview_ByAdmin_success() {
         // Arrange
         Integer schoolId = 1;
         LocalDate fromDate = LocalDate.of(2025, 1, 1);
@@ -84,7 +82,7 @@ class ReviewServiceImplTest {
         when(reviewMapper.toReviewVOList(reviews)).thenReturn(expectedVOs);
 
         // Act
-        List<ReviewVO> result = reviewService.getAllReview(schoolId, fromDate, toDate);
+        List<ReviewVO> result = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate);
 
         // Assert
         assertNotNull(result);
@@ -93,7 +91,7 @@ class ReviewServiceImplTest {
     }
 
     @Test
-    void getAllReview_emptyResult_throwsException() {
+    void getAllReview_ByAdmin_emptyResult_throwsException() {
         // Arrange
         Integer schoolId = 1;
         LocalDate fromDate = LocalDate.of(2025, 1, 1);
@@ -104,7 +102,7 @@ class ReviewServiceImplTest {
 
         // Act & Assert
         assertThrows(ReviewNotFoundException.class, () ->
-                reviewService.getAllReview(schoolId, fromDate, toDate));
+                reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate));
         verify(reviewRepository).findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate);
         verifyNoInteractions(reviewMapper);
     }

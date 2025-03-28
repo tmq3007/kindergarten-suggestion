@@ -3,6 +3,7 @@ package fa.pjb.back.service;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
+import java.util.List;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -29,5 +30,6 @@ public interface RequestCounsellingService {
     void updateRequestCounsellingByAdmin(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
 
     void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
+
 
 }

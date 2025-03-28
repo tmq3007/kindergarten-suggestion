@@ -49,6 +49,7 @@ public class SchoolController {
                 .build();
     }
 
+    @Operation(summary = "List all schools", description = "List all schools and information about that school for Admin")
     @GetMapping("/all")
     public ApiResponse<Page<SchoolListVO>> getAllSchools(
             @RequestParam(defaultValue = "1") int page,

@@ -17,22 +17,39 @@ import {
     Tooltip as RechartsTooltip,
 } from "recharts";
 import dayjs, { Dayjs } from "dayjs";
-import { ReviewVO, useGetReviewBySchoolIdQuery } from "@/redux/services/reviewApi";
+import {
+    ReviewAcceptDenyDTO,
+    ReviewVO,
+    useGetReviewBySchoolIdQuery,
+    useReportDecisionMutation
+} from "@/redux/services/reviewApi";
+import {
+    FileTextOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    StarOutlined,
+    BookOutlined,
+    HomeOutlined,
+    TrophyOutlined,
+    TeamOutlined,
+    MedicineBoxOutlined,
+} from "@ant-design/icons";
 import { useParams } from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
-import NoData from "@/app/components/common/NoData";
-
+import NoData from "@/app/components/review/NoData";
+import {REVIEW_STATUS} from "@/lib/constants";
+import AdminReportModal from "@/app/components/review/AdminReportModal";
+import  {ReviewButton,ViewReportButton} from "@/app/components/review/ReviewButton";
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
-interface ApiError {
-    data: {
-        code: string;
-        message: string;
-    };
-    status?: number;
+
+interface Report {
+    id: number;
+    report: string | undefined;
 }
 
 interface ReviewWithDayjs extends Omit<ReviewVO, "receiveDate"> {
@@ -50,6 +67,61 @@ const RatingsDashboard = () => {
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
 
+    const [visibleModal, setVisibleModal] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+    const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
+    const [loadingReviewId, setLoadingReviewId] = useState<number | null>(null);
+
+    const closeModal = () => {
+        setVisibleModal(false);
+        setSelectedReport(null);
+    };
+
+    const handleAccept = async () => {
+        if (selectedReport && 'id' in selectedReport) {
+            try {
+                const dto: ReviewAcceptDenyDTO = {
+                    id: selectedReport.id,
+                    decision: true
+                };
+                await reportDecision(dto).unwrap();
+                console.log("Report accepted successfully");
+                setLoadingReviewId( selectedReport.id)
+                setVisibleModal(false);
+                setSelectedReport(null);
+                // Optionally refetch the reviews after successful decision
+                refetch();
+            } catch (error) {
+                console.error("Failed to accept report:", error);
+            }
+        }
+    };
+
+    const handleDeny = async () => {
+        if (selectedReport && 'id' in selectedReport) {
+            try {
+                // @ts-ignore
+                const dto: ReviewAcceptDenyDTO = {
+                    id: selectedReport.id,
+                    decision: false
+                };
+                setLoadingReviewId( selectedReport.id)
+                await reportDecision(dto).unwrap();
+                console.log("Report denied successfully");
+                setVisibleModal(false);
+                setSelectedReport(null);
+                refetch();
+            } catch (error) {
+                console.error("Failed to deny report:", error);
+            }
+        }
+    };
+
+    const openModal = (report: { id: number; report: string | undefined } | null) => {
+        setSelectedReport(report);
+        setVisibleModal(true);
+    };
+
     // Memoize query parameters for the API call
     const queryParams = useMemo(() => {
         const params: { schoolId: number; fromDate?: string; toDate?: string } = { schoolId };
@@ -60,8 +132,12 @@ const RatingsDashboard = () => {
         return params;
     }, [schoolId, dateRange]);
 
-    const { data, isLoading, error, refetch } = useGetReviewBySchoolIdQuery(queryParams);
-
+    const { data, isLoading, error,isFetching, refetch } = useGetReviewBySchoolIdQuery(queryParams);
+    useEffect(() => {
+        if (!isFetching) {
+            setLoadingReviewId(null);
+        }
+    }, [isFetching]);
     // Transform reviews data to use Dayjs for receiveDate and calculate reviewAverage
     const reviews: EnhancedReview[] = useMemo(
         () =>
@@ -78,6 +154,8 @@ const RatingsDashboard = () => {
             })) || [],
         [data]
     );
+
+    console.log("test",reviews[0]?.status);
 
     // Sort reviews by reviewAverage in descending order
     const sortedReviews = useMemo(() => {
@@ -97,7 +175,7 @@ const RatingsDashboard = () => {
 
     // Calculate metrics
     const metrics = useMemo(() => {
-        if (!reviews || reviews.length === 0) {
+        if (!reviews.length) {
             return {
                 totalReviews: 0,
                 totalAverage: 0,
@@ -106,10 +184,53 @@ const RatingsDashboard = () => {
                 totalExtracurricularActivities: 0,
                 totalTeacherAndStaff: 0,
                 totalHygieneAndNutrition: 0,
+                totalApproved: 0,
+                totalPending: 0,
+                totalRejected: 0,
+                totalApprovedAverage: 0, // Add default value for approved average
             };
         }
 
+        // Calculate totals for all reviews
         const totals = reviews.reduce(
+            (acc, review) => {
+                acc.learningProgram += review.learningProgram || 0;
+                acc.facilitiesAndUtilities += review.facilitiesAndUtilities || 0;
+                acc.extracurricularActivities += review.extracurricularActivities || 0;
+                acc.teacherAndStaff += review.teacherAndStaff || 0;
+                acc.hygieneAndNutrition += review.hygieneAndNutrition || 0;
+                if (review.status === REVIEW_STATUS.APPROVED) acc.approved += 1;
+                if (review.status === REVIEW_STATUS.PENDING) acc.pending += 1;
+                if (review.status === REVIEW_STATUS.REJECTED) acc.rejected += 1;
+                return acc;
+            },
+            {
+                learningProgram: 0,
+                facilitiesAndUtilities: 0,
+                extracurricularActivities: 0,
+                teacherAndStaff: 0,
+                hygieneAndNutrition: 0,
+                approved: 0,
+                pending: 0,
+                rejected: 0,
+            }
+        );
+
+        const totalReviews = reviews.length;
+        const totalAverage = Number(
+            (
+                (totals.learningProgram +
+                    totals.facilitiesAndUtilities +
+                    totals.extracurricularActivities +
+                    totals.teacherAndStaff +
+                    totals.hygieneAndNutrition) /
+                (totalReviews * 5)
+            ).toFixed(2)
+        );
+
+        // Calculate totals for approved reviews only
+        const approvedReviews = reviews.filter(review => review.status === REVIEW_STATUS.APPROVED);
+        const approvedTotals = approvedReviews.reduce(
             (acc, review) => {
                 acc.learningProgram += review.learningProgram || 0;
                 acc.facilitiesAndUtilities += review.facilitiesAndUtilities || 0;
@@ -127,17 +248,19 @@ const RatingsDashboard = () => {
             }
         );
 
-        const totalReviews = reviews.length;
-        const totalAverage = Number(
-            (
-                (totals.learningProgram +
-                    totals.facilitiesAndUtilities +
-                    totals.extracurricularActivities +
-                    totals.teacherAndStaff +
-                    totals.hygieneAndNutrition) /
-                (totalReviews * 5)
-            ).toFixed(2)
-        );
+        const totalApprovedReviews = approvedReviews.length;
+        const totalApprovedAverage = totalApprovedReviews > 0
+            ? Number(
+                (
+                    (approvedTotals.learningProgram +
+                        approvedTotals.facilitiesAndUtilities +
+                        approvedTotals.extracurricularActivities +
+                        approvedTotals.teacherAndStaff +
+                        approvedTotals.hygieneAndNutrition) /
+                    (totalApprovedReviews * 5)
+                ).toFixed(2)
+            )
+            : 0;
 
         return {
             totalReviews,
@@ -147,6 +270,10 @@ const RatingsDashboard = () => {
             totalExtracurricularActivities: Number((totals.extracurricularActivities / totalReviews).toFixed(2)),
             totalTeacherAndStaff: Number((totals.teacherAndStaff / totalReviews).toFixed(2)),
             totalHygieneAndNutrition: Number((totals.hygieneAndNutrition / totalReviews).toFixed(2)),
+            totalApproved: totals.approved,
+            totalPending: totals.pending,
+            totalRejected: totals.rejected,
+            totalApprovedAverage, // Add the new approved average
         };
     }, [reviews]);
 
@@ -198,7 +325,6 @@ const RatingsDashboard = () => {
         return <RatingSkeleton />;
     }
 
-
     return (
         <div className={'pt-2'}>
             <MyBreadcrumb
@@ -211,7 +337,7 @@ const RatingsDashboard = () => {
             />
             <SchoolManageTitle title={"Ratings & Feedback"} />
 
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen p-2">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -223,7 +349,7 @@ const RatingsDashboard = () => {
                     </Button>
                 </motion.div>
 
-                {reviews.length === 0 ? (
+                {(error) ? (
                     <NoData />
                 ) : (
                     <>
@@ -262,39 +388,123 @@ const RatingsDashboard = () => {
                             </motion.div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            {[
-                                { title: "Average Rating", value: metrics.totalAverage.toFixed(1), color: "purple" },
-                                { title: "Total Reviews", value: metrics.totalReviews, color: "blue" },
-                                { title: "Learning Program", value: metrics.totalLearningProgram, color: "green" },
-                                { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, color: "orange" },
-                                { title: "Extracurricular", value: metrics.totalExtracurricularActivities, color: "yellow" },
-                                { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, color: "red" },
-                                { title: "Hygiene", value: metrics.totalHygieneAndNutrition, color: "pink" },
-                            ].map((stat) => (
-                                <motion.div
-                                    key={stat.title}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.1 }}
-                                >
-                                    <Card>
-                                        <div className="flex items-center gap-4">
-                                            <Avatar
-                                                size={40}
-                                                icon={<StarFilled />}
-                                                className={`bg-${stat.color}-200 text-${stat.color}-800`}
-                                            />
-                                            <div>
-                                                <Text strong className="text-lg">
-                                                    {stat.value}
-                                                </Text>
-                                                <Text className="block text-gray-600">{stat.title}</Text>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            {/* Card 1: Review Status (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full p-0 min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Review Status
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <FileTextOutlined className="text-gray-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Total Reviews</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalReviews}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckCircleOutlined className="text-green-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Approved</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalApproved}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <ClockCircleOutlined className="text-yellow-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Pending</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalPending}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <CloseCircleOutlined className="text-red-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Rejected</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalRejected}</Text>
+                                                </div>
                                             </div>
                                         </div>
-                                    </Card>
-                                </motion.div>
-                            ))}
+                                    </div>
+                                </Card>
+                            </motion.div>
+
+                            {/* Card 2: Average Rating (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Average Rating
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <StarOutlined className="text-orange-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Overall</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalAverage.toFixed(1)}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <StarFilled className="text-green-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Approved Only</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalApprovedAverage.toFixed(1)}</Text>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
+
+                            {/* Card 3: Category Ratings (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Category Ratings
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                {[
+                                                    { title: "Learning Program", value: metrics.totalLearningProgram, icon: <BookOutlined />, color: "text-blue-600" },
+                                                    { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, icon: <HomeOutlined />, color: "text-purple-600" },
+                                                    { title: "Extracurricular", value: metrics.totalExtracurricularActivities, icon: <TrophyOutlined />, color: "text-orange-600" },
+                                                    { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, icon: <TeamOutlined />, color: "text-teal-600" },
+                                                    { title: "Hygiene", value: metrics.totalHygieneAndNutrition, icon: <MedicineBoxOutlined />, color: "text-green-600" },
+                                                ].map((stat) => (
+                                                    <div key={stat.title} className="flex justify-between items-center">
+                                                        <div className="flex items-center gap-2">
+                                                            {stat.icon && <span className={`${stat.color} text-base`}>{stat.icon}</span>}
+                                                            <Text className="text-gray-600 text-sm">{stat.title}</Text>
+                                                        </div>
+                                                        <Text strong className="text-base">{stat.value}</Text>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
                         </div>
 
                         <Card
@@ -308,12 +518,12 @@ const RatingsDashboard = () => {
                                         value: n.toString(),
                                         label: `${n} Star${n !== 1 ? "s" : ""}`,
                                     }))}
-                                    className="w-48"
+                                    className="w-full sm:w-48"
                                 />
                             }
                         >
                             <List
-                                dataSource={displayedReviews}
+                                dataSource={displayedReviews.slice(0, showAll ? displayedReviews.length : 5)}
                                 renderItem={(item) => (
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
@@ -323,8 +533,9 @@ const RatingsDashboard = () => {
                                             boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
                                             transition: { duration: 0.3, ease: "easeInOut" },
                                         }}
+                                        className="p-2 md:p-3"
                                     >
-                                        <List.Item className="!px-3">
+                                        <List.Item className="!px-2 sm:!px-3">
                                             <List.Item.Meta
                                                 avatar={
                                                     <Avatar src={item.parentImage} className="bg-blue-500">
@@ -332,22 +543,42 @@ const RatingsDashboard = () => {
                                                     </Avatar>
                                                 }
                                                 title={
-                                                    <div className="flex justify-between items-center">
-                                                        <Text strong>{item.feedback || "No feedback provided"}</Text>
-                                                        <Text type="secondary" className="text-sm">
-                                                            {item.receiveDate.isValid()
-                                                                ? item.receiveDate.format("D MMMM YYYY")
-                                                                : "Date unavailable"}
+                                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                                        <Text strong className="text-sm sm:text-base">
+                                                            {item.feedback || "No feedback provided"}
                                                         </Text>
+                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                                                            {item.report && item.status === REVIEW_STATUS.PENDING && (
+                                                                <ViewReportButton onFetching={isFetching && loadingReviewId === item.id}
+                                                                                  onClick={() => openModal({
+                                                                    id: item.id,
+                                                                    report: item.report
+                                                                })} />
+                                                            )}
+                                                            <ReviewButton status={item.status} />
+
+                                                        </div>
                                                     </div>
                                                 }
                                                 description={
-                                                    <div className="flex items-center gap-2">
-                                                        <Text type="secondary">{item.parentName || "Anonymous"}</Text>
-                                                        <div className="flex">
-                                                            {[...Array(Math.floor(item.reviewAverage || 0))].map((_, i) => (
-                                                                <StarFilled key={i} className="text-yellow-400 text-sm" />
-                                                            ))}
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <Text type="secondary">{item.parentName || "Anonymous"}</Text>
+                                                            <div className="flex">
+                                                                {[...Array(Math.floor(item.reviewAverage || 0))].map(
+                                                                    (_, i) => (
+                                                                        <StarFilled
+                                                                            key={i}
+                                                                            className="text-yellow-400 text-sm"
+                                                                        />
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                            <Text type="secondary" className="text-xs sm:text-sm">
+                                                                {item.receiveDate.isValid()
+                                                                    ? item.receiveDate.format("D MMMM YYYY")
+                                                                    : "Date unavailable"}
+                                                            </Text>
                                                         </div>
                                                     </div>
                                                 }
@@ -358,12 +589,27 @@ const RatingsDashboard = () => {
                             />
                             {filteredReviews.length > 5 && (
                                 <div className="text-center mt-4">
-                                    <Button type="link" onClick={() => setShowAll(!showAll)}>
+                                    <Button
+                                        type="link"
+                                        onClick={() => setShowAll(!showAll)}
+                                        className={`${
+                                            filteredReviews.length <= 5 ? "blur-sm opacity-50 cursor-not-allowed" : "cursor-pointer"
+                                        }`}
+                                        disabled={filteredReviews.length <= 5}
+                                    >
                                         {showAll ? "Show Less" : `View More (${filteredReviews.length - 5})`}
                                     </Button>
                                 </div>
                             )}
+                            <AdminReportModal
+                                open={visibleModal}
+                                onClose={closeModal}
+                                onAccept={handleAccept}
+                                onDeny={handleDeny}
+                                reportContent={selectedReport?.report}
+                            />
                         </Card>
+
                     </>
                 )}
             </div>

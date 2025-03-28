@@ -40,9 +40,14 @@ export default function SchoolDetail() {
     }
 
     //get school by user id
-    const {data, isError, isLoading} = useGetSchoolOfSchoolOwnerQuery(undefined, {
+    const {data, isError,refetch,isFetching, isLoading} = useGetSchoolOfSchoolOwnerQuery(undefined, {
         skip: !hasSchool,
     });
+
+    // Refetch the school data when the user changes
+    useEffect(() => {
+        refetch();
+    }, [user.id, refetch]);
 
     const [form] = Form.useForm();
     const {school, schoolStatus} = useSchoolForm({
@@ -51,7 +56,6 @@ export default function SchoolDetail() {
         externalForm: form,
     });
 
-
     useEffect(() => {
         if (isError) {
             message.error("Failed to load school details").then(r => {
@@ -59,7 +63,7 @@ export default function SchoolDetail() {
         }
     }, [isError, router]);
 
-    if (isLoading) {
+    if (isLoading || isFetching) {
         const paths = [
             {label: "My School", href: '/public/school-owner'},
             {label: "School Detail"},
@@ -80,8 +84,8 @@ export default function SchoolDetail() {
             <SchoolManageTitle title={"School details"} schoolStatus={schoolStatus!}/>
 
             {/*View Rating and Feedback Link*/}
-            <div className="my-4 flex justify-end">
-                <Link href={`/public/school-owner/rating-feedback/${data?.data.id}`}
+            <div className="my-4 flex justify-end mr-8">
+                <Link href={`/public/school-owner/rating-feedback`}
                       className="text-blue-500 hover:underline">
                     View Rating & Feedback
                 </Link>

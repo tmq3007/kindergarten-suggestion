@@ -2,14 +2,18 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
+import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.service.RequestCounsellingReminderService;
 import fa.pjb.back.service.RequestCounsellingService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +27,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("counselling")
+@Tag(name = "Request Counselling Controller", description = "This API provides some actions relate with request counselling")
 public class RequestCounsellingController {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestCounsellingController.class);
@@ -53,8 +58,9 @@ public class RequestCounsellingController {
                 .build();
     }
 
+    @Operation(summary = "List All Request Counselling", description = "Admin can see all request counselling that parents requested for all School Owner")
     @GetMapping("/all")
-    public ResponseEntity<Page<RequestCounsellingVO>> getAllRequests(
+    public ApiResponse<Page<RequestCounsellingVO>> getAllRequests(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) Byte status,
@@ -67,8 +73,11 @@ public class RequestCounsellingController {
         Page<RequestCounsellingVO> requests = requestCounsellingService.getAllRequests(
             page, size, status, email, name, phone, schoolName, dueDate
         );
-        logger.info("Pageable response: {}", requests);
-        return ResponseEntity.ok(requests);
+        return ApiResponse.<Page<RequestCounsellingVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("All parents retrieved successfully")
+            .data(requests)
+            .build();
     }
 
     @Operation(summary = "Get request counselling", description = "Get detailed request counselling by admin")
@@ -110,4 +119,42 @@ public class RequestCounsellingController {
                 .message("Update request counselling successfully!")
                 .build();
     }
+
+    @Operation(summary = "List All Reminder", description = "List all reminder request that are waiting School Owner solve or expired")
+    @GetMapping("/all-reminder")
+    public ApiResponse<Page<RequestCounsellingVO>> getAllReminder(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+        Page<RequestCounsellingVO> requests = reminderService.getAllReminder(
+            page, size, Arrays.asList((byte) 0, (byte) 2)
+        );
+
+        return ApiResponse.<Page<RequestCounsellingVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Fetched reminders successfully")
+            .data(requests)
+            .build();
+    }
+
+    @Operation(summary = "List Reminders by School Owner",
+        description = "List all reminder requests for a specific school owner based on their ID")
+    @GetMapping("/school-owner-reminders")
+    public ApiResponse<Page<RequestCounsellingVO>> getRemindersBySchoolOwner(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestHeader("School-Owner-Id") Integer schoolOwnerId) {
+
+        Page<RequestCounsellingVO> requests = reminderService.getRemindersBySchoolOwner(
+            page, size, schoolOwnerId, Arrays.asList((byte) 0, (byte) 2)
+        );
+
+        return ApiResponse.<Page<RequestCounsellingVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Fetched reminders for school owner successfully")
+            .data(requests)
+            .build();
+    }
+
+
 }
