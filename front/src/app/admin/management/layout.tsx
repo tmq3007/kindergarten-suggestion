@@ -149,7 +149,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                     {
                                         key: '3',
                                         icon: <BellOutlined/>,
-                                        label: <Link href="/reminder">Reminder</Link>,
+                                        label: <Link href="/admin/management/reminder/request-reminder">Reminder</Link>,
                                     },
                                     {
                                         key: '4',

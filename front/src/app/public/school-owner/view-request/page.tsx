@@ -1,15 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import { useGetAllRequestsQuery } from "@/redux/services/requestCounsellingApi";
-import RequestListForm from "@/app/components/request_counselling/RequestListForm";
+import {
+  useGetAllRequestsQuery,
+  useGetRemindersBySchoolOwnerQuery
+} from "@/redux/services/requestCounsellingApi";
+import RequestListForSOForm from "@/app/components/request_counselling/RequestListForSOForm";
 import {Input, notification} from "antd";
 import {SearchOutlined} from "@ant-design/icons";
 import ReminderListForm from "@/app/components/reminder/ReminderListForm";
+import {useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
+import {forbidden, useParams, useRouter} from "next/navigation";
 
 export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,12 +24,19 @@ export default function Page() {
 
   const userIdString = useSelector((state: RootState) => state.user?.id);
   const userId = userIdString ? parseInt(userIdString as string) : null;
+  const user = useSelector((state: RootState) => state.user);
+  const role = useSelector((state: RootState) => state.user?.role);
+  const params = useParams();
 
-
-  const { data, isLoading, isFetching, error } = useGetAllRequestsQuery({
+  const { data, isLoading, isFetching, error } = useGetRemindersBySchoolOwnerQuery({
     page: currentPage,
     size: currentPageSize,
+    schoolOwnerId: userId || 0,
   });
+
+  console.log("API Error:", error);
+
+  console.log("User ID", userId)
 
   const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
     notificationApi[type]({ message, description, placement: "topRight" });
@@ -68,7 +79,7 @@ export default function Page() {
                   style={{ maxWidth: "300px", width: "100%" }}
               />
             </div>
-            <RequestListForm
+            <RequestListForSOForm
                 data={data}
                 isLoading={isLoading}
                 isFetching={isFetching}

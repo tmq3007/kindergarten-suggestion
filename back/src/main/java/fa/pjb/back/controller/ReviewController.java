@@ -7,6 +7,7 @@ import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("school/review")
+@Tag(name = "Review Controller", description = "This API provides some actions relate with Review Action")
 public class ReviewController {
 
     private final ReviewService reviewService;
