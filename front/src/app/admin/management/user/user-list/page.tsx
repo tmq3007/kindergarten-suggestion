@@ -4,7 +4,7 @@ import Link from "next/link";
 import UserList from "@/app/components/user/UserList";
 import React, {useState} from "react";
 import {Card} from "antd";
-import {useGetUserListQuery} from "@/redux/services/userApi";
+import {useGetUserListQuery, useToggleUserStatusMutation} from "@/redux/services/userApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SearchByComponent from "@/app/components/common/SearchByComponent";
@@ -20,7 +20,7 @@ const searchOptions = [
 
 
 export default function Page() {
-    
+
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPageSize, setCurrentPageSize] = useState(15);
     const [searchCriteria, setSearchCriteria] = useState({
@@ -28,7 +28,7 @@ export default function Page() {
         keyword: undefined as string | undefined, // Search term
     });
 
-    const { data, isLoading, isFetching, error } = useGetUserListQuery({
+    const {data, isLoading, isFetching, error} = useGetUserListQuery({
         page: currentPage,
         size: currentPageSize,
         ...searchCriteria,

@@ -52,4 +52,6 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
         @Param("brn") String business_registration_number,
         @Param("userId") Integer userId
     );
+    @Query("SELECT so.school.id FROM SchoolOwner so WHERE so.user.id = :id")
+    Integer getSchoolIdByUserId(@Param("id") Integer id);
 }
