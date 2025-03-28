@@ -23,6 +23,7 @@ import {resetUser} from '@/redux/features/userSlice';
 import {Resizable} from 'react-resizable';
 import 'react-resizable/css/styles.css'
 import Footer from '@/app/components/common/Footer';
+import NotificationDropdown from "@/app/components/user/NotificationDropdown";
 
 export default function AdminLayout({children}: { children: React.ReactNode }) {
     const [messageApi, contextHolder] = message.useMessage();
@@ -203,11 +204,12 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             <Link href="/request-management">
                                 <WindowsOutlined/>
                             </Link>
-                            <Link href="" onClick={() => setIsModalOpen(true)}>
+                             <Link href="" onClick={() => setIsModalOpen(true)}>
                                 <LogoutOutlined/>
                             </Link>
                         </Space>
-                        <Link className="hidden md:block" href="">
+                        <Space className="hidden md:flex items-center gap-4">
+                            <NotificationDropdown />
                             <Button
                                 type="text"
                                 icon={<LogoutOutlined/>}
@@ -221,7 +223,8 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             >
                                 Logout
                             </Button>
-                        </Link>
+                        </Space>
+
                     </Header>
                     <Content
                         className='rounded-lg overflow-auto'

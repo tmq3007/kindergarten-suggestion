@@ -8,6 +8,7 @@ import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.enums.ReviewStatus;
 import fa.pjb.back.model.mapper.ReviewMapper;
+import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.service.ReviewService;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -107,6 +110,46 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         return reviewMapper.toReviewVO((review));
+    }
+
+    @Override
+    public List<ReviewReportReminderVO> getReviewReportReminders() {
+        // Fetch all reviews with PENDING status
+        List<Review> reviews = reviewRepository.findAllByStatus(ReviewStatus.PENDING.getValue());
+
+        if (reviews.isEmpty()) {
+            throw new ReviewNotFoundException();
+        }
+
+        // Group reviews by schoolId and count the total for each school
+        Map<Integer, Long> reviewCountBySchoolId = reviews.stream()
+                .collect(Collectors.groupingBy(
+                        review -> review.getSchool().getId(), // Assuming Review has a getSchool() method returning School
+                        Collectors.counting()
+                ));
+
+        // Convert the grouped data into ReviewReportReminderVO list
+        // Fetch school name (assuming Review has a reference to School entity)
+        // Fallback if school name not found
+        // Convert Long to Integer
+
+        return reviewCountBySchoolId.entrySet().stream()
+                .map(entry -> {
+                    Integer schoolId = entry.getKey();
+                    Long total = entry.getValue();
+                    // Fetch school name (assuming Review has a reference to School entity)
+                    String schoolName = reviews.stream()
+                            .filter(review -> review.getSchool().getId().equals(schoolId))
+                            .findFirst()
+                            .map(review -> review.getSchool().getName())
+                            .orElse("Unknown School"); // Fallback if school name not found
+                    return ReviewReportReminderVO.builder()
+                            .schoolId(schoolId)
+                            .schoolName(schoolName)
+                            .total(total.intValue()) // Convert Long to Integer
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
 
