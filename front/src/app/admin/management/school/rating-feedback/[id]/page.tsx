@@ -23,6 +23,18 @@ import {
     useGetReviewBySchoolIdQuery,
     useReportDecisionMutation
 } from "@/redux/services/reviewApi";
+import {
+    FileTextOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    StarOutlined,
+    BookOutlined,
+    HomeOutlined,
+    TrophyOutlined,
+    TeamOutlined,
+    MedicineBoxOutlined,
+} from "@ant-design/icons";
 import { useParams } from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
@@ -31,8 +43,6 @@ import NoData from "@/app/components/review/NoData";
 import {REVIEW_STATUS} from "@/lib/constants";
 import AdminReportModal from "@/app/components/review/AdminReportModal";
 import  {ReviewButton,ViewReportButton} from "@/app/components/review/ReviewButton";
-import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
-
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
@@ -165,7 +175,7 @@ const RatingsDashboard = () => {
 
     // Calculate metrics
     const metrics = useMemo(() => {
-        if (!reviews || reviews.length === 0) {
+        if (!reviews.length) {
             return {
                 totalReviews: 0,
                 totalAverage: 0,
@@ -174,10 +184,53 @@ const RatingsDashboard = () => {
                 totalExtracurricularActivities: 0,
                 totalTeacherAndStaff: 0,
                 totalHygieneAndNutrition: 0,
+                totalApproved: 0,
+                totalPending: 0,
+                totalRejected: 0,
+                totalApprovedAverage: 0, // Add default value for approved average
             };
         }
 
+        // Calculate totals for all reviews
         const totals = reviews.reduce(
+            (acc, review) => {
+                acc.learningProgram += review.learningProgram || 0;
+                acc.facilitiesAndUtilities += review.facilitiesAndUtilities || 0;
+                acc.extracurricularActivities += review.extracurricularActivities || 0;
+                acc.teacherAndStaff += review.teacherAndStaff || 0;
+                acc.hygieneAndNutrition += review.hygieneAndNutrition || 0;
+                if (review.status === REVIEW_STATUS.APPROVED) acc.approved += 1;
+                if (review.status === REVIEW_STATUS.PENDING) acc.pending += 1;
+                if (review.status === REVIEW_STATUS.REJECTED) acc.rejected += 1;
+                return acc;
+            },
+            {
+                learningProgram: 0,
+                facilitiesAndUtilities: 0,
+                extracurricularActivities: 0,
+                teacherAndStaff: 0,
+                hygieneAndNutrition: 0,
+                approved: 0,
+                pending: 0,
+                rejected: 0,
+            }
+        );
+
+        const totalReviews = reviews.length;
+        const totalAverage = Number(
+            (
+                (totals.learningProgram +
+                    totals.facilitiesAndUtilities +
+                    totals.extracurricularActivities +
+                    totals.teacherAndStaff +
+                    totals.hygieneAndNutrition) /
+                (totalReviews * 5)
+            ).toFixed(2)
+        );
+
+        // Calculate totals for approved reviews only
+        const approvedReviews = reviews.filter(review => review.status === REVIEW_STATUS.APPROVED);
+        const approvedTotals = approvedReviews.reduce(
             (acc, review) => {
                 acc.learningProgram += review.learningProgram || 0;
                 acc.facilitiesAndUtilities += review.facilitiesAndUtilities || 0;
@@ -195,17 +248,19 @@ const RatingsDashboard = () => {
             }
         );
 
-        const totalReviews = reviews.length;
-        const totalAverage = Number(
-            (
-                (totals.learningProgram +
-                    totals.facilitiesAndUtilities +
-                    totals.extracurricularActivities +
-                    totals.teacherAndStaff +
-                    totals.hygieneAndNutrition) /
-                (totalReviews * 5)
-            ).toFixed(2)
-        );
+        const totalApprovedReviews = approvedReviews.length;
+        const totalApprovedAverage = totalApprovedReviews > 0
+            ? Number(
+                (
+                    (approvedTotals.learningProgram +
+                        approvedTotals.facilitiesAndUtilities +
+                        approvedTotals.extracurricularActivities +
+                        approvedTotals.teacherAndStaff +
+                        approvedTotals.hygieneAndNutrition) /
+                    (totalApprovedReviews * 5)
+                ).toFixed(2)
+            )
+            : 0;
 
         return {
             totalReviews,
@@ -215,6 +270,10 @@ const RatingsDashboard = () => {
             totalExtracurricularActivities: Number((totals.extracurricularActivities / totalReviews).toFixed(2)),
             totalTeacherAndStaff: Number((totals.teacherAndStaff / totalReviews).toFixed(2)),
             totalHygieneAndNutrition: Number((totals.hygieneAndNutrition / totalReviews).toFixed(2)),
+            totalApproved: totals.approved,
+            totalPending: totals.pending,
+            totalRejected: totals.rejected,
+            totalApprovedAverage, // Add the new approved average
         };
     }, [reviews]);
 
@@ -278,7 +337,7 @@ const RatingsDashboard = () => {
             />
             <SchoolManageTitle title={"Ratings & Feedback"} />
 
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen p-2">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -329,39 +388,123 @@ const RatingsDashboard = () => {
                             </motion.div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            {[
-                                { title: "Average Rating", value: metrics.totalAverage.toFixed(1), color: "purple" },
-                                { title: "Total Reviews", value: metrics.totalReviews, color: "blue" },
-                                { title: "Learning Program", value: metrics.totalLearningProgram, color: "green" },
-                                { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, color: "orange" },
-                                { title: "Extracurricular", value: metrics.totalExtracurricularActivities, color: "yellow" },
-                                { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, color: "red" },
-                                { title: "Hygiene", value: metrics.totalHygieneAndNutrition, color: "pink" },
-                            ].map((stat) => (
-                                <motion.div
-                                    key={stat.title}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.1 }}
-                                >
-                                    <Card>
-                                        <div className="flex items-center gap-4">
-                                            <Avatar
-                                                size={40}
-                                                icon={<StarFilled />}
-                                                className={`bg-${stat.color}-200 text-${stat.color}-800`}
-                                            />
-                                            <div>
-                                                <Text strong className="text-lg">
-                                                    {stat.value}
-                                                </Text>
-                                                <Text className="block text-gray-600">{stat.title}</Text>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            {/* Card 1: Review Status (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full p-0 min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Review Status
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <FileTextOutlined className="text-gray-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Total Reviews</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalReviews}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckCircleOutlined className="text-green-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Approved</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalApproved}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <ClockCircleOutlined className="text-yellow-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Pending</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalPending}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <CloseCircleOutlined className="text-red-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Rejected</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalRejected}</Text>
+                                                </div>
                                             </div>
                                         </div>
-                                    </Card>
-                                </motion.div>
-                            ))}
+                                    </div>
+                                </Card>
+                            </motion.div>
+
+                            {/* Card 2: Average Rating (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Average Rating
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <StarOutlined className="text-orange-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Overall</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalAverage.toFixed(1)}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <StarFilled className="text-green-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Approved Only</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalApprovedAverage.toFixed(1)}</Text>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
+
+                            {/* Card 3: Category Ratings (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Category Ratings
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                {[
+                                                    { title: "Learning Program", value: metrics.totalLearningProgram, icon: <BookOutlined />, color: "text-blue-600" },
+                                                    { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, icon: <HomeOutlined />, color: "text-purple-600" },
+                                                    { title: "Extracurricular", value: metrics.totalExtracurricularActivities, icon: <TrophyOutlined />, color: "text-orange-600" },
+                                                    { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, icon: <TeamOutlined />, color: "text-teal-600" },
+                                                    { title: "Hygiene", value: metrics.totalHygieneAndNutrition, icon: <MedicineBoxOutlined />, color: "text-green-600" },
+                                                ].map((stat) => (
+                                                    <div key={stat.title} className="flex justify-between items-center">
+                                                        <div className="flex items-center gap-2">
+                                                            {stat.icon && <span className={`${stat.color} text-base`}>{stat.icon}</span>}
+                                                            <Text className="text-gray-600 text-sm">{stat.title}</Text>
+                                                        </div>
+                                                        <Text strong className="text-base">{stat.value}</Text>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
                         </div>
 
                         <Card

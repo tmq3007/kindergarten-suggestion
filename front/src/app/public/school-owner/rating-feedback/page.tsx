@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, List, Typography, Avatar, Button, DatePicker, Select, message } from "antd";
-import { StarFilled, SyncOutlined } from "@ant-design/icons";
+import {  SyncOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
 import { motion } from "framer-motion";
 import {
@@ -16,6 +16,19 @@ import {
     CartesianGrid,
     Tooltip as RechartsTooltip,
 } from "recharts";
+import {
+    FileTextOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    StarOutlined,
+    StarFilled,
+    BookOutlined,
+    HomeOutlined,
+    TrophyOutlined,
+    TeamOutlined,
+    MedicineBoxOutlined,
+} from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import {ReviewVO, useGetReviewBySchoolOwnerQuery, useReportReviewMutation} from "@/redux/services/reviewApi";
 import NoData from "../../../components/review/NoData";
@@ -134,7 +147,6 @@ const RatingsDashboard = () => {
         refetch();
     };
 
-    // Sử dụng useMemo để tính toán metrics
     const metrics = useMemo(() => {
         if (!reviews.length) {
             return {
@@ -145,10 +157,53 @@ const RatingsDashboard = () => {
                 totalExtracurricularActivities: 0,
                 totalTeacherAndStaff: 0,
                 totalHygieneAndNutrition: 0,
+                totalApproved: 0,
+                totalPending: 0,
+                totalRejected: 0,
+                totalApprovedAverage: 0, // Add default value for approved average
             };
         }
 
+        // Calculate totals for all reviews
         const totals = reviews.reduce(
+            (acc, review) => {
+                acc.learningProgram += review.learningProgram || 0;
+                acc.facilitiesAndUtilities += review.facilitiesAndUtilities || 0;
+                acc.extracurricularActivities += review.extracurricularActivities || 0;
+                acc.teacherAndStaff += review.teacherAndStaff || 0;
+                acc.hygieneAndNutrition += review.hygieneAndNutrition || 0;
+                if (review.status === REVIEW_STATUS.APPROVED) acc.approved += 1;
+                if (review.status === REVIEW_STATUS.PENDING) acc.pending += 1;
+                if (review.status === REVIEW_STATUS.REJECTED) acc.rejected += 1;
+                return acc;
+            },
+            {
+                learningProgram: 0,
+                facilitiesAndUtilities: 0,
+                extracurricularActivities: 0,
+                teacherAndStaff: 0,
+                hygieneAndNutrition: 0,
+                approved: 0,
+                pending: 0,
+                rejected: 0,
+            }
+        );
+
+        const totalReviews = reviews.length;
+        const totalAverage = Number(
+            (
+                (totals.learningProgram +
+                    totals.facilitiesAndUtilities +
+                    totals.extracurricularActivities +
+                    totals.teacherAndStaff +
+                    totals.hygieneAndNutrition) /
+                (totalReviews * 5)
+            ).toFixed(2)
+        );
+
+        // Calculate totals for approved reviews only
+        const approvedReviews = reviews.filter(review => review.status === REVIEW_STATUS.APPROVED);
+        const approvedTotals = approvedReviews.reduce(
             (acc, review) => {
                 acc.learningProgram += review.learningProgram || 0;
                 acc.facilitiesAndUtilities += review.facilitiesAndUtilities || 0;
@@ -166,17 +221,19 @@ const RatingsDashboard = () => {
             }
         );
 
-        const totalReviews = reviews.length;
-        const totalAverage = Number(
-            (
-                (totals.learningProgram +
-                    totals.facilitiesAndUtilities +
-                    totals.extracurricularActivities +
-                    totals.teacherAndStaff +
-                    totals.hygieneAndNutrition) /
-                (totalReviews * 5)
-            ).toFixed(2)
-        );
+        const totalApprovedReviews = approvedReviews.length;
+        const totalApprovedAverage = totalApprovedReviews > 0
+            ? Number(
+                (
+                    (approvedTotals.learningProgram +
+                        approvedTotals.facilitiesAndUtilities +
+                        approvedTotals.extracurricularActivities +
+                        approvedTotals.teacherAndStaff +
+                        approvedTotals.hygieneAndNutrition) /
+                    (totalApprovedReviews * 5)
+                ).toFixed(2)
+            )
+            : 0;
 
         return {
             totalReviews,
@@ -186,6 +243,10 @@ const RatingsDashboard = () => {
             totalExtracurricularActivities: Number((totals.extracurricularActivities / totalReviews).toFixed(2)),
             totalTeacherAndStaff: Number((totals.teacherAndStaff / totalReviews).toFixed(2)),
             totalHygieneAndNutrition: Number((totals.hygieneAndNutrition / totalReviews).toFixed(2)),
+            totalApproved: totals.approved,
+            totalPending: totals.pending,
+            totalRejected: totals.rejected,
+            totalApprovedAverage, // Add the new approved average
         };
     }, [reviews]);
 
@@ -233,7 +294,7 @@ const RatingsDashboard = () => {
     if (isLoading) return <RatingSkeleton />;
 
     return (
-        <div className="pt-2 px-4 sm:px-6 lg:px-8">
+        <div className="pt-2 sm:px-6 lg:px-8">
             <MyBreadcrumb
                 paths={[
                     { label: "My School", href: "/public/school-owner" },
@@ -242,7 +303,7 @@ const RatingsDashboard = () => {
             />
             <SchoolManageTitle title="Ratings & Feedback" />
 
-            <div className="min-h-screen bg-gray-50 py-6">
+            <div className="min-h-screen p-2">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -267,7 +328,7 @@ const RatingsDashboard = () => {
                     <NoData />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -315,44 +376,123 @@ const RatingsDashboard = () => {
                             </motion.div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            {[
-                                { title: "Average Rating", value: metrics.totalAverage.toFixed(1), color: "purple" },
-                                { title: "Total Reviews", value: metrics.totalReviews, color: "blue" },
-                                { title: "Learning Program", value: metrics.totalLearningProgram, color: "green" },
-                                { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, color: "orange" },
-                                {
-                                    title: "Extracurricular",
-                                    value: metrics.totalExtracurricularActivities,
-                                    color: "yellow",
-                                },
-                                { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, color: "red" },
-                                { title: "Hygiene", value: metrics.totalHygieneAndNutrition, color: "pink" },
-                            ].map((stat) => (
-                                <motion.div
-                                    key={stat.title}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    className="w-full"
-                                >
-                                    <Card className="w-full">
-                                        <div className="flex items-center gap-4">
-                                            <Avatar
-                                                size={40}
-                                                icon={<StarFilled />}
-                                                className={`bg-${stat.color}-200 text-${stat.color}-800`}
-                                            />
-                                            <div>
-                                                <Text strong className="text-lg">
-                                                    {stat.value}
-                                                </Text>
-                                                <Text className="block text-gray-600 text-sm">{stat.title}</Text>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            {/* Card 1: Review Status (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full p-0 min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Review Status
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <FileTextOutlined className="text-gray-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Total Reviews</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalReviews}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckCircleOutlined className="text-green-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Approved</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalApproved}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <ClockCircleOutlined className="text-yellow-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Pending</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalPending}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <CloseCircleOutlined className="text-red-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Rejected</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalRejected}</Text>
+                                                </div>
                                             </div>
                                         </div>
-                                    </Card>
-                                </motion.div>
-                            ))}
+                                    </div>
+                                </Card>
+                            </motion.div>
+
+                            {/* Card 2: Average Rating (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Average Rating
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <StarOutlined className="text-orange-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Overall</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalAverage.toFixed(1)}</Text>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <StarFilled className="text-green-600 text-base" />
+                                                        <Text className="text-gray-600 text-sm">Approved Only</Text>
+                                                    </div>
+                                                    <Text strong className="text-base">{metrics.totalApprovedAverage.toFixed(1)}</Text>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
+
+                            {/* Card 3: Category Ratings (1/3 width) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="col-span-1"
+                            >
+                                <Card className="w-full min-h-[240px]">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <Text strong className="text-lg">
+                                                Category Ratings
+                                            </Text>
+                                            <div className="mt-2 space-y-2">
+                                                {[
+                                                    { title: "Learning Program", value: metrics.totalLearningProgram, icon: <BookOutlined />, color: "text-blue-600" },
+                                                    { title: "Facilities", value: metrics.totalFacilitiesAndUtilities, icon: <HomeOutlined />, color: "text-purple-600" },
+                                                    { title: "Extracurricular", value: metrics.totalExtracurricularActivities, icon: <TrophyOutlined />, color: "text-orange-600" },
+                                                    { title: "Teachers & Staff", value: metrics.totalTeacherAndStaff, icon: <TeamOutlined />, color: "text-teal-600" },
+                                                    { title: "Hygiene", value: metrics.totalHygieneAndNutrition, icon: <MedicineBoxOutlined />, color: "text-green-600" },
+                                                ].map((stat) => (
+                                                    <div key={stat.title} className="flex justify-between items-center">
+                                                        <div className="flex items-center gap-2">
+                                                            {stat.icon && <span className={`${stat.color} text-base`}>{stat.icon}</span>}
+                                                            <Text className="text-gray-600 text-sm">{stat.title}</Text>
+                                                        </div>
+                                                        <Text strong className="text-base">{stat.value}</Text>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
                         </div>
 
                         <Card
@@ -366,7 +506,7 @@ const RatingsDashboard = () => {
                                         value: n.toString(),
                                         label: `${n} Star${n !== 1 ? "s" : ""}`,
                                     }))}
-                                    className="w-full sm:w-48"
+                                    className="w-full sm:w-40 md:w-48 lg:w-56 xl:w-64"
                                 />
                             }
                             className="w-full"
@@ -383,15 +523,21 @@ const RatingsDashboard = () => {
                                             transition: { duration: 0.3, ease: "easeInOut" },
                                         }}
                                     >
-                                        <List.Item className="!px-3 flex flex-col sm:flex-row sm:items-center">
-                                            <div className="flex items-center mb-2 sm:mb-0">
-                                                <Avatar src={item.parentImage} className="bg-blue-500 mr-2">
+                                        <List.Item className="!px-2 sm:!px-3 md:!px-4 lg:!px-5 flex flex-col lg:flex-row lg:items-center">
+                                            <div className="flex items-center mb-2 lg:mb-0">
+                                                <Avatar
+                                                    src={item.parentImage}
+                                                    className="bg-blue-500 mr-1 sm:mr-2 md:mr-3"
+                                                    size={{ xs: 24, sm: 28, md: 32, lg: 36, xl: 40 }}
+                                                >
                                                     {item.parentImage || "A"}
                                                 </Avatar>
-                                                <div>
-                                                    <Text strong>{item.feedback || "No feedback provided"}</Text>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <Text type="secondary">
+                                                <div className="flex-1">
+                                                    <Text strong className="text-sm sm:text-base md:text-lg line-clamp-2">
+                                                        {item.feedback || "No feedback provided"}
+                                                    </Text>
+                                                    <div className="flex flex-col gap-0.5 sm:gap-1 md:gap-1.5 mt-1">
+                                                        <Text type="secondary" className="text-xs sm:text-sm">
                                                             {item.parentName || "Anonymous"}
                                                         </Text>
                                                         <div className="flex">
@@ -399,33 +545,36 @@ const RatingsDashboard = () => {
                                                                 (_, i) => (
                                                                     <StarFilled
                                                                         key={i}
-                                                                        className="text-yellow-400 text-sm"
+                                                                        className="text-yellow-400 text-xs sm:text-sm"
                                                                     />
                                                                 )
                                                             )}
                                                         </div>
-                                                        <Text type="secondary" className="text-sm">
+                                                        <Text type="secondary" className="text-xs sm:text-sm">
                                                             {item.receiveDate.isValid()
-                                                                ? item.receiveDate.format("D MMMM YYYY")
+                                                                ? item.receiveDate.format(
+                                                                    window.innerWidth < 640 ? "D MMM YYYY" : "D MMMM YYYY"
+                                                                )
                                                                 : "Date unavailable"}
                                                         </Text>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:ml-auto">
+                                            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-1 sm:gap-2 md:gap-3 lg:ml-auto pr-1 sm:pr-2 md:pr-3">
                                                 {(item.status === REVIEW_STATUS.APPROVED) && (
-                                                    <MakeReportButton onFetching={isFetching && loadingReviewId === item.id}
-                                                                      onClick={() => openModal({ id: item.id, reason: item.report})} />
+                                                    <MakeReportButton
+                                                        onFetching={isFetching && loadingReviewId === item.id}
+                                                        onClick={() => openModal({ id: item.id, reason: item.report })}
+                                                    />
                                                 )}
                                                 <ReviewButton status={item.status} />
-
                                             </div>
                                         </List.Item>
                                     </motion.div>
                                 )}
                             />
                             {filteredReviews.length > 5 && (
-                                <div className="text-center mt-4">
+                                <div className="text-center mt-2 sm:mt-3 md:mt-4">
                                     <Button type="link" onClick={() => setShowAll(!showAll)}>
                                         {showAll ? "Show Less" : `View More (${filteredReviews.length - 5})`}
                                     </Button>
