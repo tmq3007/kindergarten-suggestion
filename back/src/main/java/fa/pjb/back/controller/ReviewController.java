@@ -27,11 +27,12 @@ public class ReviewController {
     @Operation(summary = "Get reviews by admin", description = "Get review of school in date range")
     @GetMapping("/{schoolId}")
     public ApiResponse<List<ReviewVO>> getReviews(
-            @PathVariable  Integer schoolId,
+            @PathVariable Integer schoolId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) String status) {
 
-        List<ReviewVO> reviews = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate);
+        List<ReviewVO> reviews = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate, status);
         log.info("reviews controller: {}", reviews.get(0).status());
         return ApiResponse.<List<ReviewVO>>builder()
                 .code(200)
@@ -44,9 +45,10 @@ public class ReviewController {
     @GetMapping("/")
     public ApiResponse<List<ReviewVO>> getReviewsBySchoolOwner(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) String status ) {
 
-        List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner( fromDate, toDate);
+        List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner( fromDate, toDate,status);
         return ApiResponse.<List<ReviewVO>>builder()
                 .code(200)
                 .message("Reviews retrieved successfully")

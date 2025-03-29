@@ -4,6 +4,7 @@ import fa.pjb.back.common.exception._13xx_school.ReviewNotFoundException;
  import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.Parent;
+import fa.pjb.back.model.enums.SchoolStatusEnum;
 import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.repository.ReviewRepository;
@@ -58,6 +59,7 @@ class ReviewServiceImplTest {
                 .teacherAndStaff((byte) 4)
                 .hygieneAndNutrition((byte) 5)
                 .feedback("Great school!")
+                .status(SchoolStatusEnum.APPROVED.getValue())
                 .receiveDate(LocalDate.of(2025, 3, 1))
                 .build();
 
@@ -77,12 +79,12 @@ class ReviewServiceImplTest {
         List<Review> reviews = List.of(testReview);
         List<ReviewVO> expectedVOs = List.of(testReviewVO);
 
-        when(reviewRepository.findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate))
+        when(reviewRepository.findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate,(byte)3))
                 .thenReturn(reviews);
         when(reviewMapper.toReviewVOList(reviews)).thenReturn(expectedVOs);
 
         // Act
-        List<ReviewVO> result = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate);
+        List<ReviewVO> result = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate, String.valueOf(3));
 
         // Assert
         assertNotNull(result);
@@ -97,13 +99,13 @@ class ReviewServiceImplTest {
         LocalDate fromDate = LocalDate.of(2025, 1, 1);
         LocalDate toDate = LocalDate.of(2025, 3, 1);
 
-        when(reviewRepository.findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate))
+        when(reviewRepository.findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate))
                 .thenReturn(Collections.emptyList());
 
         // Act & Assert
         assertThrows(ReviewNotFoundException.class, () ->
                 reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate));
-        verify(reviewRepository).findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate);
+        verify(reviewRepository).findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate);
         verifyNoInteractions(reviewMapper);
     }
 
