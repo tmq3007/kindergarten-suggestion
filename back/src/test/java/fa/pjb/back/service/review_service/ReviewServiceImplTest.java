@@ -99,13 +99,13 @@ class ReviewServiceImplTest {
         LocalDate fromDate = LocalDate.of(2025, 1, 1);
         LocalDate toDate = LocalDate.of(2025, 3, 1);
 
-        when(reviewRepository.findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate))
+        when(reviewRepository.findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate,(byte) 3))
                 .thenReturn(Collections.emptyList());
 
         // Act & Assert
         assertThrows(ReviewNotFoundException.class, () ->
-                reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate));
-        verify(reviewRepository).findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate);
+                reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate,String.valueOf(3) ));
+        verify(reviewRepository).findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate,(byte) 3);
         verifyNoInteractions(reviewMapper);
     }
 
