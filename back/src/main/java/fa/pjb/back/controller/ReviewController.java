@@ -33,7 +33,6 @@ public class ReviewController {
             @RequestParam(required = false) String status) {
 
         List<ReviewVO> reviews = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate, status);
-        log.info("reviews controller: {}", reviews.get(0).status());
         return ApiResponse.<List<ReviewVO>>builder()
                 .code(200)
                 .message("Reviews retrieved successfully")
