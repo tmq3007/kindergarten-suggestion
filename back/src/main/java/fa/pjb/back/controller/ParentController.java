@@ -127,7 +127,7 @@ public class ParentController {
     }
 
     @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
-    @PostMapping("/enroll/{parentInSchoolId}")
+    @PutMapping("/enroll/{parentInSchoolId}")
     public ApiResponse<Boolean> enrollParent(@PathVariable Integer parentInSchoolId) {
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
@@ -137,7 +137,7 @@ public class ParentController {
     }
 
     @Operation(summary = "Un-Enroll Parent", description = "This api will be used to un-enroll a parent from a school")
-    @PostMapping("/un-enroll/{parentInSchoolId}")
+    @PutMapping("/un-enroll/{parentInSchoolId}")
     public ApiResponse<Boolean> unEnrollParent(@PathVariable Integer parentInSchoolId) {
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
@@ -147,7 +147,7 @@ public class ParentController {
     }
 
     @Operation(summary = "Reject Parent", description = "This api will be used to reject a parent from enrolling a school")
-    @PostMapping("/reject/{parentInSchoolId}")
+    @PutMapping("/reject/{parentInSchoolId}")
     public ApiResponse<Boolean> rejectParent(@PathVariable Integer parentInSchoolId) {
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())

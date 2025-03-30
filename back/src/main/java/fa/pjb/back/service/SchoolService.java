@@ -19,8 +19,13 @@ public interface SchoolService {
 
     SchoolDetailVO getSchoolInfo(Integer schoolId);
 
-    Page<SchoolListVO> getAllSchools(String name, String province, String district, String street,
-                                     String email, String phone, Pageable pageable);
+    Page<SchoolListVO> getAllSchools(String name,
+                                     String province,
+                                     String district,
+                                     String street,
+                                     String email,
+                                     String phone,
+                                     Pageable pageable);
 
     SchoolDetailVO getSchoolByUserId(Integer userId);
 

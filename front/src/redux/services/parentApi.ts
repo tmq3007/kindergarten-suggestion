@@ -184,6 +184,24 @@ export const parentApi = createApi({
             }),
             invalidatesTags: ["ParentsList"],
         }),
+        enrollParent: build.mutation({
+            query: (parentInSchoolId:number) => ({
+                url: `/parent/enroll/${parentInSchoolId}`,
+                method: 'PUT',
+            }),
+        }),
+        unEnrollParent: build.mutation({
+            query: (parentInSchoolId:number) => ({
+                url: `/parent/un-enroll/${parentInSchoolId}`,
+                method: 'PUT',
+            }),
+        }),
+        rejectParent: build.mutation({
+            query: (parentInSchoolId:number) => ({
+                url: `/parent/reject/${parentInSchoolId}`,
+                method: 'PUT',
+            }),
+        }),
     }),
 });
 
@@ -196,5 +214,8 @@ export const {
     useListEnrollRequestBySchoolWithFilterQuery,
     useDeleteParentRequestMutation,
     useGetCountEnrollRequestBySchoolQuery,
-    useToggleParentStatusMutation
+    useToggleParentStatusMutation,
+    useEnrollParentMutation,
+    useUnEnrollParentMutation,
+    useRejectParentMutation
 } = parentApi;

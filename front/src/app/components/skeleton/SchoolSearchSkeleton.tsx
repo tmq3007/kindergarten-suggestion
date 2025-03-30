@@ -1,4 +1,3 @@
-import SchoolInfo from "@/app/components/school/SchoolInfo";
 import React from "react";
 import {Skeleton} from "antd";
 

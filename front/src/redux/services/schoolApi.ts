@@ -17,6 +17,7 @@ export interface Utility {
 }
 
 export type SchoolDetailVO = {
+    id: number;
     fileList: any;
     status: number;
     name: string;

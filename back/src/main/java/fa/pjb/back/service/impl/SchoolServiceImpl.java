@@ -4,6 +4,7 @@ import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
+import fa.pjb.back.common.exception._13xx_school.SchoolDraftNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
@@ -85,6 +86,8 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public SchoolDetailVO getSchoolInfo(Integer schoolId) {
         School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
+        List<SchoolOwner> schoolOwnerList = schoolOwnerRepository.findAllBySchoolId(schoolId);
+        school.setSchoolOwners(new HashSet<>(schoolOwnerList));
         return schoolMapper.toSchoolDetailVO(school);
     }
 
@@ -742,6 +745,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public boolean checkEditingEmailExists(String email, Integer schoolId) {
+        log.info("email: {}, schoolId: {}", email, schoolId);
         return schoolRepository.existsByEmailExcept(email, schoolId);
     }
 
