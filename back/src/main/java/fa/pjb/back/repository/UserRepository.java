@@ -6,6 +6,7 @@ import fa.pjb.back.model.mapper.UserProjection;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.Parent WHERE u.id = :userId")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.parent WHERE u.id = :userId")
     Optional<User> findByIdWithParent(Integer userId);
 
     Optional<User> findByUsername(String username);
@@ -82,4 +83,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                                                     Pageable pageable,
                                                     @Param("schoolId") int schoolId);
 
+    @Query("SELECT u.email FROM User u WHERE u.username = :username")
+    Optional<String> findEmailByUsername(@Param("username") String username);
 }

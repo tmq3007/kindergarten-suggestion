@@ -124,9 +124,11 @@ export type SchoolVO = {
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
     review?: ReviewVO;
+    schoolOwners?: SchoolOwnerVO[];
 };
 export type ExpectedSchool = {
     expectedSchool: string
+    BRN?: string
 }
 
 // Utility function to handle FormData creation
@@ -262,13 +264,6 @@ export const schoolApi = createApi({
             }),
         }),
 
-        checkSchoolPhone: build.query<ApiResponse<string>, string>({
-            query: (phone) => ({
-                url: `/school/check-phone/${phone}`,
-                method: "GET",
-            }),
-            keepUnusedDataFor: 0,
-        }),
 
         addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({
             query: (schoolDTO) => {
@@ -347,11 +342,17 @@ export const schoolApi = createApi({
             },
         }),
 
-        searchSchoolOwnersForAddSchool: build.query<ApiResponse<SchoolOwnerVO[]>, string>({
-            query: (expectedSchool) => ({
+        searchSchoolOwnersForAddSchool: build.query<ApiResponse<SchoolOwnerVO[]>, {
+            expectedSchool: string,
+            BRN?: string
+        }>({
+            query: ({expectedSchool, BRN}) => ({
                 url: '/school/get-so-list',
                 method: 'GET',
-                params: {q: expectedSchool},
+                params: {
+                    q: expectedSchool,
+                    BRN: BRN
+                },
             }),
         }),
 
@@ -412,7 +413,6 @@ export const {
     useGetSchoolQuery,
     useAddSchoolMutation,
     useLazyCheckSchoolEmailQuery,
-    useLazyCheckSchoolPhoneQuery,
     useCheckEditSchoolEmailMutation,
     useUpdateSchoolByAdminMutation,
     useUpdateSchoolBySchoolOwnerMutation,

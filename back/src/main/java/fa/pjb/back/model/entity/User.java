@@ -50,10 +50,10 @@ public class User implements UserDetails {
     private ERole role;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Parent Parent;
+    private Parent parent;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private SchoolOwner SchoolOwner;
+    private SchoolOwner schoolOwner;
 
     @Column(name = "dob", nullable = false)
     private LocalDate dob;

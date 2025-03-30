@@ -32,6 +32,7 @@ import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.hibernate.Hibernate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -41,7 +42,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -81,11 +81,12 @@ public class SchoolServiceImpl implements SchoolService {
     private String schoolDetailedLinkAdmin;
 
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     public SchoolDetailVO getSchoolInfo(Integer schoolId) {
         School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
-        return schoolMapper.toSchoolDetailVO(school);
+        List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerBySchool(school.getId());
+        return schoolMapper.toSchoolDetailVOWithSchoolOwners(school,schoolOwnerVOList);
     }
 
     public void processAndSaveImages(List<MultipartFile> images, School school) {
@@ -416,8 +417,26 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool) {
-        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwnersByExpectedSchool(expectedSchool);
+    public List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool, String BRN) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwnersByExpectedSchool(expectedSchool, BRN);
+        // Convert projection to VO
+        return projections.stream()
+                .map(projection -> new SchoolOwnerVO(
+                        projection.getId(),
+                        projection.getUserId(),
+                        projection.getFullname(),
+                        projection.getUsername(),
+                        projection.getEmail(),
+                        projection.getPhone(),
+                        projection.getExpectedSchool(),
+                        projection.getImageList(),
+                        projection.getDob()
+                ))
+                .toList();
+    }
+
+    private List<SchoolOwnerVO> findSchoolOwnerBySchool(Integer schoolId) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwnersBySchoolId(schoolId);
         // Convert projection to VO
         return projections.stream()
                 .map(projection -> new SchoolOwnerVO(
@@ -436,16 +455,20 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public List<ExpectedSchoolVO> findAllDistinctExpectedSchoolsByRole(Integer id) {
-        User user = userRepository
-                .findById(id)
-                .orElseThrow(UserNotFoundException::new);
+        User user = userService.getCurrentUser();
+        List<Object[]> so;
         if (user.getRole() == ERole.ROLE_ADMIN) {
-            return schoolOwnerRepository.findDistinctByExpectedSchoolIsNotNull();
+            so = schoolOwnerRepository.getAllExpectedschool();
         } else if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
-            return schoolOwnerRepository.getExpectedSchoolByUserId(id);
+            so = schoolOwnerRepository.getExpectedSchoolByUserId(id);
         } else {
             throw new AuthenticationFailedException("Something went wrong! Cannot find role");
         }
+        List<ExpectedSchoolVO> expectedSchools = new ArrayList<>();
+        for (Object[] temp : so){
+            expectedSchools.add(new ExpectedSchoolVO((String) temp[0], (String) temp[1]));
+        }
+        return expectedSchools;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -558,6 +581,7 @@ public class SchoolServiceImpl implements SchoolService {
     public SchoolDetailVO getSchoolByUserId(Integer userId) {
         School school = schoolRepository.findSchoolByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
+        Hibernate.initialize(school.getSchoolOwners());
         return schoolMapper.toSchoolDetailVO(school);
     }
 
@@ -569,6 +593,7 @@ public class SchoolServiceImpl implements SchoolService {
         School school = so.getSchool();
         if (school == null) throw new SchoolNotFoundException();
         School draft = school.getDraft();
+        Hibernate.initialize(draft.getSchoolOwners());
         return schoolMapper.toSchoolDetailVO(draft);
     }
 

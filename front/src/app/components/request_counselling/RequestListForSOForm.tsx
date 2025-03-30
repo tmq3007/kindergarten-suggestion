@@ -1,4 +1,3 @@
-"use client";
 
 import { Table, Tag, notification, ConfigProvider, Card, Tabs } from "antd";
 import React, { useState, useEffect } from "react";

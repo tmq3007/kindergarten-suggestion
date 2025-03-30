@@ -87,8 +87,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // by verifying if an Authentication (authenticated user) exists in the SecurityContext
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             // If the user is not authenticated, proceed with authentication via UserDetailsService
-            User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+//            User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+            String email = userRepository.findEmailByUsername(username).orElseThrow(UserNotFoundException::new);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
             // After authentication is complete, continue to check the validity of the token
             // If the token is valid, create a UsernamePasswordAuthenticationToken
             // containing the user's information and authorities (no need to include the password)

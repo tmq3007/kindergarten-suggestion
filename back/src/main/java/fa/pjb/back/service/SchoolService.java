@@ -44,7 +44,7 @@ public interface SchoolService {
 
     boolean checkPhoneExists(String phone);
 
-    List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool);
+    List<SchoolOwnerVO> findSchoolOwnerForAddSchool(String expectedSchool, String BRN);
 
     List<ExpectedSchoolVO> findAllDistinctExpectedSchoolsByRole(Integer id);
 

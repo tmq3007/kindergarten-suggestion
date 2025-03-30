@@ -17,7 +17,6 @@ export default function EditSchool() {
         data: data?.data,
         isLoading,
     });
-    console.log("1: ",formLoaded);
     if (isLoading || !school) {
         return (
             <>
