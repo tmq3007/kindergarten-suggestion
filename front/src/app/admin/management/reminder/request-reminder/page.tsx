@@ -7,11 +7,12 @@ import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import ReminderListForm from "@/app/components/reminder/ReminderListForm";
 import { useGetAllReminderQuery } from "@/redux/services/requestCounsellingApi";
-import {Input, notification} from "antd";
-import {SearchOutlined} from "@ant-design/icons";
+import { Input, notification, Button } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 
-export default function RequestList() {
+export default function RequestReminderList() {
   const [searchText, setSearchText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function RequestList() {
     page: page,
     size: pageSize,
     statuses: [0, 2],
+    name: searchQuery,
   });
 
   useEffect(() => {
@@ -55,26 +57,37 @@ export default function RequestList() {
     setPage(newPage);
   };
 
+  const handleSearch = () => {
+    setSearchQuery(searchText);
+    setPage(1);
+  };
+
   return (
       <div className="pt-2">
         {contextHolder}
+        <MyBreadcrumb
+            paths={[
+              { label: "Reminder", href: "/admin/management/reminder/request-reminder" },
+              { label: "Request Reminder" },
+            ]}
+        />
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="max-w-7xl mx-auto">
-            <MyBreadcrumb
-                paths={[
-                  { label: "Reminder", href: "/admin/management/reminder/request-reminder" },
-                  { label: "Request Reminder" },
-                ]}
-            />
             <div className="flex justify-between items-center mb-4">
               <div className="text-2xl font-bold">Request List</div>
-              <Input
-                  placeholder="Search by full name"
-                  prefix={<SearchOutlined />}
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ maxWidth: "300px", width: "100%" }}
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                    placeholder="Search by full name"
+                    prefix={<SearchOutlined />}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onPressEnter={handleSearch}
+                    style={{ maxWidth: "300px", width: "100%" }}
+                />
+                <Button type="primary" onClick={handleSearch}>
+                  Search
+                </Button>
+              </div>
             </div>
             <ReminderListForm
                 data={data}
@@ -82,7 +95,7 @@ export default function RequestList() {
                 isFetching={isFetching}
                 error={error}
                 fetchPage={fetchPage}
-                searchText={searchText}
+                searchText={searchQuery}
             />
           </div>
         </div>

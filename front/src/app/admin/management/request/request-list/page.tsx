@@ -7,35 +7,27 @@ import { RootState } from "@/redux/store";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import { useGetAllRequestsQuery } from "@/redux/services/requestCounsellingApi";
 import RequestListForm from "@/app/components/request_counselling/RequestListForm";
-import {Input, notification} from "antd";
-import {SearchOutlined} from "@ant-design/icons";
-import ReminderListForm from "@/app/components/reminder/ReminderListForm";
+import { Input, notification, Button } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 
 export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [searchInput, setSearchInput] = useState(""); // Giá trị nhập tạm thời
+  const [searchText, setSearchText] = useState(""); // Giá trị gửi lên API
   const router = useRouter();
   const [notificationApi, contextHolder] = notification.useNotification();
-  const [searchText, setSearchText] = useState("");
 
   const userIdString = useSelector((state: RootState) => state.user?.id);
   const userId = userIdString ? parseInt(userIdString as string) : null;
 
-
+  // Gọi API với searchText làm tham số 'name'
   const { data, isLoading, isFetching, error } = useGetAllRequestsQuery({
     page: currentPage,
     size: currentPageSize,
+    name: searchText || undefined, // Chỉ gửi khi có searchText
   });
 
-  const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
-    notificationApi[type]({ message, description, placement: "topRight" });
-  };
-
-
-  console.log("Data", data)
-  console.log("Data1", data?.data)
-
-  // Now do the conditional check after all hooks
   if (!userId) {
     console.warn("No userId found in Redux store, redirecting to login");
     router.push("/login");
@@ -47,26 +39,37 @@ export default function Page() {
     setCurrentPageSize(size);
   };
 
+  const handleSearch = () => {
+    setSearchText(searchInput); // Gán giá trị từ input vào searchText để gửi lên API
+    setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+  };
+
   return (
       <div className="pt-2">
         {contextHolder}
+        <MyBreadcrumb
+            paths={[
+              { label: "Reminder", href: "/admin/management/request/request-list" },
+              { label: "Request List" },
+            ]}
+        />
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="max-w-7xl mx-auto">
-            <MyBreadcrumb
-                paths={[
-                  {label: "Reminder", href: "/admin/management/request/request-list"},
-                  {label: "Request List"},
-                ]}
-            />
             <div className="flex justify-between items-center mb-4">
               <div className="text-2xl font-bold">Request List</div>
-              <Input
-                  placeholder="Search by full name"
-                  prefix={<SearchOutlined />}
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ maxWidth: "300px", width: "100%" }}
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                    placeholder="Search by full name"
+                    prefix={<SearchOutlined />}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    style={{ maxWidth: "300px", width: "100%" }}
+                    onPressEnter={handleSearch} // Hỗ trợ nhấn Enter để tìm kiếm
+                />
+                <Button type="primary" onClick={handleSearch}>
+                  Search
+                </Button>
+              </div>
             </div>
             <RequestListForm
                 data={data}
@@ -78,7 +81,6 @@ export default function Page() {
             />
           </div>
         </div>
-        <div className="text-2xl font-bold mb-4"></div>
       </div>
   );
 }

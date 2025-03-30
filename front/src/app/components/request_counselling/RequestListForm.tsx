@@ -1,3 +1,4 @@
+"use client";
 
 import { Table, Tag, notification, ConfigProvider, Card } from "antd";
 import React, { useState } from "react";
@@ -40,18 +41,15 @@ export default function RequestListForm({
     fetchPage(page, size);
   };
 
-  // Lọc dữ liệu dựa trên searchText
-  const filteredRequests = data?.data.content
-  ?.filter((request) =>
-      request.name ? request.name.toLowerCase().includes(searchText.toLowerCase()) : false
-  )
-  .sort((a, b) => {
+  // Sử dụng trực tiếp dữ liệu từ server, không lọc cục bộ
+  const requests = [...(data?.data.content || [])].sort((a, b) => {
     const dateA = new Date(a.dueDate);
     const dateB = new Date(b.dueDate);
     return dateA.getTime() - dateB.getTime();
-  }) || [];
+  });
 
-  const tableData = filteredRequests.map((request) => {
+
+  const tableData = requests.map((request) => {
     const statusOption = REQUEST_COUNSELLING_STATUS_OPTIONS.find(
         (option) => option.value === String(request.status)
     );
@@ -142,7 +140,7 @@ export default function RequestListForm({
   }
 
   return (
-      <Card bordered={false} style={{ width: "100%", boxShadow: "none" }}>
+      <Card bordered={false} style={{ width: "100%", boxShadow: "none",minHeight: "calc(100vh - 300px)" }}>
         {contextHolder}
         <div className="px-6 py-4">
           <ConfigProvider
@@ -170,6 +168,11 @@ export default function RequestListForm({
                 }}
                 locale={{ emptyText: "No results found" }}
                 rowClassName={getRowClassName}
+                bordered
+                style={{
+                  background: "white",
+                  borderRadius: "12px"
+                }}
             />
           </ConfigProvider>
         </div>

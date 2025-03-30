@@ -106,15 +106,16 @@ export const requestCounsellingApi = createApi({
 
     getAllReminder: builder.query<
         ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
-        { page?: number; size?: number; statuses?: number[] }
+        { page?: number; size?: number; statuses?: number[]; name?: string } // Thêm name
     >({
-      query: ({ page = 1, size = 10, statuses }) => ({
+      query: ({ page = 1, size = 10, statuses, name }) => ({
         url: "counselling/all-reminder",
         method: "GET",
         params: {
           page,
           size,
-          ...(statuses && statuses.length > 0 && { statuses }),
+          ...(statuses && statuses.length > 0 && { statuses: statuses.join(",") }),
+          ...(name && { name }),
         },
       }),
       providesTags: ["RequestList"],
