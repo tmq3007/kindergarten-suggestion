@@ -14,11 +14,13 @@ import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.RequestCounsellingReminderService;
 import java.util.Arrays;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -172,10 +174,18 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     }
 
     @Override
-    public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses) {
+    public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses, String name) {
         Pageable pageable = PageRequest.of(page - 1, size);
         List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
-        Page<RequestCounselling> requestPage = requestCounsellingRepository.findByStatusIn(statusList, pageable);
+        Specification<RequestCounselling> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(root.get("status").in(statusList));
+            if (name != null && !name.trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase().trim() + "%"));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(spec, pageable);
         return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
     }
 
