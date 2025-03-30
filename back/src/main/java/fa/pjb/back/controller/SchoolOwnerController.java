@@ -35,18 +35,6 @@ public class SchoolOwnerController {
                 .build();
     }
 
-    @Operation(summary = "Get School Draft Info", description = "Get School Draft Information for School Owner")
-    @GetMapping("/draft")
-    public ApiResponse<SchoolDetailVO> getSchoolDraftInfo(
-            @AuthenticationPrincipal User user
-    ) {
-        return ApiResponse.<SchoolDetailVO>builder()
-                .code(HttpStatus.OK.value())
-                .message("Get school information successfully.")
-                .data(schoolService.getDraft(user))
-                .build();
-    }
-
     @Operation(summary = "Get draft info", description = "Get draft information of school owner's school")
     @GetMapping("/draft-info")
     public ApiResponse<SchoolDetailVO> getDraftInfo(

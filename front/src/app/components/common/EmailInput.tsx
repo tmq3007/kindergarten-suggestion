@@ -8,13 +8,15 @@ interface EmailInputProps {
     isReadOnly?: boolean;
     triggerCheckEmail: any; // Check email query for new school
     schoolId?: number; // Inject schoolId when editing school
+    fieldName?: string;
 }
 
 const EmailInput = forwardRef(({
                                    form,
                                    isReadOnly,
                                    triggerCheckEmail,
-                                   schoolId
+                                   schoolId,
+                                   fieldName = "email"
                                }: EmailInputProps, ref) => {
     const [email, setEmail] = useState<string>(form.getFieldValue('email') || '');
 
@@ -52,12 +54,10 @@ const EmailInput = forwardRef(({
         try {
             let response;
             if (schoolId) {
-                console.log("into schoolId")
                 // In case of EDITING a school,
                 // only need to validate the email if it is different from the current email in the database
                 response = await triggerCheckEditEmail({email, schoolId}).unwrap();
             } else {
-                console.log("not into schoolId")
                 // In case of ADD school, check all emails
                 response = await triggerCheckEmail(email).unwrap();
             }
@@ -96,7 +96,7 @@ const EmailInput = forwardRef(({
 
     return (
         <Form.Item
-            name="email"
+            name={fieldName}
             label="Email"
             hasFeedback
             validateStatus={emailStatus}

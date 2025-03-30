@@ -37,8 +37,25 @@ public class ReviewServiceImpl implements ReviewService {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
-    public List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate) {
-        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRange(schoolId, fromDate, toDate);
+    public List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate, String status) {
+        Byte statusByte = null;
+        if (status != null) {
+            switch (status.toUpperCase()) {
+                case "APPROVED":
+                    statusByte = (byte) 0;
+                    break;
+                case "REJECTED":
+                    statusByte = (byte) 1;
+                    break;
+                case "PENDING":
+                    statusByte = (byte) 2;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid status value. Use: APPROVED, REJECTED, or PENDING");
+            }
+        }
+
+        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate, statusByte);
         log.info("reviews: {}", reviews.get(0).getStatus());
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
@@ -47,12 +64,27 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
-    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate){
+    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status){
         SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
         School school = schoolOwner.getSchool();
-        log.info("schoolaaaaaa: {}", school.getId());
+        Byte statusByte = null;
+        if (status != null) {
+            switch (status.toUpperCase()) {
+                case "APPROVED":
+                    statusByte = (byte) 0;
+                    break;
+                case "REJECTED":
+                    statusByte = (byte) 1;
+                    break;
+                case "PENDING":
+                    statusByte = (byte) 2;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid status value. Use: APPROVED, REJECTED, or PENDING");
+            }
+        }
 
-        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRange(school.getId(), fromDate, toDate);
+        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeSO(school.getId(), fromDate, toDate,statusByte);
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
         }
@@ -97,6 +129,10 @@ public class ReviewServiceImpl implements ReviewService {
 
         if(review == null){
             throw new ReviewNotFoundException();
+        }
+
+        if (reviewAcceptDenyDTO.decision() == null) {
+            throw new IllegalArgumentException("Decision cannot be null");
         }
 
         if (review.getStatus() != ReviewStatus.PENDING.getValue()) {

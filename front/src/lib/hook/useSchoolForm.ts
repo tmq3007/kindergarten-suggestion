@@ -47,6 +47,7 @@ export default function useSchoolForm({data, isLoading, externalForm}: UseSchool
                 facilities: school.facilities?.map(f => String(f.fid)) || [],
                 utilities: school.utilities?.map(u => String(u.uid)) || [],
                 image: school.imageList || [],
+                schoolOwnersInitialList: school.schoolOwners || [],
             });
 
             setFormLoaded(true);

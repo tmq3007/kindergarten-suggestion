@@ -41,9 +41,9 @@ public class SchoolController {
     private final GGDriveImageService imageService;
     private final RestClient.Builder builder;
 
-    @Operation(summary = "Get school info", description = "Get school information")
+    @Operation(summary = "Get school info", description = "Get school information by school id")
     @GetMapping("/{schoolId}")
-    public ApiResponse<SchoolDetailVO> getSchoolInfo(@PathVariable Integer schoolId) {
+    public ApiResponse<SchoolDetailVO> getSchoolInfoById(@PathVariable Integer schoolId) {
         return ApiResponse.<SchoolDetailVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Get school information successfully.")
@@ -167,11 +167,11 @@ public class SchoolController {
 
     @Operation(summary = "Get school owner list for add school", description = "Get school owner list for specified expected school")
     @GetMapping("/get-so-list")
-    public ApiResponse<List<SchoolOwnerVO>> searchSchoolOwnersForAddSchool(@RequestParam("q") String expectedSchool) {
+    public ApiResponse<List<SchoolOwnerVO>> searchSchoolOwnersForAddSchool(@RequestParam("q") String expectedSchool,@RequestParam("BRN") String BRN) {
         return ApiResponse.<List<SchoolOwnerVO>>builder()
                 .code(200)
                 .message("Success")
-                .data(schoolService.findSchoolOwnerForAddSchool(expectedSchool))
+                .data(schoolService.findSchoolOwnerForAddSchool(expectedSchool,BRN))
                 .build();
     }
 

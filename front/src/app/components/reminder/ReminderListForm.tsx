@@ -1,11 +1,10 @@
-"use client";
 
 import { Table, Tag, notification, ConfigProvider, Card } from "antd";
 import React, { useState, useEffect } from "react";
 import { ApiResponse } from "@/redux/services/config/baseQuery";
 import { RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
 import { Pageable } from "@/redux/services/userApi";
-import {REQUEST_COUNSELLING_STATUS_OPTIONS} from "@/lib/constants";
+import { REQUEST_COUNSELLING_STATUS_OPTIONS } from "@/lib/constants";
 
 interface ReminderListFormProps {
   data: ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined;
@@ -13,10 +12,16 @@ interface ReminderListFormProps {
   isFetching: boolean;
   error: any;
   fetchPage: (page: number, size: number) => void;
-  searchText: string;
+  searchText: string; // Không còn dùng để lọc nữa
 }
-
-export default function ReminderListForm({data, isLoading, isFetching, error, fetchPage, searchText,}: ReminderListFormProps) {
+export default function ReminderListForm({
+                                           data,
+                                           isLoading,
+                                           isFetching,
+                                           error,
+                                           fetchPage,
+                                           searchText, //
+                                         }: ReminderListFormProps) {
   const [notificationApi, contextHolder] = notification.useNotification();
   const [filteredRequests, setFilteredRequests] = useState<RequestCounsellingVO[]>([]);
   const [current, setCurrent] = useState(1);
@@ -29,38 +34,36 @@ export default function ReminderListForm({data, isLoading, isFetching, error, fe
   };
 
   useEffect(() => {
-    if (!data || !data.data || !data.data.content) {
+    if (!data?.data?.content) {
       setFilteredRequests([]);
       return;
     }
 
-    const requests = data.data.content || [];
-    const filtered = requests
-    .filter((request) =>
-        request.name ? request.name.toLowerCase().includes(searchText.toLowerCase()) : false
-    )
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    const requests = [...data.data.content].sort((a, b) =>
+        new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    ); // Chỉ sắp xếp, không lọc
+    setFilteredRequests(requests);
+  }, [data]); // Chỉ phụ thuộc vào data, không cần searchText
 
-    setFilteredRequests(filtered);
-  }, [data, searchText]);
-
-  const tableData = filteredRequests.map((request) => ({
-    key: request.id,
-    id: request.id,
-    fullName: request.name ?? "N/A",
-    schoolName: request.schoolName ?? "N/A",
-    email: request.email ?? "N/A",
-    phone: request.phone ?? "N/A",
-    status: Object.keys(REQUEST_COUNSELLING_STATUS_OPTIONS).find(
-        (key) => REQUEST_COUNSELLING_STATUS_OPTIONS[key as keyof typeof REQUEST_COUNSELLING_STATUS_OPTIONS ] === request.status
-
-    ) || "Unknown",
-    dueDate: new Date(request.dueDate).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }),
-  }));
+  const tableData = filteredRequests.map((request) => {
+    const statusOption = REQUEST_COUNSELLING_STATUS_OPTIONS.find(
+        (option) => option.value === String(request.status)
+    );
+    return {
+      key: request.id,
+      id: request.id,
+      fullName: request.name ?? "N/A",
+      schoolName: request.schoolName ?? "N/A",
+      email: request.email ?? "N/A",
+      phone: request.phone ?? "N/A",
+      status: statusOption ? statusOption.label : "Unknown",
+      dueDate: new Date(request.dueDate).toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }),
+    };
+  });
 
   const columns = [
     { title: <div className="text-center">Full Name</div>, dataIndex: "fullName", key: "fullName", width: 150 },
@@ -103,7 +106,12 @@ export default function ReminderListForm({data, isLoading, isFetching, error, fe
       width: 120,
       align: "center" as const,
       render: (status: string) => {
-        const colorMap: { [key: string]: string } = { Open: "blue", Closed: "green", Expired: "red", Unknown: "default" };
+        const colorMap: { [key: string]: string } = {
+          Opened: "blue",
+          Closed: "green",
+          Overdue: "red",
+          Unknown: "default",
+        };
         return <Tag color={colorMap[status] || "default"}>{status.toUpperCase()}</Tag>;
       },
     },
@@ -135,7 +143,7 @@ export default function ReminderListForm({data, isLoading, isFetching, error, fe
   }
 
   return (
-      <Card bordered={false} style={{ width: "100%", boxShadow: "none" }}>
+      <Card bordered={false} style={{ width: "100%", boxShadow: "none", minHeight: "calc(100vh - 300px)" }}>
         {contextHolder}
         <ConfigProvider>
           <Table
@@ -145,7 +153,7 @@ export default function ReminderListForm({data, isLoading, isFetching, error, fe
               loading={isLoading || isFetching}
               scroll={{ x: "max-content" }}
               pagination={{
-                current: current,
+                current,
                 pageSize,
                 total: totalElements,
                 onChange: (newPage, newPageSize) => {
@@ -157,6 +165,11 @@ export default function ReminderListForm({data, isLoading, isFetching, error, fe
               }}
               locale={{ emptyText: "No results found" }}
               rowClassName={getRowClassName}
+              bordered
+              style={{
+                background: "white",
+                borderRadius: "12px"
+              }}
           />
         </ConfigProvider>
       </Card>

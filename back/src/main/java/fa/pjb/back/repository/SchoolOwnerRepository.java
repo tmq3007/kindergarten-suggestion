@@ -23,14 +23,33 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
                 SELECT so.id AS id,so.user.id AS userId, u.username AS username, u.email AS email, so.expectedSchool AS expectedSchool, u.fullname AS fullname, u.phone AS phone
                 FROM SchoolOwner so
                 JOIN so.user u
-                WHERE (:expectedSchool IS NULL OR so.expectedSchool = :expectedSchool)
+                WHERE (:expectedSchool IS NULL OR so.expectedSchool = :expectedSchool) AND (so.business_registration_number = :BRN)
                 AND so.school.id IS NULL
             """)
-    List<SchoolOwnerProjection> searchSchoolOwnersByExpectedSchool(@Param("expectedSchool") String expectedSchool);
+    List<SchoolOwnerProjection> searchSchoolOwnersByExpectedSchool(@Param("expectedSchool") String expectedSchool,@Param("BRN") String BRN);
 
-    List<ExpectedSchoolVO> findDistinctByExpectedSchoolIsNotNull();
+    @Query("""
+                SELECT so.id AS id,so.user.id AS userId, u.username AS username, u.email AS email, so.expectedSchool AS expectedSchool, u.fullname AS fullname, u.phone AS phone
+                FROM SchoolOwner so
+                JOIN so.user u
+                WHERE (so.school.id = :schoolId)
+            """)
+    List<SchoolOwnerProjection> searchSchoolOwnersBySchoolId(@Param("schoolId") Integer schoolId);
 
-    List<ExpectedSchoolVO> getExpectedSchoolByUserId(Integer id);
+    @Query("""
+                SELECT  so.expectedSchool AS expectedSchool, so.business_registration_number as BRN
+                FROM SchoolOwner so
+                WHERE so.expectedSchool IS NOT NULL
+                GROUP BY so.business_registration_number, so.expectedSchool
+            """)
+    List<Object[]> getAllExpectedschool();
+
+    @Query("""
+                SELECT  so.expectedSchool AS expectedSchool, so.business_registration_number as BRN
+                FROM SchoolOwner so
+                WHERE (so.user.id = :id) AND so.expectedSchool IS NOT NULL
+            """)
+    List<Object[]> getExpectedSchoolByUserId(@Param("id") Integer id);
 
     Set<SchoolOwner> findAllByIdIn(Set<Integer> ids);
 
@@ -40,7 +59,7 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     @Query("SELECT DISTINCT so FROM SchoolOwner so " +
             "LEFT JOIN FETCH so.school s " +
             "LEFT JOIN FETCH s.draft d " +
-            "LEFT JOIN FETCH so.images i " +  // FETCH images để tránh lỗi LazyInitializationException
+            "LEFT JOIN FETCH so.images i " +
             "WHERE so.user.id = :userId")
     Optional<SchoolOwner> findWithSchoolAndDraftByUserId(@Param("userId") Integer userId);
 

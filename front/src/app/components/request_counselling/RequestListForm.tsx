@@ -41,21 +41,17 @@ export default function RequestListForm({
     fetchPage(page, size);
   };
 
-  // Lọc dữ liệu dựa trên searchText
-  const filteredRequests = data?.data.content
-  ?.filter((request) =>
-      request.name ? request.name.toLowerCase().includes(searchText.toLowerCase()) : false
-  )
-  .sort((a, b) => {
+  // Sử dụng trực tiếp dữ liệu từ server, không lọc cục bộ
+  const requests = [...(data?.data.content || [])].sort((a, b) => {
     const dateA = new Date(a.dueDate);
     const dateB = new Date(b.dueDate);
     return dateA.getTime() - dateB.getTime();
-  }) || [];
+  });
 
-  // Chuyển đổi dữ liệu để hiển thị trong bảng
-  const tableData = filteredRequests.map((request) => {
+
+  const tableData = requests.map((request) => {
     const statusOption = REQUEST_COUNSELLING_STATUS_OPTIONS.find(
-        (option) => option.value === String(request.status) // Chuyển request.status thành string để so sánh
+        (option) => option.value === String(request.status)
     );
     return {
       key: request.id,
@@ -64,7 +60,7 @@ export default function RequestListForm({
       schoolName: request.schoolName ?? "N/A",
       email: request.email ?? "N/A",
       phone: request.phone ?? "N/A",
-      status: statusOption ? statusOption.label : "Unknown", // Lấy label nếu tìm thấy, nếu không thì "Unknown"
+      status: statusOption ? statusOption.label : "Unknown",
     };
   });
 
@@ -144,7 +140,7 @@ export default function RequestListForm({
   }
 
   return (
-      <Card bordered={false} style={{ width: "100%", boxShadow: "none" }}>
+      <Card bordered={false} style={{ width: "100%", boxShadow: "none",minHeight: "calc(100vh - 300px)" }}>
         {contextHolder}
         <div className="px-6 py-4">
           <ConfigProvider
@@ -172,6 +168,11 @@ export default function RequestListForm({
                 }}
                 locale={{ emptyText: "No results found" }}
                 rowClassName={getRowClassName}
+                bordered
+                style={{
+                  background: "white",
+                  borderRadius: "12px"
+                }}
             />
           </ConfigProvider>
         </div>

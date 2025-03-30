@@ -42,62 +42,53 @@ const RatingSkeleton = () => {
             <SchoolManageTitle title="Ratings & Feedback" />
 
             {/* Date Range Picker and Refresh Button */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-4 mb-8 justify-center">
+            <div className="flex gap-4 mb-8 justify-center">
                 <Skeleton.Input className="w-64" active />
                 <Skeleton.Button active />
-            </motion.div>
+            </div>
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
+                <div >
                     <Card title="Rating Distribution">
                         <Skeleton active paragraph={{ rows: 6 }} />
                     </Card>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
+                </div>
+                <div>
                     <Card title="Monthly Reviews">
                         <Skeleton active paragraph={{ rows: 6 }} />
                     </Card>
-                </motion.div>
+                </div>
             </div>
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 {/* Card 1: Review Status (1/3 width) */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02 }}
+                <div
                     className="col-span-1"
                 >
                     <Card className="w-full p-0 min-h-[240px]">
                         <Skeleton.Input className={'!w-full !h-[200px]'} active={true}/>
                     </Card>
-                </motion.div>
+                </div>
 
                 {/* Card 2: Average Rating (1/3 width) */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02 }}
+                <div
                     className="col-span-1"
                 >
                     <Card className="w-full min-h-[240px]">
                         <Skeleton.Input className={'!w-full !h-[200px]'} active={true}/>
                     </Card>
-                </motion.div>
+                </div>
 
                 {/* Card 3: Category Ratings (1/3 width) */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.02 }}
+                <div
                     className="col-span-1"
                 >
                     <Card className="w-full min-h-[240px]">
                         <Skeleton.Input className={'!w-full !h-[200px]'} active={true}/>
                     </Card>
-                </motion.div>
+                </div>
             </div>
 
             {/* Recent Feedback List */}
@@ -116,12 +107,6 @@ const RatingSkeleton = () => {
 
                 <Skeleton.Input active className="!w-full !h-[500px]" />
 
-
-
-                {/* View More Button */}
-                <div className="text-center mt-4">
-                    <Skeleton.Button active />
-                </div>
             </Card>
         </div>
     );

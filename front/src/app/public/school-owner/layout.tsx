@@ -42,13 +42,17 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
     const pathname = usePathname();
 
     let selectedKeys = ['1'];
+
     if (pathname.startsWith('/public/school-owner/draft')) {
         selectedKeys = ['2'];
     } else if (pathname.startsWith('/public/school-owner/edit-school')) {
         selectedKeys = hasDraft ? ['2'] : ['1'];
     } else if (pathname.startsWith('/public/school-owner/view-request')) {
         selectedKeys = ['3'];
+    } else if (pathname.startsWith('/public/school-owner/parent-management')) {
+        selectedKeys = ['4'];
     }
+
 
     return (
         <Fragment>
@@ -113,7 +117,7 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
                                         {
                                             key: '4',
                                             icon: <TeamOutlined />,
-                                            label: <Link href="/public/school-owner/draft">My Parents</Link>
+                                            label: <Link href="/public/school-owner/parent-management">My Parents</Link>
                                         },
                                     ]}
                                 />
