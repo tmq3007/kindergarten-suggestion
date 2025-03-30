@@ -24,6 +24,7 @@ type ReviewRequest = {
     schoolId?: number;
     fromDate?: string; // Chuỗi ISO date, ví dụ: "2024-01-01"
     toDate?: string;   // Chuỗi ISO date
+    status?:string;
 };
 
 export type ReviewReportDTO = {
@@ -48,10 +49,11 @@ export const reviewApi = createApi({
     tagTypes: ['Review'],
     endpoints: (build) => ({
         getReviewBySchoolId: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
-            query: ({ schoolId, fromDate, toDate }) => {
+            query: ({ schoolId, fromDate, toDate,status }) => {
                 const params = new URLSearchParams();
                 if (fromDate) params.append("fromDate", fromDate);
                 if (toDate) params.append("toDate", toDate);
+                if(status) params.append("status",status);
                 return {
                     url: `/school/review/${schoolId}${params.toString() ? `?${params.toString()}` : ''}`,
                     method: "GET",
@@ -61,11 +63,11 @@ export const reviewApi = createApi({
         }),
 
         getReviewBySchoolOwner: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
-            query: ({ fromDate, toDate }) => {
+            query: ({ fromDate, toDate,status }) => {
                 const params = new URLSearchParams();
                 if (fromDate) params.append("fromDate", fromDate);
                 if (toDate) params.append("toDate", toDate);
-
+                if(status) params.append("status",status);
                 const queryString = params.toString();
                 return {
                     url: `/school/review/${queryString ? `?${queryString}` : ''}`,

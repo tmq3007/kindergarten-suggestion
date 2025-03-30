@@ -580,7 +580,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId) {
-        School school = schoolRepository.findSchoolByUserId(userId)
+        School school = schoolRepository.findSchoolByUserIdAndStatusNotDelete(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         Hibernate.initialize(school.getSchoolOwners());
         return schoolMapper.toSchoolDetailVO(school);

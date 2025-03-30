@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Card, List, Typography, Avatar, Button, DatePicker, Select, message } from "antd";
 import {  SyncOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
-import { motion } from "framer-motion";
+ import { motion } from "framer-motion";
 import {
     Cell,
     Pie,
@@ -39,6 +39,7 @@ import { RootState } from "@/redux/store";
 import { REVIEW_STATUS } from "@/lib/constants";
 import { MakeReportButton, ReviewButton } from "@/app/components/review/ReviewButton";
 import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
+import { usePathname } from "next/navigation"; // Replace useRouter with usePathname
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -54,6 +55,7 @@ interface EnhancedReview extends ReviewWithDayjs {
 interface QueryParams {
     fromDate?: string;
     toDate?: string;
+    status?:string
 }
 
 interface Report {
@@ -61,13 +63,30 @@ interface Report {
     reason: string | undefined;
 }
 const RatingsDashboard = () => {
+    const pathname = usePathname(); // Get the current pathname
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
     const [queryParams, setQueryParams] = useState<QueryParams>({});
     const [reviews, setReviews] = useState<EnhancedReview[]>([]);
+    const [isNavigating, setIsNavigating] = useState(false);
+    const initialStatus = "";
+    const [statusFilter, setStatusFilter] = useState<string | undefined>(
+         initialStatus || undefined
+    );
 
     const { data, isLoading, isFetching, error, refetch } = useGetReviewBySchoolOwnerQuery(queryParams);
+
+    useEffect(() => {
+        refetch();
+    }, [queryParams, refetch]);
+
+    useEffect(() => {
+        if (pathname === "/public/school-owner/rating-feedback") {
+            setIsNavigating(true);
+            refetch().finally(() => setIsNavigating(false)); // Reset after refetch completes
+        }
+    }, [pathname, refetch]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
@@ -107,7 +126,6 @@ const RatingsDashboard = () => {
         setIsModalOpen(true);
     };
 
-
     const handleCancelModal = () => setIsModalOpen(false);
 
     useEffect(() => {
@@ -116,8 +134,11 @@ const RatingsDashboard = () => {
             params.fromDate = dateRange[0].format("YYYY-MM-DD");
             params.toDate = dateRange[1].format("YYYY-MM-DD");
         }
+        if (statusFilter) {
+            params.status = statusFilter;
+        }
         setQueryParams(params);
-    }, [dateRange]);
+    }, [dateRange,statusFilter]);
 
     useEffect(() => {
         if (data?.data) {
@@ -142,9 +163,16 @@ const RatingsDashboard = () => {
     }, [data]);
 
     const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => setDateRange(dates);
+
+    // Handle refresh button click
     const handleRefresh = () => {
         setDateRange(null);
+        setStatusFilter(undefined);
         refetch();
+    };
+
+    const handleStatusChange = (value: string | undefined) => {
+        setStatusFilter(value);
     };
 
     const metrics = useMemo(() => {
@@ -291,7 +319,7 @@ const RatingsDashboard = () => {
         [filteredReviews, showAll]
     );
 
-    if (isLoading) return <RatingSkeleton />;
+    if (isLoading || isNavigating) return <RatingSkeleton />;
 
     return (
         <div className="pt-2 sm:px-6 lg:px-8">
@@ -306,26 +334,48 @@ const RatingsDashboard = () => {
             <div className="min-h-screen p-2">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col sm:flex-row gap-4 mb-8 justify-center items-center"
+                    animate={{
+                        opacity: isFetching ? 0.7 : 1,
+                        y: 0,
+                        transition: { duration: 0.3 }
+                    }}
+                    className="flex gap-4 mb-8 justify-center relative"
                 >
+                    {isFetching && (
+                        <div className="absolute inset-0 bg-opacity-70 flex items-center justify-center z-10">
+                            <SyncOutlined spin className="text-2xl text-blue-500" />
+                        </div>
+                    )}
                     <RangePicker
                         onChange={handleDateChange}
                         value={dateRange}
-                        className="w-full sm:w-64"
+                        className="w-64"
+                        disabled={isFetching}
+                    />
+                    <Select
+                        className="w-40"
+                        placeholder="Filter by status"
+                        allowClear
+                        onChange={handleStatusChange}
+                        value={statusFilter}
+                        options={[
+                            { value: "APPROVED", label: "Approved" },
+                            { value: "PENDING", label: "Pending" },
+                            { value: "REJECTED", label: "Rejected" },
+                        ]}
+                        disabled={isFetching}
                     />
                     <Button
                         type="primary"
-                        icon={<SyncOutlined />}
+                        icon={<SyncOutlined  />}
                         onClick={handleRefresh}
-                        className="w-full sm:w-auto"
                     >
                         Refresh
                     </Button>
                 </motion.div>
 
                 {error ? (
-                    <NoData />
+                        <NoData />
                 ) : (
                     <>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

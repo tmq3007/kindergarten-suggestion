@@ -52,7 +52,7 @@ public class RequestCounsellingController {
             @Valid @RequestBody RequestCounsellingDTO request) {
         RequestCounsellingVO createdRequest = requestCounsellingService.createRequestCounselling(request);
         return ApiResponse.<RequestCounsellingVO>builder()
-                .code(HttpStatus.CREATED.value())
+                .code(HttpStatus.OK.value())
                 .message("Counseling request created successfully!")
                 .data(createdRequest)
                 .build();

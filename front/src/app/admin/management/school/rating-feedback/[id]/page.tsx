@@ -35,7 +35,7 @@ import {
     TeamOutlined,
     MedicineBoxOutlined,
 } from "@ant-design/icons";
-import { useParams } from "next/navigation";
+import {useParams, useSearchParams} from "next/navigation";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
@@ -64,9 +64,16 @@ const RatingsDashboard = () => {
     const params = useParams();
     const schoolId = Number(params.id as string);
     const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
 
+    const searchParams = useSearchParams();
+    const fromSource = searchParams.get("from");
+    const initialStatus = "";
+    const [statusFilter, setStatusFilter] = useState<string | undefined>(
+        fromSource === "notification" ? "PENDING" : initialStatus || undefined
+    );
     const [visibleModal, setVisibleModal] = useState(false);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
@@ -124,15 +131,19 @@ const RatingsDashboard = () => {
 
     // Memoize query parameters for the API call
     const queryParams = useMemo(() => {
-        const params: { schoolId: number; fromDate?: string; toDate?: string } = { schoolId };
+        const params: { schoolId: number; fromDate?: string; toDate?: string; status?: string } = { schoolId };
         if (dateRange && dateRange[0] && dateRange[1]) {
             params.fromDate = dateRange[0].format("YYYY-MM-DD");
             params.toDate = dateRange[1].format("YYYY-MM-DD");
         }
+        if (statusFilter) {
+            params.status = statusFilter;
+        }
         return params;
-    }, [schoolId, dateRange]);
+    }, [schoolId, dateRange, statusFilter]);
 
     const { data, isLoading, error,isFetching, refetch } = useGetReviewBySchoolIdQuery(queryParams);
+
     useEffect(() => {
         if (!isFetching) {
             setLoadingReviewId(null);
@@ -167,10 +178,16 @@ const RatingsDashboard = () => {
         setDateRange(dates);
     };
 
+    // Handle status filter change
+    const handleStatusChange = (value: string | undefined) => {
+        setStatusFilter(value);
+    };
+
     // Handle refresh button click
     const handleRefresh = () => {
-        setDateRange(null); // Reset date range
-        refetch(); // Trigger refetch with default params (no date filter)
+        setDateRange(null);
+        setStatusFilter(undefined);
+        refetch();
     };
 
     // Calculate metrics
@@ -340,16 +357,47 @@ const RatingsDashboard = () => {
             <div className="min-h-screen p-2">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex gap-4 mb-8 justify-center"
+                    animate={{
+                        opacity: isFetching ? 0.7 : 1,
+                        y: 0,
+                        transition: { duration: 0.3 }
+                    }}
+                    className="flex gap-4 mb-8 justify-center relative"
                 >
-                    <RangePicker onChange={handleDateChange} value={dateRange} className="w-64" />
-                    <Button type="primary" icon={<SyncOutlined />} onClick={handleRefresh}>
+                    {isFetching && (
+                        <div className="absolute inset-0  bg-opacity-70 flex items-center justify-center z-10">
+                            <SyncOutlined spin className="text-2xl text-blue-500" />
+                        </div>
+                    )}
+                    <RangePicker
+                        onChange={handleDateChange}
+                        value={dateRange}
+                        className="w-64"
+                        disabled={isFetching}
+                    />
+                    <Select
+                        className="w-40"
+                        placeholder="Filter by status"
+                        allowClear
+                        onChange={handleStatusChange}
+                        value={statusFilter}
+                        options={[
+                            { value: "APPROVED", label: "Approved" },
+                            { value: "PENDING", label: "Pending" },
+                            { value: "REJECTED", label: "Rejected" },
+                        ]}
+                        disabled={isFetching}
+                    />
+                    <Button
+                        type="primary"
+                        icon={<SyncOutlined  />}
+                        onClick={handleRefresh}
+                    >
                         Refresh
                     </Button>
                 </motion.div>
 
-                {(error) ? (
+                {error ? (
                     <NoData />
                 ) : (
                     <>

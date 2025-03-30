@@ -29,8 +29,8 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
             "AND NOT (s.id = :schoolId OR (d IS NOT NULL AND d.id = :schoolId))")
     boolean existsByEmailExcept(@Param("email") String email, @Param("schoolId") Integer schoolId);
 
-    @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId")
-    Optional<School> findSchoolByUserId(@Param("userId") Integer userId);
+    @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId and s.status != 6")
+    Optional<School> findSchoolByUserIdAndStatusNotDelete(@Param("userId") Integer userId);
 
     @Query(value = "SELECT s FROM School s " +
             "LEFT JOIN FETCH s.originalSchool " +

@@ -54,9 +54,7 @@ class GetParentBySchoolTest {
         int size = 10;
         String keyword = "test";
 
-        assertThrows(InvalidDataException.class, () -> {
-            parentService.getParentBySchool(page, size, invalidSearchBy, keyword);
-        });
+        assertThrows(InvalidDataException.class, () -> parentService.getParentBySchool(page, size, invalidSearchBy, keyword));
     }
 
     @Test
@@ -71,9 +69,7 @@ class GetParentBySchoolTest {
 
         when(schoolOwnerRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
 
-        assertThrows(SchoolNotFoundException.class, () -> {
-            parentService.getParentBySchool( page, size, searchBy, keyword);
-        });
+        assertThrows(SchoolNotFoundException.class, () -> parentService.getParentBySchool( page, size, searchBy, keyword));
     }
 
 

@@ -30,7 +30,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     const [collapsed, setCollapsed] = useState(false);
     const {Header, Content, Sider} = Layout;
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const router = useRouter();
     const [logout] = useLogoutMutation();
     const processed = useRef(false);
     const dispatch = useDispatch();

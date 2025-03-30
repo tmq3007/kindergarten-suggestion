@@ -13,6 +13,7 @@ import {useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 import DetailPageSkeleton from "@/app/components/skeleton/DetailPageSkeleton";
 import useSchoolForm from "@/lib/hook/useSchoolForm";
 import Link from "next/link";
+import NoData from "@/app/components/review/NoData";
 
 export default function SchoolDetail() {
     const router = useRouter();
@@ -71,6 +72,10 @@ export default function SchoolDetail() {
         return (
             <DetailPageSkeleton paths={paths}/>
         );
+    }
+
+    if(!data){
+        return <NoData/>
     }
 
     return (
