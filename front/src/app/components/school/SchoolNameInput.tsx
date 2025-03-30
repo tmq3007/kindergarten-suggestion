@@ -29,7 +29,7 @@ const SchoolNameInput: React.FC<SchoolNameInputProps> = ({
     const {
         data: expectedSchoolData,
         isLoading: isLoadingExpectedSchool,
-    } = useSearchExpectedSchoolQuery({ id: user.id });
+    } = useSearchExpectedSchoolQuery({ id: Number(user.id) });
 
 
     useEffect(() => {

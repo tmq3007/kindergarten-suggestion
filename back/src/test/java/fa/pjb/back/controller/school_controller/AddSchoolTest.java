@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.enums.SchoolStatusEnum;
+import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
+import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.service.SchoolService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -60,7 +63,8 @@ class AddSchoolTest {
         schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, new Date()
+                "Description", null, null, null, new Date(), null,
+                Set.of(new SchoolOwnerVO(1,1,"test","test","test","test","test",null,LocalDate.now()))
         );
     }
 

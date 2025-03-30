@@ -1,7 +1,6 @@
 
 import { Table, Tag, notification, ConfigProvider, Card, Tabs } from "antd";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { ApiResponse } from "@/redux/services/config/baseQuery";
 import { Pageable } from "@/redux/services/userApi";
 import { RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
@@ -32,11 +31,10 @@ export default function RequestListForm({
   const [pageSize, setPageSize] = useState(10);
   const [activeTab, setActiveTab] = useState("All");
 
-  const totalElements = data?.data.page.totalElements || 0;
 
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && typeof tab === "string") {
+    if (tab) {
       const validTabs = ["All", "Open", "Overdue"];
       const normalizedTab = tab.trim();
       if (validTabs.includes(normalizedTab)) {

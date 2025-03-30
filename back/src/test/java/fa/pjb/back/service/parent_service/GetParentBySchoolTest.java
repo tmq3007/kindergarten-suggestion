@@ -55,7 +55,7 @@ class GetParentBySchoolTest {
         String keyword = "test";
 
         assertThrows(InvalidDataException.class, () -> {
-            parentService.getParentBySchool(user, page, size, invalidSearchBy, keyword);
+            parentService.getParentBySchool(page, size, invalidSearchBy, keyword);
         });
     }
 
@@ -72,7 +72,7 @@ class GetParentBySchoolTest {
         when(schoolOwnerRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
 
         assertThrows(SchoolNotFoundException.class, () -> {
-            parentService.getParentBySchool(user, page, size, searchBy, keyword);
+            parentService.getParentBySchool( page, size, searchBy, keyword);
         });
     }
 
@@ -103,7 +103,7 @@ class GetParentBySchoolTest {
                 .thenReturn(parentProjections);
         when(parentMapper.toParentVOFromProjection(parentProjection)).thenReturn(parentVO);
 
-        Page<ParentVO> result = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> result = parentService.getParentBySchool( page, size, searchBy, keyword);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
@@ -139,7 +139,7 @@ class GetParentBySchoolTest {
         when(parentMapper.toParentVOFromProjection(parentProjection1)).thenReturn(parentVO1);
         when(parentMapper.toParentVOFromProjection(parentProjection2)).thenReturn(parentVO2);
 
-        Page<ParentVO> result = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> result = parentService.getParentBySchool( page, size, searchBy, keyword);
 
         assertNotNull(result);
         assertEquals(2, result.getTotalElements());
@@ -168,7 +168,7 @@ class GetParentBySchoolTest {
         when(parentRepository.findActiveParentsInSchoolWithFilters(school.getId(), searchBy, keyword, PageRequest.of(page - 1, size)))
                 .thenReturn(parentProjections);
 
-        Page<ParentVO> result = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> result = parentService.getParentBySchool( page, size, searchBy, keyword);
 
         assertNotNull(result);
         assertEquals(0, result.getTotalElements());
@@ -195,7 +195,7 @@ class GetParentBySchoolTest {
         when(parentRepository.findActiveParentsInSchoolWithFilters(school.getId(), searchBy, keyword, PageRequest.of(page - 1, size)))
                 .thenReturn(parentProjections);
 
-        Page<ParentVO> result = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> result = parentService.getParentBySchool( page, size, searchBy, keyword);
 
         assertNotNull(result);
         assertEquals(0, result.getTotalElements());
@@ -231,7 +231,7 @@ class GetParentBySchoolTest {
         when(parentMapper.toParentVOFromProjection(parentProjection1)).thenReturn(parentVO1);
         when(parentMapper.toParentVOFromProjection(parentProjection2)).thenReturn(parentVO2);
 
-        Page<ParentVO> result = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> result = parentService.getParentBySchool( page, size, searchBy, keyword);
 
         assertNotNull(result);
         assertEquals(2, result.getTotalElements());
@@ -269,7 +269,7 @@ class GetParentBySchoolTest {
         when(parentMapper.toParentVOFromProjection(parentProjection1)).thenReturn(parentVO1);
         when(parentMapper.toParentVOFromProjection(parentProjection2)).thenReturn(parentVO2);
 
-        Page<ParentVO> result = parentService.getParentBySchool(user, page, size, searchBy, keyword);
+        Page<ParentVO> result = parentService.getParentBySchool( page, size, searchBy, keyword);
 
         assertNotNull(result);
         assertEquals(2, result.getTotalElements());

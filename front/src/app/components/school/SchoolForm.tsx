@@ -1,12 +1,7 @@
 'use client'
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Card, Carousel, Checkbox, Col, Form, Input, InputNumber, Row, Select, UploadFile} from 'antd';
 import MyEditor from "@/app/components/common/MyEditor";
-import {
-    ExpectedSchool,
-    useLazySearchSchoolOwnersForAddSchoolQuery,
-    useSearchExpectedSchoolQuery
-} from '@/redux/services/schoolApi';
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
@@ -30,11 +25,7 @@ import {
     MailOutlined,
     PhoneOutlined,
     ToolOutlined,
-    UserOutlined
 } from "@ant-design/icons";
-import {useSelector} from 'react-redux';
-import {RootState} from '@/redux/store';
-import {SchoolOwnerVO} from '@/redux/services/schoolOwnerApi';
 import school1 from '@public/school1.jpg'
 import school2 from '@public/school2.jpg'
 import school3 from '@public/school3.jpg'

@@ -2,7 +2,6 @@ import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 import {SchoolVO} from "@/redux/services/schoolApi";
 import {Pageable, UserDetailDTO} from "@/redux/services/userApi";
-import {ReviewVO} from "@/redux/services/reviewApi";
 
 interface ChangePasswordDTO {
     oldPassword: string;
@@ -159,13 +158,6 @@ export const parentApi = createApi({
             }),
             providesTags: ["ParentsList"],
         }),
-        deleteParentRequest: build.mutation({
-            query: (id: number) => ({
-                url: `/parent/delete/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ["ParentsList"],
-        }),
         getCountEnrollRequestBySchool: build.query<ApiResponse<number>, void>({
             query: () => ({
                 url: "parent/get-school-request-count",
@@ -192,19 +184,23 @@ export const parentApi = createApi({
                 url: `/parent/enroll/${parentInSchoolId}`,
                 method: 'PUT',
             }),
+            invalidatesTags: ["ParentsList"],
         }),
         unEnrollParent: build.mutation({
             query: (parentInSchoolId:number) => ({
                 url: `/parent/un-enroll/${parentInSchoolId}`,
                 method: 'PUT',
             }),
+            invalidatesTags: ["ParentsList"],
         }),
         rejectParent: build.mutation({
             query: (parentInSchoolId:number) => ({
                 url: `/parent/reject/${parentInSchoolId}`,
                 method: 'PUT',
             }),
+            invalidatesTags: ["ParentsList"],
         }),
+
     }),
 });
 
@@ -215,7 +211,6 @@ export const {
     useChangePasswordMutation,
     useListParentBySchoolWithFilterQuery,
     useListEnrollRequestBySchoolWithFilterQuery,
-    useDeleteParentRequestMutation,
     useGetCountEnrollRequestBySchoolQuery,
     useGetAcademicHistoryByParentQuery,
     useToggleParentStatusMutation,
