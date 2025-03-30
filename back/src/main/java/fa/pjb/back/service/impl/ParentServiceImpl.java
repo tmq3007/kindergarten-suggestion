@@ -322,6 +322,9 @@ public class ParentServiceImpl implements ParentService {
         // Change status from ACTIVE to INACTIVE
         parentInSchool.setStatus(ParentInSchoolEnum.INACTIVE.getValue());
 
+        // Save un-enroll date
+        parentInSchool.setTo(LocalDate.now());
+
         // Save the change
         parentInSchoolRepository.save(parentInSchool);
 
