@@ -43,9 +43,6 @@ import school5 from '@public/school5.jpg'
 import {AnimatePresence} from "framer-motion";
 import {motion} from "framer-motion";
 
-const {Option} = Select;
-const {Panel} = Collapse;
-
 interface SchoolFieldType {
     name: string;
     schoolType: number;
