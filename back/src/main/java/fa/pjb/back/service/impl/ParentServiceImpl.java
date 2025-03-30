@@ -249,39 +249,46 @@ public class ParentServiceImpl implements ParentService {
             throw new IllegalArgumentException("New password cannot be null or empty");
         }
 
-        // Cập nhật mật khẩu mới
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 
     @Override
-    public Page<ParentVO> getAllParent(int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getAllParent(int page, int size, String searchBy, String keyword, Boolean status) {
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable);
+
+        Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(status,searchBy, keyword, pageable);
+
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
     @Override
     public Page<ParentVO> getParentBySchool( int page, int size, String searchBy, String keyword) {
+        //Check if valid searchBy value
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
         Pageable pageable = PageRequest.of(page - 1, size);
         User user = userService.getCurrentUser();
+
         Page<ParentProjection> parentProjections = parentRepository.findActiveParentsInSchoolWithFilters(user.getSchoolOwner().getSchool().getId(), searchBy, keyword, pageable);
+
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
 
     @Override
     public Page<ParentVO> getEnrollRequestBySchool(int page, int size, String searchBy, String keyword) {
+        //Check if valid searchBy value
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
         }
         Pageable pageable = PageRequest.of(page - 1, size);
         User user = userService.getCurrentUser();
+
         Page<ParentProjection> parentProjections = parentRepository.findEnrollRequestBySchool(user.getSchoolOwner().getSchool().getId(), searchBy, keyword, pageable);
+
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
 
@@ -335,13 +342,6 @@ public class ParentServiceImpl implements ParentService {
 
         return true;
     }
-
-    @Transactional
-    @Override
-    public void deleteParent(Integer id) {
-        parentInSchoolRepository.deleteParentInSchoolById(id);
-    }
-
     @Override
     public Integer getSchoolRequestCount() {
         User user = userService.getCurrentUser();

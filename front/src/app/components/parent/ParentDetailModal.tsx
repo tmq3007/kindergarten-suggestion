@@ -2,6 +2,7 @@ import {Modal, Avatar, Descriptions, Divider, Typography} from "antd";
 import {ParentVO} from "@/redux/services/parentApi";
 import ActionButtons from "@/app/components/parent/ActionButton";
 import {SchoolHistory} from "@/app/components/parent/AcademicHistory";
+import {MessageInstance} from "antd/lib/message/interface";
 
 const {Title} = Typography;
 
@@ -12,6 +13,7 @@ interface ParentDetailsModalProps {
     onDeleteSuccess: (id: number) => void;
     isEnrollPage?: boolean;
     isAdminPage?: boolean;
+    message: MessageInstance;
 }
 
 export const ParentDetailsModal = ({
@@ -21,6 +23,7 @@ export const ParentDetailsModal = ({
                                        onDeleteSuccess,
                                        isEnrollPage = false,
                                        isAdminPage = false,
+                                       message
                                    }: ParentDetailsModalProps) => {
 
     const getFullAddress = (record: ParentVO) => {
@@ -92,6 +95,7 @@ export const ParentDetailsModal = ({
                             <Divider style={{margin: "16px 0"}}/>
                             <div className="flex justify-end">
                                 <ActionButtons
+                                    message={message}
                                     key={parentInfor.pis?.id}
                                     id={parentInfor.pis?.id}
                                     isEnrollPage={isEnrollPage}

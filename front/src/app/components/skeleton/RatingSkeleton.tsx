@@ -1,30 +1,10 @@
 "use client";
 import React from "react";
-import { Card, Skeleton, Avatar, Select, List, Typography } from "antd";
-import {
-    BookOutlined,
-    CheckCircleOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    FileTextOutlined, HomeOutlined, MedicineBoxOutlined,
-    StarFilled, StarOutlined, TeamOutlined, TrophyOutlined
-} from "@ant-design/icons";
-import { motion } from "framer-motion";
+import { Card, Skeleton, Select, Typography } from "antd";
 
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
-const { Text } = Typography;
-
-const mockFeedback = [
-    { id: 1, name: "John Doe", rating: 4 },
-    { id: 2, name: "Jane Smith", rating: 5 },
-    { id: 3, name: "Alice Brown", rating: 3 },
-    { id: 4, name: "Bob Johnson", rating: 2 },
-    { id: 5, name: "Charlie White", rating: 5 },
-    { id: 6, name: "Charlie White", rating: 5 },
-    { id: 7, name: "Charlie White", rating: 5 },
-];
 
 const RatingSkeleton = () => {
     return (

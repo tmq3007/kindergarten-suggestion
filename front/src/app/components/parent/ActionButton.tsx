@@ -1,4 +1,4 @@
-import {Button, message} from "antd";
+import {Button} from "antd";
 import {useState, useEffect, memo} from "react";
 import {
     useEnrollParentMutation,
@@ -9,19 +9,22 @@ import {useDispatch} from "react-redux";
 import {decrementPendingRequestsCount} from "@/redux/features/parentSlice";
 import Lottie from "lottie-react";
 import approveCheckAnimation from "@public/lottie/CheckedAnimation.json";
+import {MessageInstance} from "antd/lib/message/interface";
+
 interface ActionButtonsProps {
     id?: number;
     onDeleteSuccess?: (id: number) => void;
     isEnrollPage?: boolean;
-    isAdminPage?: boolean
+    isAdminPage?: boolean;
+    message: MessageInstance;
 }
-const ActionButtons = ({id, onDeleteSuccess,isAdminPage = false, isEnrollPage = false}: ActionButtonsProps) => {
+
+const ActionButtons = ({id, onDeleteSuccess, isAdminPage = false, isEnrollPage = false,message}: ActionButtonsProps) => {
     const dispatch = useDispatch();
 
     const [unenrollTrigger] = useUnEnrollParentMutation();
-    const [approveTrigger]  = useEnrollParentMutation();
+    const [approveTrigger] = useEnrollParentMutation();
     const [rejectTrigger] = useRejectParentMutation();
-
 
     const [buttonsLoadingStates, setButtonsLoadingStates] = useState<{
         unEnroll: "idle" | "loading" | "done";
@@ -64,7 +67,11 @@ const ActionButtons = ({id, onDeleteSuccess,isAdminPage = false, isEnrollPage = 
 
     const handleAction = async (action: "approve" | "reject" | "unEnroll") => {
         if (!id) {
-            message.error("No ID provided");
+            message.error({
+                content: "No ID provided",
+                duration: 3,
+                key: "no-id-error"
+            });
             return;
         }
 
@@ -73,21 +80,41 @@ const ActionButtons = ({id, onDeleteSuccess,isAdminPage = false, isEnrollPage = 
         try {
             if (action === "approve") {
                 await approveRequest(id);
-                message.success("Request approved successfully!");
+                message.success({
+                    content: "Request approved successfully!",
+                    duration: 3,
+                    key: "approve-success"
+                });
                 dispatch(decrementPendingRequestsCount());
             } else if (action === "reject") {
                 await rejectRequest(id);
-                message.success("Request rejected successfully!");
+                message.success({
+                    content: "Request rejected successfully!",
+                    duration: 3,
+                    key: "reject-success"
+                });
                 dispatch(decrementPendingRequestsCount());
             } else if (action === "unEnroll") {
                 await unEnrollRequest(id);
-                message.success("Parent unenrolled successfully!");
+                message.success({
+                    content: "Parent unenrolled successfully!",
+                    duration: 3,
+                    key: "unenroll-success"
+                });
             }
 
             if (onDeleteSuccess) onDeleteSuccess(id);
             setButtonsLoadingStates((prev) => ({...prev, [action]: "done"}));
-        } catch (err) {
-            message.error(`Failed to ${action} request`);
+        } catch (err: any) {
+            const errorMessage = err?.data?.message || `Failed to ${action} request`;
+            message.error({
+                content: errorMessage,
+                duration: 4,
+                key: `${action}-error`,
+                style: {
+                    marginTop: '20vh',
+                },
+            });
             setButtonsLoadingStates((prev) => ({...prev, [action]: "idle"}));
         }
     };
@@ -134,4 +161,5 @@ const ActionButtons = ({id, onDeleteSuccess,isAdminPage = false, isEnrollPage = 
         </div>
     );
 };
+
 export default memo(ActionButtons);
