@@ -131,6 +131,10 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ReviewNotFoundException();
         }
 
+        if (reviewAcceptDenyDTO.decision() == null) {
+            throw new IllegalArgumentException("Decision cannot be null");
+        }
+
         if (review.getStatus() != ReviewStatus.PENDING.getValue()) {
             throw new IllegalStateException("Review is not pending");
         }

@@ -3,6 +3,9 @@ package fa.pjb.back.controller.review_controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fa.pjb.back.controller.ReviewController;
+import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
+import fa.pjb.back.model.dto.ReviewReportDTO;
+import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +25,9 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -93,7 +97,7 @@ class ReviewControllerTest {
     void getReviews_InvalidDateFormat_ShouldReturnBadRequest() throws Exception {
         mockMvc.perform(get("/school/review/1")
                         .param("fromDate", "2024-01-01")
-                        .param("toDate", "invalid-date")  // Invalid format
+                        .param("toDate", "invalid-date")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
@@ -130,6 +134,94 @@ class ReviewControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void makeReport() throws Exception {
+        ReviewReportDTO reportDTO = new ReviewReportDTO(1, "Inappropriate content");
+        ReviewVO reportedReview = new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
+                (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5,
+                "Great school", LocalDate.now(), "Inappropriate content", (byte) 1);
+
+        when(reviewService.makeReport(any(ReviewReportDTO.class))).thenReturn(reportedReview);
+
+        mockMvc.perform(put("/school/review/report")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reportDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Reported successfully"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.report").value("Inappropriate content"));
+
+        verify(reviewService).makeReport(any(ReviewReportDTO.class));
+    }
+
+    @Test
+    void makeReport_InvalidInput_ShouldReturnBadRequest() throws Exception {
+        ReviewReportDTO invalidReportDTO = new ReviewReportDTO(1, null);
+
+        mockMvc.perform(put("/school/review/report")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidReportDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void reportDecision() throws Exception {
+        ReviewAcceptDenyDTO decisionDTO = new ReviewAcceptDenyDTO(1, true);
+        ReviewVO updatedReview = new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
+                (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5,
+                "Great school", LocalDate.now(), "Inappropriate content", (byte) 2);
+
+        when(reviewService.acceptReport(any(ReviewAcceptDenyDTO.class))).thenReturn(updatedReview);
+
+        mockMvc.perform(put("/school/review/report/decision")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(decisionDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
+
+        verify(reviewService).acceptReport(any(ReviewAcceptDenyDTO.class));
+    }
+
+    @Test
+    void reportDecision_InvalidInput_ShouldReturnBadRequest() throws Exception {
+        ReviewAcceptDenyDTO invalidDecisionDTO = new ReviewAcceptDenyDTO(1, null);
+
+        mockMvc.perform(put("/school/review/report/decision")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDecisionDTO)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getReviewCount() throws Exception {
+        List<ReviewReportReminderVO> reminders = Arrays.asList(
+                new ReviewReportReminderVO(100, "School A", 5),
+                new ReviewReportReminderVO(101, "School B", 3)
+        );
+
+        when(reviewService.getReviewReportReminders()).thenReturn(reminders);
+
+        mockMvc.perform(get("/school/review/count")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Review count retrieved successfully"))
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    void getReviewCount_EmptyResult() throws Exception {
+        when(reviewService.getReviewReportReminders()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/school/review/count")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Review count retrieved successfully"))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 }

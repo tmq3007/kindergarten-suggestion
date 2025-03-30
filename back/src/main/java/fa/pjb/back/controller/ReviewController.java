@@ -8,6 +8,7 @@ import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -66,9 +67,15 @@ public class ReviewController {
                     .build();
     }
 
+    /**
+     * @param reviewDTO - The reviewDTO object which contains the review to be reported and the reason of the report
+     * @return - The reported review
+     */
     @PutMapping("/report")
-    public ApiResponse<ReviewVO> makeReport(@RequestBody ReviewReportDTO reviewDTO ) {
+    public ApiResponse<ReviewVO> makeReport(@RequestBody @Valid ReviewReportDTO reviewDTO ) {
+        // Call the makeReport method of the ReviewService to make the report
         ReviewVO reportReview = reviewService.makeReport(reviewDTO);
+        // Return the reported review
         return ApiResponse.<ReviewVO>builder()
                 .code(200)
                 .message("Reported successfully")
@@ -76,11 +83,19 @@ public class ReviewController {
                 .build();
     }
 
+    /**
+     * Update the status of the review report
+     * @param reviewDTO - The reviewDTO object which contains the review to be updated and the status of the report
+     * @return - The updated review
+     */
     @PutMapping("/report/decision")
-    public ApiResponse<ReviewVO> reportDecision(@RequestBody ReviewAcceptDenyDTO reviewDTO ) {
+    public ApiResponse<ReviewVO> reportDecision(@RequestBody @Valid ReviewAcceptDenyDTO reviewDTO ) {
+        // Call the acceptReport method of the ReviewService to update the status of the review report
         ReviewVO reportReview = reviewService.acceptReport(reviewDTO);
+        // Return the updated review
         return ApiResponse.<ReviewVO>builder()
                 .code(200)
+                .message("Report decision updated successfully")
                 .message("Unreported successfully")
                 .data(reportReview)
                 .build();
