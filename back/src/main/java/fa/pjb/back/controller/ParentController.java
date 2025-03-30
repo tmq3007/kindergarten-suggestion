@@ -5,6 +5,7 @@ import fa.pjb.back.model.dto.ChangePasswordDTO;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.vo.ParentInSchoolVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
 import fa.pjb.back.service.ParentService;
@@ -21,6 +22,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -123,6 +126,16 @@ public class ParentController {
                 .code(HttpStatus.OK.value())
                 .message("Parents retrieved successfully")
                 .data(parents)
+                .build();
+    }
+
+    @GetMapping("/get-academic-history/{parentId}")
+    public ApiResponse<List<ParentInSchoolVO>> getAcademicHistory(@PathVariable Integer parentId) {
+        List<ParentInSchoolVO> academicHistory = parentService.getAcademicHistory(parentId);
+        return ApiResponse.<List<ParentInSchoolVO>>builder()
+                .code(HttpStatus.OK.value())
+                 .message("Academic history retrieved successfully")
+                 .data(academicHistory)
                 .build();
     }
 

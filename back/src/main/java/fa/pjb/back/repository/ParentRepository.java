@@ -1,6 +1,7 @@
 package fa.pjb.back.repository;
 
 import fa.pjb.back.model.entity.Parent;
+import fa.pjb.back.model.enums.ParentInSchoolEnum;
 import fa.pjb.back.model.mapper.ParentProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,15 +32,13 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "    m.id AS mediaId, " +
                     "    m.url AS mediaUrl, " +
                     "    u.status AS status, " +
-                    "    pis.id AS pisId, " +
-                    "    CASE WHEN pis.id IS NOT NULL THEN true ELSE false END AS userEnrollStatus, " +
-                    "    pis.from AS fromDate, " +
-                    "    pis.to AS toDate " +
+                    "    CASE WHEN pis.id IS NOT NULL THEN 1 ELSE 2 END AS userEnrollStatus " +
                     "FROM Parent p " +
                     "LEFT JOIN p.user u " +
                     "LEFT JOIN p.media m " +
                     "LEFT JOIN p.parentInSchools pis ON pis.parent = p AND pis.status = 1 " +
-                    "WHERE (:keyword IS NULL OR :keyword = '' OR " +
+                    "WHERE (:status IS NULL OR u.status = :status) " +
+                    "AND (:keyword IS NULL OR :keyword = '' OR " +
                     "       LOWER(CASE :searchBy " +
                     "           WHEN 'username' THEN u.username " +
                     "           WHEN 'fullname' THEN u.fullname " +
@@ -52,7 +51,8 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "LEFT JOIN p.user u " +
                     "LEFT JOIN p.media m " +
                     "LEFT JOIN p.parentInSchools pisEnroll ON pisEnroll.parent = p AND pisEnroll.status = 1 " +
-                    "WHERE (:keyword IS NULL OR :keyword = '' OR " +
+                    "WHERE (:status IS NULL OR u.status = :status) " +
+                    "AND (:keyword IS NULL OR :keyword = '' OR " +
                     "       LOWER(CASE :searchBy " +
                     "           WHEN 'username' THEN u.username " +
                     "           WHEN 'fullname' THEN u.fullname " +
@@ -62,6 +62,7 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "       END) LIKE LOWER(CONCAT('%', :keyword, '%')))"
     )
     Page<ParentProjection> findAllParentsWithFilters(
+            @Param("status") Boolean status,
             @Param("searchBy") String searchBy,
             @Param("keyword") String keyword,
             Pageable pageable
@@ -84,7 +85,7 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
             "    m.url AS mediaUrl, " +
             "    u.status AS status, " +
             "    pis.id AS pisId, " +
-            "    true AS userEnrollStatus, " +
+            "    1 AS userEnrollStatus, " +
             "    pis.from AS fromDate, " +
             "    pis.to AS toDate " +
             "FROM ParentInSchool pis " +
@@ -125,7 +126,7 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "    m.url AS mediaUrl, " +
                     "    u.status AS status, " +
                     "    pis.id AS pisId, " +
-                    "    (pis.status = 1) AS userEnrollStatus, " +
+                    "    pis.status AS userEnrollStatus, " +
                     "    pis.from AS fromDate, " +
                     "    pis.to AS toDate " +
                     "FROM ParentInSchool pis " +
@@ -140,7 +141,8 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "         WHEN 'email' THEN LOWER(u.email) " +
                     "         WHEN 'phone' THEN LOWER(u.phone) " +
                     "         ELSE '' " +
-                    "      END) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+                    "      END) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+                    "ORDER BY pis.from DESC ")
     Page<ParentProjection> findEnrollRequestBySchool(
             @Param("schoolId") Integer schoolId,
             @Param("searchBy") String searchBy,

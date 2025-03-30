@@ -20,6 +20,12 @@ public interface SchoolMapper {
     @Mapping(target = "imageList", source = "images", qualifiedByName = "mapImageUrl")
     SchoolDetailVO toSchoolDetailVO(School school);
 
+    @Mapping(source = "school.facilities", target = "facilities", qualifiedByName = "facilityToId")
+    @Mapping(source = "school.utilities", target = "utilities", qualifiedByName = "utilityToId")
+    @Mapping(source = "school.images", target = "imageList", qualifiedByName = "mapImageUrl")
+    @Mapping(target = "schoolOwners",source = "schoolOwnerVOList")
+    SchoolDetailVO toSchoolDetailVOWithSchoolOwners(School school, List<SchoolOwnerVO> schoolOwnerVOList);
+
     SchoolListVO toSchoolListVO(School school);
 
     @Mapping(target = "id", ignore = true)

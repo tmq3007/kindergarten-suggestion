@@ -1,12 +1,16 @@
 import {Button, message} from "antd";
 import {useState, useEffect, memo} from "react";
-import {useDeleteParentRequestMutation} from "@/redux/services/parentApi";
+import {
+    useEnrollParentMutation,
+    useRejectParentMutation,
+    useUnEnrollParentMutation
+} from "@/redux/services/parentApi";
 import {useDispatch} from "react-redux";
 import {decrementPendingRequestsCount} from "@/redux/features/parentSlice";
 import Lottie from "lottie-react";
 import approveCheckAnimation from "@public/lottie/CheckedAnimation.json";
 interface ActionButtonsProps {
-    id: number;
+    id?: number;
     onDeleteSuccess?: (id: number) => void;
     isEnrollPage?: boolean;
     isAdminPage?: boolean
@@ -14,7 +18,11 @@ interface ActionButtonsProps {
 const ActionButtons = ({id, onDeleteSuccess,isAdminPage = false, isEnrollPage = false}: ActionButtonsProps) => {
     const dispatch = useDispatch();
 
-    const [deletePIS] = useDeleteParentRequestMutation();
+    const [unenrollTrigger] = useUnEnrollParentMutation();
+    const [approveTrigger]  = useEnrollParentMutation();
+    const [rejectTrigger] = useRejectParentMutation();
+
+
     const [buttonsLoadingStates, setButtonsLoadingStates] = useState<{
         unEnroll: "idle" | "loading" | "done";
         approve: "idle" | "loading" | "done";
@@ -43,15 +51,15 @@ const ActionButtons = ({id, onDeleteSuccess,isAdminPage = false, isEnrollPage = 
         buttonsLoadingStates.unEnroll === "loading";
 
     const approveRequest = async (id: number) => {
-        return deletePIS(id); // Replace with actual approve logic
+        return approveTrigger(id);
     };
 
     const rejectRequest = async (id: number) => {
-        return new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+        return rejectTrigger(id);
     };
 
     const unEnrollRequest = async (id: number) => {
-        return new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+        return unenrollTrigger(id);
     };
 
     const handleAction = async (action: "approve" | "reject" | "unEnroll") => {

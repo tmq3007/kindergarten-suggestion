@@ -52,6 +52,5 @@ public record SchoolDetailVO(
         ReviewVO review,
 
         Set<SchoolOwnerVO> schoolOwners
-
 ) {
 }

@@ -22,7 +22,6 @@ public record ParentVO(
         String province,
         String street,
         MediaVO media,
-        ParentInSchoolVO pis,
-        List<ParentInSchoolVO> pisList
+        ParentInSchoolVO pis
 ) {
 }

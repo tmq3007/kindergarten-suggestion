@@ -1,7 +1,7 @@
 import {Button, message, Modal, notification, UploadFile} from "antd";
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {ButtonGroupProps} from "@/app/components/school/SchoolFormButton";
+import {ButtonGroupProps} from "@/app/components/school/Buttons/SchoolFormButton";
 import {
     SchoolCreateDTO,
     useAddSchoolMutation, useSaveSchoolBySchoolOwnerMutation, useUpdateSchoolBySchoolOwnerMutation,

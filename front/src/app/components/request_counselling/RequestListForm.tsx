@@ -1,4 +1,3 @@
-"use client";
 
 import { Table, Tag, notification, ConfigProvider, Card } from "antd";
 import React, { useState } from "react";
@@ -52,10 +51,9 @@ export default function RequestListForm({
     return dateA.getTime() - dateB.getTime();
   }) || [];
 
-  // Chuyển đổi dữ liệu để hiển thị trong bảng
   const tableData = filteredRequests.map((request) => {
     const statusOption = REQUEST_COUNSELLING_STATUS_OPTIONS.find(
-        (option) => option.value === String(request.status) // Chuyển request.status thành string để so sánh
+        (option) => option.value === String(request.status)
     );
     return {
       key: request.id,
@@ -64,7 +62,7 @@ export default function RequestListForm({
       schoolName: request.schoolName ?? "N/A",
       email: request.email ?? "N/A",
       phone: request.phone ?? "N/A",
-      status: statusOption ? statusOption.label : "Unknown", // Lấy label nếu tìm thấy, nếu không thì "Unknown"
+      status: statusOption ? statusOption.label : "Unknown",
     };
   });
 

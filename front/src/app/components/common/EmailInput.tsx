@@ -8,13 +8,15 @@ interface EmailInputProps {
     isReadOnly?: boolean;
     triggerCheckEmail: any; // Check email query for new school
     schoolId?: number; // Inject schoolId when editing school
+    fieldName?: string;
 }
 
 const EmailInput = forwardRef(({
                                    form,
                                    isReadOnly,
                                    triggerCheckEmail,
-                                   schoolId
+                                   schoolId,
+                                   fieldName = "email"
                                }: EmailInputProps, ref) => {
     const [email, setEmail] = useState<string>(form.getFieldValue('email') || '');
 
@@ -94,7 +96,7 @@ const EmailInput = forwardRef(({
 
     return (
         <Form.Item
-            name="email"
+            name={fieldName}
             label="Email"
             hasFeedback
             validateStatus={emailStatus}
