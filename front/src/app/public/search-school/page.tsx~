@@ -1,4 +1,3 @@
-'use server'
 import SchoolSearch from "@/app/components/school/SchoolSearch";
 import {SchoolSearchDTO} from "@/redux/services/schoolApi";
 

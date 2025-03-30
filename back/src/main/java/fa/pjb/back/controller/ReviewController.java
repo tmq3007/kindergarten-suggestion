@@ -8,6 +8,7 @@ import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,12 +28,12 @@ public class ReviewController {
     @Operation(summary = "Get reviews by admin", description = "Get review of school in date range")
     @GetMapping("/{schoolId}")
     public ApiResponse<List<ReviewVO>> getReviews(
-            @PathVariable  Integer schoolId,
+            @PathVariable Integer schoolId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) String status) {
 
-        List<ReviewVO> reviews = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate);
-        log.info("reviews controller: {}", reviews.get(0).status());
+        List<ReviewVO> reviews = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate, status);
         return ApiResponse.<List<ReviewVO>>builder()
                 .code(200)
                 .message("Reviews retrieved successfully")
@@ -44,9 +45,10 @@ public class ReviewController {
     @GetMapping("/")
     public ApiResponse<List<ReviewVO>> getReviewsBySchoolOwner(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) String status ) {
 
-        List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner( fromDate, toDate);
+        List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner( fromDate, toDate,status);
         return ApiResponse.<List<ReviewVO>>builder()
                 .code(200)
                 .message("Reviews retrieved successfully")
@@ -65,9 +67,16 @@ public class ReviewController {
                     .build();
     }
 
+    /**
+     * @param reviewDTO - The reviewDTO object which contains the review to be reported and the reason of the report
+     * @return - The reported review
+     */
+    @Operation(summary = "Make report", description = "Parents make report to school owner")
     @PutMapping("/report")
-    public ApiResponse<ReviewVO> makeReport(@RequestBody ReviewReportDTO reviewDTO ) {
+    public ApiResponse<ReviewVO> makeReport(@RequestBody @Valid ReviewReportDTO reviewDTO ) {
+        // Call the makeReport method of the ReviewService to make the report
         ReviewVO reportReview = reviewService.makeReport(reviewDTO);
+        // Return the reported review
         return ApiResponse.<ReviewVO>builder()
                 .code(200)
                 .message("Reported successfully")
@@ -75,16 +84,26 @@ public class ReviewController {
                 .build();
     }
 
+    /**
+     * Update the status of the review report
+     * @param reviewDTO - The reviewDTO object which contains the review to be updated and the status of the report
+     * @return - The updated review
+     */
+    @Operation(summary = "Update report decision", description = "School owner update report decision")
     @PutMapping("/report/decision")
-    public ApiResponse<ReviewVO> reportDecision(@RequestBody ReviewAcceptDenyDTO reviewDTO ) {
+    public ApiResponse<ReviewVO> reportDecision(@RequestBody @Valid ReviewAcceptDenyDTO reviewDTO ) {
+        // Call the acceptReport method of the ReviewService to update the status of the review report
         ReviewVO reportReview = reviewService.acceptReport(reviewDTO);
+        // Return the updated review
         return ApiResponse.<ReviewVO>builder()
                 .code(200)
+                .message("Report decision updated successfully")
                 .message("Unreported successfully")
                 .data(reportReview)
                 .build();
     }
 
+    @Operation(summary = "Get review count", description = "Get review count to show in notification")
     @GetMapping("/count")
     public ApiResponse<List<ReviewReportReminderVO>> getReviewCount() {
         List<ReviewReportReminderVO> count = reviewService.getReviewReportReminders();

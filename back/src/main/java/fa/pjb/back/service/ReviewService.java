@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface ReviewService {
 
-    List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate);
+    List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate, String status);
 
-    List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate);
+    List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status);
 
     List<ReviewVO> getTop4RecentFiveStarFeedbacks();
 

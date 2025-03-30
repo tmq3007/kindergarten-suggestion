@@ -12,7 +12,7 @@ public interface RequestCounsellingReminderService {
 
     RequestCounsellingReminderVO checkOverdueForSchoolOwner(Integer userId);
 
-    Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses);
+    Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses, String name);
 
     Page<RequestCounsellingVO> getRemindersBySchoolOwner(int page, int size, Integer schoolOwnerId, List<Byte> statuses);
 

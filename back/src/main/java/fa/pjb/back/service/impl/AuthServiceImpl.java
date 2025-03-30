@@ -101,6 +101,7 @@ public class AuthServiceImpl implements AuthService {
         School draft = null;
         if (schoolOwner != null) {
             school = schoolOwner.getSchool();
+            log.info(schoolOwner.getSchool().getId().toString());
             if (school != null) {
                 draft = school.getDraft();
             }

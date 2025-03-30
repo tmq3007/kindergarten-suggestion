@@ -75,7 +75,7 @@ const NotificationDropdown = () => {
                             </div>
                             <Link
                                 className="text-blue-400 ml-1.5 font-medium"
-                                href={`/admin/management/school/rating-feedback/${item.schoolId}`}
+                                href={`/admin/management/school/rating-feedback/${item.schoolId}?from=notification`} // Add ?from=notification
                             >
                                 Details
                             </Link>
@@ -88,7 +88,6 @@ const NotificationDropdown = () => {
                 </Menu.Item>
             )}
         </Menu>
-
     );
 
     return (

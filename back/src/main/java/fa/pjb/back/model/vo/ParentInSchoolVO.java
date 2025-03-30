@@ -14,7 +14,11 @@ public record ParentInSchoolVO(
 
         LocalDate toDate,
 
-        String status
+        Byte status,
+
+        Double providedRating,
+
+        String comment
 
 ) {
 }
