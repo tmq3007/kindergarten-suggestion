@@ -20,11 +20,31 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "WHERE r.school.id = :schoolId " +
             "AND (:fromDate IS NULL OR r.receiveDate >= :fromDate) " +
             "AND (:toDate IS NULL OR r.receiveDate <= :toDate) " +
+            "AND (s.status != 6) " +
+            "AND (s.status != 0)" +
+            "AND (:status IS NULL OR r.status = :status) " +
             "ORDER BY r.receiveDate DESC")
-    List<Review> findAllBySchoolIdWithDateRange(
+    List<Review> findAllBySchoolIdWithDateRangeAdmin(
             @Param("schoolId") Integer schoolId,
             @Param("fromDate") LocalDate fromDate,
-            @Param("toDate") LocalDate toDate);
+            @Param("toDate") LocalDate toDate,
+            @Param("status") Byte status);
+
+    @Query("SELECT r FROM Review r " +
+            "JOIN FETCH r.school s " +
+            "JOIN FETCH r.parent p " +
+            "JOIN FETCH p.user u " +
+            "WHERE r.school.id = :schoolId " +
+            "AND (:fromDate IS NULL OR r.receiveDate >= :fromDate) " +
+            "AND (:toDate IS NULL OR r.receiveDate <= :toDate) " +
+            "AND (s.status != 6 )" +
+            "AND (:status IS NULL OR r.status = :status) " +
+            "ORDER BY r.receiveDate DESC")
+    List<Review> findAllBySchoolIdWithDateRangeSO(
+            @Param("schoolId") Integer schoolId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("status") Byte status);
 
     @Query("SELECT r FROM Review r " +
             "WHERE (r.learningProgram + r.facilitiesAndUtilities + r.extracurricularActivities + " +

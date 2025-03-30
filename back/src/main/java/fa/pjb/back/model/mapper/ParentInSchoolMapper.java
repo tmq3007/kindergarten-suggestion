@@ -1,32 +1,42 @@
 package fa.pjb.back.model.mapper;
 
+import fa.pjb.back.model.entity.ParentInSchool;
+import fa.pjb.back.model.entity.Review;
+import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.vo.ParentInSchoolVO;
-import fa.pjb.back.model.vo.ParentVO;
+import fa.pjb.back.model.vo.SchoolListVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
-import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", uses = {ParentMapper.class})
+@Mapper(componentModel = "spring")
 public interface ParentInSchoolMapper {
+    // Map ParentInSchool and related entities to ParentInSchoolVO
+    @Mapping(target = "id", source = "pis.id")
+    @Mapping(target = "school", source = "school", qualifiedByName = "toSchoolListVO")
+    @Mapping(target = "fromDate", source = "pis.from")
+    @Mapping(target = "toDate", source = "pis.to")
+    @Mapping(target = "status", source = "pis.status")
+    @Mapping(target = "providedRating", source = "review", qualifiedByName = "toProvidedRating")
+    @Mapping(target = "comment", source = "review.feedback")
+    @Mapping(target = "parent", ignore = true)
+    ParentInSchoolVO toParentInSchoolVOAcademicHistory(ParentInSchool pis, School school, Review review);
 
-    ParentMapper PARENT_MAPPER = Mappers.getMapper(ParentMapper.class);
+    // Map School to SchoolListVO
+    @Named("toSchoolListVO")
+    @Mapping(target = "postedDate", expression = "java(school.getPostedDate().toLocalDate())")
+    SchoolListVO toSchoolListVO(School school);
 
-    // Map ParentProjection to ParentInSchoolVO
-    @Mapping(source = "pisId", target = "id")
-    @Mapping(source = ".", target = "parent", qualifiedByName = "mapParentFromProjection")
-    @Mapping(target = "school", ignore = true) // School not in projection; set in service if needed
-    @Mapping(source = "fromDate", target = "fromDate")
-    @Mapping(source = "toDate", target = "toDate")
-    @Mapping(source = "userEnrollStatus", target = "status")
-    ParentInSchoolVO toParentInSchoolVO(ParentProjection projection);
-
-    // Method to map ParentVO from ParentProjection
-    @Named("mapParentFromProjection")
-    default ParentVO mapParentFromProjection(ParentProjection projection) {
-        return PARENT_MAPPER.toSimpleParentVOFromProjection(projection);
+    // Calculate average rating from Review
+    @Named("toProvidedRating")
+    default Double toProvidedRating(Review review) {
+        if (review == null) {
+            return null;
+        }
+        return (review.getLearningProgram() +
+                review.getFacilitiesAndUtilities() +
+                review.getExtracurricularActivities() +
+                review.getTeacherAndStaff() +
+                review.getHygieneAndNutrition()) / 5.0;
     }
-
-    // Method to map status from userEnrollStatus
 }

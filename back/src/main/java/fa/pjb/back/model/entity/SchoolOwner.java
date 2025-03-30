@@ -39,7 +39,7 @@ public class SchoolOwner {
     @Column(name = "assign_time")
     private LocalDate assignTime;
 
-    @OneToMany(mappedBy = "schoolOwner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "schoolOwner", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.LAZY)
     private List<Media> images;
 
     @Column(name = "business_registration_number")

@@ -42,29 +42,8 @@ public interface ParentMapper {
     // Mapping for ParentProjection to ParentVO
     @Mapping(source = ".", target = "media", qualifiedByName = "mapMedia")
     @Mapping(source = ".", target = "pis", qualifiedByName = "mapParentInSchool")
-    @Mapping(target = "pisList", ignore = true)
     @Mapping(target = "password", ignore = true)
     ParentVO toParentVOFromProjection(ParentProjection projection);
-
-    @Mapping(source = "id", target = "id")
-    @Mapping(source = "userId", target = "userId")
-    @Mapping(source = "username", target = "username")
-    @Mapping(source = "fullname", target = "fullname")
-    @Mapping(source = "email", target = "email")
-    @Mapping(source = "role", target = "role")
-    @Mapping(source = "status", target = "status")
-    @Mapping(source = "phone", target = "phone")
-    @Mapping(source = "dob", target = "dob")
-    @Mapping(source = "district", target = "district")
-    @Mapping(source = "ward", target = "ward")
-    @Mapping(source = "province", target = "province")
-    @Mapping(source = "street", target = "street")
-    @Mapping(source = ".", target = "media", qualifiedByName = "mapMedia")
-    @Mapping(target = "pis", ignore = true)
-    @Mapping(target = "pisList", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    ParentVO toSimpleParentVOFromProjection(ParentProjection projection);
-
     // Mapping method for MediaVO
     @Named("mapMedia")
     default MediaVO mapMedia(ParentProjection projection) {
@@ -84,7 +63,9 @@ public interface ParentMapper {
                     null, // school
                     projection.getFromDate(), // startDate
                     projection.getToDate(),   // endDate
-                    String.valueOf(projection.getUserEnrollStatus()) // status
+                    projection.getUserEnrollStatus(),
+                    null,
+                    null
             );
         }
         return null;

@@ -12,14 +12,14 @@ spring:
         default_batch_fetch_size: 20
   datasource:
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 10
-      idle-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 60000
       connection-timeout: 10000
-      validation-timeout: 5000
-      max-lifetime: 100000
+      validation-timeout: 3000
+      max-lifetime: 300000
       connection-test-query: SELECT 1
-      leak-detection-threshold: 5000
+      leak-detection-threshold: 10000
   mail:
     host: smtp.gmail.com
     port: 587
@@ -44,8 +44,6 @@ logging:
   level:
     org.springframework.transaction.interceptor: TRACE
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
-    org.hibernate.engine.transaction.internal.TransactionImpl: DEBUG
-    org.hibernate.stat: DEBUG  # Log query execution times and statistics
 
 error:
   handling:

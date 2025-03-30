@@ -14,7 +14,7 @@ public interface ParentProjection {
     String getFullname();
     String getEmail();
     String getRole();
-    Boolean getUserEnrollStatus();
+    Byte getUserEnrollStatus();
     String getPhone();
     LocalDate getDob();
     Integer getPisId();
