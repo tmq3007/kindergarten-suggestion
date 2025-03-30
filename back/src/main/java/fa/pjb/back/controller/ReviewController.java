@@ -71,6 +71,7 @@ public class ReviewController {
      * @param reviewDTO - The reviewDTO object which contains the review to be reported and the reason of the report
      * @return - The reported review
      */
+    @Operation(summary = "Make report", description = "Parents make report to school owner")
     @PutMapping("/report")
     public ApiResponse<ReviewVO> makeReport(@RequestBody @Valid ReviewReportDTO reviewDTO ) {
         // Call the makeReport method of the ReviewService to make the report
@@ -88,6 +89,7 @@ public class ReviewController {
      * @param reviewDTO - The reviewDTO object which contains the review to be updated and the status of the report
      * @return - The updated review
      */
+    @Operation(summary = "Update report decision", description = "School owner update report decision")
     @PutMapping("/report/decision")
     public ApiResponse<ReviewVO> reportDecision(@RequestBody @Valid ReviewAcceptDenyDTO reviewDTO ) {
         // Call the acceptReport method of the ReviewService to update the status of the review report
@@ -101,6 +103,7 @@ public class ReviewController {
                 .build();
     }
 
+    @Operation(summary = "Get review count", description = "Get review count to show in notification")
     @GetMapping("/count")
     public ApiResponse<List<ReviewReportReminderVO>> getReviewCount() {
         List<ReviewReportReminderVO> count = reviewService.getReviewReportReminders();
