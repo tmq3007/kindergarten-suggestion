@@ -49,9 +49,9 @@ public record SchoolDetailVO(
 
         Date posted_date,
 
-        ReviewVO review
+        ReviewVO review,
 
-//        Set<SchoolOwnerVO> schoolOwners
+        Set<SchoolOwnerVO> schoolOwners
 
 ) {
 }

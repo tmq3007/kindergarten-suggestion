@@ -17,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"images", "facilities", "utilities", "originalSchool", "schoolOwners", "reviews"})
+@ToString(exclude = {"images", "facilities", "utilities", "originalSchool", "schoolOwners"})
 @Entity
 @Table(name = "School")
 
