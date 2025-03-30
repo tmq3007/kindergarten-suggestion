@@ -236,9 +236,6 @@ public class SchoolController {
                 .sortBy(sortBy)
                 .build();
 
-        log.info("=============================");
-        log.info("province: {}", province);
-        log.info("searchDTO: {}", searchDTO);
         return ApiResponse.<Page<SchoolDetailVO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Search results")
