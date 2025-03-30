@@ -100,14 +100,15 @@ public class RequestCounsellingController {
                 .build();
     }
 
-    @Operation(summary = "List All Reminder", description = "List all reminder request that are waiting School Owner solve or expired")
+    @Operation(summary = "List All Reminder", description = "List all reminder requests that are waiting School Owner solve or expired, with optional name search")
     @GetMapping("/all-reminder")
     public ApiResponse<Page<RequestCounsellingVO>> getAllReminder(
         @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size) {
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String name) {
 
         Page<RequestCounsellingVO> requests = reminderService.getAllReminder(
-            page, size, Arrays.asList((byte) 0, (byte) 2)
+            page, size, Arrays.asList((byte) 0, (byte) 2), name.trim()
         );
 
         return ApiResponse.<Page<RequestCounsellingVO>>builder()
