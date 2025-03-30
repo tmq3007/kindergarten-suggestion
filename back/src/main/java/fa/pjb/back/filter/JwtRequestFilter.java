@@ -50,7 +50,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/v3/api-doc",
             "/api/swagger-ui",
             "/swagger-ui",
-            "/api/school/search-by-criteria"
+            "/api/school/search-by-criteria",
+            "/api/school/review/"
     );
 
     @Override

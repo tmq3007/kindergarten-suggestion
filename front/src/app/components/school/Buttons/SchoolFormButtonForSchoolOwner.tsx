@@ -34,8 +34,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const user = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
     const hasDraft = user.hasDraft;
-    const draftQuery = useGetDraftOfSchoolOwnerQuery(undefined, {skip: !hasDraft});
-    const schoolQuery = useGetSchoolOfSchoolOwnerQuery(undefined, {skip: hasDraft});
+    const draftQuery = useGetDraftOfSchoolOwnerQuery();
+    const schoolQuery = useGetSchoolOfSchoolOwnerQuery();
     const schoolQueryResult = hasDraft ? draftQuery : schoolQuery;
     const {data, isLoading, refetch} = schoolQueryResult;
     const schoolStatus = data?.data?.status;
@@ -90,7 +90,9 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School Added Successfully',
                 'The school has been added to the system successfully! Please wait for the admins to review.',
                 2,
-                () => {router.push("/public/school-owner")}
+                () => {
+                    router.push("/public/school-owner")
+                }
             );
         } catch (error: unknown) {
             const errorMessage = formatErrorMessage(error);
@@ -120,7 +122,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School saved successfully!',
                 'The school has been saved successfully!',
                 2,
-                () => {}
+                () => {
+                }
             );
             refetch();
         } catch (error) {
@@ -128,7 +131,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             openNotificationWithIcon(
                 'error',
                 'Failed to save school',
-                'There was an error while saving the school. Please try again.',
+                'The school has been saved failed!',
                 2,
                 () => {
                 }
@@ -158,7 +161,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School submitted successfully!',
                 'The school has been submitted successfully!',
                 2,
-                () => {}
+                () => {
+                }
             );
             refetch();
         } catch (error) {
@@ -168,7 +172,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'Failed to submit school',
                 'There was an error while submitting the school. Please try again.',
                 2,
-                () => {}
+                () => {
+                }
             );
         }
     };
@@ -201,7 +206,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         "School published successfully!",
                         "The school has been published successfully!",
                         2,
-                        () => {}
+                        () => {
+                        }
                     );
                     break;
                 case "unpublish":
@@ -211,7 +217,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         "School unpublished successfully!",
                         "The school has been unpublished successfully!",
                         2,
-                        () => {}
+                        () => {
+                        }
                     );
                     break;
                 case "delete":
@@ -221,7 +228,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         "School deleted successfully!",
                         "The school has been deleted successfully!",
                         2,
-                        () => {}
+                        () => {
+                        }
                     );
                     break;
             }
@@ -229,6 +237,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             setModalVisible(false);
             setActiveButton(null);
         } catch (error) {
+            console.log('error');
+            console.log(error);
             messageApi.error(`Failed to ${activeButton} school. Please try again.`);
             setModalVisible(false);
         }
