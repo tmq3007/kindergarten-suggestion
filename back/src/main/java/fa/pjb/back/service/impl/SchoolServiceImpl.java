@@ -582,8 +582,8 @@ public class SchoolServiceImpl implements SchoolService {
     public SchoolDetailVO getSchoolByUserId(Integer userId) {
         School school = schoolRepository.findSchoolByUserIdAndStatusNotDelete(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
-        Hibernate.initialize(school.getSchoolOwners());
-        return schoolMapper.toSchoolDetailVO(school);
+        List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerBySchool(school.getId());
+        return schoolMapper.toSchoolDetailVOWithSchoolOwners(school,schoolOwnerVOList);
     }
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
@@ -594,8 +594,8 @@ public class SchoolServiceImpl implements SchoolService {
         School school = so.getSchool();
         if (school == null) throw new SchoolNotFoundException();
         School draft = school.getDraft();
-        Hibernate.initialize(draft.getSchoolOwners());
-        return schoolMapper.toSchoolDetailVO(draft);
+        List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerBySchool(draft.getId());
+        return schoolMapper.toSchoolDetailVOWithSchoolOwners(draft,schoolOwnerVOList);
     }
 
     /**

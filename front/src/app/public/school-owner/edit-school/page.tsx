@@ -19,7 +19,6 @@ export default function EditSchool() {
         skip: !hasDraft,
     });
     const draft = getDraftData?.data;
-    console.log("draft: ", draft);
     const draftQuery = useGetDraftOfSchoolOwnerQuery();
     const schoolQuery = useGetSchoolOfSchoolOwnerQuery();
     const schoolQueryResult = draft ? draftQuery : schoolQuery;
