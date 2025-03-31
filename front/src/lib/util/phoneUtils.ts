@@ -3,8 +3,12 @@ export const formatPhoneNumber = (phone: string | undefined, i: number = 1): str
     if (!phone) return "";
 
     const trimmedPhone = phone.split(" ");
-    const numberPart = trimmedPhone[1];
-    const diaCodePart = trimmedPhone[0].trim();
+    let numberPart = trimmedPhone[1];
+    let diaCodePart = trimmedPhone[0].trim();
+    if (trimmedPhone.length == 1) {
+        numberPart = trimmedPhone[0];
+        diaCodePart = "+84"; //default to VN
+    }
     if (i == 1) {
         return numberPart || "";
     } else {

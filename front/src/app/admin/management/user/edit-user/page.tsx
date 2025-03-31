@@ -1,24 +1,24 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useEffect, useState } from "react";
 import {
     Button, DatePicker, Form, Input, Select, Space, notification, Image, Spin
-} from 'antd';
-import { useRouter, useSearchParams } from 'next/navigation';
-import dayjs from 'dayjs';
+} from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
+import dayjs from "dayjs";
 import { useGetUserDetailQuery, useUpdateUserMutation } from "@/redux/services/userApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import { Row, Col } from 'antd';
+import { Row, Col } from "antd";
 import { ImageUpload } from "@/app/components/common/ImageUploader";
-import { motion, Variants } from 'framer-motion';
+import { motion, Variants } from "framer-motion";
 import { Country, useGetCountriesQuery } from "@/redux/services/registerApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
+import { formatPhoneNumber } from "@/lib/util/phoneUtils";
 
 const formItemLayout = {
     labelCol: { xs: { span: 24 }, sm: { span: 6 } },
     wrapperCol: { xs: { span: 24 }, sm: { span: 18 } },
 };
 
-// Animation variants for fade-in and slide-up effect with staggered delays
 const fadeInUpVariants: Variants = {
     initial: { opacity: 0, y: 50 },
     animate: (i: number) => ({
@@ -33,35 +33,36 @@ const EditUser: React.FC = () => {
     const router = useRouter();
     const [api, contextHolder] = notification.useNotification();
     const searchParams = useSearchParams();
-    const userId = searchParams.get('userId');
+    const userId = searchParams.get("userId");
 
     const { data: userData, isLoading, isError } = useGetUserDetailQuery(Number(userId), { skip: !userId });
     const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
     const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
 
     const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(
-        countries?.find((c) => c.code === "VN") // Default to Vietnam
+        countries?.find((c) => c.code === "VN")
     );
     const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined);
     const [spinning, setSpinning] = useState(false);
 
-    // Fill form with user data when loaded
     useEffect(() => {
         if (userData?.data && countries) {
             const user = userData.data;
-            const countryCode = user.phone?.match(/^\+(\d+)/)?.[1];
-            const phoneNumber = user.phone?.replace(/^\+\d+/, "");
-            const country = countries.find((c) => c.dialCode === `+${countryCode}`);
-            setSelectedCountry(country || countries.find((c) => c.code === "VN"));
+            const diaCodePart = formatPhoneNumber(user.phone, 2);
+            const numberPart = formatPhoneNumber(user.phone, 1);
+            const country = countries.find((c) => c.dialCode === diaCodePart) || countries.find((c) => c.code === "VN");
+            setSelectedCountry(country);
             const normalizedRole = user.role.toLowerCase().replace(/\s+/g, "_").replace("role_", "");
             setSelectedRole(normalizedRole);
+            console.log("API", diaCodePart)
+            console.log("API1", numberPart)
 
             form.setFieldsValue({
                 username: user.username,
                 fullname: user.fullname,
                 email: user.email,
-                phone: phoneNumber,
-                dob: user.dob ? dayjs(user.dob) : '',
+                phone: numberPart,
+                dob: user.dob ? dayjs(user.dob) : "",
                 role: normalizedRole,
                 status: user.status,
                 expectedSchool: user.expectedSchool || "",
@@ -77,8 +78,8 @@ const EditUser: React.FC = () => {
         }
     }, [userData, countries, form]);
 
-    const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
-        api[type]({ message, description, placement: 'topRight' });
+    const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
+        api[type]({ message, description, placement: "topRight" });
     };
 
     const handleCountryChange = (value: string) => {
@@ -106,20 +107,17 @@ const EditUser: React.FC = () => {
             : [];
         const selectedCountryCode = selectedCountry?.dialCode || "+84";
         const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
-        const formattedPhone = shouldKeepZero
-            ? `${selectedCountryCode}${values.phone}`
-            : `${selectedCountryCode}${values.phone.replace(/^0+/, "")}`;
-
+        const formattedPhone = `${selectedCountryCode} ${values.phone.replace(/^0+/, "")}`;
         let formattedValues = {
             id: Number(userId),
             username: values.username,
             fullname: values.fullname,
             email: values.email,
-            dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : '',
+            dob: values.dob ? dayjs(values.dob).format("YYYY-MM-DD") : "",
             phone: formattedPhone,
             role: values.role === "admin" ? "ROLE_ADMIN" : "ROLE_SCHOOL_OWNER",
             status: Boolean(values.status),
-            ...(selectedRole === 'school_owner' && {
+            ...(selectedRole === "school_owner" && {
                 expectedSchool: values.expectedSchool,
                 business_registration_number: values.business_registration_number,
             }),
@@ -129,17 +127,20 @@ const EditUser: React.FC = () => {
 
         try {
             const response = await updateUser({ data: formattedValues, imageList: imageFiles }).unwrap();
-            openNotificationWithIcon('success', 'Success', 'User updated successfully!');
+            openNotificationWithIcon("success", "Success", "User updated successfully!");
         } catch (error: any) {
-            openNotificationWithIcon('error', 'Update Failed', error?.data?.message || 'An error occurred while updating the user.');
+            openNotificationWithIcon("error", "Update Failed", error?.data?.message || "An error occurred while updating the user.");
         } finally {
             setSpinning(false);
         }
     };
 
+
+
+
     if (isLoading || isLoadingCountry) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
                 <Spin size="large" />
             </div>
         );
@@ -147,7 +148,7 @@ const EditUser: React.FC = () => {
 
     if (isError || !userData) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'red' }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", color: "red" }}>
                 Error loading user data. Please try again later.
             </div>
         );
@@ -158,7 +159,7 @@ const EditUser: React.FC = () => {
             {contextHolder}
             <MyBreadcrumb
                 paths={[
-                    { label: "User Management", href: "/admin/management/user/user-detail" },
+                    { label: "User Management", href: "/admin/management/user/user-list" },
                     { label: "Edit User" },
                 ]}
             />
@@ -171,7 +172,7 @@ const EditUser: React.FC = () => {
                 <Form
                     {...formItemLayout}
                     form={form}
-                    labelCol={{ flex: '150px' }}
+                    labelCol={{ flex: "150px" }}
                     labelAlign="left"
                     labelWrap
                     onFinish={onFinish}
@@ -180,7 +181,7 @@ const EditUser: React.FC = () => {
                     <Row gutter={[24, 24]}>
                         <Col xs={24} sm={24} md={24} lg={12}>
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={0}>
-                                <Form.Item label="User Name" name="username" className={'mb-10'}>
+                                <Form.Item label="User Name" name="username" className={"mb-10"}>
                                     <Input placeholder="System Auto Generate" disabled />
                                 </Form.Item>
                             </motion.div>
@@ -190,12 +191,12 @@ const EditUser: React.FC = () => {
                                     label="Full Name"
                                     name="fullname"
                                     rules={[
-                                        { required: true, message: 'Full name is required!' },
-                                        { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: 'Full name must contain at least two words!' },
-                                        { max: 50, message: 'Full name must not exceed 50 characters!' }
+                                        { required: true, message: "Full name is required!" },
+                                        { pattern: /^[A-Za-zÀ-ỹ]+(\s+[A-Za-zÀ-ỹ]+)+$/, message: "Full name must contain at least two words!" },
+                                        { max: 50, message: "Full name must not exceed 50 characters!" }
                                     ]}
                                     hasFeedback
-                                    className={'mb-10'}
+                                    className={"mb-10"}
                                 >
                                     <Input />
                                 </Form.Item>
@@ -206,11 +207,11 @@ const EditUser: React.FC = () => {
                                     label="Email"
                                     name="email"
                                     rules={[
-                                        { required: true, message: 'Email is required!' },
-                                        { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' }
+                                        { required: true, message: "Email is required!" },
+                                        { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email address!" }
                                     ]}
                                     hasFeedback
-                                    className={'mb-10'}
+                                    className={"mb-10"}
                                 >
                                     <Input />
                                 </Form.Item>
@@ -221,10 +222,10 @@ const EditUser: React.FC = () => {
                                     label="Phone No."
                                     name="phone"
                                     rules={[
-                                        { required: true, message: 'Phone number is required!' },
-                                        { pattern: /^\d{4,14}$/, message: 'Phone number is wrong!' }
+                                        { required: true, message: "Phone number is required!" },
+                                        { pattern: /^\d{4,14}$/, message: "Phone number is wrong!" }
                                     ]}
-                                    className={'mb-10'}
+                                    className={"mb-10"}
                                 >
                                     <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                                         <Select
@@ -242,9 +243,9 @@ const EditUser: React.FC = () => {
                                                     label={country.label}
                                                     label2={
                                                         <span className="flex items-center">
-                              <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" preview={false} />
+                                                            <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" preview={false} />
                                                             {country.code} {country.dialCode}
-                            </span>
+                                                        </span>
                                                     }
                                                 >
                                                     <div className="flex items-center">
@@ -258,9 +259,11 @@ const EditUser: React.FC = () => {
                                             placeholder="Enter your phone number"
                                             onChange={handlePhoneNumberChange}
                                             style={{ flex: 1, border: "none", boxShadow: "none" }}
+                                            value={form.getFieldValue("phone")}
                                         />
                                     </div>
                                 </Form.Item>
+
                             </motion.div>
 
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={4}>
@@ -270,31 +273,31 @@ const EditUser: React.FC = () => {
                                     rules={[
                                         {
                                             validator: (_, value) => {
-                                                if (!value) return Promise.reject('Date of birth is required!');
-                                                if (value.isAfter(dayjs())) return Promise.reject('Date of birth cannot be in the future!');
-                                                const age = dayjs().diff(value, 'year');
-                                                if (age < 18) return Promise.reject('User must be at least 18 years old!');
+                                                if (!value) return Promise.reject("Date of birth is required!");
+                                                if (value.isAfter(dayjs())) return Promise.reject("Date of birth cannot be in the future!");
+                                                const age = dayjs().diff(value, "year");
+                                                if (age < 18) return Promise.reject("User must be at least 18 years old!");
                                                 return Promise.resolve();
                                             },
                                         },
                                     ]}
-                                    className={'mb-10'}
+                                    className={"mb-10"}
                                 >
-                                    <DatePicker disabledDate={(current) => current && current > dayjs().endOf('day')} />
+                                    <DatePicker disabledDate={(current) => current && current > dayjs().endOf("day")} />
                                 </Form.Item>
                             </motion.div>
 
-                            {selectedRole === 'school_owner' && (
+                            {selectedRole === "school_owner" && (
                                 <>
                                     <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={6}>
                                         <Form.Item
                                             label="Expected School"
                                             name="expectedSchool"
                                             rules={[
-                                                { required: true, message: 'Expected school name is required for School Owner!' },
-                                                { max: 200, message: 'Expected school name must not exceed 200 characters!' }
+                                                { required: true, message: "Expected school name is required for School Owner!" },
+                                                { max: 200, message: "Expected school name must not exceed 200 characters!" }
                                             ]}
-                                            className={'mb-10'}
+                                            className={"mb-10"}
                                         >
                                             <Input placeholder="Enter the expected school name" />
                                         </Form.Item>
@@ -304,10 +307,10 @@ const EditUser: React.FC = () => {
                                             label="BRN"
                                             name="business_registration_number"
                                             rules={[
-                                                { required: true, message: 'Business Registration Number is required for School Owner!' },
-                                                { min: 10, max: 10, message: 'Business Registration Number must have 10 characters!' }
+                                                { required: true, message: "Business Registration Number is required for School Owner!" },
+                                                { min: 10, max: 10, message: "Business Registration Number must have 10 characters!" }
                                             ]}
-                                            className={'mb-10'}
+                                            className={"mb-10"}
                                         >
                                             <Input placeholder="Enter the Business Registration Number" />
                                         </Form.Item>
@@ -321,46 +324,46 @@ const EditUser: React.FC = () => {
                                 <Form.Item
                                     label="Role"
                                     name="role"
-                                    rules={[{ required: true, message: 'Please select a role!' }]}
-                                    className={'mb-10'}
+                                    rules={[{ required: true, message: "Please select a role!" }]}
+                                    className={"mb-10"}
                                 >
                                     <Select
                                         placeholder="Select a role"
                                         onChange={handleRoleChange}
                                         options={[
-                                            { value: 'admin', label: 'Admin' },
-                                            { value: 'school_owner', label: 'School Owner' },
+                                            { value: "admin", label: "Admin" },
+                                            { value: "school_owner", label: "School Owner" },
                                         ]}
                                     />
                                 </Form.Item>
                             </motion.div>
 
-                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 8 : 6}>
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === "school_owner" ? 8 : 6}>
                                 <Form.Item
                                     label="Status"
                                     name="status"
-                                    rules={[{ required: true, message: 'Please choose status!' }]}
-                                    className={'mb-10'}
+                                    rules={[{ required: true, message: "Please choose status!" }]}
+                                    className={"mb-10"}
                                 >
                                     <Select
                                         placeholder="Select status"
                                         options={[
-                                            { value: true, label: 'Active' },
-                                            { value: false, label: 'Inactive' },
+                                            { value: true, label: "Active" },
+                                            { value: false, label: "Inactive" },
                                         ]}
                                     />
                                 </Form.Item>
                             </motion.div>
 
-                            {selectedRole === 'school_owner' && (
+                            {selectedRole === "school_owner" && (
                                 <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={7}>
                                     <Form.Item
                                         label="Business license"
                                         name="image"
                                         valuePropName="fileList"
                                         getValueFromEvent={(e) => e?.fileList || []}
-                                        rules={[{ required: true, message: 'Business license is required for School Owner!' }]}
-                                        className={'mb-10'}
+                                        rules={[{ required: true, message: "Business license is required for School Owner!" }]}
+                                        className={"mb-10"}
                                     >
                                         <ImageUpload
                                             form={form}
@@ -369,7 +372,7 @@ const EditUser: React.FC = () => {
                                             accept={["image/png", "image/jpg", "image/jpeg"]}
                                             maxSizeMB={5}
                                             hideImageUpload={false}
-                                            imageList={form.getFieldValue('image') || []}
+                                            imageList={form.getFieldValue("image") || []}
                                         />
                                     </Form.Item>
                                 </motion.div>
@@ -379,9 +382,9 @@ const EditUser: React.FC = () => {
 
                     <Row justify="center">
                         <Col>
-                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 9 : 7}>
+                            <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === "school_owner" ? 9 : 7}>
                                 <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, auto)', justifyContent: 'center', gap: '10px' }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, auto)", justifyContent: "center", gap: "10px" }}>
                                         <Button type="dashed" onClick={() => router.back()}>
                                             Cancel
                                         </Button>

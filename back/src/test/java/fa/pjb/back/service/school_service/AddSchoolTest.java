@@ -13,6 +13,7 @@ import fa.pjb.back.model.enums.SchoolStatusEnum;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
+import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.GGDriveImageService;
@@ -121,13 +122,15 @@ class AddSchoolTest {
         when(multipartFile.getBytes()).thenReturn(validJpegBytes);
         when(imageService.convertMultiPartFileToFile(images)).thenReturn(files);
         List<FileUploadVO> imageVOs = List.of(new FileUploadVO(200, "image.jpeg", (long) 1024, "filename", "fileId", "url"));
-        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES),any()))
+        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES), any()))
                 .thenReturn(imageVOs);
 
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.APPROVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
                 "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC))
+                , null,
+                Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -188,6 +191,7 @@ class AddSchoolTest {
         savedSchool.setDescription("Description");
         return savedSchool;
     }
+
     // Normal Case: Non-admin user, all valid, status SAVED, no images
     @Test
     void testAddSchool_NormalCase_NonAdminUser_SavedStatus_NoImages() {
@@ -214,7 +218,8 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SAVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC))
+                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -241,11 +246,12 @@ class AddSchoolTest {
         assertEquals(facilities, school.getFacilities());
         assertEquals(utilities, school.getUtilities());
         assertEquals(schoolOwners, school.getSchoolOwners());
-        verify(emailService,never()).sendSubmitEmailToAllAdmin(
+        verify(emailService, never()).sendSubmitEmailToAllAdmin(
                 "Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1"
         );
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
+
     // Normal Case: Non-admin user, all valid, no images
     @Test
     void testAddSchool_NormalCase_NonAdminUser_NoImages() {
@@ -273,7 +279,9 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC))
+                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -303,7 +311,7 @@ class AddSchoolTest {
         verify(emailService).sendSubmitEmailToAllAdmin(
                 "Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1"
         );
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Normal Case: Null facilities, utilities, and images
@@ -327,7 +335,9 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC))
+                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -342,7 +352,7 @@ class AddSchoolTest {
         verify(emailService).sendSubmitEmailToAllAdmin(
                 "Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1"
         );
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Normal Case: Empty collections and images list
@@ -369,7 +379,8 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC))
+                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -384,7 +395,7 @@ class AddSchoolTest {
         verify(emailService).sendSubmitEmailToAllAdmin(
                 "Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1"
         );
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Abnormal Case: Email already exists
@@ -401,16 +412,16 @@ class AddSchoolTest {
         assertThrows(EmailAlreadyExistedException.class, () -> schoolService.addSchool(dto, null));
         verify(schoolMapper, never()).toSchool(any());
         verify(schoolRepository, never()).save(any());
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Abnormal Case: Invalid collections
     @Test
     void testAddSchool_AbnormalCase_InvalidFacilities() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School",  1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
-                 1,  1, 1000, 2000, Set.of(1, 2, 3), Set.of(1, 2, 3), Set.of(1, 2, 3), "Description"
+                1, 1, 1000, 2000, Set.of(1, 2, 3), Set.of(1, 2, 3), Set.of(1, 2, 3), "Description"
         );
 
         // Mock the School object
@@ -428,7 +439,7 @@ class AddSchoolTest {
         verify(schoolMapper).toSchool(dto);
         verify(school).setPostedDate(any());
         verify(schoolRepository, never()).save(any());
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Abnormal Case: Authentication failure
@@ -445,7 +456,7 @@ class AddSchoolTest {
         assertThrows(AuthenticationFailedException.class, () -> schoolService.addSchool(dto, null));
         verify(schoolRepository, never()).existsByEmail(any());
         verify(schoolMapper, never()).toSchool(any());
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Abnormal Case: Image file too large
@@ -471,8 +482,8 @@ class AddSchoolTest {
         assertThrows(InvalidFileFormatException.class, () -> schoolService.addSchool(dto, images));
         verify(schoolRepository).save(school);
         verify(mediaRepository, never()).saveAll(any());
-        verify(emailService,never()).sendSubmitEmailToAllAdmin("Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1");
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(emailService, never()).sendSubmitEmailToAllAdmin("Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1");
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Abnormal Case: Invalid image file type
@@ -499,18 +510,18 @@ class AddSchoolTest {
 
         assertThrows(InvalidFileFormatException.class, () -> schoolService.addSchool(dto, images));
         verify(schoolRepository).save(school);
-        verify(emailService,never()).sendSubmitEmailToAllAdmin("Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1");
+        verify(emailService, never()).sendSubmitEmailToAllAdmin("Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1");
         verify(mediaRepository, never()).saveAll(any());
-        verify(imageService, never()).uploadListFiles(any(), any(), any(),any());
+        verify(imageService, never()).uploadListFiles(any(), any(), any(), any());
     }
 
     // Abnormal Case: Image upload fails
     @Test
     void testAddSchool_AbnormalCase_ImageUploadFails() throws IOException {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School",  1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
-                 1,  1, 1000, 2000, null, null, null, "Description"
+                1, 1, 1000, 2000, null, null, null, "Description"
         );
 
         List<MultipartFile> images = List.of(multipartFile);
@@ -530,12 +541,12 @@ class AddSchoolTest {
 
         List<File> files = List.of(new File("test.jpg"));
         when(imageService.convertMultiPartFileToFile(images)).thenReturn(files);
-        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES),any()))
+        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES), any()))
                 .thenThrow(new UploadFileException("Error while uploading images"));
 
         assertThrows(UploadFileException.class, () -> schoolService.addSchool(dto, images));
         verify(schoolRepository).save(school);
-        verify(imageService).uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES),any());
+        verify(imageService).uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES), any());
         verify(mediaRepository, never()).saveAll(any());
     }
 }

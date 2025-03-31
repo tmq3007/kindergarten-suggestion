@@ -8,28 +8,32 @@ import {
 } from "@/redux/services/schoolOwnerApi";
 import useSchoolForm from "@/lib/hook/useSchoolForm";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 
 export default function EditSchool() {
     const user = useSelector((state: RootState) => state.user);
     const hasDraft = user.hasDraft;
-    const draftQuery = useGetDraftOfSchoolOwnerQuery(undefined, { skip: !hasDraft });
-    const schoolQuery = useGetSchoolOfSchoolOwnerQuery(undefined, { skip: hasDraft });
-    const schoolQueryResult = hasDraft ? draftQuery : schoolQuery;
+    const {data: getDraftData, isLoading: isGetDraftLoading} = useGetDraftOfSchoolOwnerQuery(undefined, {
+        skip: !hasDraft,
+    });
+    const draft = getDraftData?.data;
+    const draftQuery = useGetDraftOfSchoolOwnerQuery();
+    const schoolQuery = useGetSchoolOfSchoolOwnerQuery();
+    const schoolQueryResult = draft ? draftQuery : schoolQuery;
     const {data, isLoading} = schoolQueryResult;
     const {form, formLoaded, schoolStatus, school} = useSchoolForm({
         data: data?.data,
         isLoading,
     });
-    console.log("1: ",formLoaded);
+    console.log("school ", school);
     if (isLoading) {
         return (
             <>
                 <MyBreadcrumb
                     paths={
-                        hasDraft
+                        (draft)
                             ? [
                                 {label: 'My Draft', href: '/public/school-owner/draft'},
                                 {label: 'Edit school'}]
@@ -49,7 +53,7 @@ export default function EditSchool() {
         <>
             <MyBreadcrumb
                 paths={
-                    hasDraft
+                    draft
                         ? [
                             {label: 'My Draft', href: '/public/school-owner/draft'},
                             {label: 'Edit school'}]
@@ -68,7 +72,7 @@ export default function EditSchool() {
                 isEdit={true}
                 triggerCheckEmail={null}
                 formLoaded={formLoaded}
-                schoolId={-1}
+                schoolId={school?.id}
             />
         </>
     );

@@ -140,18 +140,17 @@ public class UserServiceImpl implements UserService {
     //Covert ERole to String
     private String formatRole(ERole role) {
         return switch (role) {
-            case ROLE_PARENT -> "Parent";
-            case ROLE_SCHOOL_OWNER -> "School Owner";
-            case ROLE_ADMIN -> "Admin";
+            case ROLE_PARENT -> "ROLE_PARENT";
+            case ROLE_SCHOOL_OWNER -> "ROLE_SCHOOL_OWNER";
+            case ROLE_ADMIN -> "ROLE_ADMIN";
         };
     }
-
     //Covert String Role => ERole
     private ERole convertRole(String role) {
         return switch (role.toUpperCase()) {
-            case "PARENT" -> ROLE_PARENT;
-            case "SCHOOL OWNER" -> ERole.ROLE_SCHOOL_OWNER;
-            case "ADMIN" -> ERole.ROLE_ADMIN;
+            case "ROLE_PARENT" -> ROLE_PARENT;
+            case "ROLE_SCHOOL_OWNER" -> ERole.ROLE_SCHOOL_OWNER;
+            case "ROLE_ADMIN" -> ERole.ROLE_ADMIN;
             default -> throw new IllegalArgumentException("Invalid role: " + role);
         };
     }

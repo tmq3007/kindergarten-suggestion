@@ -1,84 +1,59 @@
 'use client'
 import { Checkbox, Col, Input, Row, Select, Slider } from "antd";
 import React from "react";
-import { useRouter } from "next/navigation";
 import { CHILD_RECEIVING_AGE_OPTIONS, FACILITY_OPTIONS, SCHOOL_TYPE_OPTIONS, UTILITY_OPTIONS } from "@/lib/constants";
 import { SchoolSearchDTO } from "@/redux/services/schoolApi";
-// v4
+
 interface SchoolSearchHelperProps {
     searchParams: SchoolSearchDTO;
     onApplyFiltersAction: (updatedParams: SchoolSearchDTO) => void;
 }
 
 export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction }: SchoolSearchHelperProps) {
-    const router = useRouter();
-
-    // Function to update URL immediately based on search parameters
-    const updateURL = (params: SchoolSearchDTO) => {
-        const urlParams = new URLSearchParams();
-        if (params.name) urlParams.set('name', params.name);
-        if (params.province) urlParams.set('province', params.province);
-        if (params.district) urlParams.set('district', params.district);
-        if (params.type) urlParams.set('type', params.type.toString());
-        if (params.age) urlParams.set('age', params.age.toString());
-        if (params.minFee) urlParams.set('minFee', params.minFee.toString());
-        if (params.maxFee) urlParams.set('maxFee', params.maxFee.toString());
-        if (params.facilityIds?.length) urlParams.set('facilityIds', params.facilityIds.join(','));
-        if (params.utilityIds?.length) urlParams.set('utilityIds', params.utilityIds.join(','));
-        urlParams.set('page', (params.page + 1).toString());
-        urlParams.set('size', params.size.toString());
-        urlParams.set('sortBy', params.sortBy);
-
-        console.log('Updating URL in SchoolSearchHelper:', urlParams.toString());
-        router.replace(`?${urlParams.toString()}`, { scroll: false });
-    };
-
-    // Handle school type change and update URL immediately
+    // Handler for school type filter
     const handleSchoolTypeChange = (value: number | null) => {
-        const updatedParams = { ...searchParams, type: value ?? undefined, page: 0 };
-        updateURL(updatedParams); // Update URL immediately
-        onApplyFiltersAction(updatedParams); // Notify parent component
+        onApplyFiltersAction({
+            ...searchParams,
+            type: value ?? undefined,
+            page: 0
+        });
     };
 
-    // Handle age change and update URL immediately
+    // Handler for age filter
     const handleAgeChange = (value: number | null) => {
-        const updatedParams = { ...searchParams, age: value ?? undefined, page: 0 };
-        updateURL(updatedParams); // Update URL immediately
-        onApplyFiltersAction(updatedParams); // Notify parent component
+        onApplyFiltersAction({
+            ...searchParams,
+            age: value ?? undefined,
+            page: 0
+        });
     };
 
-    // Handle fee range change and update URL immediately
+    // Handler for fee range filter
     const handleFeeRangeChange = (value: number[]) => {
-        const updatedParams = {
+        onApplyFiltersAction({
             ...searchParams,
             minFee: value[0] * 1000000, // Convert to VND
             maxFee: value[1] * 1000000, // Convert to VND
             page: 0,
-        };
-        updateURL(updatedParams); // Update URL immediately
-        onApplyFiltersAction(updatedParams); // Notify parent component
+        });
     };
 
-    // Handle facilities change and update URL immediately
+    // Handler for facilities filter
     const handleFacilitiesChange = (checkedValues: number[]) => {
-        const updatedParams = {
-            ...searchParams, // Giữ nguyên các tham số khác như province
-            facilityIds: checkedValues.length > 0 ? checkedValues : undefined, // Chỉ cập nhật facilityIds
+        onApplyFiltersAction({
+            ...searchParams,
+            facilityIds: checkedValues.length > 0 ? checkedValues : undefined,
             page: 0,
-        };
-        updateURL(updatedParams);
-        onApplyFiltersAction(updatedParams);
+        });
     };
 
-    // Handle utilities change and update URL immediately
+    // Handler for utilities filter
     const handleUtilitiesChange = (checkedValues: number[]) => {
-        const updatedParams = {
-            ...searchParams, // Giữ nguyên các tham số khác như province
-            utilityIds: checkedValues.length > 0 ? checkedValues : undefined, // Chỉ cập nhật utilityIds
+        onApplyFiltersAction({
+            ...searchParams,
+            utilityIds: checkedValues.length > 0 ? checkedValues : undefined,
             page: 0,
-        };
-        updateURL(updatedParams);
-        onApplyFiltersAction(updatedParams);
+        });
     };
 
     return (

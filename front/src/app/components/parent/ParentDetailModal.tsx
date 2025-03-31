@@ -1,25 +1,31 @@
-import { Modal, Avatar } from "antd";
-import { ParentVO } from "@/redux/services/parentApi";
+import {Modal, Avatar, Descriptions, Divider, Typography} from "antd";
+import {ParentVO} from "@/redux/services/parentApi";
 import ActionButtons from "@/app/components/parent/ActionButton";
+import {SchoolHistory} from "@/app/components/parent/AcademicHistory";
+import {MessageInstance} from "antd/lib/message/interface";
+
+const {Title} = Typography;
 
 interface ParentDetailsModalProps {
     isOpen: boolean;
-    parent: ParentVO | null;
+    parentInfor: ParentVO | undefined;
     onClose: () => void;
     onDeleteSuccess: (id: number) => void;
     isEnrollPage?: boolean;
-    isAdminPage?: boolean
-
+    isAdminPage?: boolean;
+    message: MessageInstance;
 }
 
 export const ParentDetailsModal = ({
                                        isOpen,
-                                       parent,
+                                       parentInfor,
                                        onClose,
                                        onDeleteSuccess,
                                        isEnrollPage = false,
                                        isAdminPage = false,
+                                       message
                                    }: ParentDetailsModalProps) => {
+
     const getFullAddress = (record: ParentVO) => {
         const addressParts = [record.street, record.ward, record.district, record.province].filter(Boolean);
         return addressParts.length > 0 ? addressParts.join(", ") : "N/A";
@@ -28,85 +34,70 @@ export const ParentDetailsModal = ({
     return (
         <Modal
             title={
-                <h4 className="text-xl font-semibold text-blue-700 m-0">
-                    {parent?.fullname || "Parent Details"}
-                </h4>
+                <Title level={4} style={{margin: 0, color: "#1d39c4"}}>
+                    {parentInfor?.fullname || "Parent Details"}
+                </Title>
             }
             open={isOpen}
             onCancel={onClose}
             footer={null}
             width={600}
             centered
-            className="p-0"
+            styles={{body: {padding: "24px"}}}
         >
-            {parent && (
-                <div className="p-4 flex flex-col gap-6">
+            {parentInfor && (
+                <div className="flex flex-col gap-6">
                     {/* Header Section */}
                     <div className="flex flex-col items-center gap-2">
                         <Avatar
-                            src={parent.media?.url}
-                            size={120}
+                            src={parentInfor.media?.url}
+                            size={100}
                             className="bg-green-500 border-2 border-gray-100 shadow-sm"
                         >
-                            {!parent.media?.url && parent.fullname?.charAt(0).toUpperCase()}
+                            {!parentInfor.media?.url && parentInfor.fullname?.charAt(0).toUpperCase()}
                         </Avatar>
                         <div className="flex flex-col items-center text-center">
-                            <span className="text-lg font-bold text-gray-800">{parent.fullname}</span>
-                            <span className="text-lg text-gray-500">@{parent.username || "N/A"}</span>
+                            <span className="text-lg font-bold text-gray-800">{parentInfor.fullname}</span>
+                            <span className="text-lg text-gray-500">@{parentInfor.username || "N/A"}</span>
                         </div>
                     </div>
 
-                    {/* Divider */}
-                    <hr className="border-gray-200 my-3" />
+                    <Divider style={{margin: "0"}}/>
 
-                    {/* Details Section */}
-                    <div className="flex flex-col gap-3">
+                    {/* Information Sections */}
+                    <div className="flex flex-col gap-6">
+                        {/* Basic Information */}
                         <div>
-                            <span className="text-sm text-gray-500 font-bold block">Email</span>
-                            <span className="text-md text-gray-800">{parent.email || "N/A"}</span>
+                            <Title level={5} style={{color: "#595959"}}>
+                                Basic Information
+                            </Title>
+                            <Descriptions column={1} size="small" bordered>
+                                <Descriptions.Item label="Email">
+                                    {parentInfor.email || "N/A"}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Phone">
+                                    {parentInfor.phone || "N/A"}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Date of Birth">
+                                    {parentInfor.dob || "N/A"}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Address">
+                                    {getFullAddress(parentInfor)}
+                                </Descriptions.Item>
+                            </Descriptions>
                         </div>
-                        <div>
-                            <span className="text-sm text-gray-500 font-bold block">Phone</span>
-                            <span className="text-md text-gray-800">{parent.phone || "N/A"}</span>
-                        </div>
-                        <div>
-                            <span className="text-sm text-gray-500 font-bold block">Date of Birth</span>
-                            <span className="text-md text-gray-800">{parent.dob || "N/A"}</span>
-                        </div>
-                        <div>
-                            <span className="text-sm text-gray-500 font-bold block">Address</span>
-                            <span className="text-md text-gray-800">{getFullAddress(parent)}</span>
-                        </div>
-                        {isEnrollPage ? (
-                            <div>
-                                <span className="text-sm text-gray-500 font-bold block">Sent At</span>
-                                <span className="text-md text-gray-800">
-                                    {/* Replace with actual data */}
-                                    {parent.pis?.fromDate.toString() || "N/A"}
-                                </span>
-                            </div>
-                        ) : (
-                            <div>
-                                <span className="text-sm text-gray-500 font-bold block">Enrolled Time</span>
-                                <span className="text-md text-gray-800">
-                                    {/* Replace with actual data */}
-                                    {parent.pis?.fromDate
-                                        ? `${parent.pis.fromDate} ~ ${parent.pis.toDate || "NOW"}`
-                                        : "N/A"
-                                    }
-                                </span>
-                            </div>
-                        )}
+                        {/* School History */}
+                        <SchoolHistory parentId={parentInfor.id}/>
                     </div>
-
                     {/* Actions Section */}
-                    {parent.pis?.id && (
+                    {!isAdminPage && (
                         <>
-                            <hr className="border-gray-200" />
-                            <div className="flex justify-center">
+                            <Divider style={{margin: "16px 0"}}/>
+                            <div className="flex justify-end">
                                 <ActionButtons
-                                    key={parent.pis.id}
-                                    id={parent.pis.id}
+                                    message={message}
+                                    key={parentInfor.pis?.id}
+                                    id={parentInfor.pis?.id}
                                     isEnrollPage={isEnrollPage}
                                     onDeleteSuccess={onDeleteSuccess}
                                 />
@@ -118,3 +109,15 @@ export const ParentDetailsModal = ({
         </Modal>
     );
 };
+
+// Optional: Add custom CSS for compact Rate stars
+const styles = `
+    .compact-rate .ant-rate-star {
+        margin-right: 2px !important;
+    }
+`;
+
+// Inject styles into the document (if not using a CSS-in-JS solution)
+const styleSheet = document.createElement("style");
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);

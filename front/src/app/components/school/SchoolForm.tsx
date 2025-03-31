@@ -1,12 +1,7 @@
 'use client'
-import React, {useEffect, useRef, useState} from 'react';
-import {Card, Carousel, Checkbox, Col, Collapse, Form, Input, InputNumber, Row, Select, UploadFile} from 'antd';
+import React, {useRef, useState} from 'react';
+import {Card, Carousel, Checkbox, Col, Form, Input, InputNumber, Row, Select, UploadFile} from 'antd';
 import MyEditor from "@/app/components/common/MyEditor";
-import {
-    ExpectedSchool,
-    useLazySearchSchoolOwnersForAddSchoolQuery,
-    useSearchExpectedSchoolQuery
-} from '@/redux/services/schoolApi';
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
     EDUCATION_METHOD_OPTIONS,
@@ -14,7 +9,7 @@ import {
     SCHOOL_TYPE_OPTIONS,
     UTILITY_OPTIONS
 } from "@/lib/constants";
-import SchoolFormButton from "@/app/components/school/SchoolFormButton";
+import SchoolFormButton from "@/app/components/school/Buttons/SchoolFormButton";
 import PhoneInput from '../common/PhoneInput';
 import AddressInput from '../common/AddressInput';
 import EmailInput from '../common/EmailInput';
@@ -30,11 +25,7 @@ import {
     MailOutlined,
     PhoneOutlined,
     ToolOutlined,
-    UserOutlined
 } from "@ant-design/icons";
-import {useSelector} from 'react-redux';
-import {RootState} from '@/redux/store';
-import {SchoolOwnerVO} from '@/redux/services/schoolOwnerApi';
 import school1 from '@public/school1.jpg'
 import school2 from '@public/school2.jpg'
 import school3 from '@public/school3.jpg'
@@ -42,6 +33,9 @@ import school4 from '@public/school4.jpg'
 import school5 from '@public/school5.jpg'
 import {AnimatePresence} from "framer-motion";
 import {motion} from "framer-motion";
+import SchoolOwnersSelect from "@/app/components/school/SchoolOwnerSelect";
+import SchoolNameInput from "@/app/components/school/SchoolNameInput";
+
 
 interface SchoolFieldType {
     name: string;
@@ -67,7 +61,7 @@ interface SchoolFieldType {
     description?: string;
     // File Upload
     image?: UploadFile[];
-    schoolOwners?: string[]; // Changed to string[] to match Select values
+    schoolOwners?: string[];
 }
 
 interface SchoolFormFields {
@@ -127,10 +121,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     formLoaded = false,
                                                     isDetailPage,
                                                 }) => {
+
     const [form] = Form.useForm(externalForm);
+
     const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
-    const user = useSelector((state: RootState) => state.user);
+    const [schoolOptions, setSchoolOptions] = useState<{ value: string, BRN?: string }[]>([]);
 
     const [mainImage, setMainImage] = useState(imageList[0]?.url || images[0]); // Default to first image
     const handleThumbnailClick = (index: number) => {
@@ -143,114 +139,8 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     };
     const [facilities, setFacilities] = useState<string[]>([]);
     const [utilities, setUtilities] = useState<string[]>([]);
-    const [schoolOptions, setSchoolOptions] = useState<{ label: string; value: string }[]>([]);
-    const [ownerOptions, setOwnerOptions] = useState<{
-        label: React.ReactNode;
-        value: string;
-        owner: SchoolOwnerVO
-    }[]>([]);
 
-    const {
-        data: expectedSchoolData,
-        error: expectedSchoolError,
-        isLoading: isLoadingExpectedSchool
-    } = useSearchExpectedSchoolQuery({id: Number(user.id)});
-    const [triggerSearchSchoolOwners, searchSchoolOwnersResult] = useLazySearchSchoolOwnersForAddSchoolQuery();
     const schoolNameValue = Form.useWatch('name', form);
-
-    // Custom render for owner options
-    const renderOwnerOption = (owner: SchoolOwnerVO) => (
-        <div className="py-2 border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center text-sm">
-                <UserOutlined className="mr-2 text-blue-500"/>
-                <span className="font-medium text-gray-800">{owner.fullname}</span>
-                <span className="ml-2 text-gray-500">(@{owner.username})</span>
-            </div>
-            <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <MailOutlined className="mr-2 text-gray-400"/>
-                {owner.email}
-            </div>
-            <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <PhoneOutlined className="mr-2 text-gray-400"/>
-                {owner.phone}
-            </div>
-        </div>
-    );
-    // Custom render for selected tags (disable close for logged-in user)
-    const renderOwnerTag = (props: any) => {
-        const {label, value, closable, onClose} = props;
-        const owner = ownerOptions.find((opt) => opt.value === value)?.owner;
-        const isCurrentUser = owner?.userId === Number(user.id); // Compare with userId
-
-        return (
-            <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1 mr-1 mb-1">
-                <UserOutlined className="text-blue-500 mr-1"/>
-                <span>{owner?.username || 'Unknown'} {isCurrentUser && '(You)'}</span>
-                {!isCurrentUser && closable && (
-                    <span
-                        className="ml-1 cursor-pointer text-gray-500 hover:text-red-500"
-                        onClick={onClose}
-                    >
-                        ×
-                    </span>
-                )}
-            </div>
-        );
-    };
-
-    // Handle school name change and fetch owners
-    const handleSchoolNameChange = async (schoolName: string) => {
-        if (!schoolName || isReadOnly) {
-            setOwnerOptions([]);
-            return;
-        }
-
-        try {
-            const result = await triggerSearchSchoolOwners(schoolName).unwrap();
-            const owners = result?.data?.map((owner: SchoolOwnerVO) => ({
-                label: renderOwnerOption(owner),
-                value: String(owner.id), // Use owner.id as string
-                owner: owner,
-            })) || [];
-            setOwnerOptions(owners);
-
-            // Auto-select logged-in user if in list
-            const currentOwners = form.getFieldValue('schoolOwners') || [];
-            const userOwnerId = owners.find(owner => owner.owner.userId === Number(user.id))?.value;
-            if (userOwnerId && !currentOwners.includes(userOwnerId)) {
-                form.setFieldsValue({schoolOwners: [...currentOwners, userOwnerId]});
-            }
-        } catch (error) {
-            console.error('Error fetching school owners:', error);
-            setOwnerOptions([]);
-        }
-    };
-
-    const handleOwnersChange = (selectedOwners: string[]) => {
-        const userOwnerId = ownerOptions.find(opt => opt.owner.userId === Number(user.id))?.value;
-        if (userOwnerId && !selectedOwners.includes(userOwnerId) && ownerOptions.some(opt => opt.owner.userId === Number(user.id))) {
-            // Prevent deselection of logged-in user
-            form.setFieldsValue({schoolOwners: [...selectedOwners, userOwnerId]});
-        } else {
-            form.setFieldsValue({schoolOwners: selectedOwners});
-        }
-    };
-    useEffect(() => {
-        handleSchoolNameChange(schoolNameValue).then(r => {
-        });
-    }, [schoolNameValue]);
-
-    useEffect(() => {
-        if (expectedSchoolData?.data) {
-            setSchoolOptions(
-                expectedSchoolData.data.map((expectedSchool: ExpectedSchool) => ({
-                    label: expectedSchool.expectedSchool,
-                    value: expectedSchool.expectedSchool,
-                }))
-            );
-        }
-    }, [expectedSchoolData])
-
 
     if (isDetailPage) {
         return (
@@ -363,16 +253,14 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             <div className="flex items-center flex-wrap">
                                                 <EnvironmentOutlined className="mr-2 text-gray-500"/>
                                                 <span className="font-medium">Address:</span>
-                                                <span className="ml-2">
-      {[
-          form.getFieldValue("street"),
-          form.getFieldValue("ward"),
-          form.getFieldValue("district"),
-          form.getFieldValue("province"),
-      ]
-          .filter(Boolean)
-          .join(", ") || "N/A"}
-    </span>
+                                                <span className="ml-2">{
+                                                    [
+                                                        form.getFieldValue("street"),
+                                                        form.getFieldValue("ward"),
+                                                        form.getFieldValue("district"),
+                                                        form.getFieldValue("province"),
+                                                    ].filter(Boolean).join(", ") || "N/A"}
+                                                </span>
                                             </div>
                                             <div className="flex items-center flex-wrap">
                                                 <MailOutlined className="mr-2 text-gray-500"/>
@@ -389,41 +277,38 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                 <span className="font-medium break-words">Website:</span>
                                                 <span className="ml-2 text-blue-500 !break-words"
                                                       style={{wordBreak: "break-all"}}>
- <a href={form.getFieldValue("website")} target="_blank" rel="noopener noreferrer">
-   {form.getFieldValue("website") || "N/A"}
- </a>
-</span>
+                                                    <a href={form.getFieldValue("website")} target="_blank"
+                                                       rel="noopener noreferrer">
+                                                        {form.getFieldValue("website") || "N/A"}
+                                                    </a>
+                                                </span>
                                             </div>
                                             <div className="flex items-center flex-wrap">
                                                 <DollarOutlined className="mr-2 text-gray-500"/>
                                                 <span className="font-medium">Tuition fee:</span>
                                                 <span className="ml-2">
-      From {form.getFieldValue("feeFrom")?.toLocaleString() || "N/A"} VND/month
+                                                    From {form.getFieldValue("feeFrom")?.toLocaleString() || "N/A"} VND/month
                                                     {form.getFieldValue("feeTo") ? ` to ${form.getFieldValue("feeTo")?.toLocaleString()} VND/month` : ""}
-    </span>
+                                                </span>
                                             </div>
                                             <div className="flex items-center flex-wrap">
                                                 <CalendarOutlined className="mr-2 text-gray-500"/>
                                                 <span className="font-medium">Admission age:</span>
                                                 <span className="ml-2">
-      {CHILD_RECEIVING_AGE_OPTIONS.find((opt) => opt.value === form.getFieldValue("receivingAge"))?.label ||
-          "N/A"}
-    </span>
+                                                    {CHILD_RECEIVING_AGE_OPTIONS.find((opt) => opt.value === form.getFieldValue("receivingAge"))?.label || "N/A"}
+                                                </span>
                                             </div>
                                             <div className="flex items-center flex-wrap">
                                                 <BankOutlined className="mr-2 text-gray-500"/>
                                                 <span className="font-medium">School type:</span>
-                                                <span className="ml-2">
-      {SCHOOL_TYPE_OPTIONS.find((opt) => opt.value === form.getFieldValue("schoolType"))?.label || "N/A"}
-    </span>
+                                                <span
+                                                    className="ml-2">{SCHOOL_TYPE_OPTIONS.find((opt) => opt.value === form.getFieldValue("schoolType"))?.label || "N/A"}</span>
                                             </div>
                                             <div className="flex items-center flex-wrap">
                                                 <BookOutlined className="mr-2 text-gray-500"/>
                                                 <span className="font-medium">Education method:</span>
-                                                <span className="ml-2">
-      {EDUCATION_METHOD_OPTIONS.find((opt) => opt.value === form.getFieldValue("educationMethod"))?.label ||
-          "N/A"}
-    </span>
+                                                <span
+                                                    className="ml-2">{EDUCATION_METHOD_OPTIONS.find((opt) => opt.value === form.getFieldValue("educationMethod"))?.label || "N/A"}</span>
                                             </div>
                                         </div>
                                     </Card>
@@ -437,9 +322,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             <Form.Item
                                                 label={
                                                     <span className="flex items-center">
-        <BookOutlined className="mr-2"/>
-        Facilities
-      </span>
+                                                        <BookOutlined className="mr-2"/>
+                                                        Facilities
+                                                    </span>
                                                 }
                                                 name="facilities"
                                                 labelCol={{className: "text-2xl font-bold"}}
@@ -464,9 +349,9 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                             <Form.Item
                                                 label={
                                                     <span className="flex items-center">
-        <ToolOutlined className="mr-2"/>
-        Utilities
-      </span>
+                                                        <ToolOutlined className="mr-2"/>
+                                                        Utilities
+                                                    </span>
                                                 }
                                                 name="utilities"
                                                 labelCol={{className: "text-2xl font-bold"}}
@@ -525,7 +410,6 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
     }
 
     return (
-
         <div className="mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form<SchoolFieldType>
                 size='middle'
@@ -538,30 +422,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
             >
                 <div className='grid grid-cols-1 lg:grid-cols-2 lg:gap-16'>
                     <div>
-                        <Form.Item
-                            tooltip="This must match the expected school when creating School Owner account"
-                            name="name"
-                            label="School Name"
-                            rules={[{required: true, message: 'Please enter school name'}]}
-                        >
-                            {isEdit ? (
-                                <Input
-                                    placeholder="Enter school name..."
-                                    readOnly={isReadOnly}
-                                />
-                            ) : (
-                                <Select
-                                    showSearch
-                                    placeholder="Search and select a school..."
-                                    options={schoolOptions}
-                                    loading={isLoadingExpectedSchool}
-                                    filterOption={(input, option) =>
-                                        !!(option && option.label.toLowerCase().includes(input.toLowerCase()))
-                                    }
-                                    disabled={isReadOnly}
-                                />
-                            )}
-                        </Form.Item>
+                        <SchoolNameInput
+                            isReadOnly={isReadOnly}
+                            form={form}
+                            isEdit={isEdit}
+                            onSchoolOptionsChange={setSchoolOptions}
+                        />
 
                         <Form.Item
                             name="schoolType"
@@ -673,41 +539,13 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             </div>
                         </Form.Item>
 
-                        <Form.Item
-                            name="schoolOwners"
-                            label="School Owners"
-                            // rules={[{required: true, message: 'Please select a school owner'}]}
-                        >
-                            <Select
-                                showSearch
-                                mode='multiple'
-                                placeholder="Select school owners..."
-                                options={ownerOptions}
-                                onChange={handleOwnersChange}
-                                loading={searchSchoolOwnersResult.isFetching}
-                                disabled={isReadOnly || !schoolNameValue}
-                                tagRender={renderOwnerTag}
-                                filterOption={(input, option) => {
-                                    const owner = (option as any)?.owner as SchoolOwnerVO;
-                                    return (
-                                        owner && (
-                                            owner.fullname.toLowerCase().includes(input.toLowerCase()) ||
-                                            owner.username.toLowerCase().includes(input.toLowerCase()) ||
-                                            owner.email.toLowerCase().includes(input.toLowerCase()) ||
-                                            owner.phone.toLowerCase().includes(input.toLowerCase())
-                                        )
-                                    );
-                                }}
-                                dropdownStyle={{minWidth: 300}}
-                                notFoundContent={
-                                    searchSchoolOwnersResult.isFetching
-                                        ? "Loading..."
-                                        : schoolNameValue
-                                            ? "No owners found"
-                                            : "Please select a school first"
-                                }
-                            />
-                        </Form.Item>
+                        <SchoolOwnersSelect
+                            form={form}
+                            isReadOnly={isReadOnly}
+                            schoolNameValue={schoolNameValue}
+                            BRN={schoolOptions.find(option => option.value === schoolNameValue)?.BRN}
+                            initialOwners={externalForm?.getFieldValue('schoolOwnersInitialList')}
+                        />
 
                         <Form.Item
                             name="website"
@@ -769,7 +607,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 form={form}
                                 fieldName="image"
                                 maxCount={10}
-                                accept={["image/png","image/jpg","image/jpeg"]}
+                                accept={["image/png", "image/jpg", "image/jpeg"]}
                                 maxSizeMB={5}
                                 hideImageUpload={hideImageUpload}
                                 imageList={imageList}

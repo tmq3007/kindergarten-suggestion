@@ -1,5 +1,5 @@
 import {ApiResponse} from "@/redux/services/config/baseQuery";
-import {Table, Tag, Pagination, Avatar} from "antd";
+import {Table, Tag, Pagination, Avatar, message} from "antd";
 import {memo, useCallback, useEffect, useMemo, useState} from "react";
 import ErrorComponent from "../common/ErrorComponent";
 import {Pageable} from "@/redux/services/userApi";
@@ -46,7 +46,8 @@ function ParentList({
         y: pageSize > 15 ? 600 : undefined,
     }), [pageSize]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedParent, setSelectedParent] = useState<ParentVO | null>(null);
+    const [selectedParent, setSelectedParent] = useState<ParentVO | undefined>(undefined);
+    const [messageApi, contextHolder] = message.useMessage();
 
     useEffect(() => {
         setLocalData(
@@ -88,7 +89,7 @@ function ParentList({
 
     const handleModalClose = () => {
         setIsModalOpen(false);
-        setSelectedParent(null);
+        setSelectedParent(undefined);
     };
     const columns = [
         {
@@ -142,8 +143,8 @@ function ParentList({
                     key: "status",
                     width: 150,
                     render: (_: any, record: ParentVO) => (
-                        <Tag color={record.pis?.status ? "green" : "default"}>
-                            {record.pis?.status ? "ENROLLED" : "Not Enroll Yet"}
+                        <Tag color={record.pis?.status === 1 ? "green" : "default"}>
+                            {record.pis?.status === 1 ? "ENROLLED" : "Not Enroll Yet"}
                         </Tag>
                     ),
                 },
@@ -170,7 +171,7 @@ function ParentList({
                 key: "action",
                 width: 100,
                 render: (_: any, record: ParentVO) => (
-                    <UserActionButtons id={record.userId} onStatusToggle={handleDeleteSuccess}
+                    <UserActionButtons message={messageApi} id={record.userId} onStatusToggle={handleDeleteSuccess}
                                        triggerStatus={toggleUserStatus}/>
                 ),
             }
@@ -182,6 +183,7 @@ function ParentList({
                 render: (_: any, record: ParentVO) =>
                     record.pis?.id ? (
                         <ActionButtons
+                            message={messageApi}
                             key={record.pis.id}
                             id={record.pis.id}
                             isEnrollPage={isEnrollPage}
@@ -197,6 +199,7 @@ function ParentList({
 
     return (
         <div>
+            {contextHolder}
             <Table
                 className="over-flow-scroll"
                 columns={columns}
@@ -219,8 +222,10 @@ function ParentList({
                 />
             </div>
             <ParentDetailsModal
+                message={messageApi}
                 isOpen={isModalOpen}
-                parent={selectedParent}
+                parentInfor={selectedParent}
+                isAdminPage={isAdminPage}
                 onClose={handleModalClose}
                 onDeleteSuccess={handleDeleteSuccess}
                 isEnrollPage={isEnrollPage}

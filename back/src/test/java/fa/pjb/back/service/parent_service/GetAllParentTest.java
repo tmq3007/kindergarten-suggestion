@@ -45,7 +45,7 @@ class GetAllParentTest {
         String keyword = "someKeyword";
 
         // Act & Assert
-        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword));
+        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword, null));
     }
 
     @Test
@@ -57,7 +57,7 @@ class GetAllParentTest {
         String keyword = "test";
 
         // Act & Assert
-        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword));
+        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword, null));
     }
 
     @Test
@@ -70,15 +70,15 @@ class GetAllParentTest {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ParentProjection> emptyPage = Page.empty(pageable);
 
-        when(parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable)).thenReturn(emptyPage);
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(emptyPage);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(parentRepository, times(1)).findAllParentsWithFilters(searchBy, keyword, pageable);
+        verify(parentRepository, times(1)).findAllParentsWithFilters(null,searchBy, keyword, pageable);
     }
 
     @Test
@@ -97,17 +97,17 @@ class GetAllParentTest {
         }
         Page<ParentProjection> parentProjections = new PageImpl<>(parentProjectionsList, pageable, size);
 
-        when(parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable)).thenReturn(parentProjections);
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(parentProjections);
         when(parentMapper.toParentVOFromProjection(any(ParentProjection.class)))
                 .thenReturn(Mockito.mock(ParentVO.class));
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
         assertEquals(size, result.getContent().size());
-        verify(parentRepository, times(1)).findAllParentsWithFilters(searchBy, keyword, pageable);
+        verify(parentRepository, times(1)).findAllParentsWithFilters(null,searchBy, keyword, pageable);
     }
 
     @Test
@@ -124,11 +124,11 @@ class GetAllParentTest {
 
         Page<ParentProjection> parentProjectionsPage = new PageImpl<>(Arrays.asList(parentProjection));
 
-        when(parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable)).thenReturn(parentProjectionsPage);
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(parentProjectionsPage);
         when(parentMapper.toParentVOFromProjection(parentProjection)).thenReturn(expectedParentVO);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
@@ -147,15 +147,15 @@ class GetAllParentTest {
         Page parentProjections = mock(Page.class);
         ParentProjection parentProjection = mock(ParentProjection.class);
         ParentVO expectedParentVO = mock(ParentVO.class);
-        Mockito.when(parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable))
+        Mockito.when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable))
                 .thenReturn(parentProjections);
         when(parentMapper.toParentVOFromProjection(parentProjection)).thenReturn(expectedParentVO);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
-        Mockito.verify(parentRepository).findAllParentsWithFilters(searchBy, keyword, pageable);
+        Mockito.verify(parentRepository).findAllParentsWithFilters(null,searchBy, keyword, pageable);
         assertNotNull(result);
     }
 
@@ -167,16 +167,16 @@ class GetAllParentTest {
         String searchBy = "fullname";
         String keyword = "John@Doe#123!";
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ParentProjection> parentProjections = Mockito.mock(Page.class);
+        Page parentProjections = mock(Page.class);
 
-        when(parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable))
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable))
                 .thenReturn(parentProjections);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
-        verify(parentRepository, times(1)).findAllParentsWithFilters(searchBy, keyword, pageable);
+        verify(parentRepository, times(1)).findAllParentsWithFilters(null,searchBy, keyword, pageable);
         assertNotNull(result);
     }
 
@@ -196,18 +196,18 @@ class GetAllParentTest {
         }
         Page<ParentProjection> parentProjections = new PageImpl<>(parentProjectionsList, pageable, 30); // Total 30 elements
 
-        when(parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable)).thenReturn(parentProjections);
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(parentProjections);
         when(parentMapper.toParentVOFromProjection(any(ParentProjection.class)))
                 .thenReturn(Mockito.mock(ParentVO.class));
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
         assertEquals(size, result.getContent().size());
         assertEquals(3, result.getTotalPages());
-        verify(parentRepository, times(1)).findAllParentsWithFilters(searchBy, keyword, pageable);
+        verify(parentRepository, times(1)).findAllParentsWithFilters(null,searchBy, keyword, pageable);
     }
 
     @Test
@@ -226,16 +226,16 @@ class GetAllParentTest {
         }
         Page<ParentProjection> parentProjections = new PageImpl<>(parentProjectionsList, pageable, size);
 
-        when(parentRepository.findAllParentsWithFilters(searchBy, keyword, pageable)).thenReturn(parentProjections);
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(parentProjections);
         when(parentMapper.toParentVOFromProjection(any(ParentProjection.class)))
                 .thenReturn(Mockito.mock(ParentVO.class));
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
         assertEquals(size, result.getContent().size());
-        verify(parentRepository, times(1)).findAllParentsWithFilters(searchBy, keyword, pageable);
+        verify(parentRepository, times(1)).findAllParentsWithFilters(null,searchBy, keyword, pageable);
     }
 }

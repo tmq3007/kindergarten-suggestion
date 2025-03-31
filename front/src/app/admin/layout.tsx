@@ -1,7 +1,5 @@
 import type {Metadata} from "next";
 import {Props} from "@/redux/StoreProvider";
-import Footer from "@/app/components/common/Footer";
-
 
 export const metadata: Metadata = {
     title: "Kindergarten Suggestion System",
