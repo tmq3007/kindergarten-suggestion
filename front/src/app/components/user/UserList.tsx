@@ -24,6 +24,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
     const users = data?.data.content.map((user) => ({ ...user, key: user.id })) || [];
     const totalElements = data?.data.page.totalElements || 0;
     const[useToggleUserStatus] = useToggleUserStatusMutation();
+    const [messageApi, contextHolder] = message.useMessage();
 
     const handlePageChange = (page: number, size: number) => {
         setPageSize(size);
@@ -54,7 +55,7 @@ export default function UserList({ fetchPage, data, error, isFetching }: UserLis
             key: "action",
             width: 100,
             render: (_: any, record: UserVO) => (
-                <UserActionButtons id={record.id}
+                <UserActionButtons message={messageApi} id={record.id}
                                    triggerStatus={useToggleUserStatus}/>
             ),
         },

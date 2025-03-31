@@ -52,9 +52,9 @@ export default function ParentManagementPage() {
     const segmentOptions = useMemo(() => [
         {
             label: isMobile ? (
-                <UserOutlined className="text-2xl"/>
+                <UserOutlined className="text-xl"/>
             ) : (
-                <span className="font-bold text-2xl flex content-center text-center justify-center gap-2">
+                <span className="font-bold text-lg flex content-center text-center justify-center gap-2">
                     <UserOutlined/> Active Parents
                 </span>
             ),
@@ -70,7 +70,7 @@ export default function ParentManagementPage() {
                     <ClockCircleOutlined className="text-2xl"/>
                 </Badge>
             ) : (
-                <span className="font-bold text-2xl flex content-center text-center justify-center gap-2">
+                <span className="font-bold text-lg flex content-center text-center justify-center gap-2">
                     <ClockCircleOutlined/>
                     Pending Requests
                     <Badge

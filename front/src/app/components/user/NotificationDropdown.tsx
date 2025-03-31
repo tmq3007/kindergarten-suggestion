@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useAlertReminderQuery } from '@/redux/services/requestCounsellingApi';
 import Link from 'next/link';
-import {useGetReviewReportRemindersQuery, useReportReviewMutation} from "@/redux/services/reviewApi";
+import {useGetReviewReportRemindersQuery} from "@/redux/services/reviewApi";
 
 const NotificationDropdown = () => {
     const userRole = useSelector((state: RootState) => state.user?.role);

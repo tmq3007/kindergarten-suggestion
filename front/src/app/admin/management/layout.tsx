@@ -26,6 +26,7 @@ import Footer from '@/app/components/common/Footer';
 import NotificationDropdown from "@/app/components/user/NotificationDropdown";
 
 export default function AdminLayout({children}: { children: React.ReactNode }) {
+    const pathname = usePathname();
     const [messageApi, contextHolder] = message.useMessage();
     const [collapsed, setCollapsed] = useState(false);
     const {Header, Content, Sider} = Layout;
@@ -35,6 +36,18 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.user);
     const role = user.role;
+
+    let selectedKeys = ['1'];
+    if (pathname.includes('/admin/management/user')) {
+        selectedKeys = ['2'];
+    } else if (pathname.includes('/admin/management/reminder')) {
+        selectedKeys = ['3'];
+    } else if (pathname.includes('/admin/management/parent')) {
+        selectedKeys = ['4'];
+    } else if (pathname.includes('/admin/management/request')) {
+        selectedKeys = ['5'];
+    }
+
 
     if (!role) {
         unauthorized();

@@ -11,6 +11,7 @@ import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface ParentInSchoolMapper {
+
     // Map ParentInSchool and related entities to ParentInSchoolVO
     @Mapping(target = "id", source = "pis.id")
     @Mapping(target = "school", source = "school", qualifiedByName = "toSchoolListVO")
