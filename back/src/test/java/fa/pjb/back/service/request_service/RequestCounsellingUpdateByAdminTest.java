@@ -72,8 +72,8 @@ class RequestCounsellingUpdateByAdminTest {
 
         // Assert
         verify(requestCounsellingRepository).findById(EXISTING_REQUEST_ID);
-        assertEquals((byte) 1, mockRequest.getStatus(), "Status should be updated to 1");
-        assertEquals(TEST_RESPONSE, mockRequest.getResponse(), "Response should be updated");
+        assertEquals((byte) 1, mockRequest.getStatus());
+        assertEquals(TEST_RESPONSE, mockRequest.getResponse());
 
         // Verify event was published with correct parameters
         CounsellingRequestUpdateEvent expectedEvent =
@@ -127,7 +127,7 @@ class RequestCounsellingUpdateByAdminTest {
         requestCounsellingService.updateRequestCounsellingByAdmin(updateDTO);
 
         // Assert
-        assertNull(mockRequest.getResponse(), "Response should be null");
+        assertNull(mockRequest.getResponse());
 
         // Verify event was published with null response
         // Verify event was published with correct parameters
