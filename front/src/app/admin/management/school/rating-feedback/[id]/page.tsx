@@ -70,10 +70,16 @@ const RatingsDashboard = () => {
 
     const searchParams = useSearchParams();
     const fromSource = searchParams.get("from");
-    const initialStatus = "";
+     const initialStatus = "";
     const [statusFilter, setStatusFilter] = useState<string | undefined>(
         fromSource === "notification" ? "PENDING" : initialStatus || undefined
     );
+
+    useEffect(() => {
+        if (fromSource === "notification") {
+            setStatusFilter("PENDING");
+        }
+    }, [fromSource]);
     const [visibleModal, setVisibleModal] = useState(false);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
