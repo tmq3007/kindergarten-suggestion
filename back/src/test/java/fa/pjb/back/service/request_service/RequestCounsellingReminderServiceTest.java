@@ -182,10 +182,10 @@ public class RequestCounsellingReminderServiceTest {
   @Test
 // Test case 2: Lấy reminder với schoolOwnerId không tồn tại, kiểm tra exception
   void getRemindersBySchoolOwner_schoolOwnerNotFound() {
-    when(schoolOwnerRepository.findByUserId(1)).thenReturn(Optional.empty());
+    when(schoolOwnerRepository.findByUserId(10000)).thenReturn(Optional.empty());
 
     assertThrows(NoSuchElementException.class, () -> {
-      service.getRemindersBySchoolOwner(1, 10, 1, null);
+      service.getRemindersBySchoolOwner(1, 10, 10000, null);
     }, "No value present");
 
     verify(schoolOwnerRepository).findByUserId(1);

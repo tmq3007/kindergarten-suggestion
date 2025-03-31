@@ -129,9 +129,14 @@ export default function ReminderListForm({
       width: 120,
       align: "center" as const,
       render: (id: number) => (
-          <a href={`http://localhost:3000/admin/management/request/request-reminder/${id}`}>Go to review</a>
+          <a
+              href={`http://localhost:3000/admin/management/request/request-reminder/${id}`}
+              className="text-blue-500 underline hover:text-blue-700"
+          >
+            Go to review
+          </a>
       ),
-    },
+    }
   ];
 
   const getRowClassName = (_: any, index: number) => {
@@ -168,7 +173,7 @@ export default function ReminderListForm({
               bordered
               style={{
                 background: "white",
-                borderRadius: "12px"
+                borderRadius: "20px"
               }}
           />
         </ConfigProvider>

@@ -173,7 +173,7 @@ export default function RequestListForm({
   }
 
   return (
-      <Card bordered={false} style={{ width: "100%", boxShadow: "none" }}>
+      <Card bordered={false} style={{ width: "100%", boxShadow: "none", minHeight: "calc(100vh - 300px)" }}>
         {contextHolder}
         <div className="px-6 py-4">
           <Tabs
@@ -257,6 +257,11 @@ export default function RequestListForm({
                 }}
                 locale={{emptyText: "No results found"}}
                 rowClassName={getRowClassName}
+                bordered
+                style={{
+                  background: "white",
+                  borderRadius: "12px"
+                }}
             />
           </ConfigProvider>
         </div>

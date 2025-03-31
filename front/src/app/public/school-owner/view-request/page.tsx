@@ -61,14 +61,15 @@ export default function Page() {
   return (
       <div className="pt-2">
         {contextHolder}
+        <MyBreadcrumb
+            paths={[
+              {label: "Reminder", href: "/admin/management/request/request-list"},
+              {label: "Request List"},
+            ]}
+        />
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="max-w-7xl mx-auto">
-            <MyBreadcrumb
-                paths={[
-                  {label: "Reminder", href: "/admin/management/request/request-list"},
-                  {label: "Request List"},
-                ]}
-            />
+
             <div className="flex justify-between items-center mb-4">
               <div className="text-2xl font-bold">Request List</div>
               <Input
