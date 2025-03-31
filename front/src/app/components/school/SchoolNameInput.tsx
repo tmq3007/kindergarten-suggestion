@@ -1,7 +1,7 @@
 // SchoolNameInput.tsx
-import React, { useEffect, useState } from 'react';
-import { Form, Input, Select } from 'antd';
-import { ExpectedSchool, useSearchExpectedSchoolQuery } from '@/redux/services/schoolApi';
+import React, {useEffect, useState} from 'react';
+import {AutoComplete, Form, Input, Select} from 'antd';
+import {ExpectedSchool, useSearchExpectedSchoolQuery} from '@/redux/services/schoolApi';
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 
@@ -9,7 +9,7 @@ interface SchoolNameInputProps {
     isReadOnly?: boolean;
     form: any;
     isEdit?: boolean;
-    onSchoolOptionsChange?: (options: {value: string, BRN?: string}[]) => void;
+    onSchoolOptionsChange?: (options: { value: string, BRN?: string }[]) => void;
 }
 
 const SchoolNameInput: React.FC<SchoolNameInputProps> = ({
@@ -29,7 +29,7 @@ const SchoolNameInput: React.FC<SchoolNameInputProps> = ({
     const {
         data: expectedSchoolData,
         isLoading: isLoadingExpectedSchool,
-    } = useSearchExpectedSchoolQuery({ id: Number(user.id) });
+    } = useSearchExpectedSchoolQuery({id: Number(user.id)});
 
 
     useEffect(() => {
@@ -61,13 +61,21 @@ const SchoolNameInput: React.FC<SchoolNameInputProps> = ({
             tooltip="This must match the expected school when creating School Owner account"
             name="name"
             label="School Name"
-            rules={[{ required: true, message: 'Please enter school name' }]}
+            rules={[{required: true, message: 'Please enter school name'}]}
         >
             {isEdit ? (
-                <Input
+                <AutoComplete
+                    options={schoolOptions}
+                    disabled={isReadOnly}
                     placeholder="Enter school name..."
-                    readOnly={isReadOnly}
-                />
+                    filterOption={(inputValue, option) =>
+                        option && option.value
+                            ? option.value.toLowerCase().includes(inputValue.toLowerCase())
+                            : false
+                    }
+                >
+                    <Input placeholder="Enter school name..."/>
+                </AutoComplete>
             ) : (
                 <Select
                     showSearch

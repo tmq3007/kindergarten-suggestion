@@ -45,7 +45,7 @@ class GetAllParentTest {
         String keyword = "someKeyword";
 
         // Act & Assert
-        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword));
+        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword, null));
     }
 
     @Test
@@ -57,7 +57,7 @@ class GetAllParentTest {
         String keyword = "test";
 
         // Act & Assert
-        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword));
+        assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword, null));
     }
 
     @Test
@@ -73,7 +73,7 @@ class GetAllParentTest {
         when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(emptyPage);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
@@ -102,7 +102,7 @@ class GetAllParentTest {
                 .thenReturn(Mockito.mock(ParentVO.class));
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
@@ -128,7 +128,7 @@ class GetAllParentTest {
         when(parentMapper.toParentVOFromProjection(parentProjection)).thenReturn(expectedParentVO);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
@@ -152,7 +152,7 @@ class GetAllParentTest {
         when(parentMapper.toParentVOFromProjection(parentProjection)).thenReturn(expectedParentVO);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         Mockito.verify(parentRepository).findAllParentsWithFilters(null,searchBy, keyword, pageable);
@@ -173,7 +173,7 @@ class GetAllParentTest {
                 .thenReturn(parentProjections);
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         verify(parentRepository, times(1)).findAllParentsWithFilters(null,searchBy, keyword, pageable);
@@ -201,7 +201,7 @@ class GetAllParentTest {
                 .thenReturn(Mockito.mock(ParentVO.class));
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);
@@ -231,7 +231,7 @@ class GetAllParentTest {
                 .thenReturn(Mockito.mock(ParentVO.class));
 
         // Act
-        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword);
+        Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
         // Assert
         assertNotNull(result);

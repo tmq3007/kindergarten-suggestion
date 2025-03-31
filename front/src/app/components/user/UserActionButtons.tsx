@@ -1,17 +1,18 @@
 // New component: AdminActionButtons.tsx
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Popconfirm, Space, message } from "antd";
+import { Popconfirm, Space } from "antd";
 import Link from "antd/lib/typography/Link";
-import { ParentVO } from "@/redux/services/parentApi";
-import { useToggleUserStatusMutation } from "@/redux/services/userApi";
+import {MessageInstance} from "antd/lib/message/interface";
 
 interface UserActionButtonsProps {
     id: number | string;
     onStatusToggle?: (userId: number) => void;
     triggerStatus: (id: number) => Promise<any>;
+    message: MessageInstance;
+
 }
 
-function UserActionButtons({ id, onStatusToggle ,triggerStatus}: UserActionButtonsProps) {
+function UserActionButtons({ id, onStatusToggle ,triggerStatus,message}: UserActionButtonsProps) {
 
     const handleToggleStatus = async () => {
         try {
@@ -19,8 +20,7 @@ function UserActionButtons({ id, onStatusToggle ,triggerStatus}: UserActionButto
             if(onStatusToggle) onStatusToggle(Number(id));
             message.success("User status updated successfully!");
         } catch (error) {
-            console.log(error)
-
+            console.log(error);
             message.error("Failed to update user status!");
         }
     };

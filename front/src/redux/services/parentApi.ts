@@ -112,20 +112,22 @@ export const parentApi = createApi({
         }),
         listAllParentWithFilter: build.query<
             ApiResponse<{ content: ParentVO[]; page: Pageable }>,
-            { page?: number; size?: number; searchBy?: string; keyword?: string }
+            { page?: number; size?: number; searchBy?: string; keyword?: string; status?: boolean }
         >({
-            query: ({page = 1, size = 15, searchBy, keyword}) => ({
+            query: ({ page = 1, size = 15, searchBy, keyword, status }) => ({
                 url: `parent/get-all-parents`,
                 method: "GET",
                 params: {
                     page,
                     size,
                     searchBy,
-                    keyword
+                    keyword,
+                    status,
                 },
             }),
             providesTags: ["ParentsList"],
         }),
+
         listParentBySchoolWithFilter: build.query<
             ApiResponse<{ content: ParentVO[]; page: Pageable }>,
             { page?: number; size?: number; searchBy?: string; keyword?: string }

@@ -44,6 +44,7 @@ public interface ParentMapper {
     @Mapping(source = ".", target = "pis", qualifiedByName = "mapParentInSchool")
     @Mapping(target = "password", ignore = true)
     ParentVO toParentVOFromProjection(ParentProjection projection);
+
     // Mapping method for MediaVO
     @Named("mapMedia")
     default MediaVO mapMedia(ParentProjection projection) {
@@ -56,19 +57,16 @@ public interface ParentMapper {
     // Mapping method for ParentInSchoolVO
     @Named("mapParentInSchool")
     default ParentInSchoolVO mapParentInSchool(ParentProjection projection) {
-        if (projection.getPisId() != null) {
-            return new ParentInSchoolVO(
-                    projection.getPisId(),
-                    null, // parent
-                    null, // school
-                    projection.getFromDate(), // startDate
-                    projection.getToDate(),   // endDate
-                    projection.getUserEnrollStatus(),
-                    null,
-                    null
-            );
-        }
-        return null;
+        return new ParentInSchoolVO(
+                projection.getPisId(),
+                null, // parent
+                null, // school
+                projection.getFromDate(), // startDate
+                projection.getToDate(),   // endDate
+                projection.getUserEnrollStatus(),
+                null,
+                null
+        );
     }
 
 }
