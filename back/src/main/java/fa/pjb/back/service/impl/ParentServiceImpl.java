@@ -92,7 +92,6 @@ public class ParentServiceImpl implements ParentService {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public ParentVO editParent(Integer userId, ParentUpdateDTO parentUpdateDTO, MultipartFile image) {
         // Fetch the existing Parent entity from the repository
