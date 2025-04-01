@@ -133,7 +133,7 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
                     "LEFT JOIN pis.parent p " +
                     "LEFT JOIN p.user u " +
                     "LEFT JOIN p.media m " +
-                    "WHERE pis.status = 0 AND pis.school.id = :schoolId " +
+                    "WHERE pis.status = 0 AND pis.school.id = :schoolId AND u.status = true " +
                     "AND (:keyword IS NULL OR :keyword = '' OR " +
                     "     (CASE :searchBy " +
                     "         WHEN 'username' THEN LOWER(u.username) " +

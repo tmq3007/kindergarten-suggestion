@@ -88,6 +88,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean checkPhoneExist(String phone) {
+        return userRepository.existsByPhone(phone);
+    }
+
+    @Override
     public Page<UserVO> getAllUsersAdmin(int page, int size, String searchBy, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size);
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {

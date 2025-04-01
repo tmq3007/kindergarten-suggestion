@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "School_Owner")
-@ToString(exclude = {"user", "school", "images"})
+@ToString(exclude = {"user", "school", "images", "draft"})
 public class SchoolOwner {
 
     @Id
@@ -48,5 +48,9 @@ public class SchoolOwner {
 
     @Column(name = "business_registration_number")
     private String business_registration_number;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "draft_id")
+    private School draft;
 
 }

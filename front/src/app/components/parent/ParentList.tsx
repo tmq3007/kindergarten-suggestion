@@ -19,7 +19,13 @@ interface ParentListProps {
     fetchPage: (page: number, size: number) => void;
     isFetching: boolean;
     isEnrollPage?: boolean;
-    isAdminPage?: boolean
+    isAdminPage?: boolean;
+    skipConfirmations: { // Added prop
+        approve: boolean;
+        reject: boolean;
+        unEnroll: boolean;
+    };
+    updateSkipConfirmation: (action: "approve" | "reject" | "unEnroll", value: boolean) => void; // Added prop
 }
 
 function ParentList({
@@ -29,6 +35,8 @@ function ParentList({
                         isFetching,
                         isEnrollPage = false,
                         isAdminPage = false,
+                        skipConfirmations,
+                        updateSkipConfirmation,
                     }: ParentListProps) {
     const dispatch = useDispatch();
     const [current, setCurrent] = useState(1);
@@ -62,7 +70,7 @@ function ParentList({
         if (isEnrollPage && isPagination) {
             dispatch(setPendingRequestsCount(totalElements));
         }
-    }, [data, isFetching]);
+    }, [data, isFetching, isEnrollPage, totalElements, dispatch]);
 
     const handleDeleteSuccess = useCallback((id: number) => {
         setIsPagination(false);
@@ -91,6 +99,7 @@ function ParentList({
         setIsModalOpen(false);
         setSelectedParent(undefined);
     };
+
     const columns = [
         {
             title: "Fullname",
@@ -143,9 +152,11 @@ function ParentList({
                     key: "status",
                     width: 150,
                     render: (_: any, record: ParentVO) => (
-                        <Tag color={record.pis?.status === 1 ? "green" : "default"}>
-                            {record.pis?.status === 1 ? "ENROLLED" : "Not Enroll Yet"}
-                        </Tag>
+                        <div className="flex justify-center">
+                            <Tag color={record.pis?.status === 1 ? "green" : "default"}>
+                                {record.pis?.status === 1 ? "ENROLLED" : "Not Enroll Yet"}
+                            </Tag>
+                        </div>
                     ),
                 },
             ]
@@ -158,9 +169,11 @@ function ParentList({
                     key: "accountStatus",
                     width: 150,
                     render: (_: any, record: ParentVO) => (
-                        <Tag color={record.status ? "green" : "red"}>
-                            {record.status ? "ACTIVE" : "DISABLED"}
-                        </Tag>
+                        <div className="flex justify-center">
+                            <Tag color={record.status ? "green" : "red"}>
+                                {record.status ? "ACTIVE" : "DISABLED"}
+                            </Tag>
+                        </div>
                     ),
                 },
             ]
@@ -171,12 +184,16 @@ function ParentList({
                 key: "action",
                 width: 100,
                 render: (_: any, record: ParentVO) => (
-                    <UserActionButtons message={messageApi} id={record.userId} onStatusToggle={handleDeleteSuccess}
-                                       triggerStatus={toggleUserStatus}/>
+                    <UserActionButtons
+                        message={messageApi}
+                        id={record.userId}
+                        onStatusToggle={handleDeleteSuccess}
+                        triggerStatus={toggleUserStatus}
+                        hasEditBtn={false}
+                    />
                 ),
             }
-            :
-            {
+            : {
                 title: "Actions",
                 key: "actions",
                 width: 150,
@@ -188,10 +205,12 @@ function ParentList({
                             id={record.pis.id}
                             isEnrollPage={isEnrollPage}
                             onDeleteSuccess={handleDeleteSuccess}
+                            skipConfirmations={skipConfirmations} // Pass through
+                            updateSkipConfirmation={updateSkipConfirmation} // Pass through
                         />
                     ) : null,
             },
-    ]
+    ];
 
     if (error) {
         return <ErrorComponent error={error}/>;

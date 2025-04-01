@@ -39,7 +39,6 @@ public class SchoolController {
 
     private final SchoolService schoolService;
     private final GGDriveImageService imageService;
-    private final RestClient.Builder builder;
 
     @Operation(summary = "Get school info", description = "Get school information by school id")
     @GetMapping("/{schoolId}")

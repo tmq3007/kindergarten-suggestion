@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 @Tag(name = "Request Counselling Controller", description = "This API provides some actions relate with request counselling")
 public class RequestCounsellingController {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestCounsellingController.class);
     private final RequestCounsellingReminderService reminderService;
     private final RequestCounsellingService requestCounsellingService;
 

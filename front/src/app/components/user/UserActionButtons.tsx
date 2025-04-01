@@ -9,10 +9,10 @@ interface UserActionButtonsProps {
     onStatusToggle?: (userId: number) => void;
     triggerStatus: (id: number) => Promise<any>;
     message: MessageInstance;
-
+    hasEditBtn?: boolean;
 }
 
-function UserActionButtons({ id, onStatusToggle ,triggerStatus,message}: UserActionButtonsProps) {
+function UserActionButtons({ id, onStatusToggle ,triggerStatus,message, hasEditBtn=true}: UserActionButtonsProps) {
 
     const handleToggleStatus = async () => {
         try {
@@ -27,9 +27,9 @@ function UserActionButtons({ id, onStatusToggle ,triggerStatus,message}: UserAct
 
     return (
         <Space size="middle" className="flex justify-center">
-            <Link href={`/admin/management/user/edit-user?userId=${id}`}>
+            { hasEditBtn && (<Link href={`/admin/management/user/edit-user?userId=${id}`}>
                 <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
-            </Link>
+            </Link>)}
             <Popconfirm
                 title="Are you sure you want to change this user's status?"
                 onConfirm={handleToggleStatus}

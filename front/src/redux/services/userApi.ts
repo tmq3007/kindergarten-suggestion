@@ -142,6 +142,14 @@ export const userApi = createApi({
             },
             invalidatesTags: ["Admin"],
         }),
+        checkPhone: build.query<ApiResponse<boolean>, string>({
+            query: (phone) => ({
+                url: "/user/check-phone-exist",
+                method: "GET",
+                params: { phone: phone },
+            }),
+            keepUnusedDataFor: 0,
+        }),
     }),
 });
 
@@ -150,5 +158,6 @@ export const {
     useGetUserDetailQuery,
     useUpdateUserMutation,
     useToggleUserStatusMutation,
-    useCreateUserMutation
+    useCreateUserMutation,
+    useLazyCheckPhoneQuery
 } = userApi;

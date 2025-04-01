@@ -17,8 +17,8 @@ interface PhoneInputProps {
 const PhoneInput = forwardRef((
         {
             form,
-            isReadOnly,
-            initialCountryCode ="+84",
+            isReadOnly = false,
+            initialCountryCode = "+84",
             onPhoneChange,
             triggerCheckPhone,
             formLoaded = false,
@@ -55,7 +55,7 @@ const PhoneInput = forwardRef((
         };
 
         const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            let value = e.target.value.replace(/\D/g, '');
             setPhone(value);
             if (onPhoneChange) onPhoneChange(value);
             setPhoneStatus(''); // Reset status on change
@@ -63,7 +63,11 @@ const PhoneInput = forwardRef((
         };
 
         const validatePhone = async (): Promise<boolean> => {
-            if (!isReadOnly) return true;
+
+            if (isReadOnly) {
+                return true
+            }
+
             if (!phone) {
                 setPhoneStatus('error');
                 setPhoneHelp('Please input your phone number!');
@@ -93,6 +97,8 @@ const PhoneInput = forwardRef((
             setPhoneHelp('Checking phone availability...');
             try {
                 const response = await triggerCheckPhone(formattedPhone).unwrap();
+                console.log(response);
+
                 if (response.data === 'true') {
                     setPhoneStatus('error');
                     setPhoneHelp('This phone number is already registered!');
@@ -126,7 +132,11 @@ const PhoneInput = forwardRef((
         }));
 
         const handlePhoneBlur = async () => {
+            console.log("in handlePhoneBlur");
+
             if (triggerCheckPhone) {
+                console.log("in handlePhoneBlur2");
+
                 await validatePhone();
             }
         };
@@ -160,19 +170,14 @@ const PhoneInput = forwardRef((
                                         key={country.code}
                                         value={country.code}
                                         label={country.label}
-                                        label2={
-                                            <span className="flex items-center">
-                        <Image
-                            src={country.flag}
-                            alt={country.label}
-                            width={20}
-                            height={14}
-                            className="mr-2 intrinsic"
-                            preview={false}
-                        />
-                                                {country.code} {country.dialCode}
-                      </span>
-                                        }
+                                        label2=
+                                            {
+                                                <span className="flex items-center">
+                                                <Image src={country.flag} alt={country.label} width={20} height={14}
+                                                       className="mr-2 intrinsic" preview={false}/>
+                                                    {country.code} {country.dialCode}
+                                                </span>
+                                            }
                                     >
                                         <div className="flex items-center">
                                             <Image
