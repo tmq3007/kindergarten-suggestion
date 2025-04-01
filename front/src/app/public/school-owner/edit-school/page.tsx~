@@ -37,6 +37,7 @@ export default function EditSchool() {
         isLoading,
     });
 
+
     if (isLoading) {
         return (
             <>

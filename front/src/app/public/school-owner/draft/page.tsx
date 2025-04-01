@@ -82,7 +82,7 @@ export default function Draft() {
         );
     }
 
-    if (!isFormReady) {
+    if (!isFormReady && isLoading) {
         const paths = [
             { label: "My Draft", href: '/public/school-owner/draft' },
             { label: "School Detail" },

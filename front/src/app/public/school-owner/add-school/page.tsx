@@ -23,7 +23,7 @@ const page = () => {
             />
             <div className='bg-white pt-1 rounded-lg'>
                 <SchoolManageTitle title={'Add new school'} />
-                <SchoolForm hasCancelButton={true} hasUpdateSaveButton={true} hasCreateSubmitButton={true} triggerCheckEmail={triggerCheckEmail} />
+                <SchoolForm hasCancelButton={true} hasCreateSaveButton={true} hasCreateSubmitButton={true} triggerCheckEmail={triggerCheckEmail} />
             </div>
         </>
     );
