@@ -13,13 +13,11 @@ import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.FileFolderEnum;
 import fa.pjb.back.model.enums.ParentInSchoolEnum;
+import fa.pjb.back.model.mapper.MediaMapper;
 import fa.pjb.back.model.mapper.ParentInSchoolMapper;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.mapper.ParentProjection;
-import fa.pjb.back.model.vo.FileUploadVO;
-import fa.pjb.back.model.vo.ParentInSchoolVO;
-import fa.pjb.back.model.vo.ParentVO;
-import fa.pjb.back.model.vo.RegisterVO;
+import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
@@ -65,6 +63,7 @@ public class ParentServiceImpl implements ParentService {
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GGDriveImageService ggDriveImageService;
     private final UserService userService;
+    private final MediaMapper mediaMapper;
 
     @Transactional
     @Override
@@ -223,6 +222,84 @@ public class ParentServiceImpl implements ParentService {
         log.info("parentVO: {}", parent);
 
         return parentMapper.toParentVO(parent);
+    }
+
+    @Transactional
+    public MediaVO changeAvatar(Integer parentId, MultipartFile image){
+        Parent parent = parentRepository.findParentByUserId(parentId);
+        if (parent == null) {
+            throw new UserNotFoundException();
+        }
+        log.info("parent: {}", parent);
+
+        Media media = parent.getMedia(); // Get existing Media, if any
+        log.info("media: {}", media);
+        if (image != null && !image.isEmpty()) {
+            // Validate file size (max 5MB)
+            long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+            log.info("size: {}", image.getSize());
+            if (image.getSize() > MAX_FILE_SIZE) {
+                throw new RuntimeException("Image file cannot exceed 5MB");
+            }
+
+            // Validate file type (JPEG or PNG)
+            String mimeType = image.getContentType();
+            if (mimeType == null || !mimeType.startsWith("image/")) {
+                throw new RuntimeException("Invalid file type. Only JPEG or PNG images are allowed.");
+            }
+            log.info("File type validated: {}", mimeType);
+
+            // Convert MultipartFile to a temporary java.io.File
+            File tempFile;
+            try {
+                tempFile = File.createTempFile("parent_image_", ".tmp");
+                image.transferTo(tempFile);
+                log.info("tempFile: {}", tempFile);
+            } catch (IOException e) {
+                throw new RuntimeException("Error converting image file: " + e.getMessage());
+            }
+
+            // Upload the image to Google Drive using GGDriveImageService
+            FileUploadVO imageVO = ggDriveImageService.uploadImage(
+                    tempFile,
+                    "Parent_" + parentId + "_Profile_",
+                    FileFolderEnum.USER_IMAGES
+            );
+            log.info("imageVO: {}", imageVO);
+
+            if (imageVO.status() == 200) {
+                // Create a new Media entity or update the existing one
+                if (media == null) {
+                    media = new Media();
+                    media.setParent(parent); // Link the Media to the Parent
+                } else if (media.getCloudId() != null) {
+                    // Delete the old image from Google Drive if it exists
+                    ggDriveImageService.deleteUploadedImage(media.getCloudId());
+                }
+
+                // Update Media fields with the new image details
+                media.setUrl(imageVO.url());
+                media.setSize(String.valueOf(imageVO.size()));
+                media.setCloudId(imageVO.fileId());
+                media.setFilename(imageVO.fileName());
+                media.setType("image/png"); // Assuming PNG format
+                media.setUploadTime(LocalDate.now());
+
+                parent.setMedia(media); // Assign the updated Media to Parent
+                log.info("Image uploaded successfully: {}", imageVO.url());
+            } else {
+                throw new RuntimeException("Failed to upload image: " + imageVO.message());
+            }
+
+            // Clean up the temporary file
+            if (!tempFile.delete()) {
+                log.warn("Failed to delete temporary file: {}", tempFile.getName());
+                tempFile.deleteOnExit(); // Fallback to delete when JVM exits
+            }
+        }
+
+        log.info("parentVO: {}", parentMapper.toParentVO(parent));
+        return mediaMapper.toMediaVO(media);
     }
 
     @Transactional

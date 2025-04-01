@@ -203,6 +203,20 @@ export const parentApi = createApi({
             invalidatesTags: ["ParentsList"],
         }),
 
+        changeAvatar: build.mutation<any, { userId: number | undefined; image: File }>({
+            query: ({ userId, image }) => {
+                const formData = new FormData();
+                formData.append('image', image);
+
+                return {
+                    url: `parent/change-avatar/${userId}`,
+                    method: 'PUT',
+                    body: formData,
+                };
+            },
+            invalidatesTags: ['Parent'],
+        }),
+
     }),
 });
 
@@ -218,5 +232,6 @@ export const {
     useToggleParentStatusMutation,
     useEnrollParentMutation,
     useUnEnrollParentMutation,
-    useRejectParentMutation
+    useRejectParentMutation,
+    useChangeAvatarMutation
 } = parentApi;

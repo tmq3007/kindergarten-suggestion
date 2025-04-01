@@ -2,6 +2,7 @@ package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
+import fa.pjb.back.model.vo.MediaVO;
 import fa.pjb.back.model.vo.ParentInSchoolVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
@@ -15,6 +16,8 @@ public interface ParentService {
     RegisterVO saveNewParent(RegisterDTO registerDTO);
 
     ParentVO editParent(Integer parentId, ParentUpdateDTO parentUpdateDTO, MultipartFile image);
+
+    MediaVO changeAvatar(Integer parentId, MultipartFile image);
 
     ParentVO getParentById(Integer userId);
 
