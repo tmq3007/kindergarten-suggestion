@@ -80,7 +80,7 @@ class UpdateRequestCounsellingByAdminTest {
 
 
     /**
-     * Test Case 5: Trả về 404 Not Found khi ID không tồn tại
+     * Test Case 3: Trả về 400 Bad Request khi ID không tồn tại
      * - Mock service ném exception khi ID không tồn tại
      * - Kiểm tra response có status 400 Bad Request
      */
@@ -101,7 +101,7 @@ class UpdateRequestCounsellingByAdminTest {
     }
 
     /**
-     * Test Case 7: Cập nhật thành công khi response là empty string (nếu cho phép)
+     * Test Case 4: Cập nhật thành công khi response là empty string (nếu cho phép)
      * - Gửi request với response là empty string
      * - Kiểm tra response có status 200 OK
      */

@@ -38,16 +38,15 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     const role = user.role;
 
     let selectedKeys = ['1'];
-    if (pathname.includes('/admin/management/user')) {
+    if (pathname.startsWith('/admin/management/user/user-list')) {
         selectedKeys = ['2'];
-    } else if (pathname.includes('/admin/management/reminder')) {
+    } else if (pathname.startsWith('/admin/management/reminder/request-reminder')) {
         selectedKeys = ['3'];
-    } else if (pathname.includes('/admin/management/parent')) {
+    } else if (pathname.startsWith('/admin/management/parent/parent-list')) {
         selectedKeys = ['4'];
-    } else if (pathname.includes('/admin/management/request')) {
+    } else if (pathname.startsWith('/admin/management/request/request-list')) {
         selectedKeys = ['5'];
     }
-
 
     if (!role) {
         unauthorized();
@@ -64,18 +63,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
         token: {colorBgContainer, borderRadiusLG},
     } = theme.useToken();
 
-    const pathname = usePathname();
-
-    let selectedKeys = ['1'];
-    if (pathname.startsWith('/admin/management/user/user-list')) {
-        selectedKeys = ['2'];
-    } else if (pathname.startsWith('/admin/management/reminder/request-reminder')) {
-        selectedKeys = ['3'];
-    } else if (pathname.startsWith('/admin/management/parent/parent-list')) {
-        selectedKeys = ['4'];
-    } else if (pathname.startsWith('/admin/management/request/request-list')) {
-        selectedKeys = ['5'];
-    }
 
     const handleLogout = async () => {
 
@@ -158,7 +145,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             <Menu
                                 theme="dark"
                                 mode="inline"
-                                defaultSelectedKeys={['1']}
                                 selectedKeys={selectedKeys}
                                 items={[
                                     {
