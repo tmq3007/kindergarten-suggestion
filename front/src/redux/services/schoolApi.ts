@@ -260,7 +260,7 @@ export const schoolApi = createApi({
 
         checkEditSchoolEmail: build.mutation<ApiResponse<string>, { email: string; schoolId: number }>({
             query: ({email, schoolId}) => ({
-                url: `/school/check-editing-email?email=${encodeURIComponent(email)}&schoolId=${schoolId}`,  // Sử dụng query string
+                url: `/school/check-editing-email?email=${encodeURIComponent(email)}&schoolId=${schoolId}`,
                 method: "POST",
             }),
         }),
@@ -268,7 +268,7 @@ export const schoolApi = createApi({
 
         addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({
             query: (schoolDTO) => {
-                const formData = createSchoolFormAddData(schoolDTO); // Sử dụng hàm utility
+                const formData = createSchoolFormAddData(schoolDTO);
                 return {
                     url: "/school/add",
                     method: "POST",

@@ -4,7 +4,6 @@ import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
-import fa.pjb.back.common.exception._13xx_school.SchoolDraftNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
@@ -33,7 +32,6 @@ import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
-import org.hibernate.Hibernate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -87,7 +85,7 @@ public class SchoolServiceImpl implements SchoolService {
     public SchoolDetailVO getSchoolInfo(Integer schoolId) {
         School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
         List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerBySchool(school.getId());
-        return schoolMapper.toSchoolDetailVOWithSchoolOwners(school,schoolOwnerVOList);
+        return schoolMapper.toSchoolDetailVOWithSchoolOwners(school, schoolOwnerVOList);
     }
 
     public void processAndSaveImages(List<MultipartFile> images, School school) {
@@ -238,6 +236,20 @@ public class SchoolServiceImpl implements SchoolService {
         }
     }
 
+    private void updateSchoolOwnerForMergingDraft(Integer schoolId, Integer draftId, School originSchool) {
+        // Get all school owners with schoolId and draftId
+        Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findBySchoolIdAndDraftId(schoolId, draftId);
+        for (SchoolOwner schoolOwner : schoolOwners) {
+            if (schoolOwner.getDraft() == null) {
+                schoolOwner.setSchool(null);
+            } else {
+                schoolOwner.setSchool(schoolRepository.findById(schoolId).orElse(null));
+            }
+            schoolOwnerRepository.save(schoolOwner);
+        }
+        originSchool.setSchoolOwners(schoolOwners);
+    }
+
     @Transactional
     @Override
     public SchoolDetailVO addSchool(SchoolDTO schoolDTO, List<MultipartFile> image) {
@@ -250,6 +262,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (user.getRole() == ERole.ROLE_ADMIN && schoolDTO.status() == SUBMITTED.getValue()) {
             school.setStatus(APPROVED.getValue());
         }
+
         // Save the School to generate its ID
         School newSchool = schoolRepository.save(school);
 
@@ -270,7 +283,7 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVO(newSchool);
     }
 
-    private void validateAndSetAssociations(SchoolDTO schoolDTO, School school) {
+    private void validateAndSetAssociations(SchoolDTO schoolDTO, School school, boolean isDraft) {
         // Validate facilities
         if (schoolDTO.facilities() != null) {
             int existingFacilitiesSize = facilityRepository.findAllByFidIn(schoolDTO.facilities()).size();
@@ -285,6 +298,22 @@ public class SchoolServiceImpl implements SchoolService {
             if (existingUtilitiesSize != schoolDTO.utilities().size()) {
                 throw new InvalidDataException("Some utilities do not exist in the database");
             }
+        }
+
+        if (isDraft) {
+            if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
+                Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
+                if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
+                    throw new InvalidDataException("One or more SchoolOwner IDs not found");
+                }
+                for (SchoolOwner owner : schoolOwners) {
+                    owner.setDraft(school);
+                }
+                school.setSchoolOwners(schoolOwners);
+            } else {
+                school.setSchoolOwners(new HashSet<>());
+            }
+            return;
         }
 
         // Update all SchoolOwners with the saved School and batch-save them
@@ -302,7 +331,8 @@ public class SchoolServiceImpl implements SchoolService {
         }
     }
 
-    private SchoolDetailVO processSchoolUpdate(SchoolDTO schoolDTO, List<MultipartFile> images, Byte status) {
+    @Transactional
+    protected SchoolDetailVO processSchoolUpdate(SchoolDTO schoolDTO, List<MultipartFile> images, Byte status) {
         User user = userService.getCurrentUser();
 
         // Find School Owner from UserID
@@ -315,7 +345,6 @@ public class SchoolServiceImpl implements SchoolService {
         if (originSchool == null) {
             throw new SchoolNotFoundException();
         }
-        Integer originSchoolId = originSchool.getId();
 
         // Check if draft exists or not
         School draft = originSchool.getDraft();
@@ -333,7 +362,7 @@ public class SchoolServiceImpl implements SchoolService {
         // Update data from DTO into draft
         schoolMapper.toDraft(schoolDTO, draft);
         draft.setStatus(status);
-        validateAndSetAssociations(schoolDTO, draft);
+        validateAndSetAssociations(schoolDTO, draft, true);
 
         // Delete old images in database
         if (draft.getImages() != null && !draft.getImages().isEmpty()) {
@@ -372,9 +401,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (isUpdate) {
             deleteOldImages(school);
         }
-
-        validateAndSetAssociations(schoolDTO, school);
-
+        validateAndSetAssociations(schoolDTO, school, false);
         return school;
     }
 
@@ -392,13 +419,13 @@ public class SchoolServiceImpl implements SchoolService {
         School school = prepareSchoolData(schoolDTO, oldSchool);
         school.setStatus(curStatus);
 
+        // Save the updated school data
         schoolRepository.save(school);
 
         // Handle new uploaded images
         if (images != null && !images.isEmpty()) {
             processAndSaveImages(images, school);
         }
-        // Save the updated school data
 
         return schoolMapper.toSchoolDetailVO(school);
     }
@@ -407,6 +434,18 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO updateSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images) {
+        // Check status of saving school
+        // 1. If status is SAVED >> update directly on origin school
+        SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
+        School oldSchool = schoolOwner.getSchool();
+        Byte status = oldSchool.getStatus();
+        if (status.equals(SAVED.getValue())) {
+            // Change status from SAVED to SUBMITTED
+            oldSchool.setStatus(SUBMITTED.getValue());
+            // Save the change into the database
+            schoolRepository.save(oldSchool);
+            return schoolMapper.toSchoolDetailVO(oldSchool);
+        }
         return processSchoolUpdate(schoolDTO, images, SUBMITTED.getValue());
     }
 
@@ -414,6 +453,46 @@ public class SchoolServiceImpl implements SchoolService {
     @Transactional
     @Override
     public SchoolDetailVO saveSchoolBySchoolOwner(SchoolDTO schoolDTO, List<MultipartFile> images) {
+        // Check status of saving school
+        // 1. If status is SAVED >> update directly on origin school
+        SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
+        School oldSchool = schoolOwner.getSchool();
+        Byte status = oldSchool.getStatus();
+        if (status.equals(SAVED.getValue())) {
+            School school = schoolMapper.toDraft(schoolDTO, oldSchool);
+            school.setPostedDate(LocalDateTime.now());
+            school.setStatus(status);
+            // Check email
+            if (checkEditingEmailExists(schoolDTO.email(), oldSchool.getId())) {
+                throw new EmailAlreadyExistedException("This email is already in use");
+            }
+            // Validate facilities & utilities
+            validateAndSetAssociations(schoolDTO, school, false);
+            // Update school owner
+            if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
+                Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
+                if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
+                    throw new InvalidDataException("One or more SchoolOwner IDs not found");
+                }
+                for (SchoolOwner owner : schoolOwners) {
+                    owner.setDraft(school);
+                }
+                school.setSchoolOwners(schoolOwners);
+            } else {
+                school.setSchoolOwners(new HashSet<>());
+            }
+            // Persist school
+            school = schoolRepository.save(school);
+            // Delete old images
+            deleteOldImages(school);
+            // Save new images
+            if (images != null && !images.isEmpty()) {
+                processAndSaveImages(images, school);
+            }
+            return schoolMapper.toSchoolDetailVO(school);
+        }
+
+        // 2. If status is not SAVED >> update data on draft and save it
         return processSchoolUpdate(schoolDTO, images, SAVED.getValue());
     }
 
@@ -466,7 +545,7 @@ public class SchoolServiceImpl implements SchoolService {
             throw new AuthenticationFailedException("Something went wrong! Cannot find role");
         }
         List<ExpectedSchoolVO> expectedSchools = new ArrayList<>();
-        for (Object[] temp : so){
+        for (Object[] temp : so) {
             expectedSchools.add(new ExpectedSchoolVO((String) temp[0], (String) temp[1]));
         }
         return expectedSchools;
@@ -497,7 +576,7 @@ public class SchoolServiceImpl implements SchoolService {
             if (draft.getUtilities() != null) {
                 originSchool.setUtilities(new HashSet<>(draft.getUtilities()));
             }
-
+            originSchool = schoolRepository.save(originSchool);
             // Save the media (images) associated with the draft
             if (draft.getImages() != null) {
                 List<Media> images = new ArrayList<>();
@@ -510,16 +589,16 @@ public class SchoolServiceImpl implements SchoolService {
             }
 
             // Update school owners, saving any transient owners
-            if (draft.getSchoolOwners() != null) {
-                Set<SchoolOwner> updatedSchoolOwners = new HashSet<>(draft.getSchoolOwners());
-                for (SchoolOwner owner : updatedSchoolOwners) {
-                    if (owner.getId() == null) {
-                        schoolOwnerRepository.save(owner); // Save transient owners
-                    }
-                    owner.setSchool(originSchool); // Set the relationship with origin school
-                }
-                originSchool.setSchoolOwners(updatedSchoolOwners);
-            }
+//            if (draft.getSchoolOwners() != null) {
+//                Set<SchoolOwner> updatedSchoolOwners = new HashSet<>(draft.getSchoolOwners());
+//                for (SchoolOwner owner : updatedSchoolOwners) {
+//                    if (owner.getId() == null) {
+//                        schoolOwnerRepository.save(owner); // Save transient owners
+//                    }
+//                    owner.setSchool(originSchool); // Set the relationship with origin school
+//                }
+//                originSchool.setSchoolOwners(updatedSchoolOwners);
+//            }
 
             // Remove the draft reference before saving
             originSchool.setDraft(null);
@@ -528,10 +607,32 @@ public class SchoolServiceImpl implements SchoolService {
             return false;
         }
 
+        // 7. Update school of school owners
+        // 5. Handle school owners
+        Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findBySchoolIdAndDraftId(originSchool.getId(), draft.getId());
+        Set<SchoolOwner> updatedOwners = new HashSet<>();
+
+        for (SchoolOwner owner : schoolOwners) {
+            if (owner.getDraft() == null) {
+                owner.setSchool(null);
+            } else {
+                owner.setSchool(originSchool);
+            }
+            updatedOwners.add(schoolOwnerRepository.save(owner));
+        }
+        originSchool.setSchoolOwners(updatedOwners);
+
         // 4. Save the updated origin school and flush to the database
+        originSchool.setDraft(null);
         schoolRepository.saveAndFlush(originSchool);
 
         // 5. Delete the draft after the origin school is saved
+        List<SchoolOwner> draftOwners = schoolOwnerRepository.findAllByDraft(draft); // or findByDraftId(...)
+        for (SchoolOwner owner : draftOwners) {
+            owner.setDraft(null);
+        }
+        schoolOwnerRepository.saveAll(draftOwners);
+
         schoolRepository.delete(draft);
 
         // 6. Delete old images from cloud and database
@@ -583,7 +684,7 @@ public class SchoolServiceImpl implements SchoolService {
         School school = schoolRepository.findSchoolByUserIdAndStatusNotDelete(userId)
                 .orElseThrow(() -> new RuntimeException("School not found for user ID: " + userId));
         List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerBySchool(school.getId());
-        return schoolMapper.toSchoolDetailVOWithSchoolOwners(school,schoolOwnerVOList);
+        return schoolMapper.toSchoolDetailVOWithSchoolOwners(school, schoolOwnerVOList);
     }
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
@@ -594,8 +695,26 @@ public class SchoolServiceImpl implements SchoolService {
         School school = so.getSchool();
         if (school == null) throw new SchoolNotFoundException();
         School draft = school.getDraft();
-        List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerBySchool(draft.getId());
-        return schoolMapper.toSchoolDetailVOWithSchoolOwners(draft,schoolOwnerVOList);
+        List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerByDraft(draft.getId());
+        return schoolMapper.toSchoolDetailVOWithSchoolOwners(draft, schoolOwnerVOList);
+    }
+
+    private List<SchoolOwnerVO> findSchoolOwnerByDraft(Integer id) {
+        List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwnersByDraftId(id);
+        // Convert projection to VO
+        return projections.stream()
+                .map(projection -> new SchoolOwnerVO(
+                        projection.getId(),
+                        projection.getUserId(),
+                        projection.getFullname(),
+                        projection.getUsername(),
+                        projection.getEmail(),
+                        projection.getPhone(),
+                        projection.getExpectedSchool(),
+                        projection.getImageList(),
+                        projection.getDob()
+                ))
+                .toList();
     }
 
     /**

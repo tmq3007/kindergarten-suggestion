@@ -304,6 +304,9 @@ public class ParentServiceImpl implements ParentService {
         // Change status from PENDING to ACTIVE
         parentInSchool.setStatus(ParentInSchoolEnum.ACTIVE.getValue());
 
+        // Save enroll date
+        parentInSchool.setFrom(LocalDate.now());
+
         // Save the change
         parentInSchoolRepository.save(parentInSchool);
 

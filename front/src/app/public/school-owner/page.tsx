@@ -41,7 +41,7 @@ export default function SchoolDetail() {
     }
 
     //get school by user id
-    const {data, isError,refetch,isFetching, isLoading} = useGetSchoolOfSchoolOwnerQuery(undefined, {
+    const {data, isError, refetch, isLoading} = useGetSchoolOfSchoolOwnerQuery(undefined, {
         skip: !hasSchool,
     });
 
@@ -64,7 +64,7 @@ export default function SchoolDetail() {
         }
     }, [isError, router]);
 
-    if (isLoading || isFetching) {
+    if (isLoading) {
         const paths = [
             {label: "My School", href: '/public/school-owner'},
             {label: "School Detail"},
@@ -74,7 +74,7 @@ export default function SchoolDetail() {
         );
     }
 
-    if(!data){
+    if (!data) {
         return <NoData/>
     }
 

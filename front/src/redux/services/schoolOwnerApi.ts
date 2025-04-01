@@ -14,14 +14,14 @@ export type SchoolOwnerVO = {
 export const schoolOwnerApi = createApi({
     reducerPath: "schoolOwnerApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["School"],
+    tagTypes: ["SchoolOwner"],
     endpoints: (build) => ({
         getSchoolOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
             query: () => ({
                 url: `/school-owner/school-info`,
                 method: "GET",
             }),
-            providesTags: ["School"],
+            providesTags: ["SchoolOwner"],
         }),
 
         getDraftOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
@@ -29,7 +29,7 @@ export const schoolOwnerApi = createApi({
                 url: `/school-owner/draft-info`,
                 method: "GET",
             }),
-            providesTags: ["School"],
+            providesTags: ["SchoolOwner"],
         }),
 
     }),
