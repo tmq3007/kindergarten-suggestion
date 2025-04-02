@@ -3,7 +3,7 @@ package fa.pjb.back.model.enums;
 import lombok.Getter;
 
 @Getter
-public enum ReviewStatus {
+public enum EReviewStatus {
 
     APPROVED((byte) 0),
     REJECTED((byte) 1),
@@ -11,7 +11,7 @@ public enum ReviewStatus {
 
     private final byte value;
 
-    ReviewStatus(byte value) {
+    EReviewStatus(byte value) {
         this.value = value;
     }
 }

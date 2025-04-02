@@ -1,45 +1,44 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
-import { Card, List, Typography, Avatar, Button, DatePicker, Select, message } from "antd";
-import {  SyncOutlined } from "@ant-design/icons";
-import "antd/dist/reset.css";
- import { motion } from "framer-motion";
+import React, {useEffect, useMemo, useState} from "react";
+import {Avatar, Button, Card, DatePicker, List, message, Select, Tooltip, Typography} from "antd";
 import {
+    BookOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    FileTextOutlined,
+    HomeOutlined,
+    MedicineBoxOutlined,
+    StarFilled,
+    StarOutlined,
+    SyncOutlined,
+    TeamOutlined,
+    TrophyOutlined
+} from "@ant-design/icons";
+import "antd/dist/reset.css";
+import {motion} from "framer-motion";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
     Cell,
     Pie,
     PieChart,
     ResponsiveContainer,
-    BarChart,
-    Bar,
+    Tooltip as RechartsTooltip,
     XAxis,
     YAxis,
-    CartesianGrid,
-    Tooltip as RechartsTooltip,
 } from "recharts";
-import {
-    FileTextOutlined,
-    CheckCircleOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    StarOutlined,
-    StarFilled,
-    BookOutlined,
-    HomeOutlined,
-    TrophyOutlined,
-    TeamOutlined,
-    MedicineBoxOutlined,
-} from "@ant-design/icons";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, {Dayjs} from "dayjs";
 import {ReviewVO, useGetReviewBySchoolOwnerQuery, useReportReviewMutation} from "@/redux/services/reviewApi";
 import NoData from "../../../components/review/NoData";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
-import { RootState } from "@/redux/store";
-import { REVIEW_STATUS } from "@/lib/constants";
-import { MakeReportButton, ReviewButton } from "@/app/components/review/ReviewButton";
+import {REVIEW_STATUS} from "@/lib/constants";
+import {MakeReportLink} from "@/app/components/review/ReviewButton";
 import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
-import { usePathname } from "next/navigation"; // Replace useRouter with usePathname
+import {usePathname} from "next/navigation"; // Replace useRouter with usePathname
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -290,14 +289,28 @@ const RatingsDashboard = () => {
         [metrics]
     );
 
-    // Sử dụng useMemo để tính toán barData
+
+// Sử dụng useMemo để tính toán barData với 3 tháng gần nhất
     const barData = useMemo(() => {
+        // Lấy ngày hiện tại
+        const currentDate = dayjs();
+        // Tính ngày bắt đầu của 3 tháng trước (bao gồm tháng hiện tại)
+        const threeMonthsAgo = currentDate.subtract(2, 'month').startOf('month');
+
+        // Gom nhóm dữ liệu theo tháng
         const monthlyData = reviews.reduce((acc, review) => {
-            const month = review.receiveDate.format("MMMM YYYY");
-            acc[month] = (acc[month] || 0) + 1;
+            const reviewDate = review.receiveDate;
+            // Chỉ tính các review trong 3 tháng gần nhất
+            if (reviewDate.isAfter(threeMonthsAgo) || reviewDate.isSame(threeMonthsAgo, 'month')) {
+                const month = reviewDate.format("MMMM YYYY");
+                acc[month] = (acc[month] || 0) + 1;
+            }
             return acc;
         }, {} as Record<string, number>);
-        return Object.entries(monthlyData).map(([month, reviews]) => ({ month, reviews }));
+
+        return Object.entries(monthlyData)
+            .map(([month, reviews]) => ({month, reviews}))
+            .sort((a, b) => dayjs(a.month, "MMMM YYYY").diff(dayjs(b.month, "MMMM YYYY")));
     }, [reviews]);
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
@@ -359,9 +372,9 @@ const RatingsDashboard = () => {
                         onChange={handleStatusChange}
                         value={statusFilter}
                         options={[
-                            { value: "APPROVED", label: "Approved" },
+                            { value: "APPROVED", label: "Active" },
                             { value: "PENDING", label: "Pending" },
-                            { value: "REJECTED", label: "Rejected" },
+                            { value: "REJECTED", label: "Inactive" },
                         ]}
                         disabled={isFetching}
                     />
@@ -408,20 +421,26 @@ const RatingsDashboard = () => {
                                 </Card>
                             </motion.div>
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                whileHover={{ scale: 1.02 }}
+                                initial={{opacity: 0, y: 20}}
+                                animate={{opacity: 1, y: 0}}
+                                whileHover={{scale: 1.02}}
                             >
                                 <Card title="Monthly Reviews" className="w-full">
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart data={barData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="month" />
-                                            <YAxis />
-                                            <RechartsTooltip />
-                                            <Bar dataKey="reviews" fill="#8884d8" />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                    {barData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height={300}>
+                                            <BarChart data={barData}>
+                                                <CartesianGrid strokeDasharray="3 3"/>
+                                                <XAxis dataKey="month"/>
+                                                <YAxis/>
+                                                <RechartsTooltip/>
+                                                <Bar dataKey="reviews" fill="#8884d8"/>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-[300px] text-gray-500">
+                                            No data in 3 months recently
+                                        </div>
+                                    )}
                                 </Card>
                             </motion.div>
                         </div>
@@ -612,12 +631,18 @@ const RatingsDashboard = () => {
                                             </div>
                                             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-1 sm:gap-2 md:gap-3 lg:ml-auto pr-1 sm:pr-2 md:pr-3">
                                                 {(item.status === REVIEW_STATUS.APPROVED) && (
-                                                    <MakeReportButton
+                                                    <MakeReportLink
                                                         onFetching={isFetching && loadingReviewId === item.id}
                                                         onClick={() => openModal({ id: item.id, reason: item.report })}
                                                     />
                                                 )}
-                                                <ReviewButton status={item.status} />
+                                                {(item.status === REVIEW_STATUS.REJECTED) && (
+                                                    <Tooltip open={false} placement="topRight" title={item.report} color="red" key="rejected-tooltip">
+                                                                    <span className="text-xs text-gray-500 cursor-default">
+                                                                        This review will be hidden
+                                                                    </span>
+                                                    </Tooltip>
+                                                )}
                                             </div>
                                         </List.Item>
                                     </motion.div>

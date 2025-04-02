@@ -7,7 +7,7 @@ import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.SchoolOwner;
-import fa.pjb.back.model.enums.ReviewStatus;
+import fa.pjb.back.model.enums.EReviewStatus;
 import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
@@ -20,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -74,7 +73,7 @@ class ReviewServiceImplTest {
                 .teacherAndStaff((byte) 4)
                 .hygieneAndNutrition((byte) 5)
                 .feedback("Great school!")
-                .status(ReviewStatus.APPROVED.getValue())
+                .status(EReviewStatus.APPROVED.getValue())
                 .receiveDate(LocalDate.of(2025, 3, 1))
                 .build();
 
@@ -89,7 +88,7 @@ class ReviewServiceImplTest {
                 .teacherAndStaff((byte) 4)
                 .hygieneAndNutrition((byte) 5)
                 .feedback("Great school!")
-                .status(ReviewStatus.APPROVED.getValue())
+                .status(EReviewStatus.APPROVED.getValue())
                 .receiveDate(LocalDate.of(2025, 3, 1))
                 .build();
     }
@@ -104,7 +103,7 @@ class ReviewServiceImplTest {
         List<ReviewVO> expectedVOs = List.of(testReviewVO);
 
         when(userService.getCurrentSchoolOwner()).thenReturn(testSchoolOwner);
-        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, ReviewStatus.APPROVED.getValue()))
+        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, EReviewStatus.APPROVED.getValue()))
                 .thenReturn(reviews);
         when(reviewMapper.toReviewVOList(reviews)).thenReturn(expectedVOs);
 
@@ -114,7 +113,7 @@ class ReviewServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(expectedVOs, result);
         verify(userService).getCurrentSchoolOwner();
-        verify(reviewRepository).findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, ReviewStatus.APPROVED.getValue());
+        verify(reviewRepository).findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, EReviewStatus.APPROVED.getValue());
         verify(reviewMapper).toReviewVOList(reviews);
     }
 
@@ -126,13 +125,13 @@ class ReviewServiceImplTest {
         String status = "APPROVED";
 
         when(userService.getCurrentSchoolOwner()).thenReturn(testSchoolOwner);
-        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, ReviewStatus.APPROVED.getValue()))
+        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, EReviewStatus.APPROVED.getValue()))
                 .thenReturn(Collections.emptyList());
 
         assertThrows(ReviewNotFoundException.class, () ->
                 reviewService.getAllReviewBySchoolOwner(fromDate, toDate, status));
         verify(userService).getCurrentSchoolOwner();
-        verify(reviewRepository).findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, ReviewStatus.APPROVED.getValue());
+        verify(reviewRepository).findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, EReviewStatus.APPROVED.getValue());
         verifyNoInteractions(reviewMapper);
     }
 
@@ -163,7 +162,7 @@ class ReviewServiceImplTest {
         List<ReviewVO> expectedVOs = List.of(testReviewVO);
 
         when(userService.getCurrentSchoolOwner()).thenReturn(testSchoolOwner);
-        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), null, null, ReviewStatus.PENDING.getValue()))
+        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), null, null, EReviewStatus.PENDING.getValue()))
                 .thenReturn(reviews);
         when(reviewMapper.toReviewVOList(reviews)).thenReturn(expectedVOs);
 
@@ -173,7 +172,7 @@ class ReviewServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(expectedVOs, result);
         verify(userService).getCurrentSchoolOwner();
-        verify(reviewRepository).findAllBySchoolIdWithDateRangeSO(testSchool.getId(), null, null, ReviewStatus.PENDING.getValue());
+        verify(reviewRepository).findAllBySchoolIdWithDateRangeSO(testSchool.getId(), null, null, EReviewStatus.PENDING.getValue());
         verify(reviewMapper).toReviewVOList(reviews);
     }
 
@@ -272,7 +271,7 @@ class ReviewServiceImplTest {
                 .schoolId(1)
                 .schoolName("Test School")
                 .report("Inappropriate content")
-                .status(ReviewStatus.PENDING.getValue())
+                .status(EReviewStatus.PENDING.getValue())
                 .build();
 
         when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
@@ -283,7 +282,7 @@ class ReviewServiceImplTest {
 
         assertNotNull(result);
         assertEquals("Inappropriate content", result.report());
-        assertEquals(ReviewStatus.PENDING.getValue(), result.status());
+        assertEquals(EReviewStatus.PENDING.getValue(), result.status());
         verify(reviewRepository).findById(1);
         verify(reviewMapper).toReviewVO(any(Review.class));
     }
@@ -303,7 +302,7 @@ class ReviewServiceImplTest {
     @Test
     void makeReport_notApproved_throwsException() {
         ReviewReportDTO reportDTO = new ReviewReportDTO(1, "Inappropriate content");
-        testReview.setStatus(ReviewStatus.PENDING.getValue()); // Not APPROVED
+        testReview.setStatus(EReviewStatus.PENDING.getValue()); // Not APPROVED
 
         when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
 
@@ -316,12 +315,12 @@ class ReviewServiceImplTest {
     @Test
     void acceptReport_success_approve() {
         ReviewAcceptDenyDTO acceptDTO = new ReviewAcceptDenyDTO(1, true);
-        testReview.setStatus(ReviewStatus.PENDING.getValue());
+        testReview.setStatus(EReviewStatus.PENDING.getValue());
         ReviewVO updatedReviewVO = ReviewVO.builder()
                 .id(1)
                 .schoolId(1)
                 .schoolName("Test School")
-                .status(ReviewStatus.REJECTED.getValue())
+                .status(EReviewStatus.REJECTED.getValue())
                 .build();
 
         when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
@@ -330,7 +329,7 @@ class ReviewServiceImplTest {
         ReviewVO result = reviewService.acceptReport(acceptDTO);
 
         assertNotNull(result);
-        assertEquals(ReviewStatus.REJECTED.getValue(), result.status());
+        assertEquals(EReviewStatus.REJECTED.getValue(), result.status());
         verify(reviewRepository).findById(1);
         verify(reviewMapper).toReviewVO(any(Review.class));
     }
@@ -338,12 +337,12 @@ class ReviewServiceImplTest {
     @Test
     void acceptReport_success_deny() {
         ReviewAcceptDenyDTO denyDTO = new ReviewAcceptDenyDTO(1, false);
-        testReview.setStatus(ReviewStatus.PENDING.getValue());
+        testReview.setStatus(EReviewStatus.PENDING.getValue());
         ReviewVO updatedReviewVO = ReviewVO.builder()
                 .id(1)
                 .schoolId(1)
                 .schoolName("Test School")
-                .status(ReviewStatus.APPROVED.getValue())
+                .status(EReviewStatus.APPROVED.getValue())
                 .build();
 
         when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
@@ -352,7 +351,7 @@ class ReviewServiceImplTest {
         ReviewVO result = reviewService.acceptReport(denyDTO);
 
         assertNotNull(result);
-        assertEquals(ReviewStatus.APPROVED.getValue(), result.status());
+        assertEquals(EReviewStatus.APPROVED.getValue(), result.status());
         verify(reviewRepository).findById(1);
         verify(reviewMapper).toReviewVO(any(Review.class));
     }
@@ -372,7 +371,7 @@ class ReviewServiceImplTest {
     @Test
     void acceptReport_notPending_throwsException() {
         ReviewAcceptDenyDTO acceptDTO = new ReviewAcceptDenyDTO(1, true);
-        testReview.setStatus(ReviewStatus.APPROVED.getValue());
+        testReview.setStatus(EReviewStatus.APPROVED.getValue());
 
         when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
 
@@ -385,7 +384,7 @@ class ReviewServiceImplTest {
     @Test
     void acceptReport_nullDecision_throwsException() {
         ReviewAcceptDenyDTO acceptDTO = new ReviewAcceptDenyDTO(1, null);
-        testReview.setStatus(ReviewStatus.PENDING.getValue());
+        testReview.setStatus(EReviewStatus.PENDING.getValue());
 
         when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
 
@@ -405,7 +404,7 @@ class ReviewServiceImplTest {
                 .id(1)
                 .school(testSchool)
                 .parent(testParent)
-                .status(ReviewStatus.PENDING.getValue())
+                .status(EReviewStatus.PENDING.getValue())
                 .build();
 
         List<Review> reviews = List.of(pendingReview);
@@ -416,7 +415,7 @@ class ReviewServiceImplTest {
                 .build();
         List<ReviewReportReminderVO> expectedReminders = List.of(reminderVO);
 
-        when(reviewRepository.findAllByStatus(ReviewStatus.PENDING.getValue())).thenReturn(reviews);
+        when(reviewRepository.findAllByStatus(EReviewStatus.PENDING.getValue())).thenReturn(reviews);
 
         List<ReviewReportReminderVO> result = reviewService.getReviewReportReminders();
 
@@ -425,16 +424,16 @@ class ReviewServiceImplTest {
         assertEquals(1, result.get(0).total());
         assertEquals("Test School", result.get(0).schoolName());
         assertEquals(1, result.get(0).schoolId());
-        verify(reviewRepository).findAllByStatus(ReviewStatus.PENDING.getValue());
+        verify(reviewRepository).findAllByStatus(EReviewStatus.PENDING.getValue());
     }
 
     @Test
     void getReviewReportReminders_emptyResult_throwsException() {
-        when(reviewRepository.findAllByStatus(ReviewStatus.PENDING.getValue()))
+        when(reviewRepository.findAllByStatus(EReviewStatus.PENDING.getValue()))
                 .thenReturn(Collections.emptyList());
 
         assertThrows(ReviewNotFoundException.class, () ->
                 reviewService.getReviewReportReminders());
-        verify(reviewRepository).findAllByStatus(ReviewStatus.PENDING.getValue());
+        verify(reviewRepository).findAllByStatus(EReviewStatus.PENDING.getValue());
     }
 }

@@ -1,6 +1,6 @@
 package fa.pjb.back.service.user_service;
 
-import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.InvalidBRNAlException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
@@ -207,7 +207,7 @@ class UserServiceImplTest {
         when(userRepository.findByEmail(dto.email())).thenReturn(Optional.empty());
         when(schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(dto.business_registration_number())).thenReturn(true);
 
-        assertThrows(BRNAlreadyExistedException.class, () -> userService.createUser(dto, null));
+        assertThrows(InvalidBRNAlException.class, () -> userService.createUser(dto, null));
         verify(userRepository, never()).save(any());
     }
 

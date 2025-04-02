@@ -490,7 +490,7 @@ public class SchoolServiceImpl implements SchoolService {
                     throw new InvalidDataException("One or more SchoolOwner IDs not found");
                 }
 
-                // Remove the relationship between School and old School Owners
+                // Remove the relationship between School and old School Owners"
                 for (SchoolOwner oldOwner : oldSchool.getSchoolOwners()) {
                     oldOwner.setSchool(null);
                 }
