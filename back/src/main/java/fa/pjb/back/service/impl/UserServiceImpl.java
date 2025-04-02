@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.InvalidBRNAlException;
+import fa.pjb.back.common.exception._10xx_user.PhoneAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
@@ -327,6 +328,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email cannot be empty");
         }
         Optional<User> existingUserEmail = userRepository.findByEmail(userCreateDTO.email());
+        Optional<User> existingUserPhone = userRepository.findByPhone(userCreateDTO.phone());
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
@@ -338,8 +340,9 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        if ((userCreateDTO.business_registration_number()==null) || (userCreateDTO.business_registration_number().isBlank())) {
-            throw new InvalidBRNAlException("Business registration number cannot be empty");
+        // Check phone number exist
+        if (existingUserPhone.isPresent()) {
+            throw new PhoneAlreadyExistedException("Phone already exists.");
         }
 
         // Create User

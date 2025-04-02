@@ -11,7 +11,6 @@ import {RootState} from "@/redux/store";
 const { Title } = Typography;
 
 interface ProfileSidebarProps {
-    userId: number | undefined;
     fullname: string | undefined;
     email: string | undefined;
     phone: string | undefined;

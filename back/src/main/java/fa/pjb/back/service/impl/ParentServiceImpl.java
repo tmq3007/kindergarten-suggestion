@@ -114,6 +114,15 @@ public class ParentServiceImpl implements ParentService {
             }
             log.info("email: {}", newEmail);
         }
+
+        String newPhone = parentUpdateDTO.phone() != null ? parentUpdateDTO.phone() : user.getPhone();
+        if (!newPhone.equals(user.getPhone())) {
+            Optional<User> existingUserPhone = userRepository.findByPhone(newPhone);
+            if (existingUserPhone.isPresent() && !existingUserPhone.get().getId().equals(user.getId())) {
+                throw new EmailAlreadyExistedException("Phone already exists.");
+            }
+            log.info("phone: {}", newPhone);
+        }
         log.info("parentUpdateDTO: {}", parentUpdateDTO);
 
         // Validate that the date of birth is in the past
