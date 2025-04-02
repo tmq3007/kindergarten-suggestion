@@ -452,7 +452,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             isReadOnly={isReadOnly}
                             ref={emailInputRef}
                             triggerCheckEmail={triggerCheckEmail}
-                            schoolId={schoolId}
+                            id={schoolId}
                         />
                         <PhoneInput
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}

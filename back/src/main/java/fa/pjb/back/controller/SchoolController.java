@@ -68,23 +68,23 @@ public class SchoolController {
     }
 
     @GetMapping("/check-email/{email}")
-    public ApiResponse<String> checkEmail(@PathVariable String email) {
-        return ApiResponse.<String>builder()
+    public ApiResponse<Boolean> checkEmail(@PathVariable String email) {
+        return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Email checked!")
-                .data(String.valueOf(schoolService.checkEmailExists(email)))
+                .data(schoolService.checkEmailExists(email))
                 .build();
     }
 
     @PostMapping("/check-editing-email")
-    public ApiResponse<String> checkEmailEdit(
+    public ApiResponse<Boolean> checkEmailEdit(
             @RequestParam @NotBlank(message = "Email is not blank") @Email(message = "Email is not valid") String email,
             @RequestParam @NotNull(message = "School ID is not null") Integer schoolId
     ) {
-        return ApiResponse.<String>builder()
+        return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Email checked!")
-                .data(String.valueOf(schoolService.checkEditingEmailExists(email, schoolId)))
+                .data(schoolService.checkEditingEmailExists(email, schoolId))
                 .build();
     }
 

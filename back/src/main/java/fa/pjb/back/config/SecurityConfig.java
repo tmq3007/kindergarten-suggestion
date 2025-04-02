@@ -55,6 +55,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/forgot-password").permitAll()
                                 .requestMatchers("/api/auth/reset-password").permitAll()
                                 .requestMatchers("/api/auth/check-email").permitAll()
+                                .requestMatchers("/api/user/check-phone-exist").permitAll()
                                 .requestMatchers("/api/parent/register").permitAll()
                                 .requestMatchers("/api/school/review/top4").permitAll()
                                 .requestMatchers("/api/school/search-by-criteria").permitAll()

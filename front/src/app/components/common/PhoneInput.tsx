@@ -7,10 +7,11 @@ import {FormInstance} from "antd/es/form";
 interface PhoneInputProps {
     form: FormInstance;
     isReadOnly?: boolean;
-    initialCountryCode?: string;  //Optional initial Country
-    onPhoneChange?: (phone: string) => void; // Optional callback to update form value
-    triggerCheckPhone?: (phone: string) => any; // Optional hook for server-side validation
+    initialCountryCode?: string;
+    onPhoneChange?: (phone: string) => void;
+    triggerCheckPhone?: any;
     formLoaded?: boolean;
+    id?: number;
 }
 
 // Use forwardRef to allow parent to call methods
@@ -22,6 +23,7 @@ const PhoneInput = forwardRef((
             onPhoneChange,
             triggerCheckPhone,
             formLoaded = false,
+            id,
         }: PhoneInputProps,
         ref
     ) => {
@@ -35,8 +37,6 @@ const PhoneInput = forwardRef((
 
         // Sync selectedCountry with countries when they load
         useEffect(() => {
-            console.log(form.getFieldValue('countryCode'));
-            console.log(initialCountryCode);
             if (countries && !selectedCountry) {
                 const defaultCountry = countries.find((c) => c.dialCode === (form.getFieldValue('countryCode') || initialCountryCode));
                 setPhone(form.getFieldValue('phone'));
@@ -96,10 +96,15 @@ const PhoneInput = forwardRef((
             setPhoneStatus('validating');
             setPhoneHelp('Checking phone availability...');
             try {
-                const response = await triggerCheckPhone(formattedPhone).unwrap();
-                console.log(response);
+                let response
+                if (id) {
+                    response = await triggerCheckPhone(formattedPhone,id).unwrap();
+                } else {
+                    response = await triggerCheckPhone(formattedPhone).unwrap();
+                }
+                console.log(response.data);
 
-                if (response.data === 'true') {
+                if (response.data === true) {
                     setPhoneStatus('error');
                     setPhoneHelp('This phone number is already registered!');
                     return false;

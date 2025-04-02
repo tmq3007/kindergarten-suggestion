@@ -84,7 +84,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean checkPhoneExist(String phone) {
-        return userRepository.existsByPhone(phone);
+        Boolean temp = userRepository.existsByPhone(phone.trim());
+        log.info(String.valueOf(temp));
+        return temp;
     }
 
     @Override
