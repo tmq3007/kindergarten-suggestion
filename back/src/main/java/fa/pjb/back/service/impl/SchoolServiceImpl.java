@@ -4,7 +4,6 @@ import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
-import fa.pjb.back.common.exception._13xx_school.SchoolDraftNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDataException;
@@ -33,7 +32,6 @@ import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
-import org.hibernate.Hibernate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -573,8 +571,16 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
-                                            String street, String email, String phone, Pageable pageable) {
-        Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
+        String street, String email, String phone, Pageable pageable) {
+        Page<School> schoolPage = schoolRepository.findSchools(name, district, email, phone, pageable);
+        return schoolPage.map(schoolMapper::toSchoolListVO);
+    }
+
+    @Override
+    public Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String province,
+        String district,
+        String street, String email, String phone, Pageable pageable) {
+        Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 

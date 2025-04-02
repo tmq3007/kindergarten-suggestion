@@ -32,30 +32,31 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
     @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId and s.status != 6")
     Optional<School> findSchoolByUserIdAndStatusNotDelete(@Param("userId") Integer userId);
 
-    @Query(value = "SELECT s FROM School s " +
-            "LEFT JOIN FETCH s.originalSchool " +
-            "LEFT JOIN FETCH s.draft " +
-            "WHERE " +
-            "(:name IS NULL OR s.name LIKE %:name%) AND " +
-            "(:province IS NULL OR s.province LIKE %:province%) AND " +
-            "(:district IS NULL OR s.district LIKE %:district%) AND " +
-            "(:street IS NULL OR s.street LIKE %:street%) AND " +
-            "(:email IS NULL OR s.email LIKE %:email%) AND " +
-            "(:phone IS NULL OR s.phone LIKE %:phone%)",
-            countQuery = "SELECT COUNT(s) FROM School s WHERE " +
-                    "(:name IS NULL OR s.name LIKE %:name%) AND " +
-                    "(:province IS NULL OR s.province LIKE %:province%) AND " +
-                    "(:district IS NULL OR s.district LIKE %:district%) AND " +
-                    "(:street IS NULL OR s.street LIKE %:street%) AND " +
-                    "(:email IS NULL OR s.email LIKE %:email%) AND " +
-                    "(:phone IS NULL OR s.phone LIKE %:phone%)")
+    @Query("SELECT s FROM School s " +
+        "WHERE s.status NOT IN (0, 6) " +
+        "AND (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+        "AND (:district IS NULL OR s.district = :district) " +
+        "AND (:email IS NULL OR LOWER(s.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
+        "AND (:phone IS NULL OR s.phone = :phone)")
     Page<School> findSchools(
-            @Param("name") String name,
-            @Param("province") String province,
-            @Param("district") String district,
-            @Param("street") String street,
-            @Param("email") String email,
-            @Param("phone") String phone,
-            Pageable pageable);
+        @Param("name") String name,
+        @Param("district") String district,
+        @Param("email") String email,
+        @Param("phone") String phone,
+        Pageable pageable);
+
+    @Query("SELECT s FROM School s " +
+        "WHERE s.status = 1 " +
+        "AND s.originalSchool IS NULL " +
+        "AND (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+        "AND (:district IS NULL OR s.district = :district) " +
+        "AND (:email IS NULL OR LOWER(s.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
+        "AND (:phone IS NULL OR s.phone = :phone)")
+    Page<School> findActiveSchoolsWithoutRefId(
+        @Param("name") String name,
+        @Param("district") String district,
+        @Param("email") String email,
+        @Param("phone") String phone,
+        Pageable pageable);
 
 }

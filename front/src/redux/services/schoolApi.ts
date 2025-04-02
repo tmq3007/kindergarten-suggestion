@@ -406,6 +406,35 @@ export const schoolApi = createApi({
                     ]
                     : [{type: 'SchoolList', id: 'SEARCH'}],
         }),
+        getActiveSchoolsWithoutRefId: build.query<
+            ApiResponse<Page<SchoolVO>>,
+            {
+                page?: number;
+                size?: number;
+                name?: string;
+                province?: string;
+                district?: string;
+                street?: string;
+                email?: string;
+                phone?: string;
+            }
+        >({
+            query: ({ page = 1, size = 10, name, province, district, street, email, phone }) => ({
+                url: `/school/active-no-ref`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(name && { name }),
+                    ...(province && { province }),
+                    ...(district && { district }),
+                    ...(street && { street }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
+                },
+            }),
+            providesTags: ["SchoolList"],
+        }),
 
     }),
 });
@@ -428,4 +457,5 @@ export const {
     useMergeDraftMutation,
     useIsDraftQuery,
     useSearchByCriteriaQuery,
+    useGetActiveSchoolsWithoutRefIdQuery,
 } = schoolApi;

@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -54,20 +55,21 @@ public class SchoolController {
     @Operation(summary = "List all schools", description = "List all schools and information about that school for Admin")
     @GetMapping("/all")
     public ApiResponse<Page<SchoolListVO>> getAllSchools(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String province,
-            @RequestParam(required = false) String district,
-            @RequestParam(required = false) String street,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String phone) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String province,
+        @RequestParam(required = false) String district,
+        @RequestParam(required = false) String street,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String phone) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("postedDate").descending());
         return ApiResponse.<Page<SchoolListVO>>builder()
-                .code(HttpStatus.OK.value())
-                .message("Get all schools successfully.")
-                .data(schoolService.getAllSchools(name, province, district, street, email, phone, pageable))
-                .build();
+            .code(HttpStatus.OK.value())
+            .message("Get all schools successfully.")
+            .data(schoolService.getAllSchools(name, province, district, street, email, phone, pageable))
+            .build();
     }
 
     @GetMapping("/check-email/{email}")
@@ -242,5 +244,28 @@ public class SchoolController {
                 .data(schoolService.searchSchoolByCriteria(searchDTO))
                 .build();
     }
+
+    @Operation(summary = "List active schools without reference",
+        description = "List all active schools (status = 1) without reference ID, filtered by location and other criteria")
+    @GetMapping("/active-no-ref")
+    public ApiResponse<Page<SchoolListVO>> getActiveSchoolsWithoutRefId(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String province,
+        @RequestParam(required = false) String district,
+        @RequestParam(required = false) String street,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String phone) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("postedDate").descending());
+        return ApiResponse.<Page<SchoolListVO>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Get active schools without reference ID successfully.")
+            .data(schoolService.getActiveSchoolsWithoutRefId(name, province, district, street, email, phone, pageable))
+            .build();
+    }
+
+
 
 }
