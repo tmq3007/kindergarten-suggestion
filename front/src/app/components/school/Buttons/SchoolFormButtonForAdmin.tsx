@@ -5,7 +5,9 @@ import {RootState} from '@/redux/store';
 import {
     SchoolCreateDTO,
     useAddSchoolMutation,
-    useGetSchoolByIdQuery, useIsDraftQuery, useMergeDraftMutation,
+    useGetSchoolByIdQuery,
+    useIsDraftQuery,
+    useMergeDraftMutation,
     useUpdateSchoolByAdminMutation,
     useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
@@ -140,7 +142,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
                     'Draft merged successfully!',
                     'The draft has been merged successfully!',
                     2,
-                    () => getSchoolByIdRefetch()
+                    () => router.push('/admin/management/school/school-list')
                 );
             }
 
@@ -324,7 +326,7 @@ const SchoolFormButtonForAdmin: React.FC<ButtonGroupProps> = ({
             {notificationContextHolder} {/* Render notification context */}
             {hasCancelButton && (
                 <Button htmlType="button" color="danger" onClick={handleCancel}>
-                    Cancel
+                    Back
                 </Button>
             )}
             {hasCreateSubmitButton && (

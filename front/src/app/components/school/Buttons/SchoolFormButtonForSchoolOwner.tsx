@@ -1,16 +1,18 @@
-import {Button, message, Modal, notification, UploadFile} from "antd";
+import {Button, message, Modal, notification} from "antd";
 import React, {useState} from "react";
-import {useParams, useRouter} from "next/navigation";
+import {useRouter} from "next/navigation";
 import {ButtonGroupProps} from "@/app/components/school/Buttons/SchoolFormButton";
 import {
     SchoolCreateDTO,
-    useAddSchoolMutation, useSaveSchoolBySchoolOwnerMutation, useUpdateSchoolBySchoolOwnerMutation,
+    useAddSchoolMutation,
+    useSaveSchoolBySchoolOwnerMutation,
+    useUpdateSchoolBySchoolOwnerMutation,
     useUpdateSchoolStatusBySchoolOwnerMutation
 } from "@/redux/services/schoolApi";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from '@/redux/store';
 import {formatErrorMessage, prepareSchoolAddData, prepareSchoolUpdateData} from "@/lib/util/schoolUtils";
-import {updateHasDraft} from "@/redux/features/userSlice";
+import {updateHasDraft, updateHasSchool} from "@/redux/features/userSlice";
 import {useGetDraftOfSchoolOwnerQuery, useGetSchoolOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 
 const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
@@ -30,15 +32,33 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     }
 ) => {
     const router = useRouter();
-    const params = useParams();
     const user = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
-    const hasDraft = user.hasDraft;
-    const draftQuery = useGetDraftOfSchoolOwnerQuery();
-    const schoolQuery = useGetSchoolOfSchoolOwnerQuery();
-    const schoolQueryResult = hasDraft ? draftQuery : schoolQuery;
-    const {data, isLoading, refetch} = schoolQueryResult;
+
+    const {
+        data: draftData,
+        refetch: draftRefetch,
+    } = useGetDraftOfSchoolOwnerQuery();
+
+    const {
+        data: schoolData,
+        refetch: schoolRefetch,
+    } = useGetSchoolOfSchoolOwnerQuery();
+
+    const draft = draftData?.data;
+    const school = schoolData?.data;
+
+    const isUsingDraft = !!draft;
+    const currentSchool = isUsingDraft ? draft : school;
+
+    const refetch = async () => {
+        await Promise.all([draftRefetch(), schoolRefetch()]);
+    };
+
+    // Use the appropriate data based on whether we're using draft or school
+    const data = isUsingDraft ? draftData : schoolData;
     const schoolStatus = data?.data?.status;
+
     const [updateSchoolStatusBySchoolOwner, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusBySchoolOwnerMutation();
     const [addSchool, {isLoading: isCreating}] = useAddSchoolMutation();
     const [updateSchoolBySO, {isLoading: isUpdatingBySO}] = useUpdateSchoolBySchoolOwnerMutation();
@@ -48,6 +68,9 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
     const [api, notificationContextHolder] = notification.useNotification();
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Config notifications
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string | React.ReactNode, duration: number, onClose: () => void) => {
@@ -73,6 +96,12 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
      * Handles school creation
      */
     async function addSchoolHandle(addStatus: number) {
+        // Set the correct loading state based on which button was clicked
+        if (addStatus === 0) {
+            setIsSaving(true);
+        } else {
+            setIsSubmitting(true);
+        }
         const schoolValue = await prepareSchoolAddData(form, emailInputRef, phoneInputRef, messageApi); // Sử dụng hàm utility
         if (!schoolValue) return;
         const finalValues: SchoolCreateDTO = {
@@ -83,6 +112,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         try {
             await addSchool(finalValues).unwrap();
             console.log(finalValues);
+            dispatch(updateHasSchool(true));
             refetch();
             form.resetFields();
             openNotificationWithIcon(
@@ -104,6 +134,12 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 () => {
                 },
             );
+        } finally {
+            if (addStatus === 0) {
+                setIsSaving(false);
+            } else {
+                setIsSubmitting(false);
+            }
         }
     }
 
@@ -114,7 +150,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         console.log(schoolData)
         try {
             await saveSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            if (!hasDraft) {
+            if (!isUsingDraft) {
                 dispatch(updateHasDraft(true));
             }
             openNotificationWithIcon(
@@ -122,10 +158,9 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School saved successfully!',
                 'The school has been saved successfully!',
                 2,
-                () => {
-                }
+                () => refetch()
             );
-            refetch();
+
         } catch (error) {
             console.log(error)
             openNotificationWithIcon(
@@ -153,7 +188,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
         if (!schoolData) return;
         try {
             await updateSchoolBySO({id: undefined, ...schoolData}).unwrap();
-            if (!hasDraft) {
+            if (!isUsingDraft) {
                 dispatch(updateHasDraft(true));
             }
             openNotificationWithIcon(
@@ -161,10 +196,8 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 'School submitted successfully!',
                 'The school has been submitted successfully!',
                 2,
-                () => {
-                }
+                () => refetch()
             );
-            refetch();
         } catch (error) {
             console.log(error)
             openNotificationWithIcon(
@@ -206,8 +239,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         "School published successfully!",
                         "The school has been published successfully!",
                         2,
-                        () => {
-                        }
+                        () => refetch()
                     );
                     break;
                 case "unpublish":
@@ -217,8 +249,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         "School unpublished successfully!",
                         "The school has been unpublished successfully!",
                         2,
-                        () => {
-                        }
+                        () => refetch()
                     );
                     break;
                 case "delete":
@@ -228,12 +259,10 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                         "School deleted successfully!",
                         "The school has been deleted successfully!",
                         2,
-                        () => {
-                        }
+                        () => refetch()
                     );
                     break;
             }
-            refetch();
             setModalVisible(false);
             setActiveButton(null);
         } catch (error) {
@@ -287,12 +316,12 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
             <div className="flex lg:justify-center space-x-4 justify-end">
                 {hasCancelButton &&
                     <Button htmlType="button" color="danger" onClick={handleCancel}>
-                        Cancel
+                        Back
                     </Button>
                 }
                 {hasCreateSaveButton &&
                     <Button htmlType="button" onClick={() => addSchoolHandle(0)} variant="outlined" color="primary"
-                            loading={isCreating}>
+                            loading={isSaving}>
                         Save
                     </Button>
                 }
@@ -309,7 +338,7 @@ const SchoolFormButtonForSchoolOwner: React.FC<ButtonGroupProps> = (
                 {hasCreateSubmitButton &&
                     <Button htmlType="button"
                             type="primary"
-                            onClick={() => addSchoolHandle(1)} loading={isCreating}>
+                            onClick={() => addSchoolHandle(1)} loading={isSubmitting}>
                         Submit
                     </Button>
                 }
