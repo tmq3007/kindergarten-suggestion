@@ -25,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -38,7 +37,6 @@ import java.util.List;
 public class SchoolController {
 
     private final SchoolService schoolService;
-    private final GGDriveImageService imageService;
 
     @Operation(summary = "Get school info", description = "Get school information by school id")
     @GetMapping("/{schoolId}")

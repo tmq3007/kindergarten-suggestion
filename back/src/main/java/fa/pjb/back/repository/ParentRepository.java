@@ -1,7 +1,6 @@
 package fa.pjb.back.repository;
 
 import fa.pjb.back.model.entity.Parent;
-import fa.pjb.back.model.enums.ParentInSchoolEnum;
 import fa.pjb.back.model.mapper.ParentProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -149,9 +148,5 @@ public interface ParentRepository extends JpaRepository<Parent, Integer> {
             @Param("keyword") String keyword,
             Pageable pageable
     );
-
-    Parent getParentById(Integer id);
-
-    Optional<Parent> findByUserId(Integer userId);
 
 }

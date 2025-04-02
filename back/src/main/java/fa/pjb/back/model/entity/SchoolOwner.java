@@ -36,10 +36,6 @@ public class SchoolOwner {
     @JoinColumn(name = "school_id")
     private School school;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "draft_id")
-    private School draft;
-
     @Column(name = "assign_time")
     private LocalDate assignTime;
 

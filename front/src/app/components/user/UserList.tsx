@@ -1,13 +1,9 @@
 import {ApiResponse} from "@/redux/services/config/baseQuery";
-import {Table, Tag, Space, Pagination, Popconfirm} from "antd";
-import {EditOutlined, DeleteOutlined} from "@ant-design/icons";
-import Link from "next/link";
+import {Table, Tag, Pagination} from "antd";
 import {useState} from "react";
-import {useRouter} from "next/navigation";
 import ErrorComponent from "../common/ErrorComponent";
 import {Pageable, UserVO, useToggleUserStatusMutation} from "@/redux/services/userApi";
 import message from "antd/lib/message";
-import {useToggleParentStatusMutation} from "@/redux/services/parentApi";
 import UserActionButtons from "@/app/components/user/UserActionButtons";
 
 interface UserListProps {

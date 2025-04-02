@@ -241,6 +241,7 @@ function ParentList({
                 />
             </div>
             <ParentDetailsModal
+                updateSkipConfirmation={updateSkipConfirmation}
                 message={messageApi}
                 isOpen={isModalOpen}
                 parentInfor={selectedParent}
@@ -248,6 +249,7 @@ function ParentList({
                 onClose={handleModalClose}
                 onDeleteSuccess={handleDeleteSuccess}
                 isEnrollPage={isEnrollPage}
+                skipConfirmations={skipConfirmations}
             />
         </div>
     );

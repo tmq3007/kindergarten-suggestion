@@ -14,6 +14,13 @@ interface ParentDetailsModalProps {
     isEnrollPage?: boolean;
     isAdminPage?: boolean;
     message: MessageInstance;
+    skipConfirmations: {
+        approve: boolean;
+        reject: boolean;
+        unEnroll: boolean;
+    };
+    updateSkipConfirmation: (action: "approve" | "reject" | "unEnroll", value: boolean) => void;
+
 }
 
 export const ParentDetailsModal = ({
@@ -23,7 +30,9 @@ export const ParentDetailsModal = ({
                                        onDeleteSuccess,
                                        isEnrollPage = false,
                                        isAdminPage = false,
-                                       message
+                                       message,
+                                       skipConfirmations,
+                                       updateSkipConfirmation
                                    }: ParentDetailsModalProps) => {
 
     const getFullAddress = (record: ParentVO) => {
@@ -105,6 +114,8 @@ export const ParentDetailsModal = ({
                             <Divider className="mb-4" />
                             <div className="flex justify-end">
                                 <ActionButtons
+                                    updateSkipConfirmation={updateSkipConfirmation}
+                                    skipConfirmations={skipConfirmations}
                                     message={message}
                                     key={parentInfor.pis?.id}
                                     id={parentInfor.pis?.id}

@@ -20,7 +20,7 @@ export default function Header() {
     const path = usePathname();
     const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
-    const { data: countries, isLoading: isLoadingCountry, error } = useGetCountriesQuery();
+    const {data: countries, isLoading: isLoadingCountry, error} = useGetCountriesQuery();
 
     if (path === '/public/login') {
         return null;
@@ -29,12 +29,12 @@ export default function Header() {
     const role = useSelector((state: RootState) => state.user?.role);
     return (
         <motion.nav
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            initial={{y: -100, opacity: 0}}
+            animate={{y: 0, opacity: 1}}
             transition={{
                 duration: 1,
                 ease: "easeInOut",
-                opacity: { duration: 2, ease: "easeInOut" },
+                opacity: {duration: 2, ease: "easeInOut"},
             }}
             className="fixed w-full top-0 bg-custom text-white shadow-md z-50">
             <div className="flex items-center justify-between md:px-8 py-3">
@@ -97,14 +97,14 @@ export default function Header() {
                 </div>
 
 
-                 {/*Login & Signup*/}
+                {/*Login & Signup*/}
                 {
                     username ?
                         <Space className={'text-sm md:text-lg'}>
-                            {role === "ROLE_SCHOOL_OWNER" && <NotificationDropdown />}
+                            {role === "ROLE_SCHOOL_OWNER" && <NotificationDropdown/>}
                             <UserDropdown username={username}/>
                         </Space>
-                         :
+                        :
                         <Space className={'text-sm md:text-lg'}>
                             <Link href=""
                                   onClick={() => setIsLoginModalOpen(true)}
@@ -155,10 +155,10 @@ export default function Header() {
                 destroyOnClose={true}
                 getContainer={false}
             >
-                <RegisterForm onSuccess={()=> {
-                    setIsLoginModalOpen(true); 
-                    setIsSignupModalOpen(false)}} 
-                    countries={countries} isLoadingCountry={isLoadingCountry} onCancel={() => setIsSignupModalOpen(false)}/>
+                <RegisterForm onSuccess={() => {
+                    setIsLoginModalOpen(true);
+                    setIsSignupModalOpen(false)
+                }} onCancel={() => setIsSignupModalOpen(false)}/>
             </Modal>
         </motion.nav>
     );
