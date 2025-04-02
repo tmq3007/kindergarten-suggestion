@@ -5,6 +5,7 @@ import fa.pjb.back.model.dto.ChangePasswordDTO;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.vo.MediaVO;
 import fa.pjb.back.model.vo.ParentInSchoolVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.vo.RegisterVO;
@@ -66,6 +67,17 @@ public class ParentController {
         return ApiResponse.<ParentVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Parent updated successfully")
+                .data(updatedParent)
+                .build();
+    }
+
+    @Operation(summary = "Change Avatar", description = "Change Avatar Of Parent By Id")
+    @PutMapping("/change-avatar/{userId}")
+    public ApiResponse<MediaVO> changeAvatar(@PathVariable Integer userId, @RequestParam MultipartFile image) {
+        MediaVO updatedParent = parentService.changeAvatar(userId, image);
+        return ApiResponse.<MediaVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Avatar changed successfully")
                 .data(updatedParent)
                 .build();
     }
