@@ -303,7 +303,14 @@ const Profile = () => {
                                <Form.Item
                                    name="newPassword"
                                    label={<span className="text-black">New Password</span>}
-                                   rules={[{ required: true, message: 'Please input your password!' }]}
+                                   rules={[
+                                       { required: true, message: 'Please input your password!' },
+                                       { min: 7, message: 'Password must be at least 7 characters!' },
+                                       {
+                                           pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
+                                           message: 'Password must contain at least one letter, and one number!'
+                                       }
+                                   ]}
                                    hasFeedback
                                >
                                    <Input.Password className="w-full" />
@@ -311,8 +318,22 @@ const Profile = () => {
                                <Form.Item
                                    name="confirmPassword"
                                    label={<span className="text-black">Confirm New Password</span>}
-                                   rules={[{ required: true, message: 'Please confirm your new password' }]}
+                                   dependencies={['newPassword']}
                                    hasFeedback
+                                   rules={[
+                                       {
+                                           required: true,
+                                           message: 'Please confirm your password!',
+                                       },
+                                       ({ getFieldValue }) => ({
+                                           validator(_, value) {
+                                               if (!value || getFieldValue('newPassword') === value) {
+                                                   return Promise.resolve();
+                                               }
+                                               return Promise.reject(new Error('The new password that you entered do not match!'));
+                                           },
+                                       }),
+                                   ]}
                                >
                                    <Input.Password className="w-full" />
                                </Form.Item>
