@@ -1,5 +1,5 @@
-// New component: AdminActionButtons.tsx
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+
+import { EditOutlined, SwitcherOutlined} from "@ant-design/icons";
 import { Popconfirm, Space } from "antd";
 import Link from "antd/lib/typography/Link";
 import {MessageInstance} from "antd/lib/message/interface";
@@ -36,7 +36,7 @@ function UserActionButtons({ id, onStatusToggle ,triggerStatus,message, hasEditB
                 okText="Yes"
                 cancelText="No"
             >
-                <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
+                <SwitcherOutlined style={{ fontSize: "18px", color: "red" }} />
             </Popconfirm>
         </Space>
     );

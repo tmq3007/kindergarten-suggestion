@@ -26,7 +26,6 @@ import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.UserService;
 
 import java.io.IOException;
@@ -57,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
-    private final GGDriveImageService imageService;
+    private final GCPFileStorageServiceImpl imageService;
     private static final Tika tika = new Tika();
     private final MediaRepository mediaRepository;
     private final UserMapper userMapper;

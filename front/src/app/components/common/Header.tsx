@@ -20,7 +20,6 @@ export default function Header() {
     const path = usePathname();
     const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
-    const {data: countries, isLoading: isLoadingCountry, error} = useGetCountriesQuery();
 
     if (path === '/public/login') {
         return null;

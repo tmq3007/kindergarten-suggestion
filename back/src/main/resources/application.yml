@@ -20,6 +20,10 @@ spring:
       max-lifetime: 300000
       connection-test-query: SELECT 1
       leak-detection-threshold: 10000
+  cloud:
+    gcp:
+      credentials:
+        location: file:${GOOGLE_APPLICATION_CREDENTIALS}
   mail:
     host: smtp.gmail.com
     port: 587
@@ -54,6 +58,7 @@ springdoc:
     path: /v3/api-doc
   swagger-ui:
     path: /swagger-ui
+
 application-description: '@project.description@'
 application-version: '@project.version@'
 access-token-exp: 600000
@@ -63,6 +68,7 @@ forgot-password-token-exp: 300000
 reset-password-link-header: 'http://localhost:3000/forgot-password/reset-password'
 school-detailed-link: 'http://localhost:3000/public/school-owner'
 school-detail-link-admin: 'http://localhost:3000/admin/management/school/school-detail/'
+
 
 
 

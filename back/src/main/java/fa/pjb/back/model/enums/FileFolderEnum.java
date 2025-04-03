@@ -5,9 +5,9 @@ import lombok.Getter;
 @Getter
 public enum FileFolderEnum {
 
-    SCHOOL_IMAGES("1y4dPmBKhV3iynHrT9wamsur2i15DWRuB"),
-    USER_IMAGES("1N90M8W0m253NhFiJDFXitfrAFLWQFWc0"),
-    SO_IMAGES("1qn-IFHWUim8d121r1aRLSzZLhltRibxA");
+    SCHOOL_IMAGES("School_Images"),
+    USER_IMAGES("User_Images"),
+    SO_IMAGES("SO_Images");
 
     private final String value;
 

@@ -4,6 +4,7 @@ import background from "@public/bg4.png";
 import SchoolSearchForm from "@/app/components/school/SchoolSearchForm";
 import Testimonial from "@/app/components/common/Testimonial";
 import Information from "@/app/components/common/Information";
+import {Image} from "antd";
 
 export default function Page() {
     return (

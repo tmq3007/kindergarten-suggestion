@@ -35,6 +35,7 @@ import {AnimatePresence} from "framer-motion";
 import {motion} from "framer-motion";
 import SchoolOwnersSelect from "@/app/components/school/SchoolOwnerSelect";
 import SchoolNameInput from "@/app/components/school/SchoolNameInput";
+import Image from "next/image";
 
 
 interface SchoolFieldType {
@@ -153,18 +154,20 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                 {/* Large main image */}
                                 <div
                                     className="px-1 md:px-10 mb-6 flex justify-center items-center w-full h-[150px] xs:h-[200px] sm:h-[250px] md:h-[350px] lg:h-[450px]">
-                                    <AnimatePresence mode='wait'>
-                                        <motion.img
-                                            key={mainImage}
-                                            src={mainImage}
-                                            alt="Main Display"
-                                            className="object-cover w-full h-full rounded-lg"
-                                            initial={{opacity: 0}}
-                                            animate={{opacity: 1}}
-                                            exit={{opacity: 0}}
-                                            transition={{duration: 0.4, ease: "linear"}}
-                                        />
-                                    </AnimatePresence>
+                                    {/*<AnimatePresence mode='wait'>*/}
+                                    {/*    <motion.img*/}
+                                    {/*        key={mainImage}*/}
+                                    {/*        src={mainImage}*/}
+                                    {/*        alt="Main Display"*/}
+                                    {/*        className="object-cover w-full h-full rounded-lg"*/}
+                                    {/*        initial={{opacity: 0}}*/}
+                                    {/*        animate={{opacity: 1}}*/}
+                                    {/*        exit={{opacity: 0}}*/}
+                                    {/*        transition={{duration: 0.4, ease: "linear"}}*/}
+                                    {/*    />*/}
+                                    {/*</AnimatePresence>*/}
+                                    <Image src={mainImage} alt={"hello"} fill priority/>
+
                                 </div>
 
                                 {/* Small thumbnail carousel */}
@@ -231,6 +234,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     alt={`Thumbnail ${index + 1}`}
                                                     className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"
                                                 />
+                                                {/*<Image src={src} alt={"hello"} fill priority/>*/}
                                             </div>
                                         ));
                                     })()}

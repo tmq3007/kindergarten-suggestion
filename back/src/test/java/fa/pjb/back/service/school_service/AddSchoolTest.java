@@ -16,7 +16,7 @@ import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.impl.SchoolServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,7 +67,7 @@ class AddSchoolTest {
     private EmailService emailService;
 
     @Mock
-    private GGDriveImageService imageService;
+    private GCPFileStorageService imageService;
 
     @Mock
     private User user;
