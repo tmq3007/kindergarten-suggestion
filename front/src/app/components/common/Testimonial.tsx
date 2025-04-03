@@ -7,9 +7,13 @@ import {AntDesignOutlined} from "@ant-design/icons";
 import {Rate} from "antd";
 import {useGetTop4ReviewsQuery} from "@/redux/services/reviewApi";
 import _ from 'lodash';
+import {useEffect} from "react";
 
 export default function Testimonial() {
-    const {data} = useGetTop4ReviewsQuery();
+    const {data, refetch} = useGetTop4ReviewsQuery();
+    useEffect(() => {
+        refetch();
+    }, []);
     const reviews = data?.data ?? [];
     return (
         <>

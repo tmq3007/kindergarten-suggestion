@@ -52,7 +52,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/swagger-ui",
             "/api/school/search-by-criteria",
             "/api/school/review/top4",
-            "/api/user/check-phone-exist"
+            "/api/user/check-phone-exist",
+            "/api/user/check-phone-exist-except",
+            "/api/user/check-email-exist",
+            "/api/user/check-email-exist-except"
     );
 
     @Override

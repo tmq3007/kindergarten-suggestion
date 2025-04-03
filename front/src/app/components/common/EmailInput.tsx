@@ -45,18 +45,28 @@ const EmailInput = forwardRef(({
             setEmailHelp('Please enter a valid email!');
             return false;
         }
+        console.log("1")
 
         setEmailStatus('validating');
         setEmailHelp('Checking email...');
 
         try {
-            let response;
+
+
+            console.log("2")
+            let response
             if (id) {
-                response = await triggerCheckEmail({email, id}).unwrap();
+                console.log("3")
+                console.log('Checking email with ID:', {email, id});
+
+                response = await triggerCheckEmail({email: email, id}).unwrap();
             } else {
                 // In case of ADD school, check all emails
                 response = await triggerCheckEmail(email).unwrap();
             }
+
+
+            console.log(response)
 
             if (response && response.data === true) {
                 setEmailStatus('error');
@@ -78,6 +88,8 @@ const EmailInput = forwardRef(({
 
     useImperativeHandle(ref, () => ({
         validateEmail,
+        setEmailStatus, // Thêm dòng này
+        setEmailHelp,   // Thêm dòng này
     }));
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {

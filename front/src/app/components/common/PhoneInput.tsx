@@ -97,12 +97,15 @@ const PhoneInput = forwardRef((
             setPhoneHelp('Checking phone availability...');
             try {
                 let response
+
                 if (id) {
-                    response = await triggerCheckPhone(formattedPhone,id).unwrap();
+                    console.log("1")
+                    response = await triggerCheckPhone({phone:formattedPhone, id}).unwrap();
                 } else {
+                    console.log("2")
                     response = await triggerCheckPhone(formattedPhone).unwrap();
                 }
-                console.log(response.data);
+                console.log("3:",response.data);
 
                 if (response.data === true) {
                     setPhoneStatus('error');
@@ -131,10 +134,14 @@ const PhoneInput = forwardRef((
         };
 
         // Expose methods to parent via ref
-        useImperativeHandle(ref, () => ({
-            validatePhone,
-            getFormattedPhoneNumber,
-        }));
+    useImperativeHandle(ref, () => ({
+        validatePhone,
+        getFormattedPhoneNumber,
+        setPhoneStatus,
+        setPhoneHelp,
+        setSelectedCountry: (country: Country) => setSelectedCountry(country),
+
+    }));
 
         const handlePhoneBlur = async () => {
             console.log("in handlePhoneBlur");
@@ -145,6 +152,8 @@ const PhoneInput = forwardRef((
                 await validatePhone();
             }
         };
+
+
 
         return (
             <div className="phone-input-container">
