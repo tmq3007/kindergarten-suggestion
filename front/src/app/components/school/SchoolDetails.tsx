@@ -8,7 +8,7 @@ type Props = SchoolDetailsProps;
 
 const SchoolDetails: FunctionComponent<Props> = (props) => {
 
-  return (
+  return (<></>
 
   );
 };
