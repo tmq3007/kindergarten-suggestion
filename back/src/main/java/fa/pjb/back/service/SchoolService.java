@@ -59,7 +59,12 @@ public interface SchoolService {
 
     Page<SchoolDetailVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO);
 
-    Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String province, String district,
-        String street, String email, String phone, Pageable pageable);
+    Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String district, String email, String phone, Pageable pageable);
+
+    Page<SchoolListVO> getAllDrafts(String name, String district, String email, String phone, Pageable pageable);
+
+    Long countActiveSchoolsWithoutRefId();
+
+    Long countAllDrafts();
 
 }

@@ -18,6 +18,7 @@ import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.RequestCounsellingService;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -99,16 +100,37 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         return requestCounsellingMapper.toRequestCounsellingVO(savedEntity);
     }
 
-    public Page<RequestCounsellingVO> getAllRequests(
-            int page, int size, Byte status, String email, String name, String phone,
-            String schoolName, LocalDateTime dueDate) {
-
+    @Override
+    public Page<RequestCounsellingVO> getAllRequests(int page, int size, String searchBy, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size);
+
         Specification<RequestCounselling> specification = (root, query, criteriaBuilder) -> {
-            if (name != null && !name.isEmpty()) {
-                return criteriaBuilder.like(root.get("name"), "%" + name + "%");
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.trim().isEmpty() && searchBy != null) {
+                String searchValue = "%" + keyword.toLowerCase().trim() + "%";
+                switch (searchBy) {
+                    case "name":
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchValue));
+                        break;
+                    case "email":
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), searchValue));
+                        break;
+                    case "phone":
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("phone")), searchValue));
+                        break;
+                    case "schoolName":
+                        Join<RequestCounselling, School> schoolJoin = root.join("school");
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(schoolJoin.get("name")), searchValue));
+                        break;
+                    default:
+                        // Fallback to name if searchBy is unrecognized
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchValue));
+                        break;
+                }
             }
-            return null;
+
+            return predicates.isEmpty() ? null : criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
         Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(specification, pageable);

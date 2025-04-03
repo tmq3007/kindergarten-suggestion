@@ -554,6 +554,13 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
+    public Page<SchoolListVO> getAllDrafts(String name, String district, String email, String phone, Pageable pageable) {
+        Page<School> draftPage = schoolRepository.findAllDrafts(name, district, email, phone,
+            pageable);
+        return draftPage.map(schoolMapper::toSchoolListVO);
+    }
+
+    @Override
     public Page<SchoolDetailVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO) {
         Specification<School> spec = Specification
                 .where(SchoolSpecification.hasName(schoolSearchDTO.name()))
@@ -577,12 +584,18 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String province,
-        String district,
-        String street, String email, String phone, Pageable pageable) {
+    public Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String district, String email, String phone, Pageable pageable) {
         Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
+
+//    @Override
+//    public Page<SchoolListVO> getChangeSchoolRequest(String name, String province,
+//        String district,
+//        String street, String email, String phone, Pageable pageable) {
+//        Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
+//        return schoolPage.map(schoolMapper::toSchoolListVO);
+//    }
 
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId) {
@@ -781,6 +794,16 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
+    }
+
+    @Override
+    public Long countActiveSchoolsWithoutRefId() {
+        return schoolRepository.countActiveSchoolsWithoutRefId();
+    }
+
+    @Override
+    public Long countAllDrafts() {
+        return schoolRepository.countAllDrafts();
     }
 
 }

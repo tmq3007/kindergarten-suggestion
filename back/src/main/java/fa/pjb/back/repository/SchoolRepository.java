@@ -59,4 +59,25 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
         @Param("phone") String phone,
         Pageable pageable);
 
+    @Query("SELECT s FROM School s " +
+        "WHERE s.originalSchool IS NOT NULL " +
+        "AND s.status = 1 " +
+        "AND (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+        "AND (:district IS NULL OR s.district = :district) " +
+        "AND (:email IS NULL OR LOWER(s.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
+        "AND (:phone IS NULL OR s.phone = :phone)")
+    Page<School> findAllDrafts(
+        @Param("name") String name,
+        @Param("district") String district,
+        @Param("email") String email,
+        @Param("phone") String phone,
+        Pageable pageable);
+
+    @Query("SELECT COUNT(s) FROM School s WHERE s.status = 1 AND s.originalSchool IS NULL")
+    Long countActiveSchoolsWithoutRefId();
+
+    @Query("SELECT COUNT(s) FROM School s WHERE s.originalSchool IS NOT NULL AND s.status = 1")
+    Long countAllDrafts();
+
+
 }

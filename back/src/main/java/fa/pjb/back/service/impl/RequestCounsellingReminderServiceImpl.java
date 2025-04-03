@@ -2,6 +2,7 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.model.entity.RequestCounselling;
+import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
@@ -13,6 +14,7 @@ import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.RequestCounsellingReminderService;
+import jakarta.persistence.criteria.Join;
 import java.util.Arrays;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -174,17 +176,38 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     }
 
     @Override
-    public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses, String name) {
+    public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses, String searchBy, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size);
         List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
+
         Specification<RequestCounselling> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(root.get("status").in(statusList));
-            if (name != null && !name.trim().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase().trim() + "%"));
+
+            if (keyword != null && !keyword.trim().isEmpty() && searchBy != null) {
+                String searchValue = "%" + keyword.toLowerCase().trim() + "%";
+                switch (searchBy) {
+                    case "name":
+                        predicates.add(cb.like(cb.lower(root.get("name")), searchValue));
+                        break;
+                    case "email":
+                        predicates.add(cb.like(cb.lower(root.get("email")), searchValue));
+                        break;
+                    case "phone":
+                        predicates.add(cb.like(cb.lower(root.get("phone")), searchValue));
+                        break;
+                    case "schoolName":
+                        Join<RequestCounselling, School> schoolJoin = root.join("school");
+                        predicates.add(cb.like(cb.lower(schoolJoin.get("name")), searchValue)); // Assuming 'name' is the field in School
+                        break;
+                    default:
+                        predicates.add(cb.like(cb.lower(root.get("name")), searchValue));
+                        break;
+                }
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+
         Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(spec, pageable);
         return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
     }

@@ -419,7 +419,7 @@ export const schoolApi = createApi({
                 phone?: string;
             }
         >({
-            query: ({ page = 1, size = 10, name, province, district, street, email, phone }) => ({
+            query: ({ page = 1, size, name, province, district, street, email, phone }) => ({
                 url: `/school/active-no-ref`,
                 method: "GET",
                 params: {
@@ -432,6 +432,39 @@ export const schoolApi = createApi({
                     ...(email && { email }),
                     ...(phone && { phone }),
                 },
+            }),
+            providesTags: ["SchoolList"],
+        }),
+        getAllDrafts: build.query<
+            ApiResponse<Page<SchoolVO>>,
+            { page?: number; size?: number; name?: string; district?: string; email?: string; phone?: string }
+        >({
+            query: ({ page = 1, size, name, district, email, phone }) => ({
+                url: `/school/all-drafts`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(name && { name }),
+                    ...(district && { district }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
+                },
+            }),
+            providesTags: ["SchoolList"],
+        }),
+        countActiveSchoolsWithoutRefId: build.query<ApiResponse<number>, void>({
+            query: () => ({
+                url: `/school/count/active-no-ref`,
+                method: "GET",
+            }),
+            providesTags: ["SchoolList"],
+        }),
+
+        countAllDrafts: build.query<ApiResponse<number>, void>({
+            query: () => ({
+                url: `/school/count/drafts`,
+                method: "GET",
             }),
             providesTags: ["SchoolList"],
         }),
@@ -458,4 +491,7 @@ export const {
     useIsDraftQuery,
     useSearchByCriteriaQuery,
     useGetActiveSchoolsWithoutRefIdQuery,
+    useGetAllDraftsQuery,
+    useCountActiveSchoolsWithoutRefIdQuery,
+    useCountAllDraftsQuery,
 } = schoolApi;

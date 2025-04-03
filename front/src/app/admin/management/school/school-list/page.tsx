@@ -1,55 +1,131 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
-import { Card, Modal, notification } from "antd";
+import React, {useState, useCallback, useMemo} from "react";
+import { Card, Modal, notification, Segmented, Tabs, Badge } from "antd";
 import {
-  useGetActiveSchoolsWithoutRefIdQuery,
+  useCountActiveSchoolsWithoutRefIdQuery, useCountAllDraftsQuery,
+  useGetActiveSchoolsWithoutRefIdQuery, useGetAllDraftsQuery,
   useGetSchoolListQuery,
-  useUpdateSchoolStatusByAdminMutation
+  useUpdateSchoolStatusByAdminMutation,
 } from "@/redux/services/schoolApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SearchByComponent from "@/app/components/common/SearchByComponent";
 import SchoolListForm from "@/app/components/school/SchoolListForm";
 import MyEditor from "@/app/components/common/MyEditor";
+import { SegmentedValue } from "antd/es/segmented";
+import type { TabsProps } from 'antd';
+import useIsMobile from "@/lib/hook/useIsMobile";
+import { ClockCircleOutlined, FileTextOutlined, HomeOutlined } from "@ant-design/icons";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
 const searchOptions = [
   { value: "name", label: "School Name" },
   { value: "email", label: "Email" },
   { value: "phone", label: "Phone" },
-  { value: "district", label: "District"}
+  { value: "district", label: "District" },
 ];
 
+const TAB_KEYS = {
+  ALL_SCHOOLS: "1",
+  NEW_SCHOOL_REQUESTS: "2",
+  CHANGE_REQUESTS: "3",
+} as const;
+
 export default function SchoolListPage() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(15);
-  const [searchCriteria, setSearchCriteria] = useState({
-    searchBy: searchOptions[0].value,
-    keyword: undefined as string | undefined,
-  });
+  const [activeTabKey, setActiveTabKey] = useState<string>(TAB_KEYS.ALL_SCHOOLS);
   const [modalVisible, setModalVisible] = useState(false);
   const [responseContent, setResponseContent] = useState<string>("");
   const [schoolId, setSchoolId] = useState<number>(0);
+  const isMobile = useIsMobile();
 
   const [notificationApi, contextHolder] = notification.useNotification();
   const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
 
-  const { data, isLoading, isFetching, error } = useGetActiveSchoolsWithoutRefIdQuery({
-    page: currentPage,
-    size: currentPageSize,
-    [searchCriteria.searchBy]: searchCriteria.keyword || undefined,
-  });
+  // Lấy số lượng từ API
+  const { data: activeCountData } = useCountActiveSchoolsWithoutRefIdQuery();
+  const { data: draftCountData } = useCountAllDraftsQuery();
+  const activeCount = activeCountData?.data || 0;
+  const draftCount = draftCountData?.data || 0;
 
-  const fetchPage = (page: number, size: number) => {
-    setCurrentPage(page);
-    setCurrentPageSize(size);
-  };
+  const handleTabChange = useCallback((value: SegmentedValue) => {
+    setActiveTabKey(value.toString());
+  }, []);
 
-  const handleSearch = (criteria: { searchBy: string; keyword: string | undefined }) => {
-    setSearchCriteria(criteria);
-    setCurrentPage(1);
-  };
+  const segmentOptions = useMemo(() => [
+    {
+      label: isMobile ? (
+          <HomeOutlined className="text-xl" />
+      ) : (
+          <span className="font-bold text-lg flex items-center justify-center gap-2">
+                    <HomeOutlined /> All Schools
+                </span>
+      ),
+      value: TAB_KEYS.ALL_SCHOOLS,
+    },
+    {
+      label: isMobile ? (
+          <Badge count={activeCount} overflowCount={99} offset={[10, 0]}>
+            <FileTextOutlined className="text-xl" />
+          </Badge>
+      ) : (
+          <span className="font-bold text-lg flex items-center justify-center gap-2">
+                    <FileTextOutlined /> New School Requests
+                    <Badge count={activeCount} overflowCount={99} offset={[10, 0]} />
+                </span>
+      ),
+      value: TAB_KEYS.NEW_SCHOOL_REQUESTS,
+    },
+    {
+      label: isMobile ? (
+          <Badge count={draftCount} overflowCount={99} offset={[10, 0]}>
+            <ClockCircleOutlined className="text-xl" />
+          </Badge>
+      ) : (
+          <span className="font-bold text-lg flex items-center justify-center gap-2">
+                    <ClockCircleOutlined /> Change Requests
+                    <Badge count={draftCount} overflowCount={99} offset={[10, 0]} />
+                </span>
+      ),
+      value: TAB_KEYS.CHANGE_REQUESTS,
+    },
+  ], [isMobile, activeCount, draftCount]);
+
+  const tabItems: TabsProps['items'] = [
+    {
+      key: TAB_KEYS.ALL_SCHOOLS,
+      label: "All Schools",
+      children: (
+          <SchoolListWrapper
+              title="All Schools"
+              useQueryTrigger={useGetSchoolListQuery}
+              searchOptions={searchOptions}
+          />
+      ),
+    },
+    {
+      key: TAB_KEYS.NEW_SCHOOL_REQUESTS,
+      label: "New School Requests",
+      children: (
+          <SchoolListWrapper
+              title="New School Requests"
+              useQueryTrigger={useGetActiveSchoolsWithoutRefIdQuery}
+              searchOptions={searchOptions}
+          />
+      ),
+    },
+    {
+      key: TAB_KEYS.CHANGE_REQUESTS,
+      label: "Change Requests",
+      children: (
+          <SchoolListWrapper
+              title="Change Requests"
+              useQueryTrigger={useGetAllDraftsQuery}
+              searchOptions={searchOptions}
+          />
+      ),
+    },
+  ];
 
   const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
     notificationApi[type]({
@@ -93,36 +169,22 @@ export default function SchoolListPage() {
         />
         <Card
             title={
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                <SchoolManageTitle title={"School List"} />
-                <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
-                  <div className="w-full md:w-80">
-                    <SearchByComponent
-                        onSearch={handleSearch}
-                        options={searchOptions}
-                        initialSearchBy="name"
-                    />
-                  </div>
-                  <Link
-                      href="/admin/management/school/add-school"
-                      className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 text-center"
-                  >
-                    Add School
-                  </Link>
-                </div>
-              </div>
+              <Segmented
+                  className="p-1"
+                  options={segmentOptions}
+                  value={activeTabKey}
+                  onChange={handleTabChange}
+                  block
+              />
             }
         >
-          <div className="mt-4">
-            <SchoolListForm
-                fetchPage={fetchPage}
-                data={data}
-                error={error}
-                isLoading={isLoading}
-                isFetching={isFetching}
-                onDelete={handleOpenModalDelete}
-            />
-          </div>
+          <Tabs
+              activeKey={activeTabKey}
+              tabBarStyle={{ display: "none" }}
+              size="large"
+              destroyInactiveTabPane
+              items={tabItems}
+          />
         </Card>
 
         <Modal
@@ -143,3 +205,73 @@ export default function SchoolListPage() {
       </div>
   );
 }
+// Component wrapper mới để tái sử dụng logic hiển thị danh sách
+interface SchoolListWrapperProps {
+  useQueryTrigger: any;
+  searchOptions: { label: string; value: string }[];
+  title?: string;
+}
+
+const SchoolListWrapper: React.FC<SchoolListWrapperProps> = ({ useQueryTrigger, searchOptions, title = "" }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(15);
+  const [searchCriteria, setSearchCriteria] = useState({
+    searchBy: searchOptions[0].value,
+    keyword: undefined as string | undefined,
+  });
+
+  const { data, isLoading, isFetching, error } = useQueryTrigger({
+    page: currentPage,
+    size: currentPageSize,
+    [searchCriteria.searchBy]: searchCriteria.keyword || undefined,
+  });
+
+  const fetchPage = useCallback((page: number, size: number) => {
+    setCurrentPage(page);
+    setCurrentPageSize(size);
+  }, []);
+
+  const handleSearch = useCallback(
+      (criteria: { searchBy: string; keyword: string | undefined }) => {
+        setSearchCriteria(criteria);
+        setCurrentPage(1);
+      },
+      []
+  );
+
+  return (
+      <Card
+          title={
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+              <SchoolManageTitle title={title} />
+              <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
+                <div className="w-full md:w-80">
+                  <SearchByComponent
+                      onSearch={handleSearch}
+                      options={searchOptions}
+                      initialSearchBy="name"
+                  />
+                </div>
+                <Link
+                    href="/admin/management/school/add-school"
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 text-center"
+                >
+                  Add School
+                </Link>
+              </div>
+            </div>
+          }
+      >
+        <div className="mt-4">
+          <SchoolListForm
+              fetchPage={fetchPage}
+              data={data}
+              error={error}
+              isLoading={isLoading}
+              isFetching={isFetching}
+              onDelete={(id: number) => (document.getElementById("delete-modal") as any)?.setModalVisible(true, id)}
+          />
+        </div>
+      </Card>
+  );
+};
