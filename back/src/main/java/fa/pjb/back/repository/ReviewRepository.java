@@ -50,6 +50,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "WHERE (r.learningProgram + r.facilitiesAndUtilities + r.extracurricularActivities + " +
             "r.teacherAndStaff + r.hygieneAndNutrition) / 5.0 = 5 " +
             "AND r.feedback IS NOT NULL " +
+            "AND r.status = 0 " +
             "ORDER BY r.receiveDate DESC")
     List<Review> getTop4RecentFiveStarFeedbacks(Pageable pageable);
 

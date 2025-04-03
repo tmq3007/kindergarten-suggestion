@@ -628,7 +628,7 @@ const RatingsDashboard = () => {
                                                             )}
 
                                                             {(item.status === REVIEW_STATUS.REJECTED) && (
-                                                                <Tooltip placement="topRight" title={item.report} color="red" key="rejected-tooltip">
+                                                                <Tooltip placement="topRight" title={item.report} color="gray" key="rejected-tooltip">
                                                                     <span className="text-xs text-gray-500 cursor-default">
                                                                         This review will be hidden
                                                                     </span>
