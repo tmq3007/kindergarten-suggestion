@@ -7,7 +7,6 @@ import dayjs from 'dayjs';
 import {
     Country,
     useGetCountriesQuery,
-    useLazyCheckEmailQuery
 } from '@/redux/services/registerApi';
 import { ROLES } from '@/lib/constants';
 import { unauthorized } from 'next/navigation';
@@ -18,6 +17,7 @@ import UserFormSkeleton from '@/app/components/skeleton/UserFormSkeleton';
 import AddressInput from '@/app/components/common/AddressInput';
 import PhoneInput from "@/app/components/common/PhoneInput";
 import EmailInput from "@/app/components/common/EmailInput";
+import {useLazyCheckEmailExceptMeQuery, useLazyCheckPhoneExceptMeQuery} from "@/redux/services/userApi";
 
 
 const { Option } = Select;
@@ -37,7 +37,8 @@ const Profile = () => {
    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
    const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
    const [processedPhone, setProcessedPhone] = useState<string>('');
-    const [triggerCheckEmail] = useLazyCheckEmailQuery();
+    const [triggerCheckEmail] = useLazyCheckEmailExceptMeQuery();
+    const [triggerCheckPhone] = useLazyCheckPhoneExceptMeQuery();
 
    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
    const { data: parentData, isLoading, error: errorParent, refetch } = useGetParentByIdQuery(userIdNumber);
@@ -75,15 +76,16 @@ const Profile = () => {
                    ward: parentData.data.ward,
                    street: parentData.data.street,
                    media: parentData.data.media,
+                   countryCode: country.dialCode,
                });
            }
        }
    }, [parentData, countries, form]);
-   const handleCancel = () => {
+
+   const handleCancel = async () => {
        if (parentData?.data && countries) {
            const phoneNumber = parentData.data.phone || '';
            const country = countries?.find((c) => phoneNumber.startsWith(c.dialCode)) || countries.find((c) => c.code === 'VN');
-
 
            if (country) {
                const shouldKeepZero = countriesKeepZero.includes(country.dialCode);
@@ -95,6 +97,7 @@ const Profile = () => {
                setSelectedCountry(country);
 
 
+               form.resetFields();
                form.setFieldsValue({
                    fullname: parentData.data.fullname,
                    username: parentData.data.username,
@@ -106,7 +109,20 @@ const Profile = () => {
                    ward: parentData.data.ward,
                    street: parentData.data.street,
                    media: parentData.data.media,
+                   countryCode: country.dialCode,
                });
+
+               if (emailInputRef.current) {
+                   emailInputRef.current.setEmailStatus('success');
+                   emailInputRef.current.setEmailHelp(null);
+
+               }
+
+               if (phoneInputRef.current) {
+                   phoneInputRef.current.setPhoneStatus('success');
+                   phoneInputRef.current.setPhoneHelp(null);
+                   phoneInputRef.current.setSelectedCountry(country);
+                }
            }
        }
    }
@@ -119,44 +135,44 @@ const Profile = () => {
    };
 
 
-   const changeInformation = async (values: any) => {
-       try {
-           const { province, district, ward, street } = values;
-           const selectedCountryCode = selectedCountry?.dialCode || '+84';
-           const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
-           const formattedPhone = shouldKeepZero
-               ? `${selectedCountryCode}${values.phone}`
-               : `${selectedCountryCode}${values.phone.replace(/^0+/, '')}`;
+    const changeInformation = async (values: any) => {
+        try {
+            const isEmailValid = await emailInputRef.current?.validateEmail();
+            const isPhoneValid = await phoneInputRef.current?.validatePhone();
 
+            if (!isEmailValid || !isPhoneValid) {
+                throw new Error('Validation failed for email or phone');
+            }
 
-           const newParentData: ParentUpdateDTO = {
-               username: username || parentData?.data?.username || '',
-               fullname: values.fullname || parentData?.data?.fullname || '',
-               role: parentData?.data?.role || '',
-               status: parentData?.data?.status ?? false,
-               dob: values.dob ? values.dob.format('YYYY-MM-DD') : '',
-               province: province || null,
-               district: district || null,
-               ward: ward || null,
-               street: street || null,
-               phone: formattedPhone || parentData?.data?.phone || '',
-               email: values.email || parentData?.data?.email || '',
-               media: values.media || parentData?.data?.media,
-           };
+            const { province, district, ward, street } = values;
+            const fullPhoneNumber = phoneInputRef.current?.getFormattedPhoneNumber() || values.phone;
 
+            const newParentData: ParentUpdateDTO = {
+                username: username || parentData?.data?.username || '',
+                fullname: values.fullname || parentData?.data?.fullname || '',
+                role: parentData?.data?.role || '',
+                status: parentData?.data?.status ?? false,
+                dob: values.dob ? values.dob.format('YYYY-MM-DD') : '',
+                province: province || null,
+                district: district || null,
+                ward: ward || null,
+                street: street || null,
+                phone: fullPhoneNumber,
+                email: values.email || parentData?.data?.email || '',
+                media: values.media || parentData?.data?.media,
+            };
 
-           const imageFile = avatarFile || (values.media instanceof File ? values.media : undefined);
+            const imageFile = avatarFile || (values.media instanceof File ? values.media : undefined);
 
-
-           await editParent({ parentId: userId, data: newParentData, image: imageFile }).unwrap();
-           await refetch();
-           openNotificationWithIcon('success', 'Updated successfully!', 'Your information has been updated');
-       } catch (error) {
-           console.error('Error occurred:', error);
-           const errorMessage = (error as any)?.data?.message || 'Your information cannot be updated';
-           openNotificationWithIcon('error', 'Updated Fail!', errorMessage);
-       }
-   };
+            await editParent({ parentId: userId, data: newParentData, image: imageFile }).unwrap();
+            await refetch();
+            openNotificationWithIcon('success', 'Updated successfully!', 'Your information has been updated');
+        } catch (error) {
+            console.error('Error occurred:', error);
+            const errorMessage = (error as any)?.data?.message || 'Your information cannot be updated';
+            openNotificationWithIcon('error', 'Updated Fail!', errorMessage);
+        }
+    };
    const changePwd = async (values: any) => {
        if (values.newPassword !== values.confirmPassword) {
            openNotificationWithIcon('error', 'Failed!', 'New password and confirm password do not match.');
@@ -241,6 +257,7 @@ const Profile = () => {
                                            form={form}
                                            ref={emailInputRef}
                                            triggerCheckEmail={triggerCheckEmail}
+                                           id={userIdNumber}
                                        />
                                        <Form.Item
                                            name="dob"
@@ -262,7 +279,8 @@ const Profile = () => {
                                        <PhoneInput form={form}
                                                    onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                                                    ref={phoneInputRef}
-                                       // triggerCheckPhone={triggerCheckPhone}
+                                                    triggerCheckPhone={triggerCheckPhone}
+                                                   id={userIdNumber}
                                        />
                                    </div>
                                    <div className="space-y-6">
@@ -277,8 +295,8 @@ const Profile = () => {
                                        Save
                                    </Button>
                                    <Button
-                                       onClick={() => {
-                                          handleCancel()
+                                       onClick={async () => {
+                                           await handleCancel();
                                        }}
                                    >
                                        Cancel

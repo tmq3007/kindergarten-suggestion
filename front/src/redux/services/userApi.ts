@@ -150,6 +150,35 @@ export const userApi = createApi({
             }),
             keepUnusedDataFor: 0,
         }),
+        checkPhoneExceptMe: build.query<ApiResponse<boolean>, { phone: string; id: number }>({
+            query: ({phone, id}) => ({
+                url: "/user/check-phone-exist-except",
+                method: "GET",
+                params: { phone: phone , userId: id },
+            }),
+            keepUnusedDataFor: 0,
+        }),
+
+        checkEmail: build.query<ApiResponse<boolean>, string>({
+            query: (email) => ({
+                url: "/user/check-email-exist",
+                method: "GET",
+                params: { email: email },
+            }),
+            keepUnusedDataFor: 0,
+        }),
+
+        checkEmailExceptMe: build.query<ApiResponse<boolean>, { email: string; id: number }>({
+            query: ({email, id}) => {
+                console.log('Checking email existence except for user:', { email, id });
+                return {
+                    url: "/user/check-email-exist-except",
+                    method: "GET",
+                    params: { email: email, userId: id },
+                };
+            },
+            keepUnusedDataFor: 0,
+        }),
     }),
 });
 
@@ -159,5 +188,7 @@ export const {
     useUpdateUserMutation,
     useToggleUserStatusMutation,
     useCreateUserMutation,
-    useLazyCheckPhoneQuery
+    useLazyCheckPhoneQuery,
+    useLazyCheckPhoneExceptMeQuery,
+    useLazyCheckEmailExceptMeQuery,
 } = userApi;

@@ -78,12 +78,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
     }
 
     const handleAsAdmin = () => {
-        console.log(user)
-        if (user.hasSchool) {
-            router.push('/admin/management/school');
-        } else {
-            setIsAddSchoolModalVisible(true);
-        }
+        router.push('/admin/management/school/school-list');
     }
 
     const handleAddSchoolCancel = () => {
@@ -105,7 +100,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "2",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
             {
                 label: (
                     <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
@@ -114,7 +109,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "1",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
             {
                 label: (
                     <Link
@@ -126,7 +121,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "3",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
         ] : []),
 
         ...(role === ROLES.SCHOOL_OWNER ? [
@@ -141,7 +136,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "4",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
         ] : []),
 
         ...(role === ROLES.ADMIN ? [
@@ -156,7 +151,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "6",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
         ] : []),
 
         {
