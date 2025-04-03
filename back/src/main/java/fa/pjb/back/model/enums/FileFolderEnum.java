@@ -11,6 +11,6 @@ public enum FileFolderEnum {
 
     private final String value;
 
-    FileFolderEnum(String value){this.value=value;};
+    FileFolderEnum(String value){this.value=value;}
 
 }
