@@ -1,13 +1,12 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useState} from "react";
 import {Form, Input} from "antd";
-import {useCheckEditSchoolEmailMutation} from "@/redux/services/schoolApi";
 import {FormInstance} from "antd/es/form";
 
 interface EmailInputProps {
     form: FormInstance;
     isReadOnly?: boolean;
     triggerCheckEmail: any; // Check email query for new school
-    schoolId?: number; // Inject schoolId when editing school
+    id?: number; // Inject schoolId when editing school
     fieldName?: string;
 }
 
@@ -15,7 +14,7 @@ const EmailInput = forwardRef(({
                                    form,
                                    isReadOnly,
                                    triggerCheckEmail,
-                                   schoolId,
+                                   id,
                                    fieldName = "email"
                                }: EmailInputProps, ref) => {
     const [email, setEmail] = useState<string>(form.getFieldValue('email') || '');
@@ -27,7 +26,6 @@ const EmailInput = forwardRef(({
     const [emailHelp, setEmailHelp] = useState<string | null>(null);
 
     // API checking email when editing
-    const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
 
     const validateEmail = async (): Promise<boolean> => {
         if (!email) {
@@ -53,16 +51,14 @@ const EmailInput = forwardRef(({
 
         try {
             let response;
-            if (schoolId) {
-                // In case of EDITING a school,
-                // only need to validate the email if it is different from the current email in the database
-                response = await triggerCheckEditEmail({email, schoolId}).unwrap();
+            if (id) {
+                response = await triggerCheckEmail({email, id}).unwrap();
             } else {
                 // In case of ADD school, check all emails
                 response = await triggerCheckEmail(email).unwrap();
             }
 
-            if (response && response.data === "true") {
+            if (response && response.data === true) {
                 setEmailStatus('error');
                 setEmailHelp('This email is already in use!');
                 return false;

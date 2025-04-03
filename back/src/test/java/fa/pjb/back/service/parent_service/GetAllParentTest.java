@@ -37,12 +37,12 @@ class GetAllParentTest {
     }
 
     @Test
-    void shouldThrowInvalidDataExceptionWhenSearchByIsAge() {
+    void shouldThrowInvalidDataExceptionWhenSearchByIsInvalid() {
         // Arrange
         int page = 1;
-        int size = 10;
-        String searchBy = "age";
-        String keyword = "someKeyword";
+        int size = 15;
+        String searchBy = "invalidField";
+        String keyword = "keyword";
 
         // Act & Assert
         assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword, null));
@@ -52,9 +52,9 @@ class GetAllParentTest {
     void shouldThrowInvalidDataExceptionWhenSearchByIsEmptyString() {
         // Arrange
         int page = 1;
-        int size = 10;
+        int size = 15;
         String searchBy = "";
-        String keyword = "test";
+        String keyword = "keyword";
 
         // Act & Assert
         assertThrows(InvalidDataException.class, () -> parentServiceImpl.getAllParent(page, size, searchBy, keyword, null));
@@ -64,7 +64,7 @@ class GetAllParentTest {
     void shouldReturnEmptyPageWhenNoParentsMatchKeyword() {
         // Arrange
         int page = 1;
-        int size = 10;
+        int size = 15;
         String searchBy = "fullname";
         String keyword = "nonexistent";
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -82,12 +82,12 @@ class GetAllParentTest {
     }
 
     @Test
-    void shouldReturnCorrectNumberOfResultsWhenSizeIsSetTo10() {
+    void shouldReturnCorrectNumberOfResultsWhenSizeIsSetTo15() {
         // Arrange
         int page = 1;
-        int size = 10;
+        int size = 15;
         String searchBy = "username";
-        String keyword = "test";
+        String keyword = "JohnDoe";
 
         Pageable pageable = PageRequest.of(page - 1, size);
         List<ParentProjection> parentProjectionsList = new ArrayList<>();
@@ -114,7 +114,7 @@ class GetAllParentTest {
     void shouldMapParentProjectionToParentVOCorrectlyForValidInputs() {
         // Arrange
         int page = 1;
-        int size = 10;
+        int size = 15;
         String searchBy = "email";
         String keyword = "test@example.com";
 
@@ -140,17 +140,20 @@ class GetAllParentTest {
     void shouldHandleCaseInsensitiveSearchWhenSearchByIsUsername() {
         // Arrange
         int page = 1;
-        int size = 10;
+        int size = 15;
         String searchBy = "username";
-        String keyword = "TestUser";
+        String keyword = "TeStUsEr";
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page parentProjections = mock(Page.class);
-        ParentProjection parentProjection = mock(ParentProjection.class);
-        ParentVO expectedParentVO = mock(ParentVO.class);
-        Mockito.when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable))
-                .thenReturn(parentProjections);
-        when(parentMapper.toParentVOFromProjection(parentProjection)).thenReturn(expectedParentVO);
+        List<ParentProjection> parentProjectionsList = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            ParentProjection projection = Mockito.mock(ParentProjection.class);
+            parentProjectionsList.add(projection);
+        }
+        Page<ParentProjection> parentProjections = new PageImpl<>(parentProjectionsList, pageable, size);
 
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(parentProjections);
+        when(parentMapper.toParentVOFromProjection(any(ParentProjection.class)))
+                .thenReturn(Mockito.mock(ParentVO.class));
         // Act
         Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
 
@@ -163,14 +166,20 @@ class GetAllParentTest {
     void shouldHandleSpecialCharactersInKeywordWithoutErrors() {
         // Arrange
         int page = 1;
-        int size = 10;
+        int size = 15;
         String searchBy = "fullname";
         String keyword = "John@Doe#123!";
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page parentProjections = mock(Page.class);
+        List<ParentProjection> parentProjectionsList = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            ParentProjection projection = Mockito.mock(ParentProjection.class);
+            parentProjectionsList.add(projection);
+        }
+        Page<ParentProjection> parentProjections = new PageImpl<>(parentProjectionsList, pageable, size);
 
-        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable))
-                .thenReturn(parentProjections);
+        when(parentRepository.findAllParentsWithFilters(null,searchBy, keyword, pageable)).thenReturn(parentProjections);
+        when(parentMapper.toParentVOFromProjection(any(ParentProjection.class)))
+                .thenReturn(Mockito.mock(ParentVO.class));
 
         // Act
         Page<ParentVO> result = parentServiceImpl.getAllParent(page, size, searchBy, keyword, null);
@@ -184,7 +193,7 @@ class GetAllParentTest {
     void shouldReturnLastPageOfResultsWhenPageIsSetToMaximumAvailable() {
         // Arrange
         int page = 3; // Assuming there are 3 pages of results
-        int size = 10;
+        int size = 15;
         String searchBy = "email";
         String keyword = "example";
 
@@ -214,7 +223,7 @@ class GetAllParentTest {
     void shouldReturnFullPageOfResultsWhenSizeMatchesNumberOfAvailableParents() {
         // Arrange
         int page = 1;
-        int size = 10;
+        int size = 50;
         String searchBy = "fullname";
         String keyword = "test";
 
@@ -237,5 +246,32 @@ class GetAllParentTest {
         assertNotNull(result);
         assertEquals(size, result.getContent().size());
         verify(parentRepository, times(1)).findAllParentsWithFilters(null,searchBy, keyword, pageable);
+    }
+
+    @Test
+    void shouldReturnResultsFilteredByStatusTrue() {
+        Pageable pageable = PageRequest.of(0, 15);
+        Page<ParentProjection> projectionPage = new PageImpl<>(Collections.singletonList(mock(ParentProjection.class)));
+
+        when(parentRepository.findAllParentsWithFilters(true, "email", "test@example.com", pageable))
+                .thenReturn(projectionPage);
+
+        Page<ParentVO> result = parentServiceImpl.getAllParent(1, 10, "email", "test@example.com", true);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+    }
+    @Test
+    void shouldReturnResultsFilteredByStatusFalse() {
+        Pageable pageable = PageRequest.of(0, 15);
+        Page<ParentProjection> projectionPage = new PageImpl<>(Collections.singletonList(mock(ParentProjection.class)));
+
+        when(parentRepository.findAllParentsWithFilters(true, "email", "test@example.com", pageable))
+                .thenReturn(projectionPage);
+
+        Page<ParentVO> result = parentServiceImpl.getAllParent(1, 10, "email", "test@example.com", true);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
     }
 }

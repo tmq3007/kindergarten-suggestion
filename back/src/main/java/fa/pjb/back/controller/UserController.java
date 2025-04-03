@@ -106,4 +106,12 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/check-phone-exist")
+    public ApiResponse<Boolean> checkPhoneExist(@RequestParam String phone) {
+        return ApiResponse.<Boolean>builder()
+                .code(200)
+                .message("Check phone exist successfully!")
+                .data(userService.checkPhoneExist(phone)).build();
+    }
+
 }

@@ -20,10 +20,9 @@ import fa.pjb.back.model.mapper.ParentProjection;
 import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
-import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
-import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.ParentService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -55,13 +54,12 @@ public class ParentServiceImpl implements ParentService {
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
     private final ParentRepository parentRepository;
-    private final SchoolOwnerRepository schoolOwnerRepository;
     private final UserRepository userRepository;
     private final ParentInSchoolRepository parentInSchoolRepository;
     private final ParentMapper parentMapper;
     private final ParentInSchoolMapper pisMapper;
     private final AutoGeneratorHelper autoGeneratorHelper;
-    private final GGDriveImageService ggDriveImageService;
+    private final GCPFileStorageService ggDriveImageService;
     private final UserService userService;
     private final MediaMapper mediaMapper;
 

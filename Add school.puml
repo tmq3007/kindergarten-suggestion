@@ -3,17 +3,26 @@
 !define ENTITY #ffcc00
 
 actor SO_or_Admin
-participant "SchoolController" as C
+participant ":schoolDTO" as D
+participant ":schoolController" as C
 participant ":schoolService" as S
-participant "SchoolRepository" as R
-participant "FacilityRepository" as F
-participant "MediaRepository" as U
-participant "UserRepository" as UR
-participant "EmailService" as E
-participant "ImageService" as I
+participant ":schoolRepository" as R
+participant ":facilityRepository" as F
+participant ":mediaRepository" as U
+participant ":userRepository" as UR
+participant ":emailService" as E
+participant ":imageService" as I
 
+SO_or_Admin -> D: Provide schoolDTO, images
+D -> D: Validate schoolDTO
+
+alt Validation Failed
+    D --> SO_or_Admin: Return Validation Error Response
+end
+
+D --> C: Validation Successful
 activate C
-User -> C: POST /add (schoolDTO, images)
+SO_or_Admin -> C: POST /add (schoolDTO, images)
 C -> S: addSchool(schoolDTO, images)
 
 activate S
@@ -22,8 +31,6 @@ S -> S: Validate Facilities & Utilities
 S -> UR: findById(schoolDTO.userId())
 activate UR
 UR --> S: Return User
-deactivate UR
-
 deactivate UR
 
 alt User is Admin & Status Submitted
@@ -50,7 +57,6 @@ alt Images Provided
     deactivate U
 end
 
-
 alt User is School Owner & Status Submitted
     S -> E: sendSubmitSchool(email, schoolName, username, schoolDetailedLink)
     activate E
@@ -61,7 +67,7 @@ end
 S -> C: Return SchoolDetailVO
 deactivate S
 
-C -> User: Response with SchoolDetailVO
+C -> SO_or_Admin: Response with SchoolDetailVO
 
 deactivate C
 

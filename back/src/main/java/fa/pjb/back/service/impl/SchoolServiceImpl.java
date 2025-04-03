@@ -26,7 +26,7 @@ import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.repository.specification.SchoolSpecification;
 import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.SchoolService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +70,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
-    private final GGDriveImageService imageService;
+    private final GCPFileStorageService imageService;
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private static final Tika tika = new Tika();

@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Checkbox, Form, Image, Input, message, Select } from 'antd';
-import {Country, useLazyCheckEmailQuery, useRegisterMutation} from '@/redux/services/registerApi';
+import { Button, Checkbox, Form, Input, message } from 'antd';
+import {useLazyCheckEmailQuery, useRegisterMutation} from '@/redux/services/registerApi';
 import Link from 'next/link';
 import PhoneInput from '../common/PhoneInput';
 import EmailInput from '../common/EmailInput';
+import {useLazyCheckPhoneQuery} from "@/redux/services/userApi";
 
 interface FieldType {
     fullname: string;
@@ -16,19 +17,18 @@ interface FieldType {
 interface RegisterFormProps {
     onSuccess: () => void;
     onCancel: () => void;
-    countries?: Country[];
-    isLoadingCountry: boolean
 }
 
-export default function RegisterForm({ onSuccess, onCancel, countries, isLoadingCountry }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, onCancel }: RegisterFormProps) {
     const [form] = Form.useForm();
-    const emailInputRef = useRef<any>(null); // Ref to access EmailInput methods
+    const emailInputRef = useRef<any>(null);
     const phoneInputRef = useRef<any>(null);
 
     const [formValues, setFormValues] = useState<Partial<FieldType>>({ termAndCon: false })
     const [messageApi, contextHolder] = message.useMessage();
     const [register, { data: registerData, isLoading: isRegistering, error: registerError }] = useRegisterMutation();
     const [triggerCheckEmail] = useLazyCheckEmailQuery();
+    const [triggerCheckPhone] = useLazyCheckPhoneQuery();
 
     useEffect(() => {
         // Handle successful registration
@@ -49,8 +49,8 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
     const onFinish = async (values: FieldType) => {
 
         const isEmailValid = await emailInputRef.current?.validateEmail();
-
-        if (!isEmailValid) {
+        const isPhoneValid = await phoneInputRef.current?.validatePhone();
+        if (!isEmailValid || !isPhoneValid) {
             return;
         }
 
@@ -107,6 +107,7 @@ export default function RegisterForm({ onSuccess, onCancel, countries, isLoading
                 />
                 {/* Phone Number */}
                 <PhoneInput
+                    triggerCheckPhone={triggerCheckPhone}
                     form={form}
                     ref={phoneInputRef}
                     onPhoneChange={(phone) => form.setFieldsValue({ phone })}

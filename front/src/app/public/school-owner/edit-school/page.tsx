@@ -6,6 +6,7 @@ import {useGetDraftOfSchoolOwnerQuery, useGetSchoolOfSchoolOwnerQuery,} from "@/
 import useSchoolForm from "@/lib/hook/useSchoolForm";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import React from "react";
+import {useCheckEditSchoolEmailMutation} from "@/redux/services/schoolApi";
 
 export default function EditSchool() {
     const {
@@ -36,6 +37,7 @@ export default function EditSchool() {
         data: data?.data,
         isLoading,
     });
+    const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
 
     if (isLoading) {
         return (
@@ -79,7 +81,7 @@ export default function EditSchool() {
                 hasUpdateSubmitButton={true}
                 hasUpdateSaveButton={true}
                 isEdit={true}
-                triggerCheckEmail={null}
+                triggerCheckEmail={triggerCheckEditEmail}
                 formLoaded={formLoaded}
                 schoolId={school?.id}
             />

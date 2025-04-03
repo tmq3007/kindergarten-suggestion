@@ -1,10 +1,10 @@
-import {Modal, Avatar, Descriptions, Divider, Typography} from "antd";
-import {ParentVO} from "@/redux/services/parentApi";
+import { Modal, Avatar, Descriptions, Divider, Typography } from "antd";
+import { ParentVO } from "@/redux/services/parentApi";
 import ActionButtons from "@/app/components/parent/ActionButton";
-import {SchoolHistory} from "@/app/components/parent/AcademicHistory";
-import {MessageInstance} from "antd/lib/message/interface";
+import { SchoolHistory } from "@/app/components/parent/AcademicHistory";
+import { MessageInstance } from "antd/lib/message/interface";
 
-const {Title} = Typography;
+const { Title } = Typography;
 
 interface ParentDetailsModalProps {
     isOpen: boolean;
@@ -14,6 +14,13 @@ interface ParentDetailsModalProps {
     isEnrollPage?: boolean;
     isAdminPage?: boolean;
     message: MessageInstance;
+    skipConfirmations: {
+        approve: boolean;
+        reject: boolean;
+        unEnroll: boolean;
+    };
+    updateSkipConfirmation: (action: "approve" | "reject" | "unEnroll", value: boolean) => void;
+
 }
 
 export const ParentDetailsModal = ({
@@ -23,7 +30,9 @@ export const ParentDetailsModal = ({
                                        onDeleteSuccess,
                                        isEnrollPage = false,
                                        isAdminPage = false,
-                                       message
+                                       message,
+                                       skipConfirmations,
+                                       updateSkipConfirmation
                                    }: ParentDetailsModalProps) => {
 
     const getFullAddress = (record: ParentVO) => {
@@ -34,67 +43,79 @@ export const ParentDetailsModal = ({
     return (
         <Modal
             title={
-                <Title level={4} style={{margin: 0, color: "#1d39c4"}}>
+                <Title level={4} className="m-0 text-[#1d39c4]">
                     {parentInfor?.fullname || "Parent Details"}
                 </Title>
             }
             open={isOpen}
             onCancel={onClose}
             footer={null}
-            width={600}
+            width={800}
             centered
-            styles={{body: {padding: "24px"}}}
+            styles={{ body: { padding: "24px" } }}
         >
             {parentInfor && (
-                <div className="flex flex-col gap-6">
-                    {/* Header Section */}
-                    <div className="flex flex-col items-center gap-2">
-                        <Avatar
-                            src={parentInfor.media?.url}
-                            size={100}
-                            className="bg-green-500 border-2 border-gray-100 shadow-sm"
-                        >
-                            {!parentInfor.media?.url && parentInfor.fullname?.charAt(0).toUpperCase()}
-                        </Avatar>
-                        <div className="flex flex-col items-center text-center">
-                            <span className="text-lg font-bold text-gray-800">{parentInfor.fullname}</span>
-                            <span className="text-lg text-gray-500">@{parentInfor.username || "N/A"}</span>
+                <div className="grid grid-rows-[1fr_auto] h-full gap-6">
+                    {/* Main Content Grid */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-6">
+                        {/* Basic Information Section */}
+                        <div className="flex flex-col gap-6">
+                            {/* Header Section */}
+                            <div className="flex flex-col items-center gap-2">
+                                <Avatar
+                                    src={parentInfor.media?.url}
+                                    size={100}
+                                    className="bg-green-500 border-2 border-gray-100 shadow-sm"
+                                >
+                                    {!parentInfor.media?.url && parentInfor.fullname?.charAt(0).toUpperCase()}
+                                </Avatar>
+                                <div className="flex flex-col items-center text-center">
+                                    <span className="text-lg font-bold text-gray-800">{parentInfor.fullname}</span>
+                                    <span className="text-lg text-gray-500">@{parentInfor.username || "N/A"}</span>
+                                </div>
+                            </div>
+
+                            <Divider className="my-0" />
+
+                            {/* Basic Information */}
+                            <div>
+                                <Title level={5} className="text-gray-600">
+                                    Basic Information
+                                </Title>
+                                <Descriptions column={1} size="small" bordered>
+                                    <Descriptions.Item label="Email">
+                                        {parentInfor.email || "N/A"}
+                                    </Descriptions.Item>
+                                    <Descriptions.Item label="Phone">
+                                        {parentInfor.phone || "N/A"}
+                                    </Descriptions.Item>
+                                    <Descriptions.Item label="Date of Birth">
+                                        {parentInfor.dob || "N/A"}
+                                    </Descriptions.Item>
+                                    <Descriptions.Item label="Address">
+                                        {getFullAddress(parentInfor)}
+                                    </Descriptions.Item>
+                                </Descriptions>
+                            </div>
+                        </div>
+
+                        {/* Vertical Divider */}
+                        <Divider type="vertical" className="h-auto" />
+
+                        {/* Academic History Section */}
+                        <div className="flex flex-col">
+                            <SchoolHistory parentId={parentInfor.id} />
                         </div>
                     </div>
 
-                    <Divider style={{margin: "0"}}/>
-
-                    {/* Information Sections */}
-                    <div className="flex flex-col gap-6">
-                        {/* Basic Information */}
-                        <div>
-                            <Title level={5} style={{color: "#595959"}}>
-                                Basic Information
-                            </Title>
-                            <Descriptions column={1} size="small" bordered>
-                                <Descriptions.Item label="Email">
-                                    {parentInfor.email || "N/A"}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Phone">
-                                    {parentInfor.phone || "N/A"}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Date of Birth">
-                                    {parentInfor.dob || "N/A"}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Address">
-                                    {getFullAddress(parentInfor)}
-                                </Descriptions.Item>
-                            </Descriptions>
-                        </div>
-                        {/* School History */}
-                        <SchoolHistory parentId={parentInfor.id}/>
-                    </div>
                     {/* Actions Section */}
                     {!isAdminPage && (
-                        <>
-                            <Divider style={{margin: "16px 0"}}/>
+                        <div className="mt-6">
+                            <Divider className="mb-4" />
                             <div className="flex justify-end">
                                 <ActionButtons
+                                    updateSkipConfirmation={updateSkipConfirmation}
+                                    skipConfirmations={skipConfirmations}
                                     message={message}
                                     key={parentInfor.pis?.id}
                                     id={parentInfor.pis?.id}
@@ -102,22 +123,10 @@ export const ParentDetailsModal = ({
                                     onDeleteSuccess={onDeleteSuccess}
                                 />
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             )}
         </Modal>
     );
 };
-
-// Optional: Add custom CSS for compact Rate stars
-const styles = `
-    .compact-rate .ant-rate-star {
-        margin-right: 2px !important;
-    }
-`;
-
-// Inject styles into the document (if not using a CSS-in-JS solution)
-const styleSheet = document.createElement("style");
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet);
