@@ -1,7 +1,5 @@
 package fa.pjb.back;
 
-import com.google.cloud.spring.autoconfigure.core.GcpContextAutoConfiguration;
-import com.google.cloud.spring.autoconfigure.secretmanager.GcpSecretManagerAutoConfiguration;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
