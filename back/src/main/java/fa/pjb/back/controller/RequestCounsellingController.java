@@ -2,7 +2,6 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
-import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
@@ -15,11 +14,8 @@ import jakarta.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -30,7 +26,6 @@ import java.time.LocalDateTime;
 @Tag(name = "Request Counselling Controller", description = "This API provides some actions relate with request counselling")
 public class RequestCounsellingController {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestCounsellingController.class);
     private final RequestCounsellingReminderService reminderService;
     private final RequestCounsellingService requestCounsellingService;
 

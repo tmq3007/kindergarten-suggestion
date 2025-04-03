@@ -124,7 +124,7 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
 
         if (
             currentOwners.length !== updatedArray.length ||
-            !currentOwners.every((id) => updated.has(id))
+            !currentOwners.every((id: number) => updated.has(id))
         ) {
             form.setFieldsValue({schoolOwners: updatedArray});
             hasSetOwnersRef.current = true;

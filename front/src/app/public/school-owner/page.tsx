@@ -99,6 +99,7 @@ export default function SchoolDetail() {
             <div className="read-only-form email-locked">
                 <SchoolFormWrapper form={form} school={school!} isDetailPage={true}/>
             </div>
+
         </div>
     );
 }

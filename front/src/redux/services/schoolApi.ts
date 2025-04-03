@@ -250,7 +250,7 @@ export const schoolApi = createApi({
             providesTags: ["School"],
         }),
 
-        checkSchoolEmail: build.query<ApiResponse<string>, string>({
+        checkSchoolEmail: build.query<ApiResponse<boolean>, string>({
             query: (email) => ({
                 url: `/school/check-email/${email}`,
                 method: "GET",

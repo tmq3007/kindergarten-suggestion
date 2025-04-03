@@ -14,7 +14,7 @@ import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ class UserServiceImplTest {
     private MediaRepository mediaRepository;
 
     @Mock
-    private GGDriveImageService imageService;
+    private GCPFileStorageService imageService;
 
     @Mock
     private EmailService emailService;
