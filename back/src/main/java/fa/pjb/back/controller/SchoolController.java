@@ -4,12 +4,10 @@ import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.SchoolSearchDTO;
-import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolListVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
-import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +24,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -39,8 +36,6 @@ import java.util.List;
 public class SchoolController {
 
     private final SchoolService schoolService;
-    private final GGDriveImageService imageService;
-    private final RestClient.Builder builder;
 
     @Operation(summary = "Get school info", description = "Get school information by school id")
     @GetMapping("/{schoolId}")
@@ -73,23 +68,23 @@ public class SchoolController {
     }
 
     @GetMapping("/check-email/{email}")
-    public ApiResponse<String> checkEmail(@PathVariable String email) {
-        return ApiResponse.<String>builder()
+    public ApiResponse<Boolean> checkEmail(@PathVariable String email) {
+        return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Email checked!")
-                .data(String.valueOf(schoolService.checkEmailExists(email)))
+                .data(schoolService.checkEmailExists(email))
                 .build();
     }
 
     @PostMapping("/check-editing-email")
-    public ApiResponse<String> checkEmailEdit(
+    public ApiResponse<Boolean> checkEmailEdit(
             @RequestParam @NotBlank(message = "Email is not blank") @Email(message = "Email is not valid") String email,
             @RequestParam @NotNull(message = "School ID is not null") Integer schoolId
     ) {
-        return ApiResponse.<String>builder()
+        return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Email checked!")
-                .data(String.valueOf(schoolService.checkEditingEmailExists(email, schoolId)))
+                .data(schoolService.checkEditingEmailExists(email, schoolId))
                 .build();
     }
 

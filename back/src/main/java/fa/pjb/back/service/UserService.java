@@ -27,4 +27,5 @@ public interface UserService {
 
     SchoolOwner getCurrentSchoolOwner();
 
+    Boolean checkPhoneExist(String phone);
 }

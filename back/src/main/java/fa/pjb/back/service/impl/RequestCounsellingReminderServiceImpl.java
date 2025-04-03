@@ -5,6 +5,7 @@ import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERequestCounsellingStatus;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
@@ -57,7 +58,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         }
 
         Integer schoolId = schoolOwner.get().getSchool().getId();
-        long totalOverdueCount = requestCounsellingRepository.countOverdueRequestsBySchoolId(schoolId, (byte) 2, overdueThreshold);
+        long totalOverdueCount = requestCounsellingRepository.countOverdueRequestsBySchoolId(schoolId, ERequestCounsellingStatus.OVERDUE.getValue(), overdueThreshold);
 
         if (totalOverdueCount > 0) {
             return RequestCounsellingReminderVO.builder()
@@ -69,7 +70,6 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         return null;
     }
 
-
     // Runs every day at 9:00 AM
     @Scheduled(cron = "0 50 10 * * ?")
     @Override
@@ -77,8 +77,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     public void checkDueDateAndSendEmail() {
         LocalDateTime overdueThreshold = LocalDateTime.now().minusHours(24);
 
-        // Lấy số lượng yêu cầu quá hạn cho tất cả các trường
-        List<Object[]> results = requestCounsellingRepository.countOverdueRequestsForAllSchools((byte) 2, overdueThreshold);
+        List<Object[]> results = requestCounsellingRepository.countOverdueRequestsForAllSchools(ERequestCounsellingStatus.OVERDUE.getValue(), overdueThreshold);
         Map<Integer, Integer> schoolOverdueCounts = new HashMap<>();
         int totalOverdueCount = 0;
 
@@ -108,7 +107,6 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
                 }).join();
     }
 
-
     private List<CompletableFuture<Void>> sendToAllAdmins(int overdueCount) {
         List<User> admins = userRepository.findActiveUserByRole(ERole.ROLE_ADMIN);
         List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -120,7 +118,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
 
         for (User admin : admins) {
             String adminName = admin.getFullname();
-            String detailsLink = "http://your-app-domain/requests/";
+            String detailsLink = "http://localhost:3000/admin/management/reminder/request-reminder";
 
             CompletableFuture<Void> future = emailService.sendRequestCounsellingReminder(
                     admin.getEmail(),
@@ -154,7 +152,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
             if (ownerUser == null) continue;
 
             String ownerName = ownerUser.getFullname();
-            String detailsLink = "http://your-app-domain/requests?schoolId=" + schoolId;
+            String detailsLink = "http://localhost:3000/public/school-owner/view-request?tab=Overdue"  ;
 
             CompletableFuture<Void> future = emailService.sendRequestCounsellingReminder(
                     ownerUser.getEmail(),

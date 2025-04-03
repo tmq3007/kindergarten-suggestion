@@ -25,3 +25,5 @@ target/
 
 /src/main/resources/.env
 /src/main/resources/marco.pem
+/src/main/resources/gcp_cred.json
+

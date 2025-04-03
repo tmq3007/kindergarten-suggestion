@@ -28,7 +28,7 @@ export const registerApi = createApi({
                 body: RegisterDTO,
             }),
         }),
-        checkEmail: builder.query<ApiResponse<string>, string>({
+        checkEmail: builder.query<ApiResponse<boolean>, string>({
             query: (email) => ({
                 url: "/auth/check-email",
                 method: "GET",

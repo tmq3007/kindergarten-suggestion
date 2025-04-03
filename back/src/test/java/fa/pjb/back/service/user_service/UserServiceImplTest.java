@@ -1,6 +1,6 @@
 package fa.pjb.back.service.user_service;
 
-import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.InvalidBRNAlException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._14xx_data.InvalidDateException;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
@@ -14,7 +14,7 @@ import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ class UserServiceImplTest {
     private MediaRepository mediaRepository;
 
     @Mock
-    private GGDriveImageService imageService;
+    private GCPFileStorageService imageService;
 
     @Mock
     private EmailService emailService;
@@ -207,7 +207,7 @@ class UserServiceImplTest {
         when(userRepository.findByEmail(dto.email())).thenReturn(Optional.empty());
         when(schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(dto.business_registration_number())).thenReturn(true);
 
-        assertThrows(BRNAlreadyExistedException.class, () -> userService.createUser(dto, null));
+        assertThrows(InvalidBRNAlException.class, () -> userService.createUser(dto, null));
         verify(userRepository, never()).save(any());
     }
 

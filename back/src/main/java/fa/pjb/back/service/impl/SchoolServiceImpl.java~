@@ -26,7 +26,7 @@ import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.repository.specification.SchoolSpecification;
 import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.GCPFileStorageService;
+import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.SchoolService;
 import fa.pjb.back.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +70,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
-    private final GCPFileStorageService imageService;
+    private final GGDriveImageService imageService;
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private static final Tika tika = new Tika();
@@ -490,7 +490,7 @@ public class SchoolServiceImpl implements SchoolService {
                     throw new InvalidDataException("One or more SchoolOwner IDs not found");
                 }
 
-                // Remove the relationship between School and old School Owners
+                // Remove the relationship between School and old School Owners"
                 for (SchoolOwner oldOwner : oldSchool.getSchoolOwners()) {
                     oldOwner.setSchool(null);
                 }
@@ -679,13 +679,6 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public Page<SchoolListVO> getAllDrafts(String name, String district, String email, String phone, Pageable pageable) {
-        Page<School> draftPage = schoolRepository.findAllDrafts(name, district, email, phone,
-            pageable);
-        return draftPage.map(schoolMapper::toSchoolListVO);
-    }
-
-    @Override
     public Page<SchoolDetailVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO) {
         Specification<School> spec = Specification
                 .where(SchoolSpecification.hasName(schoolSearchDTO.name()))
@@ -703,24 +696,10 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
-        String street, String email, String phone, Pageable pageable) {
-        Page<School> schoolPage = schoolRepository.findSchools(name, district, email, phone, pageable);
+                                            String street, String email, String phone, Pageable pageable) {
+        Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
-
-    @Override
-    public Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String district, String email, String phone, Pageable pageable) {
-        Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
-        return schoolPage.map(schoolMapper::toSchoolListVO);
-    }
-
-//    @Override
-//    public Page<SchoolListVO> getChangeSchoolRequest(String name, String province,
-//        String district,
-//        String street, String email, String phone, Pageable pageable) {
-//        Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
-//        return schoolPage.map(schoolMapper::toSchoolListVO);
-//    }
 
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId) {
@@ -937,16 +916,6 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
-    }
-
-    @Override
-    public Long countActiveSchoolsWithoutRefId() {
-        return schoolRepository.countActiveSchoolsWithoutRefId();
-    }
-
-    @Override
-    public Long countAllDrafts() {
-        return schoolRepository.countAllDrafts();
     }
 
 }

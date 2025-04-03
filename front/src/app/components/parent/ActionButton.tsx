@@ -1,4 +1,4 @@
-import {Button} from "antd";
+import {Button, Checkbox} from "antd";
 import {useState, useEffect, memo} from "react";
 import {
     useEnrollParentMutation,
@@ -10,6 +10,7 @@ import {decrementPendingRequestsCount} from "@/redux/features/parentSlice";
 import Lottie from "lottie-react";
 import approveCheckAnimation from "@public/lottie/CheckedAnimation.json";
 import {MessageInstance} from "antd/lib/message/interface";
+import useModal from "antd/es/modal/useModal";
 
 interface ActionButtonsProps {
     id?: number;
@@ -17,10 +18,25 @@ interface ActionButtonsProps {
     isEnrollPage?: boolean;
     isAdminPage?: boolean;
     message: MessageInstance;
+    skipConfirmations: {
+        approve: boolean;
+        reject: boolean;
+        unEnroll: boolean;
+    };
+    updateSkipConfirmation: (action: "approve" | "reject" | "unEnroll", value: boolean) => void;
 }
 
-const ActionButtons = ({id, onDeleteSuccess, isAdminPage = false, isEnrollPage = false,message}: ActionButtonsProps) => {
+const ActionButtons = ({
+                           id,
+                           onDeleteSuccess,
+                           isAdminPage = false,
+                           isEnrollPage = false,
+                           message,
+                           skipConfirmations,
+                           updateSkipConfirmation,
+                       }: ActionButtonsProps) => {
     const dispatch = useDispatch();
+    const [modal, contextHolder] = useModal();
 
     const [unenrollTrigger] = useUnEnrollParentMutation();
     const [approveTrigger] = useEnrollParentMutation();
@@ -119,6 +135,53 @@ const ActionButtons = ({id, onDeleteSuccess, isAdminPage = false, isEnrollPage =
         }
     };
 
+    const showConfirm = (action: "approve" | "reject" | "unEnroll") => {
+        const titles = {
+            approve: "Approve Request",
+            reject: "Reject Request",
+            unEnroll: "Unenroll Parent"
+        };
+
+        const contents = {
+            approve: "Are you sure you want to approve this request?",
+            reject: "Are you sure you want to reject this request?",
+            unEnroll: "Are you sure you want to unenroll this parent?"
+        };
+
+        modal.confirm({
+            title: titles[action],
+            content: (
+                <div>
+                    <p>{contents[action]}</p>
+                    <Checkbox
+                        onChange={(e) => {
+                            updateSkipConfirmation(action, e.target.checked);
+                        }}
+                    >
+                        Do not ask again
+                    </Checkbox>
+                </div>
+            ),
+            okText: "Yes",
+            okType: action === "approve" ? "primary" : "danger",
+            cancelText: "No",
+            onOk() {
+                handleAction(action);
+            },
+            onCancel() {
+                // Do nothing if cancelled
+            },
+        });
+    };
+
+    const handleClick = (action: "approve" | "reject" | "unEnroll") => {
+        if (skipConfirmations[action]) {
+            handleAction(action);
+        } else {
+            showConfirm(action);
+        }
+    };
+
     if (isCompleted) {
         return (
             <div className="flex justify-center max-h-fit">
@@ -128,37 +191,40 @@ const ActionButtons = ({id, onDeleteSuccess, isAdminPage = false, isEnrollPage =
     }
 
     return (
-        <div className="flex gap-2 justify-center">
-            {isEnrollPage ? (
-                <>
-                    <Button
-                        type="primary"
-                        onClick={() => handleAction("approve")}
-                        loading={buttonsLoadingStates.approve === "loading"}
-                        disabled={isLoading || buttonsLoadingStates.approve === "done"}
-                    >
-                        Approve
-                    </Button>
+        <>
+            <div className="flex gap-2 justify-center">
+                {isEnrollPage ? (
+                    <>
+                        <Button
+                            type="primary"
+                            onClick={() => handleClick("approve")}
+                            loading={buttonsLoadingStates.approve === "loading"}
+                            disabled={isLoading || buttonsLoadingStates.approve === "done"}
+                        >
+                            Approve
+                        </Button>
+                        <Button
+                            danger
+                            onClick={() => handleClick("reject")}
+                            loading={buttonsLoadingStates.reject === "loading"}
+                            disabled={isLoading || buttonsLoadingStates.reject === "done"}
+                        >
+                            Reject
+                        </Button>
+                    </>
+                ) : (
                     <Button
                         danger
-                        onClick={() => handleAction("reject")}
-                        loading={buttonsLoadingStates.reject === "loading"}
-                        disabled={isLoading || buttonsLoadingStates.reject === "done"}
+                        onClick={() => handleClick("unEnroll")}
+                        loading={buttonsLoadingStates.unEnroll === "loading"}
+                        disabled={isLoading || buttonsLoadingStates.unEnroll === "done"}
                     >
-                        Reject
+                        UnEnroll
                     </Button>
-                </>
-            ) : (
-                <Button
-                    danger
-                    onClick={() => handleAction("unEnroll")}
-                    loading={buttonsLoadingStates.unEnroll === "loading"}
-                    disabled={isLoading || buttonsLoadingStates.unEnroll === "done"}
-                >
-                    UnEnroll
-                </Button>
-            )}
-        </div>
+                )}
+            </div>
+            {contextHolder}
+        </>
     );
 };
 

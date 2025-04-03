@@ -14,7 +14,7 @@ import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.UserRepository;
-import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.UserService;
 import fa.pjb.back.service.impl.ParentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
- class ParentServiceImplTest {
+class ParentServiceImplTest {
 
     @Mock
     private ParentRepository parentRepository;
@@ -56,29 +56,30 @@ import static org.mockito.Mockito.*;
 
     @Mock
     private AutoGeneratorHelper autoGeneratorHelper;
-     @Mock
-     private GGDriveImageService ggDriveImageService;
+    @Mock
+    private GCPFileStorageService ggDriveImageService;
     @InjectMocks
     private ParentServiceImpl parentService;
-     MultipartFile mockImage;
-     ParentUpdateDTO parentUpdateDTO;
-     @BeforeEach
+    MultipartFile mockImage;
+    ParentUpdateDTO parentUpdateDTO;
+
+    @BeforeEach
     void setUp() throws IOException {
         MockitoAnnotations.openMocks(this);
 
         // Setup dữ liệu mẫu cho ParentUpdateDTO
-         parentUpdateDTO = ParentUpdateDTO.builder()
-                 .fullname("Updated Parent Name")
-                 .email("updated@parent.com")
-                 .phone("+84123456789")
-                 .dob(LocalDate.of(1990, 1, 1))
-                 .district("Updated District")
-                 .province("Updated Province")
-                 .ward("Updated Ward")
-                 .street("123 Updated Street")
-                 .status(true)
-                 .role("ROLE_PARENT")
-                 .build();
+        parentUpdateDTO = ParentUpdateDTO.builder()
+                .fullname("Updated Parent Name")
+                .email("updated@parent.com")
+                .phone("+84123456789")
+                .dob(LocalDate.of(1990, 1, 1))
+                .district("Updated District")
+                .province("Updated Province")
+                .ward("Updated Ward")
+                .street("123 Updated Street")
+                .status(true)
+                .role("ROLE_PARENT")
+                .build();
 
         // Tạo ảnh giả lập (JPEG) để test upload
         BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
@@ -89,7 +90,9 @@ import static org.mockito.Mockito.*;
         mockImage = new MockMultipartFile("image", "image.jpg", "image/jpeg", imageBytes);
     }
 
-    /** Normal Case: Lấy ParentVO thành công */
+    /**
+     * Normal Case: Lấy ParentVO thành công
+     */
     @Test
     void getParentById_Success() {
         Integer userId = 1;
@@ -116,7 +119,9 @@ import static org.mockito.Mockito.*;
         assertEquals("test@example.com", parentVO.email());
     }
 
-    /** Abnormal Case: userId không tồn tại */
+    /**
+     * Abnormal Case: userId không tồn tại
+     */
     @Test
     void getParentById_UserNotFound() {
         // Given: Không tìm thấy userId
@@ -129,7 +134,9 @@ import static org.mockito.Mockito.*;
         assertThrows(UserNotFoundException.class, () -> parentService.getParentById(userId));
     }
 
-    /** Boundary Case: userId là số âm */
+    /**
+     * Boundary Case: userId là số âm
+     */
     @Test
     void getParentById_NegativeUserId() {
         // Given: userId âm
@@ -140,9 +147,11 @@ import static org.mockito.Mockito.*;
 
         // Act & Assert: Kiểm tra ngoại lệ
         assertThrows(UserNotFoundException.class, () -> parentService.getParentById(userId));
-     }
+    }
 
-    /** Boundary Case: userId là null */
+    /**
+     * Boundary Case: userId là null
+     */
     @Test
     void getParentById_NullUserId() {
         // Given: userId null
@@ -150,7 +159,7 @@ import static org.mockito.Mockito.*;
 
         // Act & Assert: Kiểm tra ngoại lệ UserNotFoundException
         assertThrows(UserNotFoundException.class, () -> parentService.getParentById(userId));
-     }
+    }
 
     @Test
     void changePassword_Success() {
@@ -232,231 +241,252 @@ import static org.mockito.Mockito.*;
     }
 
 
-     /** Normal Case: Cập nhật Parent thành công với ảnh mới */
-     @Test
-     void editParent_Success_WithImage() throws IOException {
-         Integer userId = 1;
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
-                 .build();
-         ParentVO parentVO = ParentVO.builder()
-                 .id(1)
-                 .fullname("Updated Parent Name")
-                 .email("updated@parent.com")
-                 .build();
-         FileUploadVO imageVO = FileUploadVO.builder()
-                 .status(200)
-                 .message("Uploaded successfully")
-                 .size(1024L)
-                 .fileName("image.jpg")
-                 .fileId("fileId123")
-                 .url("https://image.url")
-                 .build();
+    /**
+     * Normal Case: Cập nhật Parent thành công với ảnh mới
+     */
+    @Test
+    void editParent_Success_WithImage() throws IOException {
+        Integer userId = 1;
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                .build();
+        ParentVO parentVO = ParentVO.builder()
+                .id(1)
+                .fullname("Updated Parent Name")
+                .email("updated@parent.com")
+                .build();
+        FileUploadVO imageVO = FileUploadVO.builder()
+                .status(200)
+                .message("Uploaded successfully")
+                .size(1024L)
+                .fileName("image.jpg")
+                .fileId("fileId123")
+                .url("https://image.url")
+                .build();
 
-         // Tạo mockImage bằng mock() thay vì MockMultipartFile
-         MultipartFile mockImage = mock(MultipartFile.class);
+        // Tạo mockImage bằng mock() thay vì MockMultipartFile
+        MultipartFile mockImage = mock(MultipartFile.class);
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
-         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
-         when(mockImage.isEmpty()).thenReturn(false);
-         when(mockImage.getSize()).thenReturn(1024L);
-         when(mockImage.getContentType()).thenReturn("image/jpeg");
-         doNothing().when(mockImage).transferTo(any(File.class));
-         when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
-                 .thenReturn(imageVO);
-         when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+        when(mockImage.isEmpty()).thenReturn(false);
+        when(mockImage.getSize()).thenReturn(1024L);
+        when(mockImage.getContentType()).thenReturn("image/jpeg");
+        doNothing().when(mockImage).transferTo(any(File.class));
+        when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
+                .thenReturn(imageVO);
+        when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
 
-         ParentVO result = parentService.editParent(userId, parentUpdateDTO, mockImage);
+        ParentVO result = parentService.editParent(userId, parentUpdateDTO, mockImage);
 
-         assertNotNull(result);
-         assertEquals("Updated Parent Name", result.fullname());
-         assertEquals("updated@parent.com", result.email());
-         verify(parentRepository, times(1)).save(parent);
-         verify(ggDriveImageService, times(1)).uploadImage(any(), any(), any());
-     }
+        assertNotNull(result);
+        assertEquals("Updated Parent Name", result.fullname());
+        assertEquals("updated@parent.com", result.email());
+        verify(parentRepository, times(1)).save(parent);
+        verify(ggDriveImageService, times(1)).uploadImage(any(), any(), any());
+    }
 
-     /** Normal Case: Cập nhật Parent thành công không có ảnh */
-     @Test
-     void editParent_Success_WithoutImage() {
-         Integer userId = 1;
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
-                 .build();
-         ParentVO parentVO = ParentVO.builder()
-                 .id(1)
-                 .fullname("Updated Parent Name")
-                 .email("updated@parent.com")
-                 .build();
+    /**
+     * Normal Case: Cập nhật Parent thành công không có ảnh
+     */
+    @Test
+    void editParent_Success_WithoutImage() {
+        Integer userId = 1;
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                .build();
+        ParentVO parentVO = ParentVO.builder()
+                .id(1)
+                .fullname("Updated Parent Name")
+                .email("updated@parent.com")
+                .build();
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
-         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
-         when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+        when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
 
-         ParentVO result = parentService.editParent(userId, parentUpdateDTO, null);
+        ParentVO result = parentService.editParent(userId, parentUpdateDTO, null);
 
-         assertNotNull(result);
-         assertEquals("Updated Parent Name", result.fullname());
-         assertEquals("updated@parent.com", result.email());
-         verify(parentRepository, times(1)).save(parent);
-         verify(ggDriveImageService, never()).uploadImage(any(), any(), any());
-     }
+        assertNotNull(result);
+        assertEquals("Updated Parent Name", result.fullname());
+        assertEquals("updated@parent.com", result.email());
+        verify(parentRepository, times(1)).save(parent);
+        verify(ggDriveImageService, never()).uploadImage(any(), any(), any());
+    }
 
-     /** Abnormal Case: User không tồn tại */
-     @Test
-     void editParent_UserNotFound() {
-         Integer userId = 999;
+    /**
+     * Abnormal Case: User không tồn tại
+     */
+    @Test
+    void editParent_UserNotFound() {
+        Integer userId = 999;
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(null);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(null);
 
-         assertThrows(UserNotFoundException.class, () ->
-                 parentService.editParent(userId, parentUpdateDTO, null));
-         verify(parentRepository, never()).save(any());
-     }
+        assertThrows(UserNotFoundException.class, () ->
+                parentService.editParent(userId, parentUpdateDTO, null));
+        verify(parentRepository, never()).save(any());
+    }
 
-     /** Abnormal Case: Email đã tồn tại */
-     @Test
-     void editParent_EmailAlreadyExisted() {
-         Integer userId = 1;
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
-                 .build();
-         User existingUser = User.builder().id(2).email("updated@parent.com").build();
+    /**
+     * Abnormal Case: Email đã tồn tại
+     */
+    @Test
+    void editParent_EmailAlreadyExisted() {
+        Integer userId = 1;
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                .build();
+        User existingUser = User.builder().id(2).email("updated@parent.com").build();
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
-         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.of(existingUser));
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.of(existingUser));
 
-         assertThrows(EmailAlreadyExistedException.class, () ->
-                 parentService.editParent(userId, parentUpdateDTO, null));
-         verify(parentRepository, never()).save(any());
-     }
+        assertThrows(EmailAlreadyExistedException.class, () ->
+                parentService.editParent(userId, parentUpdateDTO, null));
+        verify(parentRepository, never()).save(any());
+    }
 
-     /** Abnormal Case: Ngày sinh không hợp lệ */
-     @Test
-     void editParent_InvalidDob() {
-         Integer userId = 1;
-         ParentUpdateDTO invalidDto = ParentUpdateDTO.builder()
-                 .fullname("Updated Name")
-                 .email("updated@parent.com")
-                 .phone("+84123456789")
-                 .dob(LocalDate.now().plusDays(1)) // Future date
-                 .build();
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").build())
-                 .build();
+    /**
+     * Abnormal Case: Ngày sinh không hợp lệ
+     */
+    @Test
+    void editParent_InvalidDob() {
+        Integer userId = 1;
+        ParentUpdateDTO invalidDto = ParentUpdateDTO.builder()
+                .fullname("Updated Name")
+                .email("updated@parent.com")
+                .phone("+84123456789")
+                .dob(LocalDate.now().plusDays(1)) // Future date
+                .build();
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").build())
+                .build();
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
 
-         assertThrows(InvalidDateException.class, () ->
-                 parentService.editParent(userId, invalidDto, null));
-         verify(parentRepository, never()).save(any());
-     }
+        assertThrows(InvalidDateException.class, () ->
+                parentService.editParent(userId, invalidDto, null));
+        verify(parentRepository, never()).save(any());
+    }
 
-     /** Abnormal Case: Kích thước ảnh vượt quá giới hạn */
-     @Test
-     void editParent_ImageTooLarge() {
-         Integer userId = 1;
-         MultipartFile largeImage = new MockMultipartFile(
-                 "largeImage", "large.jpg", "image/jpeg", new byte[6 * 1024 * 1024] // 6MB file
-         );
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").build())
-                 .build();
+    /**
+     * Abnormal Case: Kích thước ảnh vượt quá giới hạn
+     */
+    @Test
+    void editParent_ImageTooLarge() {
+        Integer userId = 1;
+        MultipartFile largeImage = new MockMultipartFile(
+                "largeImage", "large.jpg", "image/jpeg", new byte[6 * 1024 * 1024] // 6MB file
+        );
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").build())
+                .build();
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
 
-         assertThrows(RuntimeException.class, () ->
-                 parentService.editParent(userId, parentUpdateDTO, largeImage));
-         verify(parentRepository, never()).save(any());
-     }
+        assertThrows(RuntimeException.class, () ->
+                parentService.editParent(userId, parentUpdateDTO, largeImage));
+        verify(parentRepository, never()).save(any());
+    }
 
-     /** Abnormal Case: Loại file không hợp lệ */
-     @Test
-     void editParent_InvalidFileType() {
-         Integer userId = 1;
-         MultipartFile invalidImage = new MockMultipartFile(
-                 "invalidFile", "file.txt", "text/plain", "content".getBytes()
-         );
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").build())
-                 .build();
+    /**
+     * Abnormal Case: Loại file không hợp lệ
+     */
+    @Test
+    void editParent_InvalidFileType() {
+        Integer userId = 1;
+        MultipartFile invalidImage = new MockMultipartFile(
+                "invalidFile", "file.txt", "text/plain", "content".getBytes()
+        );
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").build())
+                .build();
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
 
-         assertThrows(RuntimeException.class, () ->
-                 parentService.editParent(userId, parentUpdateDTO, invalidImage));
-         verify(parentRepository, never()).save(any());
-     }
+        assertThrows(RuntimeException.class, () ->
+                parentService.editParent(userId, parentUpdateDTO, invalidImage));
+        verify(parentRepository, never()).save(any());
+    }
 
-     /** Abnormal Case: Upload ảnh thất bại */
-     @Test
-     void editParent_ImageUploadFailed() throws IOException {
-         Integer userId = 1;
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").build())
-                 .build();
-         FileUploadVO imageVO = FileUploadVO.builder()
-                 .status(400)
-                 .message("Upload failed")
-                 .size(0L)
-                 .fileName(null)
-                 .fileId(null)
-                 .url(null)
-                 .build();
+    /**
+     * Abnormal Case: Upload ảnh thất bại
+     */
+    @Test
+    void editParent_ImageUploadFailed() throws IOException {
+        Integer userId = 1;
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").build())
+                .build();
+        FileUploadVO imageVO = FileUploadVO.builder()
+                .status(400)
+                .message("Upload failed")
+                .size(0L)
+                .fileName(null)
+                .fileId(null)
+                .url(null)
+                .build();
 
-         // Tạo mockImage bằng mock() thay vì MockMultipartFile
-         MultipartFile mockImage = mock(MultipartFile.class);
+        // Tạo mockImage bằng mock() thay vì MockMultipartFile
+        MultipartFile mockImage = mock(MultipartFile.class);
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
-         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
-         // Sử dụng any(File.class) thay vì (File) any()
-         doNothing().when(mockImage).transferTo(any(File.class));
-         when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
-                 .thenReturn(imageVO);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+        // Sử dụng any(File.class) thay vì (File) any()
+        doNothing().when(mockImage).transferTo(any(File.class));
+        when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
+                .thenReturn(imageVO);
 
-         assertThrows(RuntimeException.class, () ->
-                 parentService.editParent(userId, parentUpdateDTO, mockImage));
-         verify(parentRepository, never()).save(any());
-     }
-     /** Boundary Case: userId null */
-     @Test
-     void editParent_NullUserId() {
-         assertThrows(UserNotFoundException.class, () ->
-                 parentService.editParent(null, parentUpdateDTO, null));
-     }
+        assertThrows(RuntimeException.class, () ->
+                parentService.editParent(userId, parentUpdateDTO, mockImage));
+        verify(parentRepository, never()).save(any());
+    }
+
+    /**
+     * Boundary Case: userId null
+     */
+    @Test
+    void editParent_NullUserId() {
+        assertThrows(UserNotFoundException.class, () ->
+                parentService.editParent(null, parentUpdateDTO, null));
+    }
 
 
-     /** Boundary Case: Ảnh rỗng */
-     @Test
-     void editParent_EmptyImage() {
-         Integer userId = 1;
-         MultipartFile emptyImage = new MockMultipartFile("empty", "empty.jpg", "image/jpeg", new byte[0]);
-         Parent parent = Parent.builder()
-                 .id(1)
-                 .user(User.builder().id(userId).email("old@parent.com").status(true).build())
-                 .build();
-         ParentVO parentVO = ParentVO.builder()
-                 .id(1)
-                 .fullname("Updated Parent Name")
-                 .email("updated@parent.com")
-                 .build();
+    /**
+     * Boundary Case: Ảnh rỗng
+     */
+    @Test
+    void editParent_EmptyImage() {
+        Integer userId = 1;
+        MultipartFile emptyImage = new MockMultipartFile("empty", "empty.jpg", "image/jpeg", new byte[0]);
+        Parent parent = Parent.builder()
+                .id(1)
+                .user(User.builder().id(userId).email("old@parent.com").status(true).build())
+                .build();
+        ParentVO parentVO = ParentVO.builder()
+                .id(1)
+                .fullname("Updated Parent Name")
+                .email("updated@parent.com")
+                .build();
 
-         when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
-         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
-         when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
+        when(parentRepository.findParentByUserId(userId)).thenReturn(parent);
+        when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
+        when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
 
-         ParentVO result = parentService.editParent(userId, parentUpdateDTO, emptyImage);
+        ParentVO result = parentService.editParent(userId, parentUpdateDTO, emptyImage);
 
-         assertNotNull(result);
-         assertEquals("Updated Parent Name", result.fullname());
-         verify(parentRepository, times(1)).save(parent);
-         verify(ggDriveImageService, never()).uploadImage(any(), any(), any());
-     }
+        assertNotNull(result);
+        assertEquals("Updated Parent Name", result.fullname());
+        verify(parentRepository, times(1)).save(parent);
+        verify(ggDriveImageService, never()).uploadImage(any(), any(), any());
+    }
 
 }

@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.InvalidBRNAlException;
+import fa.pjb.back.common.exception._10xx_user.PhoneAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
@@ -25,7 +26,6 @@ import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.GGDriveImageService;
 import fa.pjb.back.service.UserService;
 
 import java.io.IOException;
@@ -46,11 +46,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
 import static fa.pjb.back.model.enums.ERole.*;
 import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
 
@@ -61,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg");
-    private final GGDriveImageService imageService;
+    private final GCPFileStorageServiceImpl imageService;
     private static final Tika tika = new Tika();
     private final MediaRepository mediaRepository;
     private final UserMapper userMapper;
@@ -85,6 +80,13 @@ public class UserServiceImpl implements UserService {
         User user = getCurrentUser();
         return schoolOwnerRepository.findWithSchoolAndDraftByUserId(user.getId())
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    @Override
+    public Boolean checkPhoneExist(String phone) {
+        Boolean temp = userRepository.existsByPhone(phone.trim());
+        log.info(String.valueOf(temp));
+        return temp;
     }
 
     @Override
@@ -180,7 +182,7 @@ public class UserServiceImpl implements UserService {
         if (dto.role().equals("ROLE_SCHOOL_OWNER")) {
             if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumberAndUserIdNot(
                 dto.business_registration_number(), dto.id())) {
-                throw new BRNAlreadyExistedException("Business registration number already exists.");
+                throw new InvalidBRNAlException("Business registration number already exists.");
             }
 
             // Tìm hoặc tạo mới SchoolOwner
@@ -332,6 +334,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email cannot be empty");
         }
         Optional<User> existingUserEmail = userRepository.findByEmail(userCreateDTO.email());
+        Optional<User> existingUserPhone = userRepository.findByPhone(userCreateDTO.phone());
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
@@ -343,8 +346,9 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number())) {
-            throw new BRNAlreadyExistedException("Business registration number already exists.");
+        // Check phone number exist
+        if (existingUserPhone.isPresent()) {
+            throw new PhoneAlreadyExistedException("Phone already exists.");
         }
 
         // Create User

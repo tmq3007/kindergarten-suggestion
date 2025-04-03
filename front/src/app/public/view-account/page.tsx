@@ -1,10 +1,14 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { Tabs, Form, Input, DatePicker, Button, Spin, notification, Select } from 'antd';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import dayjs from 'dayjs';
-import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
+import {
+    Country,
+    useGetCountriesQuery,
+    useLazyCheckEmailQuery
+} from '@/redux/services/registerApi';
 import { ROLES } from '@/lib/constants';
 import { unauthorized } from 'next/navigation';
 import { ParentUpdateDTO, useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery } from '@/redux/services/parentApi';
@@ -12,6 +16,8 @@ import countriesKeepZero from '@/lib/countriesKeepZero';
 import ProfileSidebar from '@/app/components/user/ProfileSideBar';
 import UserFormSkeleton from '@/app/components/skeleton/UserFormSkeleton';
 import AddressInput from '@/app/components/common/AddressInput';
+import PhoneInput from "@/app/components/common/PhoneInput";
+import EmailInput from "@/app/components/common/EmailInput";
 
 
 const { Option } = Select;
@@ -25,12 +31,13 @@ const Profile = () => {
    const role = user.role;
    if (!role || role !== ROLES.PARENT) unauthorized();
 
-
+    const emailInputRef = useRef<any>(null); // Ref to access EmailInput methods
+    const phoneInputRef = useRef<any>(null);
    const userIdNumber = Number(userId);
    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
    const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
    const [processedPhone, setProcessedPhone] = useState<string>('');
-
+    const [triggerCheckEmail] = useLazyCheckEmailQuery();
 
    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
    const { data: parentData, isLoading, error: errorParent, refetch } = useGetParentByIdQuery(userIdNumber);
@@ -230,20 +237,11 @@ const Profile = () => {
                                        >
                                            <Input />
                                        </Form.Item>
-                                       <Form.Item
-                                           rules={[
-                                               { required: true, message: 'Email is required!' },
-                                               {
-                                                   pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                                   message: 'Please enter a valid email address!',
-                                               },
-                                           ]}
-                                           hasFeedback
-                                           name="email"
-                                           label={<span className="text-black">Email Address</span>}
-                                       >
-                                           <Input />
-                                       </Form.Item>
+                                       <EmailInput
+                                           form={form}
+                                           ref={emailInputRef}
+                                           triggerCheckEmail={triggerCheckEmail}
+                                       />
                                        <Form.Item
                                            name="dob"
                                            label={<span className="text-black">Date of Birth</span>}
@@ -261,57 +259,11 @@ const Profile = () => {
                                        >
                                            <DatePicker className="w-full" />
                                        </Form.Item>
-                                       <Form.Item
-                                           name="phone"
-                                           label={<span className="text-black">Phone Number</span>}
-                                           rules={[
-                                               { required: true, message: 'Phone number is required!' },
-                                               {
-                                                   pattern: /^\d{4,14}$/,
-                                                   message: 'Phone number must be between 4 and 14 digits!',
-                                               },
-                                           ]}
-
-
-                                       >
-                                           <div className="flex items-center border h-8 border-gray-300 rounded-lg overflow-hidden">
-                                               <Select
-                                                   className="w-2"
-                                                   loading={isLoadingCountry}
-                                                   value={selectedCountry?.code || ''}
-                                                   onChange={handleCountryChange}
-                                                   dropdownStyle={{ width: 250 }}
-                                                   style={{ width: 120, borderRight: '1px #ccc' }}
-                                                   optionLabelProp="label2"
-                                               >
-                                                   {countries?.map((country) => (
-                                                       <Select.Option
-                                                           key={country.code}
-                                                           value={country.code}
-                                                           label={country.label}
-                                                           label2={
-                                                               <span className="flex items-center">
-                                                                   <img src={country.flag} alt={country.label} width={20} height={10} className="mr-3" />
-                                                                   {country.code} {country.dialCode}
-                                                               </span>
-                                                           }
-                                                       >
-                                                           <div className="flex items-center">
-                                                               <img src={country.flag} alt={country.label} width={20} height={10} className="mr-2 ml-3" />
-                                                               {country.dialCode} - {country.label}
-                                                           </div>
-                                                       </Select.Option>
-                                                   ))}
-                                               </Select>
-                                               <Form.Item name="phone" noStyle>
-                                                   <Input
-                                                       placeholder="Enter your phone number"
-                                                       onChange={handlePhoneNumberChange}
-                                                       style={{ flex: 1, border: 'none', boxShadow: 'none' }}
-                                                   />
-                                               </Form.Item>
-                                           </div>
-                                       </Form.Item>
+                                       <PhoneInput form={form}
+                                                   onPhoneChange={(phone) => form.setFieldsValue({ phone })}
+                                                   ref={phoneInputRef}
+                                       // triggerCheckPhone={triggerCheckPhone}
+                                       />
                                    </div>
                                    <div className="space-y-6">
                                        <AddressInput

@@ -1,3 +1,2 @@
 .vscode
-/back/src/main/resources/cred.json
-.vercel
+/back/src/main/resources/gcp_cred.json

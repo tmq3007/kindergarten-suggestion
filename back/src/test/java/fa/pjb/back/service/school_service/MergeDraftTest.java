@@ -5,7 +5,7 @@ import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.repository.MediaRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.SchoolRepository;
-import fa.pjb.back.service.GGDriveImageService;
+import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.impl.SchoolServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class MergeDraftTest {
     private SchoolOwnerRepository schoolOwnerRepository;
 
     @Mock
-    private GGDriveImageService imageService;
+    private GCPFileStorageService imageService;
 
     @InjectMocks
     private SchoolServiceImpl schoolService;

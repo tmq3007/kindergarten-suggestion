@@ -6,7 +6,7 @@ import fa.pjb.back.model.dto.ReviewReportDTO;
 import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
-import fa.pjb.back.model.enums.ReviewStatus;
+import fa.pjb.back.model.enums.EReviewStatus;
 import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
@@ -111,12 +111,12 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ReviewNotFoundException();
         }
 
-        if (review.getStatus() != ReviewStatus.APPROVED.getValue()) {
+        if (review.getStatus() != EReviewStatus.APPROVED.getValue()) {
             throw new IllegalStateException("Review is not approved");
         }
 
         review.setReport(reviewReportDTO.reason());
-        review.setStatus(ReviewStatus.PENDING.getValue());
+        review.setStatus(EReviewStatus.PENDING.getValue());
 
         return reviewMapper.toReviewVO((review));
     }
@@ -135,7 +135,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new IllegalArgumentException("Decision cannot be null");
         }
 
-        if (review.getStatus() != ReviewStatus.PENDING.getValue()) {
+        if (review.getStatus() != EReviewStatus.PENDING.getValue()) {
             throw new IllegalStateException("Review is not pending");
         }
 
@@ -151,7 +151,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewReportReminderVO> getReviewReportReminders() {
         // Fetch all reviews with PENDING status
-        List<Review> reviews = reviewRepository.findAllByStatus(ReviewStatus.PENDING.getValue());
+        List<Review> reviews = reviewRepository.findAllByStatus(EReviewStatus.PENDING.getValue());
 
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
