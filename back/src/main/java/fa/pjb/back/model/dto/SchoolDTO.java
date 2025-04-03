@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
+import lombok.Setter;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

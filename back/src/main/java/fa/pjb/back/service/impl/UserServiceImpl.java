@@ -1,6 +1,7 @@
 package fa.pjb.back.service.impl;
 
-import fa.pjb.back.common.exception._10xx_user.BRNAlreadyExistedException;
+import fa.pjb.back.common.exception._10xx_user.InvalidBRNAlException;
+import fa.pjb.back.common.exception._10xx_user.PhoneAlreadyExistedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
 import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
@@ -45,11 +46,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
 
 import static fa.pjb.back.model.enums.ERole.*;
 import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
@@ -180,7 +176,7 @@ public class UserServiceImpl implements UserService {
         if (dto.role().equals("ROLE_SCHOOL_OWNER")) {
             if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumberAndUserIdNot(
                 dto.business_registration_number(), dto.id())) {
-                throw new BRNAlreadyExistedException("Business registration number already exists.");
+                throw new InvalidBRNAlException("Business registration number already exists.");
             }
 
             // Tìm hoặc tạo mới SchoolOwner
@@ -332,6 +328,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email cannot be empty");
         }
         Optional<User> existingUserEmail = userRepository.findByEmail(userCreateDTO.email());
+        Optional<User> existingUserPhone = userRepository.findByPhone(userCreateDTO.phone());
 
         //Check email exist
         if (existingUserEmail.isPresent()) {
@@ -343,8 +340,9 @@ public class UserServiceImpl implements UserService {
             throw new InvalidDateException("Dob must be in the past");
         }
 
-        if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(userCreateDTO.business_registration_number())) {
-            throw new BRNAlreadyExistedException("Business registration number already exists.");
+        // Check phone number exist
+        if (existingUserPhone.isPresent()) {
+            throw new PhoneAlreadyExistedException("Phone already exists.");
         }
 
         // Create User

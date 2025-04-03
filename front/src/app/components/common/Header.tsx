@@ -25,8 +25,21 @@ export default function Header() {
     if (path === '/public/login') {
         return null;
     }
+
     const username = useSelector((state: RootState) => state.user?.username);
     const role = useSelector((state: RootState) => state.user?.role);
+
+    // Handle scroll to section
+    const handleScroll = (sectionId: string) => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    };
+
     return (
         <motion.nav
             initial={{ y: -100, opacity: 0 }}
@@ -72,6 +85,10 @@ export default function Header() {
                                 {
                                     label: <Link
                                         href="/public/community"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleScroll('testimonial');
+                                        }}
                                         className={clsx(
                                             path === '/public/community' && 'font-bold !text-custom-200',
                                         )}>
@@ -83,6 +100,10 @@ export default function Header() {
                                 {
                                     label: <Link
                                         href="/public/about"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleScroll('information');
+                                        }}
                                         className={clsx(
                                             path === '/public/about' && 'font-bold !text-custom-200',
                                         )}>
@@ -96,15 +117,14 @@ export default function Header() {
                     </ConfigProvider>
                 </div>
 
-
-                 {/*Login & Signup*/}
+                {/* Login & Signup */}
                 {
                     username ?
                         <Space className={'text-sm md:text-lg'}>
                             {role === "ROLE_SCHOOL_OWNER" && <NotificationDropdown />}
                             <UserDropdown username={username}/>
                         </Space>
-                         :
+                        :
                         <Space className={'text-sm md:text-lg'}>
                             <Link href=""
                                   onClick={() => setIsLoginModalOpen(true)}
@@ -125,7 +145,7 @@ export default function Header() {
                 }
             </div>
 
-            {/*Login Modal*/}
+            {/* Login Modal */}
             <Modal
                 title={<div className={'text-center text-2xl'}>Login into your account</div>}
                 open={isLoginModalOpen}
@@ -144,7 +164,7 @@ export default function Header() {
                     }}/>
             </Modal>
 
-            {/*Signup Modal*/}
+            {/* Signup Modal */}
             <Modal
                 title={<div className={'text-center text-2xl'}>Create a new user</div>}
                 open={isSignupModalOpen}
@@ -155,12 +175,16 @@ export default function Header() {
                 destroyOnClose={true}
                 getContainer={false}
             >
-                <RegisterForm onSuccess={()=> {
-                    setIsLoginModalOpen(true); 
-                    setIsSignupModalOpen(false)}} 
-                    countries={countries} isLoadingCountry={isLoadingCountry} onCancel={() => setIsSignupModalOpen(false)}/>
+                <RegisterForm
+                    onSuccess={() => {
+                        setIsLoginModalOpen(true);
+                        setIsSignupModalOpen(false)
+                    }}
+                    countries={countries}
+                    isLoadingCountry={isLoadingCountry}
+                    onCancel={() => setIsSignupModalOpen(false)}
+                />
             </Modal>
         </motion.nav>
     );
 };
-
