@@ -78,7 +78,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
         // Resize image
         try (OutputStream os = new FileOutputStream(resizedFile)) {
             Thumbnails.of(originalImage)
-                    .size(600, 600)
+                    .size(1200, 760)
                     .outputFormat("png")
 //                    .outputQuality(0.9)
                     .toOutputStream(os);

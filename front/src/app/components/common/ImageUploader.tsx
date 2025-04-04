@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Upload, UploadFile, UploadProps, notification, Image, FormInstance} from 'antd';
 import {InboxOutlined, PlusOutlined} from '@ant-design/icons';
 import 'antd/dist/reset.css';
+import ImgCrop from "antd-img-crop";
 
 interface ImageUploadProps {
     form: FormInstance;
@@ -27,7 +28,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                                                             maxCount = 10,
                                                             accept,
                                                             maxSizeMB = 5,
-                                                            hideImageUpload=false,
+                                                            hideImageUpload = false,
                                                             imageList = [],
                                                             formLoaded = false,
                                                         }) => {
@@ -87,11 +88,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     };
 
     const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
-        console.log("📸 Trước khi cập nhật:", fileList);
-        console.log("📥 Ảnh mới được thêm / cập nhật:", newFileList);
         setFileList(newFileList);
         form.setFieldsValue({[fieldName]: newFileList});
-        console.log("📌 Danh sách ảnh sau khi cập nhật:", newFileList);
     };
 
     const beforeUpload = (file: File) => {
@@ -158,52 +156,54 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                     )}
                 </div>
             ) : (
-                <Upload.Dragger
-                    multiple
-                    listType="picture-card"
-                    name="files"
-                    fileList={fileList}
-                    beforeUpload={beforeUpload}
-                    maxCount={maxCount}
-                    accept={formattedAccept}
-                    onPreview={handlePreview}
-                    onChange={handleChange}
-                    className="custom-upload-dragger"
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: "16px",
-                        }}
+                <ImgCrop aspect={16 / 9} rotationSlider quality={1}>
+                    <Upload.Dragger
+                        multiple
+                        listType="picture-card"
+                        name="files"
+                        fileList={fileList}
+                        beforeUpload={beforeUpload}
+                        maxCount={maxCount}
+                        accept={formattedAccept}
+                        onPreview={handlePreview}
+                        onChange={handleChange}
+                        className="custom-upload-dragger"
                     >
                         <div
                             style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 3fr",
-                                gap: "16px",
-                                width: "100%",
+                                display: "flex",
+                                flexDirection: "column",
                                 alignItems: "center",
+                                gap: "16px",
                             }}
                         >
-                            <div style={{textAlign: "center"}}>
-                                <InboxOutlined style={{fontSize: "50px", color: "#1890ff"}}/>
-                            </div>
-                            <div style={{textAlign: "center"}}>
-                                <p className="ant-upload-text" style={{margin: 0}}>
-                                    Click or drag file to this area to upload
-                                </p>
-                                <p className="ant-upload-text" style={{margin: 0}}>
-                                    Upload files of format <strong>{displayAccept}</strong> only
-                                </p>
-                                <p className="ant-upload-text" style={{margin: 0}}>
-                                    Maximum size: <strong>{maxSizeMB}MB</strong>
-                                </p>
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 3fr",
+                                    gap: "16px",
+                                    width: "100%",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <div style={{textAlign: "center"}}>
+                                    <InboxOutlined style={{fontSize: "50px", color: "#1890ff"}}/>
+                                </div>
+                                <div style={{textAlign: "center"}}>
+                                    <p className="ant-upload-text" style={{margin: 0}}>
+                                        Click or drag file to this area to upload
+                                    </p>
+                                    <p className="ant-upload-text" style={{margin: 0}}>
+                                        Upload files of format <strong>{displayAccept}</strong> only
+                                    </p>
+                                    <p className="ant-upload-text" style={{margin: 0}}>
+                                        Maximum size: <strong>{maxSizeMB}MB</strong>
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </Upload.Dragger>
+                    </Upload.Dragger>
+                </ImgCrop>
             )}
 
             {previewImage && (
