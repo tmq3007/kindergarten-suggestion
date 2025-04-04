@@ -22,6 +22,7 @@ import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.TokenService;
 import io.github.cdimascio.dotenv.Dotenv;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

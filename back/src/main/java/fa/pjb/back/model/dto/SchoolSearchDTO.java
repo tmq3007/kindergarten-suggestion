@@ -30,7 +30,9 @@ public record SchoolSearchDTO(
 
         int size,
 
-        String sortBy
+        String sortBy,
+
+        String sortDirection
 
 ) {
 }

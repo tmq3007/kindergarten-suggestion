@@ -1,12 +1,10 @@
 "use client";
 
-import {Form} from "antd";
-import {forbidden, useParams, useRouter} from "next/navigation";
-import Link from "next/link";
+import {useParams, useRouter} from "next/navigation";
 import React from "react";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import RequestCounsellingForm from "@/app/components/request_counselling/RequestCounsellingForm";
-import {useGetRequestCounsellingQuery} from "@/redux/services/requestCounsellingApi";
+import {useGetRequestCounsellingByAdminQuery} from "@/redux/services/requestCounsellingApi";
 import useRequestCounsellingForm from "@/lib/hook/useRequestCounsellingForm";
 import RequestCounsellingManageTitle from "@/app/components/request_counselling/RequestCounsellingManageTitle";
 import RequestCounsellingFormSkeleton from "@/app/components/skeleton/RequestCounsellingFormSkeleton";
@@ -16,7 +14,7 @@ export default function RequestCounsellingDetail() {
     const params = useParams();
     const requestCounsellingId = Number(params.id as string);
     const router = useRouter();
-    const {data, isLoading} = useGetRequestCounsellingQuery(requestCounsellingId);
+    const {data, isLoading, error} = useGetRequestCounsellingByAdminQuery(requestCounsellingId);
     const {form, formLoaded, requestCounselling, requestCounsellingStatus} = useRequestCounsellingForm({
         data: data?.data,
         isLoading
@@ -63,7 +61,8 @@ export default function RequestCounsellingDetail() {
                         form={form}
                         formLoaded={formLoaded}
                         isReadOnly={true}
-                        hasResolveButton={false}/>
+                        hasResolveButton={false}
+                        isAdmin={true}/>
 
                 </div>
             ) ||
@@ -72,7 +71,8 @@ export default function RequestCounsellingDetail() {
                         form={form}
                         formLoaded={formLoaded}
                         isReadOnly={true}
-                        hasResolveButton={true}/>
+                        hasResolveButton={true}
+                        isAdmin={true}/>
                 </div>)}
         </div>
     );

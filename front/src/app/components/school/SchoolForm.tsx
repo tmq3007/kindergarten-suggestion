@@ -31,14 +31,11 @@ import school2 from '@public/school2.jpg'
 import school3 from '@public/school3.jpg'
 import school4 from '@public/school4.jpg'
 import school5 from '@public/school5.jpg'
-import {AnimatePresence} from "framer-motion";
-import {motion} from "framer-motion";
 import SchoolOwnersSelect from "@/app/components/school/SchoolOwnerSelect";
 import SchoolNameInput from "@/app/components/school/SchoolNameInput";
 import Image from "next/image";
 import ReactImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
-
 
 interface SchoolFieldType {
     name: string;

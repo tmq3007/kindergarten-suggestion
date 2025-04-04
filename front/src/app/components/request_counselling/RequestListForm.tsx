@@ -71,7 +71,7 @@ export default function RequestListForm({
       key: "fullName",
       width: 150,
       render: (fullName: string, record: { id: number }) => (
-          <Link href={`/admin/management/request/request-detail/${record.id}`}>
+          <Link href={`/admin/management/request/request-counselling-detail/${record.id}`}>
             <span className="text-blue-500 hover:underline">{fullName}</span>
           </Link>
       ),

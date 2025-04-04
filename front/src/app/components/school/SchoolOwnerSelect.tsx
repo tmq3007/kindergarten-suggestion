@@ -1,5 +1,5 @@
 'use client';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef} from 'react';
 import {Form, Select} from 'antd';
 import {MailOutlined, PhoneOutlined, UserOutlined} from '@ant-design/icons';
 import {useSelector} from 'react-redux';
@@ -13,7 +13,6 @@ interface SchoolOwnersSelectProps {
     schoolNameValue?: string;
     BRN?: string;
     initialOwners?: SchoolOwnerVO[];
-    onSchoolOptionsChange?: (options: { value: string; BRN?: string }[]) => void;
 }
 
 const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
@@ -25,35 +24,91 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
                                                                }) => {
     const user = useSelector((state: RootState) => state.user);
     const [triggerSearchSchoolOwners, searchSchoolOwnersResult] = useLazySearchSchoolOwnersForAddSchoolQuery();
-    const [fetchedOwners, setFetchedOwners] = useState<SchoolOwnerVO[]>([]);
-    const [ownerOptions, setOwnerOptions] = useState<
-        { label: React.ReactNode; value: string; owner: SchoolOwnerVO }[]
-    >([]);
-    const [initialSelectionDone, setInitialSelectionDone] = useState(false);
+    const [fetchedOwners, setFetchedOwners] = React.useState<SchoolOwnerVO[]>([]);
+    const hasSetOwnersRef = useRef(false);
 
-    // Custom render for owner options
-    const renderOwnerOption = (owner: SchoolOwnerVO) => (
-        <div className="py-2 border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center text-sm">
-                <UserOutlined className="mr-2 text-blue-500"/>
-                <span className="font-medium text-gray-800">{owner.fullname}</span>
-                <span className="ml-2 text-gray-500">(@{owner.username})</span>
-            </div>
-            <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <MailOutlined className="mr-2 text-gray-400"/>
-                {owner.email}
-            </div>
-            <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <PhoneOutlined className="mr-2 text-gray-400"/>
-                {owner.phone}
-            </div>
-        </div>
-    );
+    // Fetch owners when schoolName or BRN changes
+    useEffect(() => {
+        if (!schoolNameValue || isReadOnly) {
+            setFetchedOwners([]);
+            return;
+        }
 
-    // Custom render for selected tags
+        triggerSearchSchoolOwners({ expectedSchool: schoolNameValue, BRN })
+            .unwrap()
+            .then((result) => setFetchedOwners(result?.data || []))
+            .catch((error) => {
+                console.error('Error fetching school owners:', error);
+                setFetchedOwners([]);
+            });
+    }, [schoolNameValue, BRN, isReadOnly]);
+
+    // Combine initialOwners and fetchedOwners, avoid duplicates
+    const combinedOptions = useMemo(() => {
+        const allOwners = [...initialOwners];
+        fetchedOwners.forEach((fetchedOwner) => {
+            if (!allOwners.some((owner) => owner.id === fetchedOwner.id)) {
+                allOwners.push(fetchedOwner);
+            }
+        });
+        return allOwners.map((owner) => ({
+            label: (
+                <div className="py-2 border-b border-gray-100 last:border-b-0">
+                    <div className="flex items-center text-sm">
+                        <UserOutlined className="mr-2 text-blue-500"/>
+                        <span className="font-medium text-gray-800">{owner.fullname}</span>
+                        <span className="ml-2 text-gray-500">(@{owner.username})</span>
+                    </div>
+                    <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
+                        <MailOutlined className="mr-2 text-gray-400"/>
+                        {owner.email}
+                    </div>
+                    <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
+                        <PhoneOutlined className="mr-2 text-gray-400"/>
+                        {owner.phone}
+                    </div>
+                </div>
+            ),
+            value: String(owner.id),
+            owner,
+        }));
+    }, [fetchedOwners, initialOwners]);
+
+    // Auto-set default selection if user is in the options
+    useEffect(() => {
+        if (isReadOnly || hasSetOwnersRef.current) return;
+
+        const currentOwners = form.getFieldValue('schoolOwners') || [];
+        const updated = new Set(currentOwners);
+
+        const userOwnerId = combinedOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
+        if (userOwnerId) updated.add(userOwnerId);
+
+        initialOwners.forEach((owner) => updated.add(String(owner.id)));
+
+        const updatedArray = Array.from(updated);
+
+        if (
+            currentOwners.length !== updatedArray.length ||
+            !currentOwners.every((id: number) => updated.has(id))
+        ) {
+            form.setFieldsValue({ schoolOwners: updatedArray });
+            hasSetOwnersRef.current = true;
+        }
+    }, [combinedOptions, isReadOnly, user.id, initialOwners]);
+
+    const handleOwnersChange = (selectedOwners: string[]) => {
+        const userOwnerId = combinedOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
+        if (userOwnerId && !selectedOwners.includes(userOwnerId)) {
+            form.setFieldsValue({ schoolOwners: [...selectedOwners, userOwnerId] });
+        } else {
+            form.setFieldsValue({ schoolOwners: selectedOwners });
+        }
+    };
+
     const renderOwnerTag = (props: any) => {
         const {value, closable, onClose} = props;
-        const owner = ownerOptions.find((opt) => opt.value === value)?.owner;
+        const owner = combinedOptions.find((opt) => opt.value === value)?.owner;
         const isCurrentUser = owner?.userId === Number(user.id);
 
         return (
@@ -74,87 +129,13 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
         );
     };
 
-    // Fetch owners when school name or BRN changes
-    const fetchOwners = async () => {
-        if (!schoolNameValue || isReadOnly) {
-            setFetchedOwners([]);
-            return;
-        }
-        try {
-            const result = await triggerSearchSchoolOwners({expectedSchool: schoolNameValue, BRN}).unwrap();
-            setFetchedOwners(result?.data || []);
-        } catch (error) {
-            console.error('Error fetching school owners:', error);
-            setFetchedOwners([]);
-        }
-    };
-
-    // Combine initialOwners (fixed) and fetchedOwners
-    const combinedOptions = useMemo(() => {
-        const allOwners = [...initialOwners];
-        fetchedOwners.forEach((fetchedOwner) => {
-            if (!allOwners.some((owner) => owner.id === fetchedOwner.id)) {
-                allOwners.push(fetchedOwner);
-            }
-        });
-        return allOwners.map((owner) => ({
-            label: renderOwnerOption(owner),
-            value: String(owner.id),
-            owner,
-        }));
-    }, [fetchedOwners, initialOwners]);
-
-    // Update options and handle initial auto-selection or deselection
-    const hasSetOwnersRef = useRef(false);
-
-    useEffect(() => {
-        if (isReadOnly || hasSetOwnersRef.current) return;
-
-        setOwnerOptions(combinedOptions);
-
-        const currentOwners = form.getFieldValue('schoolOwners') || [];
-        const updated = new Set(currentOwners);
-
-        const userOwnerId = combinedOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
-        if (userOwnerId) updated.add(userOwnerId);
-
-        initialOwners.forEach((owner) => updated.add(String(owner.id)));
-
-        const updatedArray = Array.from(updated);
-
-        if (
-            currentOwners.length !== updatedArray.length ||
-            !currentOwners.every((id: number) => updated.has(id))
-        ) {
-            form.setFieldsValue({schoolOwners: updatedArray});
-            hasSetOwnersRef.current = true;
-        }
-    }, [combinedOptions, isReadOnly, user.id, initialOwners]);
-
-
-    // Fetch owners when schoolNameValue or BRN changes
-    useEffect(() => {
-        fetchOwners().then(() => {
-        });
-    }, [schoolNameValue, BRN, isReadOnly]);
-
-    // Handle owners selection change
-    const handleOwnersChange = (selectedOwners: string[]) => {
-        const userOwnerId = ownerOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
-        if (userOwnerId && !selectedOwners.includes(userOwnerId)) {
-            form.setFieldsValue({schoolOwners: [...selectedOwners, userOwnerId]});
-        } else {
-            form.setFieldsValue({schoolOwners: selectedOwners});
-        }
-    };
-
     return (
         <Form.Item name="schoolOwners" label="School Owners">
             <Select
                 showSearch
                 mode="multiple"
                 placeholder="Select school owners..."
-                options={ownerOptions}
+                options={combinedOptions}
                 onChange={handleOwnersChange}
                 loading={searchSchoolOwnersResult.isFetching}
                 disabled={isReadOnly || !schoolNameValue}
