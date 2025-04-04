@@ -3,6 +3,8 @@ package fa.pjb.back.repository;
 import fa.pjb.back.model.entity.RequestCounselling;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -33,4 +35,9 @@ public interface RequestCounsellingRepository extends JpaRepository<RequestCouns
     Page<RequestCounselling> findByStatusIn(List<Byte> statuses, Pageable pageable);
 
     Page<RequestCounselling> findBySchoolIdAndStatusIn(Integer schoolId, List<Byte> statuses, Pageable pageable);
+    @Query("SELECT COUNT(rc) > 0 FROM RequestCounselling rc " +
+            "WHERE rc.id = :requestId AND :ownerId IN (SELECT so.id FROM rc.school s JOIN s.schoolOwners so)")
+    @EntityGraph(attributePaths = {"school", "school.schoolOwners"})
+    boolean isRequestManagedByOwner(@Param("requestId") Integer requestId,
+                                    @Param("ownerId") Integer ownerId);
 }

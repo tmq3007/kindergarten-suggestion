@@ -96,13 +96,38 @@ export const requestCounsellingApi = createApi({
       providesTags: ["RequestList"],
     }),
 
-    getRequestCounselling: builder.query<ApiResponse<RequestCounsellingVO>, number>({
-      query: (requestCounsellingId) => ({
-        url: `counselling/${requestCounsellingId}`,
-        method: "GET",
+      getRequestCounsellingByAdmin: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+          query: (requestCounsellingId) => ({
+              url: `counselling/get-by-admin/${requestCounsellingId}`,
+              method: "GET",
+          }),
+          transformErrorResponse: (response: { status: string | number }) => response.status,
+          providesTags: ["RequestCounselling"],
       }),
-      providesTags: ["RequestCounselling"],
-    }),
+      getRequestCounsellingBySchoolOwner: builder.query<ApiResponse<RequestCounsellingVO>, number>({
+          query: (requestCounsellingId) => ({
+              url: `counselling/get-by-school-owner/${requestCounsellingId}`,
+              method: "GET",
+          }),
+          transformErrorResponse: (response: { status: string | number }) => response.status,
+          providesTags: ["RequestCounselling"],
+      }),
+      updateRequestCounsellingByAdmin: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
+          query: (data) => ({
+              url: `/counselling/update-request-counselling-by-admin`,
+              method: "PUT",
+              body: data,
+          }),
+          invalidatesTags: ["RequestCounselling", "RequestList"],
+      }),
+      updateRequestCounsellingBySchoolOwner: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
+          query: (data) => ({
+              url: `/counselling/update-request-counselling-by-school-owner`,
+              method: "PUT",
+              body: data,
+          }),
+          invalidatesTags: ["RequestCounselling", "RequestList"],
+      }),
 
     getAllReminder: builder.query<
         ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
@@ -120,16 +145,6 @@ export const requestCounsellingApi = createApi({
       }),
       providesTags: ["RequestList"],
     }),
-
-    updateRequestCounselling: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
-      query: (data) => ({
-        url: `/counselling/update-request-counselling`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ["RequestCounselling", "RequestList"],
-    }),
-
     getRemindersBySchoolOwner: builder.query<
         ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
         { page?: number; size?: number; schoolOwnerId: number }
@@ -155,8 +170,10 @@ export const {
   useAlertReminderQuery,
   useCreateRequestCounsellingMutation,
   useGetAllRequestsQuery,
-  useGetRequestCounsellingQuery,
   useGetAllReminderQuery,
-  useUpdateRequestCounsellingMutation,
   useGetRemindersBySchoolOwnerQuery,
+  useGetRequestCounsellingByAdminQuery,
+  useGetRequestCounsellingBySchoolOwnerQuery,
+  useUpdateRequestCounsellingByAdminMutation,
+  useUpdateRequestCounsellingBySchoolOwnerMutation
 } = requestCounsellingApi;

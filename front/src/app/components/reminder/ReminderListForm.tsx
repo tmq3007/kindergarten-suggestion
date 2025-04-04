@@ -129,7 +129,7 @@ export default function ReminderListForm({
       width: 120,
       align: "center" as const,
       render: (id: number) => (
-          <a href={`http://localhost:3000/admin/management/request/request-reminder/${id}`}>Go to review</a>
+          <a href={`http://localhost:3000/admin/management/request/request-counselling-detail/${id}`}>Go to review</a>
       ),
     },
   ];
