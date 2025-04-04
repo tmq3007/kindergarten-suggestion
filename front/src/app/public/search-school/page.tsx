@@ -46,6 +46,7 @@ export default async function SearchSchool({searchParams}: SearchSchoolPageProps
         page: resolvedSearchParams.page ? Number(resolvedSearchParams.page) - 1 : 0,
         size: resolvedSearchParams.size ? Number(resolvedSearchParams.size) : 10,
         sortBy: (resolvedSearchParams.sortBy as string) || "postedDate",
+        sortDirection: (resolvedSearchParams.sortDirection as string) || "Descending",
         name: (resolvedSearchParams.name as string) || "",
         province: (resolvedSearchParams.province as string) || undefined,
         district: (resolvedSearchParams.district as string) || undefined,
@@ -61,9 +62,13 @@ export default async function SearchSchool({searchParams}: SearchSchoolPageProps
 
     try {
         const initialSearchResult = await fetchSchools(initialParams);
+        console.log("response:", initialSearchResult);
         return (
             <div className="min-h-screen">
-                <SchoolSearch initialSearchResult={initialSearchResult} initialParams={initialParams}/>
+                <SchoolSearch
+                    initialSearchResult={initialSearchResult}
+                    initialParams={initialParams}
+                />
             </div>
         );
     } catch (error) {
