@@ -72,13 +72,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Check CSRF Token from Cookie and Header
         String csrfTokenFromCookie = httpRequestHelper.extractJwtTokenFromCookie(request, "CSRF_TOKEN");
+        log.info("csrfTokenFromCookie: {}", csrfTokenFromCookie);
         String csrfTokenFromHeader = request.getHeader("X-CSRF-TOKEN");
+        log.info("csrfTokenFromHeader: {}", csrfTokenFromHeader);
         if (csrfTokenFromCookie == null || !csrfTokenFromCookie.equals(csrfTokenFromHeader)) {
             throw new JwtUnauthorizedException("Invalid CSRF Token");
         }
 
         // Extract JWT Access Token from Cookie
         String jwt = httpRequestHelper.extractJwtTokenFromCookie(request, "ACCESS_TOKEN");
+        log.info("jwt: {}", jwt);
         if (jwt == null) {
             throw new JwtUnauthorizedException("Invalid Access Token");
         }

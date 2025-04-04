@@ -4,10 +4,7 @@ import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.SchoolSearchDTO;
-import fa.pjb.back.model.vo.ExpectedSchoolVO;
-import fa.pjb.back.model.vo.SchoolDetailVO;
-import fa.pjb.back.model.vo.SchoolListVO;
-import fa.pjb.back.model.vo.SchoolOwnerVO;
+import fa.pjb.back.model.vo.*;
 import fa.pjb.back.service.SchoolService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -202,7 +199,7 @@ public class SchoolController {
 
     @Operation(summary = "Search schools by criteria", description = "This api allow user to filter school with criteria")
     @GetMapping("/search-by-criteria")
-    public ApiResponse<Page<SchoolDetailVO>> searchSchools(
+    public ApiResponse<Page<SchoolSearchNativeVO>> searchSchools(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Byte type,
             @RequestParam(required = false) Byte age,
@@ -214,7 +211,9 @@ public class SchoolController {
             @RequestParam(required = false) String district,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "postedDate") String sortBy) {
+            @RequestParam(defaultValue = "postedDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
 
         SchoolSearchDTO searchDTO = SchoolSearchDTO.builder()
                 .name(name)
@@ -229,12 +228,13 @@ public class SchoolController {
                 .page(page)
                 .size(size)
                 .sortBy(sortBy)
+                .sortDirection(sortDirection)
                 .build();
 
-        return ApiResponse.<Page<SchoolDetailVO>>builder()
+        return ApiResponse.<Page<SchoolSearchNativeVO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Search results")
-                .data(schoolService.searchSchoolByCriteria(searchDTO))
+                .message("Get search results successfully.")
+                .data(schoolService.searchSchoolByCriteriaWithNative(searchDTO))
                 .build();
     }
 

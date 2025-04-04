@@ -1,13 +1,10 @@
 package fa.pjb.back.model.vo;
 
-import lombok.Builder;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-@Builder
-public record SchoolDetailVO(
+public record SchoolSearchVO(
 
         Integer id,
 
@@ -49,11 +46,7 @@ public record SchoolDetailVO(
 
         LocalDateTime postedDate,
 
-        ReviewVO review,
-
-        Set<SchoolOwnerVO> schoolOwners,
-
-        Integer refId
+        ReviewVO reviews
 
 ) {
 }
