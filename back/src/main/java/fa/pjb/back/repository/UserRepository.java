@@ -24,6 +24,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByPhone(String phone);
+
     long countByUsernameStartingWith(String baseUsername);
 
     @Query("SELECT u.username FROM User u WHERE u.username LIKE CONCAT(:prefix, '%')")
@@ -31,7 +33,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 
 
-    boolean existsByEmailAndIdNot(String email, int id);
+    boolean existsByEmailAndIdNot(String email, Integer id);
+
+    boolean existsByEmail(String email);
 
     @Query("SELECT " +
             "    u.id AS id, " +
@@ -85,4 +89,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u.email FROM User u WHERE u.username = :username")
     Optional<String> findEmailByUsername(@Param("username") String username);
+
+    boolean existsByPhone(String phone);
+
+    boolean existsByPhoneAndIdNot(String phone, Integer id);
 }

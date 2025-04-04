@@ -1,11 +1,11 @@
 @startuml
 
 actor FE
-participant ParentController
-participant RegisterDTO
-participant ParentService
-participant UserService
-participant ParentRepository
+participant ":parentController" as ParentController
+participant ":registerDTO" as RegisterDTO
+participant ":parentService" as ParentService
+participant ":userService" as UserService
+participant ":parentRepository" as ParentRepository
 participant EmailAlreadyExistedException
 
 FE -> ParentController : Register

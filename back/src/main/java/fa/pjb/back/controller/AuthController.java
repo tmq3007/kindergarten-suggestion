@@ -78,11 +78,11 @@ public class AuthController {
 
     @Operation(summary = "Check email", description = "Check if the email used for registration is already in use")
     @GetMapping("check-email")
-    public ApiResponse<String> checkEmailWhenRegister(@RequestParam String email) {
-        return ApiResponse.<String>builder()
+    public ApiResponse<Boolean> checkEmailWhenRegister(@RequestParam String email) {
+        return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Email checked!")
-                .data(String.valueOf(authService.checkEmailExists(email)))
+                .data(authService.checkEmailExists(email))
                 .build();
     }
 

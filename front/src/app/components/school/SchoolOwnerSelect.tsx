@@ -1,11 +1,11 @@
 'use client';
-import React, { useEffect, useState, useMemo } from 'react';
-import { Form, Select } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { SchoolOwnerVO } from '@/redux/services/schoolOwnerApi';
-import { useLazySearchSchoolOwnersForAddSchoolQuery } from '@/redux/services/schoolApi';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {Form, Select} from 'antd';
+import {MailOutlined, PhoneOutlined, UserOutlined} from '@ant-design/icons';
+import {useSelector} from 'react-redux';
+import {RootState} from '@/redux/store';
+import {SchoolOwnerVO} from '@/redux/services/schoolOwnerApi';
+import {useLazySearchSchoolOwnersForAddSchoolQuery} from '@/redux/services/schoolApi';
 
 interface SchoolOwnersSelectProps {
     form: any;
@@ -35,16 +35,16 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
     const renderOwnerOption = (owner: SchoolOwnerVO) => (
         <div className="py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center text-sm">
-                <UserOutlined className="mr-2 text-blue-500" />
+                <UserOutlined className="mr-2 text-blue-500"/>
                 <span className="font-medium text-gray-800">{owner.fullname}</span>
                 <span className="ml-2 text-gray-500">(@{owner.username})</span>
             </div>
             <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <MailOutlined className="mr-2 text-gray-400" />
+                <MailOutlined className="mr-2 text-gray-400"/>
                 {owner.email}
             </div>
             <div className="flex items-center text-xs text-gray-600 mt-1 ml-6">
-                <PhoneOutlined className="mr-2 text-gray-400" />
+                <PhoneOutlined className="mr-2 text-gray-400"/>
                 {owner.phone}
             </div>
         </div>
@@ -52,13 +52,13 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
 
     // Custom render for selected tags
     const renderOwnerTag = (props: any) => {
-        const { value, closable, onClose } = props;
+        const {value, closable, onClose} = props;
         const owner = ownerOptions.find((opt) => opt.value === value)?.owner;
         const isCurrentUser = owner?.userId === Number(user.id);
 
         return (
             <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1 mr-1 mb-1">
-                <UserOutlined className="text-blue-500 mr-1" />
+                <UserOutlined className="text-blue-500 mr-1"/>
                 <span>
                     {owner?.username || 'Unknown'} {isCurrentUser && '(You)'}
                 </span>
@@ -81,7 +81,7 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
             return;
         }
         try {
-            const result = await triggerSearchSchoolOwners({ expectedSchool: schoolNameValue, BRN }).unwrap();
+            const result = await triggerSearchSchoolOwners({expectedSchool: schoolNameValue, BRN}).unwrap();
             setFetchedOwners(result?.data || []);
         } catch (error) {
             console.error('Error fetching school owners:', error);
@@ -102,87 +102,49 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
             value: String(owner.id),
             owner,
         }));
-    }, [fetchedOwners]);
+    }, [fetchedOwners, initialOwners]);
 
     // Update options and handle initial auto-selection or deselection
+    const hasSetOwnersRef = useRef(false);
+
     useEffect(() => {
+        if (isReadOnly || hasSetOwnersRef.current) return;
+
         setOwnerOptions(combinedOptions);
 
-        if (!isReadOnly) {
-            const currentOwners = form.getFieldValue('schoolOwners') || [];
-            const newOwnersToSelect: string[] = [];
-            const userOwnerId = combinedOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
+        const currentOwners = form.getFieldValue('schoolOwners') || [];
+        const updated = new Set(currentOwners);
 
-            // Auto-select current user
-            if (userOwnerId && !currentOwners.includes(userOwnerId)) {
-                newOwnersToSelect.push(userOwnerId);
-            }
+        const userOwnerId = combinedOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
+        if (userOwnerId) updated.add(userOwnerId);
 
-            // Auto-select initial owners on first load
-            if (!initialSelectionDone && initialOwners.length > 0) {
-                initialOwners.forEach((owner) => {
-                    const ownerId = String(owner.id);
-                    if (!currentOwners.includes(ownerId) && !newOwnersToSelect.includes(ownerId)) {
-                        newOwnersToSelect.push(ownerId);
-                    }
-                });
-                setInitialSelectionDone(true);
-            }
+        initialOwners.forEach((owner) => updated.add(String(owner.id)));
 
-            if (newOwnersToSelect.length > 0) {
-                form.setFieldsValue({ schoolOwners: [...currentOwners, ...newOwnersToSelect] });
-            }
+        const updatedArray = Array.from(updated);
 
-            if (initialOwners.length === 0 && currentOwners.length > 0) {
-                // Deselect all options if initialOwners is empty and schoolNameValue changed
-                form.setFieldsValue({ schoolOwners: [] });
-            }
+        if (
+            currentOwners.length !== updatedArray.length ||
+            !currentOwners.every((id: number) => updated.has(id))
+        ) {
+            form.setFieldsValue({schoolOwners: updatedArray});
+            hasSetOwnersRef.current = true;
         }
+    }, [combinedOptions, isReadOnly, user.id, initialOwners]);
 
-        // if (!isReadOnly) {
-        //     const currentOwners = form.getFieldValue('schoolOwners') || [];
-        //     const newOwnersToSelect: string[] = [];
-        //     const userOwnerId = combinedOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
-        //
-        //     if (!initialSelectionDone) {
-        //         // Auto-select current user
-        //         if (userOwnerId && !currentOwners.includes(userOwnerId)) {
-        //             newOwnersToSelect.push(userOwnerId);
-        //         }
-        //
-        //         // Auto-select initial owners (only once on load)
-        //         if (initialOwners.length > 0) {
-        //             initialOwners.forEach((owner) => {
-        //                 const ownerId = String(owner.id);
-        //                 if (!currentOwners.includes(ownerId) && !newOwnersToSelect.includes(ownerId)) {
-        //                     newOwnersToSelect.push(ownerId);
-        //                 }
-        //             });
-        //         }
-        //
-        //         if (newOwnersToSelect.length > 0) {
-        //             form.setFieldsValue({ schoolOwners: [...currentOwners, ...newOwnersToSelect] });
-        //         }
-        //         setInitialSelectionDone(true); // Mark initial selection as done
-        //     } else if (initialOwners.length === 0 && currentOwners.length > 0) {
-        //         // Deselect all options if initialOwners is empty and schoolNameValue changed
-        //         form.setFieldsValue({ schoolOwners: [] });
-        //     }
-        // }
-    }, [combinedOptions, form, isReadOnly, user.id, schoolNameValue]); // schoolNameValue triggers deselection
 
     // Fetch owners when schoolNameValue or BRN changes
     useEffect(() => {
-        fetchOwners();
+        fetchOwners().then(() => {
+        });
     }, [schoolNameValue, BRN, isReadOnly]);
 
     // Handle owners selection change
     const handleOwnersChange = (selectedOwners: string[]) => {
         const userOwnerId = ownerOptions.find((opt) => opt.owner.userId === Number(user.id))?.value;
         if (userOwnerId && !selectedOwners.includes(userOwnerId)) {
-            form.setFieldsValue({ schoolOwners: [...selectedOwners, userOwnerId] });
+            form.setFieldsValue({schoolOwners: [...selectedOwners, userOwnerId]});
         } else {
-            form.setFieldsValue({ schoolOwners: selectedOwners });
+            form.setFieldsValue({schoolOwners: selectedOwners});
         }
     };
 
@@ -207,7 +169,7 @@ const SchoolOwnersSelect: React.FC<SchoolOwnersSelectProps> = ({
                             owner.phone.toLowerCase().includes(input.toLowerCase()))
                     );
                 }}
-                dropdownStyle={{ minWidth: 300 }}
+                dropdownStyle={{minWidth: 300}}
                 notFoundContent={
                     searchSchoolOwnersResult.isFetching
                         ? 'Loading...'

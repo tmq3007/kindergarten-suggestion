@@ -1,5 +1,5 @@
 'use client'
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
     Button, DatePicker, Form, Input, Select, Space, Typography, notification, Image, Spin
 } from 'antd';
@@ -7,14 +7,16 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '@/redux/store';
-import {Country, useGetCountriesQuery} from "@/redux/services/registerApi";
-import {useCreateUserMutation} from "@/redux/services/userApi";
+import {Country, useGetCountriesQuery, useLazyCheckEmailQuery} from "@/redux/services/registerApi";
+import {useCreateUserMutation, useLazyCheckPhoneQuery} from "@/redux/services/userApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 import { motion, Variants } from 'framer-motion';
 
 import { Row, Col } from 'antd';
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import {ImageUpload} from "@/app/components/common/ImageUploader";
+import PhoneInput from "@/app/components/common/PhoneInput";
+import EmailInput from "@/app/components/common/EmailInput";
 const { Title } = Typography;
 
 const formItemLayout = {
@@ -46,6 +48,11 @@ const CreateUser: React.FC = () => {
         countries?.find((c) => c.code === "VN") // Default to Vietnam
     );
     const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined); // Track selected role
+
+    const [triggerCheckEmail] = useLazyCheckEmailQuery();
+    const [triggerCheckPhone]  = useLazyCheckPhoneQuery();
+    const emailInputRef = useRef<any>(null); // Ref to access EmailInput methods
+    const phoneInputRef = useRef<any>(null);
 
     const onFinish = async (values: any) => {
         setSpinning(true);
@@ -164,65 +171,75 @@ const CreateUser: React.FC = () => {
                             </motion.div>
 
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={2}>
-                                <Form.Item
-                                    label="Email"
-                                    name="email"
-                                    rules={[
-                                        { required: true, message: 'Email is required!' },
-                                        { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' }
-                                    ]}
-                                    hasFeedback
-                                    className={'mb-10'}
-                                >
-                                    <Input />
-                                </Form.Item>
+                                {/*<Form.Item*/}
+                                {/*    label="Email"*/}
+                                {/*    name="email"*/}
+                                {/*    rules={[*/}
+                                {/*        { required: true, message: 'Email is required!' },*/}
+                                {/*        { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' }*/}
+                                {/*    ]}*/}
+                                {/*    hasFeedback*/}
+                                {/*    className={'mb-10'}*/}
+                                {/*>*/}
+                                {/*    <Input />*/}
+                                {/*</Form.Item>*/}
+                                <EmailInput
+                                    form={form}
+                                    ref={emailInputRef}
+                                    triggerCheckEmail={triggerCheckEmail}
+                                />
                             </motion.div>
 
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={3}>
-                                <Form.Item
-                                    label="Phone No."
-                                    name="phone"
-                                    rules={[
-                                        { required: true, message: 'Phone number is required!' },
-                                        { pattern: /^\d{4,14}$/, message: 'Phone number is wrong!' }
-                                    ]}
-                                    className={'mb-10'}
-                                >
-                                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                                        <Select
-                                            value={selectedCountry?.code || "VN"}
-                                            loading={isLoadingCountry}
-                                            onChange={handleCountryChange}
-                                            style={{ width: 120, borderRight: "1px #ccc" }}
-                                            optionLabelProp="label2"
-                                            showSearch={false}
-                                        >
-                                            {countries?.map((country) => (
-                                                <Select.Option
-                                                    key={country.code}
-                                                    value={country.code}
-                                                    label={country.label}
-                                                    label2={
-                                                        <span className="flex items-center">
-                                                            <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" preview={false} />
-                                                            {country.code} {country.dialCode}
-                                                        </span>
-                                                    }
-                                                >
-                                                    <div className="flex items-center">
-                                                        <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" />
-                                                        {country.dialCode} - {country.label}
-                                                    </div>
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                        <Input
-                                            placeholder="Enter your phone number"
-                                            onChange={handlePhoneNumberChange}
-                                            style={{ flex: 1, border: "none", boxShadow: "none" }}
-                                        />
-                                    </div>
-                                </Form.Item>
+                                {/*<Form.Item*/}
+                                {/*    label="Phone No."*/}
+                                {/*    name="phone"*/}
+                                {/*    rules={[*/}
+                                {/*        { required: true, message: 'Phone number is required!' },*/}
+                                {/*        { pattern: /^\d{4,14}$/, message: 'Phone number is wrong!' }*/}
+                                {/*    ]}*/}
+                                {/*    className={'mb-10'}*/}
+                                {/*>*/}
+                                {/*    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">*/}
+                                {/*        <Select*/}
+                                {/*            value={selectedCountry?.code || "VN"}*/}
+                                {/*            loading={isLoadingCountry}*/}
+                                {/*            onChange={handleCountryChange}*/}
+                                {/*            style={{ width: 120, borderRight: "1px #ccc" }}*/}
+                                {/*            optionLabelProp="label2"*/}
+                                {/*            showSearch={false}*/}
+                                {/*        >*/}
+                                {/*            {countries?.map((country) => (*/}
+                                {/*                <Select.Option*/}
+                                {/*                    key={country.code}*/}
+                                {/*                    value={country.code}*/}
+                                {/*                    label={country.label}*/}
+                                {/*                    label2={*/}
+                                {/*                        <span className="flex items-center">*/}
+                                {/*                            <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" preview={false} />*/}
+                                {/*                            {country.code} {country.dialCode}*/}
+                                {/*                        </span>*/}
+                                {/*                    }*/}
+                                {/*                >*/}
+                                {/*                    <div className="flex items-center">*/}
+                                {/*                        <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" />*/}
+                                {/*                        {country.dialCode} - {country.label}*/}
+                                {/*                    </div>*/}
+                                {/*                </Select.Option>*/}
+                                {/*            ))}*/}
+                                {/*        </Select>*/}
+                                {/*        <Input*/}
+                                {/*            placeholder="Enter your phone number"*/}
+                                {/*            onChange={handlePhoneNumberChange}*/}
+                                {/*            style={{ flex: 1, border: "none", boxShadow: "none" }}*/}
+                                {/*        />*/}
+                                {/*    </div>*/}
+                                {/*</Form.Item>*/}
+                                <PhoneInput form={form}
+                                            onPhoneChange={(phone) => form.setFieldsValue({ phone })}
+                                            ref={phoneInputRef}
+                                    triggerCheckPhone={triggerCheckPhone}
+                                />
                             </motion.div>
 
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={selectedRole === 'school_owner' ? 7 : 6}>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, List, Typography, Avatar, Button, DatePicker, Select } from "antd";
+import {Card, List, Typography, Avatar, Button, DatePicker, Select, Tooltip} from "antd";
 import { StarFilled, SyncOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
 import { motion } from "framer-motion";
@@ -42,7 +42,7 @@ import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
 import NoData from "@/app/components/review/NoData";
 import {REVIEW_STATUS} from "@/lib/constants";
 import AdminReportModal from "@/app/components/review/AdminReportModal";
-import  {ReviewButton,ViewReportButton} from "@/app/components/review/ReviewButton";
+import {  ViewReportLink} from "@/app/components/review/ReviewButton";
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
@@ -306,14 +306,27 @@ const RatingsDashboard = () => {
         [metrics]
     );
 
-    // Bar chart data
+    // Sử dụng useMemo để tính toán barData với 3 tháng gần nhất
     const barData = useMemo(() => {
+        // Lấy ngày hiện tại
+        const currentDate = dayjs();
+        // Tính ngày bắt đầu của 3 tháng trước (bao gồm tháng hiện tại)
+        const threeMonthsAgo = currentDate.subtract(2, 'month').startOf('month');
+
+        // Gom nhóm dữ liệu theo tháng
         const monthlyData = reviews.reduce((acc, review) => {
-            const month = review.receiveDate.format("MMMM YYYY");
-            acc[month] = (acc[month] || 0) + 1;
+            const reviewDate = review.receiveDate;
+            // Chỉ tính các review trong 3 tháng gần nhất
+            if (reviewDate.isAfter(threeMonthsAgo) || reviewDate.isSame(threeMonthsAgo, 'month')) {
+                const month = reviewDate.format("MMMM YYYY");
+                acc[month] = (acc[month] || 0) + 1;
+            }
             return acc;
         }, {} as Record<string, number>);
-        return Object.entries(monthlyData).map(([month, reviews]) => ({ month, reviews }));
+
+        return Object.entries(monthlyData)
+            .map(([month, reviews]) => ({month, reviews}))
+            .sort((a, b) => dayjs(a.month, "MMMM YYYY").diff(dayjs(b.month, "MMMM YYYY")));
     }, [reviews]);
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
@@ -382,9 +395,9 @@ const RatingsDashboard = () => {
                         onChange={handleStatusChange}
                         value={statusFilter}
                         options={[
-                            { value: "APPROVED", label: "Approved" },
+                            { value: "APPROVED", label: "Active" },
                             { value: "PENDING", label: "Pending" },
-                            { value: "REJECTED", label: "Rejected" },
+                            { value: "REJECTED", label: "Inactive" },
                         ]}
                         disabled={isFetching}
                     />
@@ -421,17 +434,27 @@ const RatingsDashboard = () => {
                                     </ResponsiveContainer>
                                 </Card>
                             </motion.div>
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
-                                <Card title="Monthly Reviews">
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart data={barData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="month" />
-                                            <YAxis />
-                                            <RechartsTooltip />
-                                            <Bar dataKey="reviews" fill="#8884d8" />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Card title="Monthly Reviews" className="w-full">
+                                    {barData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height={300}>
+                                            <BarChart data={barData}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="month" />
+                                                <YAxis />
+                                                <RechartsTooltip />
+                                                <Bar dataKey="reviews" fill="#8884d8" />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-[300px] text-gray-500">
+                                            No data in 3 months recently
+                                        </div>
+                                    )}
                                 </Card>
                             </motion.div>
                         </div>
@@ -597,13 +620,20 @@ const RatingsDashboard = () => {
                                                         </Text>
                                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                                                             {item.report && item.status === REVIEW_STATUS.PENDING && (
-                                                                <ViewReportButton onFetching={isFetching && loadingReviewId === item.id}
-                                                                                  onClick={() => openModal({
-                                                                    id: item.id,
-                                                                    report: item.report
-                                                                })} />
+                                                                <ViewReportLink
+                                                                    onClick={() => openModal({ id: item.id, report: item.report })}
+                                                                    disabled={false}
+                                                                    onFetching={false}
+                                                                />
                                                             )}
-                                                            <ReviewButton status={item.status} />
+
+                                                            {(item.status === REVIEW_STATUS.REJECTED) && (
+                                                                <Tooltip placement="topRight" title={item.report} color="gray" key="rejected-tooltip">
+                                                                    <span className="text-xs text-gray-500 cursor-default">
+                                                                        This review will be hidden
+                                                                    </span>
+                                                                </Tooltip>
+                                                            )}
 
                                                         </div>
                                                     </div>

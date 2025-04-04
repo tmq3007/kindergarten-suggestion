@@ -108,7 +108,7 @@ const RequestCounsellingModal: React.FC = () => {
                             <Input readOnly={!!userName} />
                         </Form.Item>
                         <Form.Item name="inquiry" label="Inquiry">
-                            <Input.TextArea required={true} />
+                            <Input.TextArea rows={5} required={true} />
                         </Form.Item>
                     </Form>
                 </Modal>

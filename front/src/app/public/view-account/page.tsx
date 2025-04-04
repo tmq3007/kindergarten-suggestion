@@ -1,10 +1,13 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { Tabs, Form, Input, DatePicker, Button, Spin, notification, Select } from 'antd';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import dayjs from 'dayjs';
-import { Country, useGetCountriesQuery } from '@/redux/services/registerApi';
+import {
+    Country,
+    useGetCountriesQuery,
+} from '@/redux/services/registerApi';
 import { ROLES } from '@/lib/constants';
 import { unauthorized } from 'next/navigation';
 import { ParentUpdateDTO, useChangePasswordMutation, useEditParentMutation, useGetParentByIdQuery } from '@/redux/services/parentApi';
@@ -12,6 +15,9 @@ import countriesKeepZero from '@/lib/countriesKeepZero';
 import ProfileSidebar from '@/app/components/user/ProfileSideBar';
 import UserFormSkeleton from '@/app/components/skeleton/UserFormSkeleton';
 import AddressInput from '@/app/components/common/AddressInput';
+import PhoneInput from "@/app/components/common/PhoneInput";
+import EmailInput from "@/app/components/common/EmailInput";
+import {useLazyCheckEmailExceptMeQuery, useLazyCheckPhoneExceptMeQuery} from "@/redux/services/userApi";
 
 
 const { Option } = Select;
@@ -25,12 +31,14 @@ const Profile = () => {
    const role = user.role;
    if (!role || role !== ROLES.PARENT) unauthorized();
 
-
+    const emailInputRef = useRef<any>(null); // Ref to access EmailInput methods
+    const phoneInputRef = useRef<any>(null);
    const userIdNumber = Number(userId);
    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(undefined);
    const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
    const [processedPhone, setProcessedPhone] = useState<string>('');
-
+    const [triggerCheckEmail] = useLazyCheckEmailExceptMeQuery();
+    const [triggerCheckPhone] = useLazyCheckPhoneExceptMeQuery();
 
    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
    const { data: parentData, isLoading, error: errorParent, refetch } = useGetParentByIdQuery(userIdNumber);
@@ -68,15 +76,16 @@ const Profile = () => {
                    ward: parentData.data.ward,
                    street: parentData.data.street,
                    media: parentData.data.media,
+                   countryCode: country.dialCode,
                });
            }
        }
    }, [parentData, countries, form]);
-   const handleCancel = () => {
+
+   const handleCancel = async () => {
        if (parentData?.data && countries) {
            const phoneNumber = parentData.data.phone || '';
            const country = countries?.find((c) => phoneNumber.startsWith(c.dialCode)) || countries.find((c) => c.code === 'VN');
-
 
            if (country) {
                const shouldKeepZero = countriesKeepZero.includes(country.dialCode);
@@ -88,6 +97,7 @@ const Profile = () => {
                setSelectedCountry(country);
 
 
+               form.resetFields();
                form.setFieldsValue({
                    fullname: parentData.data.fullname,
                    username: parentData.data.username,
@@ -99,7 +109,20 @@ const Profile = () => {
                    ward: parentData.data.ward,
                    street: parentData.data.street,
                    media: parentData.data.media,
+                   countryCode: country.dialCode,
                });
+
+               if (emailInputRef.current) {
+                   emailInputRef.current.setEmailStatus('success');
+                   emailInputRef.current.setEmailHelp(null);
+
+               }
+
+               if (phoneInputRef.current) {
+                   phoneInputRef.current.setPhoneStatus('success');
+                   phoneInputRef.current.setPhoneHelp(null);
+                   phoneInputRef.current.setSelectedCountry(country);
+                }
            }
        }
    }
@@ -112,44 +135,44 @@ const Profile = () => {
    };
 
 
-   const changeInformation = async (values: any) => {
-       try {
-           const { province, district, ward, street } = values;
-           const selectedCountryCode = selectedCountry?.dialCode || '+84';
-           const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
-           const formattedPhone = shouldKeepZero
-               ? `${selectedCountryCode}${values.phone}`
-               : `${selectedCountryCode}${values.phone.replace(/^0+/, '')}`;
+    const changeInformation = async (values: any) => {
+        try {
+            const isEmailValid = await emailInputRef.current?.validateEmail();
+            const isPhoneValid = await phoneInputRef.current?.validatePhone();
 
+            if (!isEmailValid || !isPhoneValid) {
+                throw new Error('Validation failed for email or phone');
+            }
 
-           const newParentData: ParentUpdateDTO = {
-               username: username || parentData?.data?.username || '',
-               fullname: values.fullname || parentData?.data?.fullname || '',
-               role: parentData?.data?.role || '',
-               status: parentData?.data?.status ?? false,
-               dob: values.dob ? values.dob.format('YYYY-MM-DD') : '',
-               province: province || null,
-               district: district || null,
-               ward: ward || null,
-               street: street || null,
-               phone: formattedPhone || parentData?.data?.phone || '',
-               email: values.email || parentData?.data?.email || '',
-               media: values.media || parentData?.data?.media,
-           };
+            const { province, district, ward, street } = values;
+            const fullPhoneNumber = phoneInputRef.current?.getFormattedPhoneNumber() || values.phone;
 
+            const newParentData: ParentUpdateDTO = {
+                username: username || parentData?.data?.username || '',
+                fullname: values.fullname || parentData?.data?.fullname || '',
+                role: parentData?.data?.role || '',
+                status: parentData?.data?.status ?? false,
+                dob: values.dob ? values.dob.format('YYYY-MM-DD') : '',
+                province: province || null,
+                district: district || null,
+                ward: ward || null,
+                street: street || null,
+                phone: fullPhoneNumber,
+                email: values.email || parentData?.data?.email || '',
+                media: values.media || parentData?.data?.media,
+            };
 
-           const imageFile = avatarFile || (values.media instanceof File ? values.media : undefined);
+            const imageFile = avatarFile || (values.media instanceof File ? values.media : undefined);
 
-
-           await editParent({ parentId: userId, data: newParentData, image: imageFile }).unwrap();
-           await refetch();
-           openNotificationWithIcon('success', 'Updated successfully!', 'Your information has been updated');
-       } catch (error) {
-           console.error('Error occurred:', error);
-           const errorMessage = (error as any)?.data?.message || 'Your information cannot be updated';
-           openNotificationWithIcon('error', 'Updated Fail!', errorMessage);
-       }
-   };
+            await editParent({ parentId: userId, data: newParentData, image: imageFile }).unwrap();
+            await refetch();
+            openNotificationWithIcon('success', 'Updated successfully!', 'Your information has been updated');
+        } catch (error) {
+            console.error('Error occurred:', error);
+            const errorMessage = (error as any)?.data?.message || 'Your information cannot be updated';
+            openNotificationWithIcon('error', 'Updated Fail!', errorMessage);
+        }
+    };
    const changePwd = async (values: any) => {
        if (values.newPassword !== values.confirmPassword) {
            openNotificationWithIcon('error', 'Failed!', 'New password and confirm password do not match.');
@@ -230,20 +253,12 @@ const Profile = () => {
                                        >
                                            <Input />
                                        </Form.Item>
-                                       <Form.Item
-                                           rules={[
-                                               { required: true, message: 'Email is required!' },
-                                               {
-                                                   pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                                   message: 'Please enter a valid email address!',
-                                               },
-                                           ]}
-                                           hasFeedback
-                                           name="email"
-                                           label={<span className="text-black">Email Address</span>}
-                                       >
-                                           <Input />
-                                       </Form.Item>
+                                       <EmailInput
+                                           form={form}
+                                           ref={emailInputRef}
+                                           triggerCheckEmail={triggerCheckEmail}
+                                           id={userIdNumber}
+                                       />
                                        <Form.Item
                                            name="dob"
                                            label={<span className="text-black">Date of Birth</span>}
@@ -261,57 +276,12 @@ const Profile = () => {
                                        >
                                            <DatePicker className="w-full" />
                                        </Form.Item>
-                                       <Form.Item
-                                           name="phone"
-                                           label={<span className="text-black">Phone Number</span>}
-                                           rules={[
-                                               { required: true, message: 'Phone number is required!' },
-                                               {
-                                                   pattern: /^\d{4,14}$/,
-                                                   message: 'Phone number must be between 4 and 14 digits!',
-                                               },
-                                           ]}
-
-
-                                       >
-                                           <div className="flex items-center border h-8 border-gray-300 rounded-lg overflow-hidden">
-                                               <Select
-                                                   className="w-2"
-                                                   loading={isLoadingCountry}
-                                                   value={selectedCountry?.code || ''}
-                                                   onChange={handleCountryChange}
-                                                   dropdownStyle={{ width: 250 }}
-                                                   style={{ width: 120, borderRight: '1px #ccc' }}
-                                                   optionLabelProp="label2"
-                                               >
-                                                   {countries?.map((country) => (
-                                                       <Select.Option
-                                                           key={country.code}
-                                                           value={country.code}
-                                                           label={country.label}
-                                                           label2={
-                                                               <span className="flex items-center">
-                                                                   <img src={country.flag} alt={country.label} width={20} height={10} className="mr-3" />
-                                                                   {country.code} {country.dialCode}
-                                                               </span>
-                                                           }
-                                                       >
-                                                           <div className="flex items-center">
-                                                               <img src={country.flag} alt={country.label} width={20} height={10} className="mr-2 ml-3" />
-                                                               {country.dialCode} - {country.label}
-                                                           </div>
-                                                       </Select.Option>
-                                                   ))}
-                                               </Select>
-                                               <Form.Item name="phone" noStyle>
-                                                   <Input
-                                                       placeholder="Enter your phone number"
-                                                       onChange={handlePhoneNumberChange}
-                                                       style={{ flex: 1, border: 'none', boxShadow: 'none' }}
-                                                   />
-                                               </Form.Item>
-                                           </div>
-                                       </Form.Item>
+                                       <PhoneInput form={form}
+                                                   onPhoneChange={(phone) => form.setFieldsValue({ phone })}
+                                                   ref={phoneInputRef}
+                                                    triggerCheckPhone={triggerCheckPhone}
+                                                   id={userIdNumber}
+                                       />
                                    </div>
                                    <div className="space-y-6">
                                        <AddressInput
@@ -325,8 +295,8 @@ const Profile = () => {
                                        Save
                                    </Button>
                                    <Button
-                                       onClick={() => {
-                                          handleCancel()
+                                       onClick={async () => {
+                                           await handleCancel();
                                        }}
                                    >
                                        Cancel
@@ -351,7 +321,14 @@ const Profile = () => {
                                <Form.Item
                                    name="newPassword"
                                    label={<span className="text-black">New Password</span>}
-                                   rules={[{ required: true, message: 'Please input your password!' }]}
+                                   rules={[
+                                       { required: true, message: 'Please input your password!' },
+                                       { min: 7, message: 'Password must be at least 7 characters!' },
+                                       {
+                                           pattern: /^(?=.*[A-Za-z])(?=.*\d).{7,}$/,
+                                           message: 'Password must contain at least one letter, and one number!'
+                                       }
+                                   ]}
                                    hasFeedback
                                >
                                    <Input.Password className="w-full" />
@@ -359,8 +336,22 @@ const Profile = () => {
                                <Form.Item
                                    name="confirmPassword"
                                    label={<span className="text-black">Confirm New Password</span>}
-                                   rules={[{ required: true, message: 'Please confirm your new password' }]}
+                                   dependencies={['newPassword']}
                                    hasFeedback
+                                   rules={[
+                                       {
+                                           required: true,
+                                           message: 'Please confirm your password!',
+                                       },
+                                       ({ getFieldValue }) => ({
+                                           validator(_, value) {
+                                               if (!value || getFieldValue('newPassword') === value) {
+                                                   return Promise.resolve();
+                                               }
+                                               return Promise.reject(new Error('The new password that you entered do not match!'));
+                                           },
+                                       }),
+                                   ]}
                                >
                                    <Input.Password className="w-full" />
                                </Form.Item>

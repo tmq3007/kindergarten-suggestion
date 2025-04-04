@@ -1,5 +1,5 @@
-// New component: AdminActionButtons.tsx
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+
+import { EditOutlined, SwitcherOutlined} from "@ant-design/icons";
 import { Popconfirm, Space } from "antd";
 import Link from "antd/lib/typography/Link";
 import {MessageInstance} from "antd/lib/message/interface";
@@ -9,10 +9,10 @@ interface UserActionButtonsProps {
     onStatusToggle?: (userId: number) => void;
     triggerStatus: (id: number) => Promise<any>;
     message: MessageInstance;
-
+    hasEditBtn?: boolean;
 }
 
-function UserActionButtons({ id, onStatusToggle ,triggerStatus,message}: UserActionButtonsProps) {
+function UserActionButtons({ id, onStatusToggle ,triggerStatus,message, hasEditBtn=true}: UserActionButtonsProps) {
 
     const handleToggleStatus = async () => {
         try {
@@ -27,16 +27,16 @@ function UserActionButtons({ id, onStatusToggle ,triggerStatus,message}: UserAct
 
     return (
         <Space size="middle" className="flex justify-center">
-            <Link href={`/admin/management/user/edit-user?userId=${id}`}>
+            { hasEditBtn && (<Link href={`/admin/management/user/edit-user?userId=${id}`}>
                 <EditOutlined style={{ fontSize: "18px", color: "#1890ff" }} />
-            </Link>
+            </Link>)}
             <Popconfirm
                 title="Are you sure you want to change this user's status?"
                 onConfirm={handleToggleStatus}
                 okText="Yes"
                 cancelText="No"
             >
-                <DeleteOutlined style={{ fontSize: "18px", color: "red" }} />
+                <SwitcherOutlined style={{ fontSize: "18px", color: "red" }} />
             </Popconfirm>
         </Space>
     );

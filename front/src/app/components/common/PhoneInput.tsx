@@ -7,21 +7,23 @@ import {FormInstance} from "antd/es/form";
 interface PhoneInputProps {
     form: FormInstance;
     isReadOnly?: boolean;
-    initialCountryCode?: string;  //Optional initial Country
-    onPhoneChange?: (phone: string) => void; // Optional callback to update form value
-    triggerCheckPhone?: (phone: string) => any; // Optional hook for server-side validation
+    initialCountryCode?: string;
+    onPhoneChange?: (phone: string) => void;
+    triggerCheckPhone?: any;
     formLoaded?: boolean;
+    id?: number;
 }
 
 // Use forwardRef to allow parent to call methods
 const PhoneInput = forwardRef((
         {
             form,
-            isReadOnly,
-            initialCountryCode ="+84",
+            isReadOnly = false,
+            initialCountryCode = "+84",
             onPhoneChange,
             triggerCheckPhone,
             formLoaded = false,
+            id,
         }: PhoneInputProps,
         ref
     ) => {
@@ -35,8 +37,6 @@ const PhoneInput = forwardRef((
 
         // Sync selectedCountry with countries when they load
         useEffect(() => {
-            console.log(form.getFieldValue('countryCode'));
-            console.log(initialCountryCode);
             if (countries && !selectedCountry) {
                 const defaultCountry = countries.find((c) => c.dialCode === (form.getFieldValue('countryCode') || initialCountryCode));
                 setPhone(form.getFieldValue('phone'));
@@ -55,7 +55,7 @@ const PhoneInput = forwardRef((
         };
 
         const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            let value = e.target.value.replace(/\D/g, '');
             setPhone(value);
             if (onPhoneChange) onPhoneChange(value);
             setPhoneStatus(''); // Reset status on change
@@ -63,7 +63,11 @@ const PhoneInput = forwardRef((
         };
 
         const validatePhone = async (): Promise<boolean> => {
-            if (!isReadOnly) return true;
+
+            if (isReadOnly) {
+                return true
+            }
+
             if (!phone) {
                 setPhoneStatus('error');
                 setPhoneHelp('Please input your phone number!');
@@ -92,8 +96,18 @@ const PhoneInput = forwardRef((
             setPhoneStatus('validating');
             setPhoneHelp('Checking phone availability...');
             try {
-                const response = await triggerCheckPhone(formattedPhone).unwrap();
-                if (response.data === 'true') {
+                let response
+
+                if (id) {
+                    console.log("1")
+                    response = await triggerCheckPhone({phone:formattedPhone, id}).unwrap();
+                } else {
+                    console.log("2")
+                    response = await triggerCheckPhone(formattedPhone).unwrap();
+                }
+                console.log("3:",response.data);
+
+                if (response.data === true) {
                     setPhoneStatus('error');
                     setPhoneHelp('This phone number is already registered!');
                     return false;
@@ -120,16 +134,26 @@ const PhoneInput = forwardRef((
         };
 
         // Expose methods to parent via ref
-        useImperativeHandle(ref, () => ({
-            validatePhone,
-            getFormattedPhoneNumber,
-        }));
+    useImperativeHandle(ref, () => ({
+        validatePhone,
+        getFormattedPhoneNumber,
+        setPhoneStatus,
+        setPhoneHelp,
+        setSelectedCountry: (country: Country) => setSelectedCountry(country),
+
+    }));
 
         const handlePhoneBlur = async () => {
+            console.log("in handlePhoneBlur");
+
             if (triggerCheckPhone) {
+                console.log("in handlePhoneBlur2");
+
                 await validatePhone();
             }
         };
+
+
 
         return (
             <div className="phone-input-container">
@@ -160,19 +184,14 @@ const PhoneInput = forwardRef((
                                         key={country.code}
                                         value={country.code}
                                         label={country.label}
-                                        label2={
-                                            <span className="flex items-center">
-                        <Image
-                            src={country.flag}
-                            alt={country.label}
-                            width={20}
-                            height={14}
-                            className="mr-2 intrinsic"
-                            preview={false}
-                        />
-                                                {country.code} {country.dialCode}
-                      </span>
-                                        }
+                                        label2=
+                                            {
+                                                <span className="flex items-center">
+                                                <Image src={country.flag} alt={country.label} width={20} height={14}
+                                                       className="mr-2 intrinsic" preview={false}/>
+                                                    {country.code} {country.dialCode}
+                                                </span>
+                                            }
                                     >
                                         <div className="flex items-center">
                                             <Image

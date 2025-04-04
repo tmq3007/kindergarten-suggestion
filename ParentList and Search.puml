@@ -1,0 +1,52 @@
+@startuml
+
+autonumber
+
+actor Admin
+actor SchoolOwner
+
+participant ":parentController" as PC
+participant ":parentService" as PS
+participant ":parentRepository" as PR
+participant ":parentMapper" as PM
+participant ":Spring Security Context" as SSC
+
+Admin -> PC: Request getAllParents(page, size, searchBy, keyword, status)
+activate PC
+PC -> PS: getAllParent(page, size, searchBy, keyword, status)
+activate PS
+PS -> PR: findAllParentsWithFilters(status, searchBy, keyword, pageable)
+activate PR
+PR --> PS: Return Page<ParentProjection>
+deactivate PR
+PS -> PM: toParentVOFromProjection(parentProjection)
+activate PM
+PM --> PS: Return ParentVO
+deactivate PM
+PS --> PC: Return Page<ParentVO>
+deactivate PS
+PC --> Admin: Response with ParentVO list
+deactivate PC
+
+SchoolOwner -> PC: Request getParentsBySchool(page, size, searchBy, keyword)
+activate PC
+PC -> PS: getParentBySchool(page, size, searchBy, keyword)
+activate PS
+PS -> SSC: getCurrentUser()
+activate SSC
+SSC --> PS: Return User from Security Context
+deactivate SSC
+PS -> PR: findActiveParentsInSchoolWithFilters(schoolId, searchBy, keyword, pageable)
+activate PR
+PR --> PS: Return Page<ParentProjection>
+deactivate PR
+PS -> PM: toParentVOFromProjection(parentProjection)
+activate PM
+PM --> PS: Return ParentVO
+deactivate PM
+PS --> PC: Return Page<ParentVO>
+deactivate PS
+PC --> SchoolOwner: Response with ParentVO list
+deactivate PC
+
+@enduml

@@ -1,5 +1,6 @@
 package fa.pjb.back.repository;
 
+import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
 import fa.pjb.back.model.vo.ExpectedSchoolVO;
@@ -73,4 +74,17 @@ public interface SchoolOwnerRepository extends JpaRepository<SchoolOwner, Intege
     );
     @Query("SELECT so.school.id FROM SchoolOwner so WHERE so.user.id = :id")
     Integer getSchoolIdByUserId(@Param("id") Integer id);
+    @Query("""
+                SELECT so.id AS id,so.user.id AS userId, u.username AS username, u.email AS email, so.expectedSchool AS expectedSchool, u.fullname AS fullname, u.phone AS phone
+                FROM SchoolOwner so
+                JOIN so.user u
+                WHERE (so.draft.id = :draftId)
+            """)
+    List<SchoolOwnerProjection> searchSchoolOwnersByDraftId(@Param("draftId") Integer draftId);
+
+    @Query("SELECT so FROM SchoolOwner so WHERE so.school.id = :schoolId OR so.draft.id = :draftId")
+    Set<SchoolOwner> findBySchoolIdAndDraftId(@Param("schoolId") Integer schoolId, @Param("draftId") Integer draftId);
+
+    List<SchoolOwner> findAllByDraft(School draft);
+
 }

@@ -4,9 +4,9 @@ import background from "@public/bg4.png";
 import SchoolSearchForm from "@/app/components/school/SchoolSearchForm";
 import Testimonial from "@/app/components/common/Testimonial";
 import Information from "@/app/components/common/Information";
+import {Image} from "antd";
 
 export default function Page() {
-
     return (
         <motion.div
             initial={{opacity: 0}}
@@ -20,17 +20,18 @@ export default function Page() {
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                 }}
-                className=" inset-0 flex items-center justify-center pt-60 pb-52">
+                className="inset-0 flex items-center justify-center pt-60 pb-52">
                 <div className="bg-white bg-opacity-70 p-8 md:p-20 rounded-2xl w-full max-w-2xl shadow-2xl">
                     <SchoolSearchForm/>
                 </div>
             </div>
 
-            <div className={'bg-gray-50 pb-20'}>
+            <div id="testimonial" className={'bg-gray-50 pb-20'}>
                 <Testimonial/>
             </div>
-            <Information/>
+            <div id="information">
+                <Information/>
+            </div>
         </motion.div>
     );
-
 }

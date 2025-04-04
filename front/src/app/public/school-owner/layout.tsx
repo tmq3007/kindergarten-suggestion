@@ -17,12 +17,14 @@ import {Resizable} from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import Sider from 'antd/es/layout/Sider';
 import {Content} from 'antd/es/layout/layout';
+import {useGetDraftOfSchoolOwnerQuery} from "@/redux/services/schoolOwnerApi";
 
 export default function SchoolOwnerLayout({children}: { children: React.ReactNode }) {
     const [collapsed, setCollapsed] = useState(false);
     const user = useSelector((state: RootState) => state.user);
     const role = user.role;
-    const hasDraft = user.hasDraft;
+    const {data: draftData} = useGetDraftOfSchoolOwnerQuery();
+    const draft = draftData?.data;
 
     if (!role) {
         unauthorized();
@@ -46,7 +48,7 @@ export default function SchoolOwnerLayout({children}: { children: React.ReactNod
     if (pathname.startsWith('/public/school-owner/draft')) {
         selectedKeys = ['2'];
     } else if (pathname.startsWith('/public/school-owner/edit-school')) {
-        selectedKeys = hasDraft ? ['2'] : ['1'];
+        selectedKeys = draft ? ['2'] : ['1'];
     } else if (pathname.startsWith('/public/school-owner/view-request')) {
         selectedKeys = ['3'];
     } else if (pathname.startsWith('/public/school-owner/parent-management')) {
