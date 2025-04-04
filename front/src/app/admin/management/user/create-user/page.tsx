@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '@/redux/store';
 import {Country, useGetCountriesQuery, useLazyCheckEmailQuery} from "@/redux/services/registerApi";
-import {useCreateUserMutation} from "@/redux/services/userApi";
+import {useCreateUserMutation, useLazyCheckPhoneQuery} from "@/redux/services/userApi";
 import countriesKeepZero from "@/lib/countriesKeepZero";
 import { motion, Variants } from 'framer-motion';
 
@@ -50,6 +50,7 @@ const CreateUser: React.FC = () => {
     const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined); // Track selected role
 
     const [triggerCheckEmail] = useLazyCheckEmailQuery();
+    const [triggerCheckPhone]  = useLazyCheckPhoneQuery();
     const emailInputRef = useRef<any>(null); // Ref to access EmailInput methods
     const phoneInputRef = useRef<any>(null);
 
@@ -237,7 +238,7 @@ const CreateUser: React.FC = () => {
                                 <PhoneInput form={form}
                                             onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                                             ref={phoneInputRef}
-                                    // triggerCheckPhone={triggerCheckPhone}
+                                    triggerCheckPhone={triggerCheckPhone}
                                 />
                             </motion.div>
 

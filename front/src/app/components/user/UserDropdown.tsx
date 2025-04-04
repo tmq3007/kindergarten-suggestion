@@ -77,6 +77,10 @@ export default function UserDropdown({username}: UserDropdownProps) {
         }
     }
 
+    const handleAsAdmin = () => {
+        router.push('/admin/management/school/school-list');
+    }
+
     const handleAddSchoolCancel = () => {
         setIsAddSchoolModalVisible(false);
     };
@@ -91,12 +95,21 @@ export default function UserDropdown({username}: UserDropdownProps) {
             {
                 label: (
                     <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
+                        My Requests
+                    </div>
+                ),
+                key: "2",
+            },
+            {type: "divider" as "divider"},
+            {
+                label: (
+                    <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
                         My Schools
                     </div>
                 ),
                 key: "1",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
             {
                 label: (
                     <Link
@@ -108,20 +121,8 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "3",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
         ] : []),
-
-        {
-            label: (
-                <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
-                    My Requests
-                </div>
-            ),
-            key: "2",
-        },
-        { type: "divider" as "divider" },
-
-
 
         ...(role === ROLES.SCHOOL_OWNER ? [
             {
@@ -135,7 +136,22 @@ export default function UserDropdown({username}: UserDropdownProps) {
                 ),
                 key: "4",
             },
-            { type: "divider" as "divider" },
+            {type: "divider" as "divider"},
+        ] : []),
+
+        ...(role === ROLES.ADMIN ? [
+            {
+                label: (
+                    <div
+                        className="hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
+                        onClick={handleAsAdmin}
+                    >
+                        As Admin
+                    </div>
+                ),
+                key: "6",
+            },
+            {type: "divider" as "divider"},
         ] : []),
 
         {
@@ -149,6 +165,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
             ),
             key: "5",
         },
+
     ];
 
 
