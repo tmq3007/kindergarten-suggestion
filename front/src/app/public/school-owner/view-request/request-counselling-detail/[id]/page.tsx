@@ -1,10 +1,13 @@
 "use client";
 
-import {useParams, useRouter} from "next/navigation";
+import {forbidden, useParams, useRouter} from "next/navigation";
 import React from "react";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import RequestCounsellingForm from "@/app/components/request_counselling/RequestCounsellingForm";
-import {useGetRequestCounsellingByAdminQuery} from "@/redux/services/requestCounsellingApi";
+import {
+    useGetRequestCounsellingByAdminQuery,
+    useGetRequestCounsellingBySchoolOwnerQuery
+} from "@/redux/services/requestCounsellingApi";
 import useRequestCounsellingForm from "@/lib/hook/useRequestCounsellingForm";
 import RequestCounsellingManageTitle from "@/app/components/request_counselling/RequestCounsellingManageTitle";
 import RequestCounsellingFormSkeleton from "@/app/components/skeleton/RequestCounsellingFormSkeleton";
@@ -14,19 +17,13 @@ export default function RequestCounsellingDetail() {
     const params = useParams();
     const requestCounsellingId = Number(params.id as string);
     const router = useRouter();
-    const {data, isLoading, error} = useGetRequestCounsellingByAdminQuery(requestCounsellingId);
+    const {data, isLoading} = useGetRequestCounsellingBySchoolOwnerQuery(requestCounsellingId);
     const {form, formLoaded, requestCounselling, requestCounsellingStatus} = useRequestCounsellingForm({
         data: data?.data,
         isLoading
     });
 
-
-    // Check role and status
-    // if (role === ROLES.ADMIN && school?.status === SCHOOL_STATUS.Saved) {
-    //     forbidden();
-    // }
-
-    if (isLoading || !requestCounselling) {
+    if (isLoading) {
         return (
             <div className="pt-2">
                 <MyBreadcrumb
@@ -42,14 +39,14 @@ export default function RequestCounsellingDetail() {
     }
 
     if (!requestCounselling) {
-        return <div>Can’t find any request</div>;
+        forbidden();
     }
 
     return (
         <div className="pt-2">
             <MyBreadcrumb
                 paths={[
-                    {label: "Request Management", href: "/admin/management/request/request-list"},
+                    {label: "Request Management", href: "/public/school-owner/view-request"},
                     {label: "Request Detail"},
                 ]}
             />
@@ -62,7 +59,7 @@ export default function RequestCounsellingDetail() {
                         formLoaded={formLoaded}
                         isReadOnly={true}
                         hasResolveButton={false}
-                        isAdmin={true}/>
+                        isAdmin={false}/>
 
                 </div>
             ) ||
@@ -72,7 +69,7 @@ export default function RequestCounsellingDetail() {
                         formLoaded={formLoaded}
                         isReadOnly={true}
                         hasResolveButton={true}
-                        isAdmin={true}/>
+                        isAdmin={false}/>
                 </div>)}
         </div>
     );

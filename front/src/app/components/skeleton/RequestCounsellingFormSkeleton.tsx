@@ -6,7 +6,7 @@ import MyEditor from "@/app/components/common/MyEditor";
 const RequestCounsellingFormSkeleton: React.FC = () => {
     return (
         <>
-        <div className="w-1/2 mx-auto p-6 bg-white rounded-lg shadow-md">
+        <div className="w-full lg:w-2/3 mx-auto p-6 bg-white rounded-lg shadow-md">
             <Form
                 size="middle"
                 labelCol={{ span: 6, className: 'font-bold' }}
@@ -63,7 +63,7 @@ const RequestCounsellingFormSkeleton: React.FC = () => {
             </Form>
         </div>
 
-    <div className="w-1/2 mx-auto p-6 bg-white rounded-lg shadow-md mt-5">
+    <div className="w-full lg:w-2/3 mx-auto p-6 bg-white rounded-lg shadow-md mt-5">
         <Form
             size="middle"
             labelCol={{ span: 6, className: 'font-bold' }}

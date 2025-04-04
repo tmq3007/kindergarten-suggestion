@@ -10,7 +10,7 @@ interface RequestCounsellingManageTitleProps {
 export default function RequestCounsellingManageTitle({ title, requestCounsellingStatus }: RequestCounsellingManageTitleProps) {
     const statusColors: Record<string, string> = {
         "Closed": "bg-gray-200 text-gray-8",
-        "Expired": "bg-yellow-200 text-yellow-800",
+        "Overdue": "bg-yellow-200 text-yellow-800",
         "Opened": "bg-green-200 text-green-800",
     };
 
