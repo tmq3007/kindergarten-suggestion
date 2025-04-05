@@ -40,4 +40,11 @@ public interface RequestCounsellingRepository extends JpaRepository<RequestCouns
     @EntityGraph(attributePaths = {"school", "school.schoolOwners"})
     boolean isRequestManagedByOwner(@Param("requestId") Integer requestId,
                                     @Param("ownerId") Integer ownerId);
+
+
+    @Query("SELECT rc FROM RequestCounselling rc " +
+            "LEFT JOIN FETCH rc.parent p " +
+            "LEFT JOIN FETCH rc.school s " +
+            "WHERE p.id = :parentId")
+    Page<RequestCounselling> findByParentIdWithSchool(@Param("parentId") Integer parentId, Pageable pageable);
 }

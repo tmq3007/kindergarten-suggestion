@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
@@ -61,4 +62,10 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "WHERE r.status = :status " )
     List<Review> findAllByStatus(byte status);
 
+    @Query("SELECT COUNT(r), " +
+            "((COALESCE(AVG(r.learningProgram), 0) + COALESCE(AVG(r.teacherAndStaff), 0) + " +
+            "COALESCE(AVG(r.facilitiesAndUtilities), 0) + COALESCE(AVG(r.extracurricularActivities), 0) + " +
+            "COALESCE(AVG(r.hygieneAndNutrition), 0)) / 5.0)" +
+            "FROM Review r WHERE r.school.id = :schoolId")
+    List<Object[]> getReviewStatisticsBySchoolId(@Param("schoolId") Integer schoolId);
 }
