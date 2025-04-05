@@ -1,6 +1,8 @@
 package fa.pjb.back.controller;
 
+import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
 import fa.pjb.back.common.response.ApiResponse;
+import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.model.dto.ForgotPasswordDTO;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.dto.ResetPasswordDTO;
@@ -9,6 +11,7 @@ import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -24,24 +27,58 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtHelper jwtHelper;
+
+    private void setAuthCookies(HttpServletResponse response, LoginVO loginVO) {
+        long nowInSeconds = System.currentTimeMillis() / 1000;
+        long exp = jwtHelper.extractExpirationTimestamp(loginVO.accessToken());
+        long ttl = exp - nowInSeconds;
+
+        if (ttl <= 0) {
+            throw new JwtUnauthorizedException("Access token is expired");
+        }
+
+        int cookieTtl = (int) (ttl + 86400);
+
+        // Access Token
+        Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", loginVO.accessToken());
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(cookieTtl);
+
+        // CSRF Token
+        Cookie csrfTokenCookie = new Cookie("CSRF_TOKEN", loginVO.csrfToken());
+        csrfTokenCookie.setHttpOnly(false);
+        csrfTokenCookie.setSecure(true);
+        csrfTokenCookie.setPath("/");
+        csrfTokenCookie.setMaxAge(cookieTtl);
+
+        response.addCookie(accessTokenCookie);
+        response.addCookie(csrfTokenCookie);
+    }
 
     @Operation(summary = "Login", description = "Login into content website")
     @PostMapping("login/admin")
-    public ApiResponse<LoginVO> loginByAdmin(@Valid @RequestBody LoginDTO loginDTO) {
+    public ApiResponse<LoginVO> loginByAdmin(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
+        LoginVO loginVO = authService.loginAdmin(loginDTO);
+        setAuthCookies(response, loginVO);
         return ApiResponse.<LoginVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Login successful")
-                .data(authService.loginAdmin(loginDTO))
+                .data(loginVO)
                 .build();
     }
 
     @Operation(summary = "Login", description = "Login into public website")
     @PostMapping("login/public")
-    public ApiResponse<LoginVO> loginByParent(@Valid @RequestBody LoginDTO loginDTO) {
+    public ApiResponse<LoginVO> loginByParent(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
+        LoginVO loginVO = authService.loginPublic(loginDTO);
+        setAuthCookies(response, loginVO);
         return ApiResponse.<LoginVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Login successful")
-                .data(authService.loginPublic(loginDTO))
+                .data(loginVO)
                 .build();
     }
 
