@@ -84,6 +84,10 @@ public class JwtHelper {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    public long extractExpirationTimestamp(String token) {
+        return extractExpiration(token).getTime() / 1000; // convert millis -> seconds
+    }
+
     // Phương thúc dùng để kiểm tra token đã hết hạn hay chưa
     // Nếu thời gian hết hạn trước thời gian hiện tại thì chứng tỏ token đó đã hết hạn
     private Boolean isTokenExpired(String token) {

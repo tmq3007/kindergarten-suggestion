@@ -27,12 +27,14 @@ const ageMapping: AgeMapping = {
 
 export default function SchoolInfo({school}: { school: SchoolVO }) {
 
-    const getFacilityLabel = (fid: number) => {
-        return FACILITY_OPTIONS.find(option => option.value === fid.toString())?.label || "Unknown";
+    const getFacilityLabel = (fid: number | { fid: number }) => {
+        const id = typeof fid === 'number' ? fid : fid.fid;
+        return FACILITY_OPTIONS.find(option => option.value === id.toString())?.label || "Unknown";
     };
 
-    const getUtilityLabel = (uid: number) => {
-        return UTILITY_OPTIONS.find(option => option.value === uid.toString())?.label || "Unknown";
+    const getUtilityLabel = (uid: number | { uid: number }) => {
+        const id = typeof uid === 'number' ? uid : uid.uid;
+        return UTILITY_OPTIONS.find(option => option.value === id.toString())?.label || "Unknown";
     };
 
     return (
@@ -46,9 +48,10 @@ export default function SchoolInfo({school}: { school: SchoolVO }) {
                     height={300}
                 />
                 <div className={'mt-2'}>
-                    <Rate allowHalf disabled defaultValue={4}/>
-                    <span>5.0/5 (120 ratings)</span>
+                    <Rate allowHalf disabled value={school.rating}/>
+                    <span className={'ml-2'}>{`${school.rating}/5`}</span>
                 </div>
+
             </div>
             <div className={'h-full w-full md:w-1/2 lg:w-2/3 md:pl-5'}>
                 <Link
@@ -135,11 +138,24 @@ export default function SchoolInfo({school}: { school: SchoolVO }) {
 
                     </Col>
                     <Col className="flex flex-wrap gap-2" md={12} lg={16}>
-                        {school.facilities?.map((facility) => (
-                            <span className={'bg-custom-300 rounded mr-2 px-2 py-1 text-white'} key={facility.fid}>{getFacilityLabel(facility.fid)}</span>
+                        {/* Facilities */}
+                        {school.facilities?.map((facility: number | { fid: number }) => (
+                            <span
+                                className={'bg-custom-300 rounded mr-2 px-2 py-1 text-white'}
+                                key={typeof facility === 'number' ? facility : facility.fid}
+                            >
+                             {getFacilityLabel(facility)}
+                            </span>
                         ))}
-                        {school.utilities?.map((utility) => (
-                            <span className={'bg-custom-300 rounded mr-2 px-2 py-1 text-white'} key={utility.uid}>{getUtilityLabel(utility.uid)}</span>
+
+                        {/* Utilities */}
+                        {school.utilities?.map((utility: number | { uid: number }) => (
+                            <span
+                                className={'bg-custom-300 rounded mr-2 px-2 py-1 text-white'}
+                                key={typeof utility === 'number' ? utility : utility.uid}
+                            >
+                             {getUtilityLabel(utility)}
+                            </span>
                         ))}
                     </Col>
                 </Row>

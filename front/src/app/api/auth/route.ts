@@ -2,6 +2,7 @@ import {cookies} from 'next/headers';
 import {NextRequest, NextResponse} from 'next/server';
 import {jwtDecode} from 'jwt-decode';
 
+// deprecated
 export async function POST(req: NextRequest) {
     try {
         const data = await req.json();
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
         // Save ACCESS_TOKEN in cookie with HttpOnly
         const cookieTtl = ttl + (24 * 60 * 60);
         cookie.set({
-            name: 'ACCESS_TOKEN',
+            name: 'ACCESS_TOKEN2',
             value: accessToken,
             httpOnly: true,
             secure: false,
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
         });
         // Save CSRF_TOKEN in cookie
         cookie.set({
-            name: 'CSRF_TOKEN',
+            name: 'CSRF_TOKEN2',
             value: csrfToken,
             httpOnly: false,
             secure: false,

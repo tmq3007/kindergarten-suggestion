@@ -1,79 +1,162 @@
 package fa.pjb.back.repository.specification;
 
+import fa.pjb.back.model.entity.Review;
 import fa.pjb.back.model.entity.School;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SchoolSpecification {
 
     public static Specification<School> hasName(String name) {
-        return (root, query, cb) -> name == null ? null : cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+        if (name == null || name.isBlank()) return null;
+
+        return (root, query, cb) ->
+                cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
     }
 
     public static Specification<School> hasType(Byte type) {
-        return (root, query, cb) -> type == null ? null : cb.equal(root.get("schoolType"), type);
+        if (type == null) return null;
+
+        return (root, query, cb) ->
+                cb.equal(root.get("schoolType"), type);
     }
 
     public static Specification<School> hasReceivingAge(Byte age) {
-        return (root, query, cb) -> age == null ? null : cb.lessThanOrEqualTo(root.get("receivingAge"), age);
+        if (age == null) return null;
+
+        return (root, query, cb) ->
+                cb.lessThanOrEqualTo(root.get("receivingAge"), age);
     }
 
     public static Specification<School> hasFeeRange(Long minFee, Long maxFee) {
-        return (root, query, cb) -> {
-            if (minFee == null && maxFee == null) return null;
-            if (minFee != null && maxFee != null) {
-                return cb.between(root.get("feeFrom"), minFee, maxFee);
-            }
-            if (minFee != null) {
-                return cb.greaterThanOrEqualTo(root.get("feeFrom"), minFee);
-            }
-            return cb.lessThanOrEqualTo(root.get("feeFrom"), maxFee);
-        };
+        if (minFee == null && maxFee == null) return null;
+
+        if (minFee != null && maxFee != null) {
+            return (root, query, cb) ->
+                    cb.between(root.get("feeFrom"), minFee, maxFee);
+        } else if (minFee != null) {
+            return (root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("feeFrom"), minFee);
+        } else {
+            return (root, query, cb) ->
+                    cb.lessThanOrEqualTo(root.get("feeFrom"), maxFee);
+        }
     }
 
     public static Specification<School> hasAllFacilitiesAndUtilities(List<Integer> facilityIds, List<Integer> utilityIds) {
         return (root, query, cb) -> {
-            List<Predicate> wherePredicates = new ArrayList<>();
-            List<Predicate> havingPredicates = new ArrayList<>();
+            List<Predicate> predicates = new ArrayList<>();
 
-            // Xử lý facilities nếu danh sách không null và không rỗng
             if (facilityIds != null && !facilityIds.isEmpty()) {
-                var facilityJoin = root.join("facilities");
-                wherePredicates.add((Predicate) facilityJoin.get("id").in(facilityIds));
-                havingPredicates.add((Predicate) cb.equal(cb.countDistinct(facilityJoin.get("id")), facilityIds.size()));
+                for (Integer fid : facilityIds) {
+                    Subquery<Integer> subquery = query.subquery(Integer.class);
+                    Root<School> subRoot = subquery.from(School.class);
+                    Join<Object, Object> joinFacilities = subRoot.join("facilities");
+
+                    subquery.select(cb.literal(1))
+                            .where(
+                                    cb.equal(subRoot.get("id"), root.get("id")),
+                                    cb.equal(joinFacilities.get("id"), fid)
+                            );
+
+                    predicates.add(cb.exists(subquery));
+                }
             }
 
-            // Xử lý utilities nếu danh sách không null và không rỗng
             if (utilityIds != null && !utilityIds.isEmpty()) {
-                var utilityJoin = root.join("utilities");
-                wherePredicates.add((Predicate) utilityJoin.get("id").in(utilityIds));
-                havingPredicates.add((Predicate) cb.equal(cb.countDistinct(utilityJoin.get("id")), utilityIds.size()));
+                for (Integer uid : utilityIds) {
+                    Subquery<Integer> subquery = query.subquery(Integer.class);
+                    Root<School> subRoot = subquery.from(School.class);
+                    Join<Object, Object> joinUtilities = subRoot.join("utilities");
+
+                    subquery.select(cb.literal(1))
+                            .where(
+                                    cb.equal(subRoot.get("id"), root.get("id")),
+                                    cb.equal(joinUtilities.get("id"), uid)
+                            );
+
+                    predicates.add(cb.exists(subquery));
+                }
             }
 
-            // Nếu cả hai danh sách đều null hoặc rỗng, không lọc
-            if (wherePredicates.isEmpty()) {
-                return null;
-            }
-
-            // Áp dụng GROUP BY và HAVING
-            query.groupBy(root.get("id"));
-            if (!havingPredicates.isEmpty()) {
-                query.having(cb.and(havingPredicates.toArray(new Predicate[0])));
-            }
-
-            // Kết hợp các điều kiện trong WHERE
-            return cb.and(wherePredicates.toArray(new Predicate[0]));
+            return predicates.isEmpty() ? null : cb.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+
     public static Specification<School> hasProvince(String province) {
-        return (root, query, cb) -> province == null ? null : cb.equal(root.get("province"), province);
+        if (province == null || province.isBlank()) return null;
+
+        return (root, query, cb) ->
+                cb.equal(root.get("province"), province);
     }
 
     public static Specification<School> hasDistrict(String district) {
-        return (root, query, cb) -> district == null ? null : cb.equal(root.get("district"), district);
+        if (district == null || district.isBlank()) return null;
+
+        return (root, query, cb) ->
+                cb.equal(root.get("district"), district);
+    }
+
+    public static Specification<School> hasRatingSort(String sortDirection) {
+        return (root, query, cb) -> {
+            if (!query.getResultType().equals(Long.class)) {
+                // Subquery phụ: lấy receiveDate mới nhất của trường hiện tại
+                Subquery<LocalDate> maxDateSubquery = query.subquery(LocalDate.class);
+                Root<Review> maxDateRoot = maxDateSubquery.from(Review.class);
+                maxDateSubquery.select(cb.greatest(maxDateRoot.get("receiveDate").as(LocalDate.class)));
+                maxDateSubquery.where(cb.equal(maxDateRoot.get("school").get("id"), root.get("id")));
+
+                // Subquery chính: tính điểm trung bình từ review mới nhất
+                Subquery<Double> subquery = query.subquery(Double.class);
+                Root<Review> reviewRoot = subquery.from(Review.class);
+                subquery.select(
+                        cb.toDouble(
+                                cb.quot(
+                                        cb.sum(
+                                                cb.sum(
+                                                        cb.sum(
+                                                                cb.sum(
+                                                                        reviewRoot.get("learningProgram"),
+                                                                        reviewRoot.get("facilitiesAndUtilities")
+                                                                ),
+                                                                reviewRoot.get("extracurricularActivities")
+                                                        ),
+                                                        reviewRoot.get("teacherAndStaff")
+                                                ),
+                                                reviewRoot.get("hygieneAndNutrition")
+                                        ),
+                                        5.0
+                                )
+                        )
+                );
+
+                if ("asc".equalsIgnoreCase(sortDirection)) {
+                    query.orderBy(cb.asc(subquery));
+                } else {
+                    query.orderBy(cb.desc(subquery)); // Mặc định giảm dần
+                }
+
+                subquery.where(
+                        cb.equal(reviewRoot.get("school").get("id"), root.get("id")),
+                        cb.equal(reviewRoot.get("receiveDate"), maxDateSubquery)
+                );
+
+                if ("asc".equalsIgnoreCase(sortDirection)) {
+                    query.orderBy(cb.asc(subquery));
+                } else {
+                    query.orderBy(cb.desc(subquery));
+                }
+            }
+            return cb.conjunction();
+        };
     }
 
 }
