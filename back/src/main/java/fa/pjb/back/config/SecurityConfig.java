@@ -75,7 +75,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://marcowu.shop"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://marcowu.shop", "https://kss-pu39eeysz-do-duc-canhs-projects.vercel.app", "https://kinder-taupe.vercel.app"));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -84,6 +84,23 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//
+//        // CORS settings: thêm domain thật
+//        configuration.setAllowedOrigins(Arrays.asList(
+//            "https://kinder-taupe.vercel.app"
+//        ));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(Collections.singletonList("*")); // nếu muốn chi tiết hơn: "Authorization", "Content-Type", "X-Csrf-Token"
+//        configuration.setAllowCredentials(true);
+//        configuration.setMaxAge(3600L);
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
     @Bean
     public static PasswordEncoder passwordEncoder() {

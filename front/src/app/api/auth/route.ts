@@ -31,20 +31,20 @@ export async function POST(req: NextRequest) {
             name: 'ACCESS_TOKEN',
             value: accessToken,
             httpOnly: true,
-            secure: false,
+            secure: true,
             maxAge: cookieTtl,
             path: '/',
-            sameSite: 'strict',
+            sameSite: "none",
         });
         // Save CSRF_TOKEN in cookie
         cookie.set({
             name: 'CSRF_TOKEN',
             value: csrfToken,
             httpOnly: false,
-            secure: false,
+            secure: true,
             maxAge: cookieTtl,
             path: '/',
-            sameSite: 'strict',
+            sameSite: "none",
         });
         return NextResponse.json({message: 'Token saved successfully'}, {status: 200});
     } catch (error) {

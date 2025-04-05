@@ -37,33 +37,29 @@ export async function middleware(req: NextRequest) {
 
             const ttl = exp - Math.floor(Date.now() / 1000);
 
-            // If the token has expired, return an error response
             if (ttl <= 0) {
                 return NextResponse.json({message: 'Token has expired'}, {status: 400});
             }
 
-            // Store the forgot password token in a cookie
             cookie.set({
                 name: 'FORGOT_PASSWORD_TOKEN',
                 value: forgotPasswordToken,
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 maxAge: ttl,
                 path: '/',
-                sameSite: 'strict',
+                sameSite: 'none',
             });
-
-            // Store the username in a cookie
             cookie.set({
                 name: 'FORGOT_PASSWORD_USERNAME',
                 value: username,
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 maxAge: ttl,
-                sameSite: 'strict',
+                path: '/',
+                sameSite: 'none',
             });
 
-            // Redirect to the new URL without query parameters
             return NextResponse.redirect(newUrl);
         }
     }

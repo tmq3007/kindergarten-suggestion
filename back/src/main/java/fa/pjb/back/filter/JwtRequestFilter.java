@@ -9,8 +9,12 @@ import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.impl.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,9 +71,24 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Log all headers
+        log.info("=== All Request Headers ===");
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            log.info("{}: {}", headerName, headerValue);
+        }
+        log.info("===========================");
+
         // Check CSRF Token from Cookie and Header
         String csrfTokenFromCookie = httpRequestHelper.extractJwtTokenFromCookie(request, "CSRF_TOKEN");
         String csrfTokenFromHeader = request.getHeader("X-CSRF-TOKEN");
+        Cookie[] cookies = request.getCookies();
+        log.info("All Cookies: {}", cookies != null ? Arrays.asList(cookies) : Collections.emptyList());
+        log.info("CSRF Token from Cookie: {}", csrfTokenFromCookie);
+        log.info("CSRF Token from Header (X-CSRF-TOKEN): {}", csrfTokenFromHeader);
+        log.info("CSRF Token from Header (X-Csrf-Token): {}", request.getHeader("X-Csrf-Token"));
         if (csrfTokenFromCookie == null || !csrfTokenFromCookie.equals(csrfTokenFromHeader)) {
             throw new JwtUnauthorizedException("Invalid CSRF Token");
         }

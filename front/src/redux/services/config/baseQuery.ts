@@ -5,7 +5,7 @@ import {router} from "next/client";
 import {resetUser} from "@/redux/features/userSlice";
 
 // BASE_URL của server
-export const BASE_URL = 'http://localhost:8080/api';
+export const BASE_URL = 'https://kindergartenshop.online/api';
 
 export const baseQuery = fetchBaseQuery({
     baseUrl: BASE_URL,
@@ -18,6 +18,7 @@ export const baseQuery = fetchBaseQuery({
         // Gắn CSRF token vào Header
         if (csrfToken) {
             headers.set('X-Csrf-Token', csrfToken);
+            console.log("csrf", csrfToken)
         }
         headers.set('Accept', 'application/json');
         return headers;
@@ -30,12 +31,14 @@ export const baseQueryWithReauth = async (
     extraOptions: FetchBaseQueryMeta | any
 ) => {
     let result = await baseQuery(args, api, extraOptions);
+    console.log("Response status:", result.error ? result.error.status : result.meta);
     // Nếu lỗi 403 Unauthorized thì gửi lại request bằng PUT method
     if (
         result.error &&
         result.error.status === 403 &&
         (result.error as CustomFetchBaseQueryError).data?.code !== 1200
     ) {
+        console.log("Error 403 detected, attempting refresh...");
         interface RefreshResponse {
             code: number;
             data: {
@@ -54,20 +57,20 @@ export const baseQueryWithReauth = async (
             api,
             extraOptions,
         ) as { data: RefreshResponse };
-
+        console.log("Refresh result:", refreshResult.data ? "Success" : "Failed");
         if (refreshResult.data) {
             const {accessToken, csrfToken} = refreshResult.data.data;
             // Gọi API của Next.js để lưu token mới vào cookie
-            await fetch('/api/auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    accessToken,
-                    csrfToken: csrfToken,
-                }),
-            });
+            // await fetch('/api/auth', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         accessToken,
+            //         csrfToken: csrfToken,
+            //     }),
+            // });
 
             // Gửi lại request với Cookie đã được cập nhật token mới
             result = await baseQuery(
@@ -81,6 +84,8 @@ export const baseQueryWithReauth = async (
                 extraOptions,
             );
         } else {
+            console.log("Refresh failed, triggering logout...");
+            console.log("Loi ne" )
             // Nếu không thể refresh token thì đăng xuất người dùng
             await fetch('/api/logout', {
                 method: 'PUT',
