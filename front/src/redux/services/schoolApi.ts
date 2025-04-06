@@ -91,6 +91,7 @@ export interface SchoolSearchDTO {
     page: number;
     size: number;
     sortBy: string;
+    sortDirection: string;
 }
 
 export interface Page<T> {
@@ -124,8 +125,9 @@ export type SchoolVO = {
     facilities?: { fid: number }[]; // Add facilities(assuming this structure)
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
-    review?: ReviewVO;
+    rating?: number;
     schoolOwners?: SchoolOwnerVO[];
+    refId: number;
 };
 export type ExpectedSchool = {
     expectedSchool: string
@@ -406,6 +408,68 @@ export const schoolApi = createApi({
                     ]
                     : [{type: 'SchoolList', id: 'SEARCH'}],
         }),
+        getActiveSchoolsWithoutRefId: build.query<
+            ApiResponse<Page<SchoolVO>>,
+            {
+                page?: number;
+                size?: number;
+                name?: string;
+                province?: string;
+                district?: string;
+                street?: string;
+                email?: string;
+                phone?: string;
+            }
+        >({
+            query: ({ page = 1, size, name, province, district, street, email, phone }) => ({
+                url: `/school/active-no-ref`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(name && { name }),
+                    ...(province && { province }),
+                    ...(district && { district }),
+                    ...(street && { street }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
+                },
+            }),
+            providesTags: ["SchoolList"],
+        }),
+        getAllDrafts: build.query<
+            ApiResponse<Page<SchoolVO>>,
+            { page?: number; size?: number; name?: string; district?: string; email?: string; phone?: string }
+        >({
+            query: ({ page = 1, size, name, district, email, phone }) => ({
+                url: `/school/all-drafts`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(name && { name }),
+                    ...(district && { district }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
+                },
+            }),
+            providesTags: ["SchoolList"],
+        }),
+        countActiveSchoolsWithoutRefId: build.query<ApiResponse<number>, void>({
+            query: () => ({
+                url: `/school/count/active-no-ref`,
+                method: "GET",
+            }),
+            providesTags: ["SchoolList"],
+        }),
+
+        countAllDrafts: build.query<ApiResponse<number>, void>({
+            query: () => ({
+                url: `/school/count/drafts`,
+                method: "GET",
+            }),
+            providesTags: ["SchoolList"],
+        }),
 
     }),
 });
@@ -424,8 +488,13 @@ export const {
     useGetSchoolByIdQuery,
     useApproveSchoolMutation,
     useSearchExpectedSchoolQuery,
+    useSearchByCriteriaQuery,
     useLazySearchSchoolOwnersForAddSchoolQuery,
     useMergeDraftMutation,
     useIsDraftQuery,
-    useSearchByCriteriaQuery,
+    useGetActiveSchoolsWithoutRefIdQuery,
+    useGetAllDraftsQuery,
+    useCountActiveSchoolsWithoutRefIdQuery,
+    useCountAllDraftsQuery,
+    useLazySearchByCriteriaQuery,
 } = schoolApi;

@@ -36,7 +36,8 @@ export const baseQueryWithReauth = async (
     if (
         result.error &&
         result.error.status === 403 &&
-        (result.error as CustomFetchBaseQueryError).data?.code !== 1200
+        (result.error as CustomFetchBaseQueryError).data?.code !== 1200 &&
+        (result.error as CustomFetchBaseQueryError).data?.message !== "You don't have permission to manage this request"
     ) {
         console.log("Error 403 detected, attempting refresh...");
         interface RefreshResponse {

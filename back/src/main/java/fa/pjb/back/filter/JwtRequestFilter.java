@@ -56,7 +56,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/swagger-ui",
             "/api/school/search-by-criteria",
             "/api/school/review/top4",
-            "/api/user/check-phone-exist"
+            "/api/user/check-phone-exist",
+            "/api/user/check-phone-exist-except",
+            "/api/user/check-email-exist",
+            "/api/user/check-email-exist-except"
     );
 
     @Override
@@ -95,6 +98,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Extract JWT Access Token from Cookie
         String jwt = httpRequestHelper.extractJwtTokenFromCookie(request, "ACCESS_TOKEN");
+        log.info("jwt: {}", jwt);
         if (jwt == null) {
             throw new JwtUnauthorizedException("Invalid Access Token");
         }

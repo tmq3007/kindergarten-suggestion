@@ -114,4 +114,30 @@ public class UserController {
                 .data(userService.checkPhoneExist(phone)).build();
     }
 
+    @GetMapping("/check-phone-exist-except")
+    public ApiResponse<Boolean> checkPhoneExistExcept(@RequestParam String phone, @RequestParam Integer userId) {
+        log.info("phone: {}, userId: {}", phone, userId);
+        return ApiResponse.<Boolean>builder()
+                .code(200)
+                .message("Check phone exist successfully!")
+                .data(userService.checkPhoneExistExcept(phone, userId)).build();
+    }
+
+    @GetMapping("/check-email-exist-except")
+    public ApiResponse<Boolean> checkEmailExistExcept(@RequestParam String email, @RequestParam Integer userId) {
+        log.info("email: {}, userId: {}", email, userId);
+        return ApiResponse.<Boolean>builder()
+                .code(200)
+                .message("Check email exist successfully!")
+                .data(userService.checkEmailExistExcept(email, userId)).build();
+    }
+
+    @GetMapping("/check-email-exist")
+    public ApiResponse<Boolean> checkEmailExist(@RequestParam String email) {
+        return ApiResponse.<Boolean>builder()
+                .code(200)
+                .message("Check email exist successfully!")
+                .data(userService.checkEmailExist(email)).build();
+    }
+
 }

@@ -3,16 +3,13 @@ package fa.pjb.back.model.mapper;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.vo.*;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ReviewMapper.class})
 public interface SchoolMapper {
 
     @Mapping(source = "facilities", target = "facilities", qualifiedByName = "facilityToId")
@@ -20,13 +17,37 @@ public interface SchoolMapper {
     @Mapping(target = "imageList", source = "images", qualifiedByName = "mapImageUrl")
     SchoolDetailVO toSchoolDetailVO(School school);
 
+    @Mapping(source = "facilities", target = "facilities", qualifiedByName = "facilityToId")
+    @Mapping(source = "utilities", target = "utilities", qualifiedByName = "utilityToId")
+    @Mapping(target = "imageList", source = "images", qualifiedByName = "mapImageUrl")
+    @Mapping(target = "reviews",
+            expression = "java(getLatestReviewVO(school, reviewMapper))")
+    SchoolSearchVO toSchoolSearchVO(School school, @Context ReviewMapper reviewMapper);
+
+    default ReviewVO getLatestReviewVO(School school, ReviewMapper reviewMapper) {
+        if (school.getReviews() == null || school.getReviews().isEmpty()) return null;
+
+        return school.getReviews().stream()
+                .max((r1, r2) -> r1.getReceiveDate().compareTo(r2.getReceiveDate()))
+                .map(reviewMapper::toReviewVO)
+                .orElse(null);
+    }
+
+    @Named("mapRefId")
+    default Integer mapRefId(School school) {
+        return school.getOriginalSchool() != null ? school.getOriginalSchool().getId() : null;
+    }
+
     @Mapping(source = "school.facilities", target = "facilities", qualifiedByName = "facilityToId")
     @Mapping(source = "school.utilities", target = "utilities", qualifiedByName = "utilityToId")
     @Mapping(source = "school.images", target = "imageList", qualifiedByName = "mapImageUrl")
     @Mapping(target = "schoolOwners",source = "schoolOwnerVOList")
+    @Mapping(source = "school", target = "refId", qualifiedByName = "mapRefId")
     SchoolDetailVO toSchoolDetailVOWithSchoolOwners(School school, List<SchoolOwnerVO> schoolOwnerVOList);
 
     SchoolListVO toSchoolListVO(School school);
+
+    SchoolListVO toSchoolListVO(SchoolProjection schoolProjection);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "facilities", ignore = true)
@@ -45,6 +66,8 @@ public interface SchoolMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "id", ignore = true)
     School toDraft(SchoolDTO schoolDTO, @MappingTarget School draft);
+
+
 
     // Convert List<Integer> to Set<Facility>
     @Named("mapFacilityIds")

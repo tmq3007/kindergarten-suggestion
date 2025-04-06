@@ -53,57 +53,76 @@ public class RequestCounsellingController {
                 .build();
     }
 
-    @Operation(summary = "List All Request Counselling", description = "Admin can see all request counselling that parents requested for all School Owner")
+    @Operation(summary = "List All Request Counselling",
+        description = "Admin can see all request counselling that parents requested for all School Owners, with optional dynamic search")
     @GetMapping("/all")
     public ApiResponse<Page<RequestCounsellingVO>> getAllRequests(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) Byte status,
-        @RequestParam(required = false) String email,
-        @RequestParam(required = false) String name,
-        @RequestParam(required = false) String phone,
-        @RequestParam(required = false) String schoolName,
-        @RequestParam(required = false) LocalDateTime dueDate) {
-
+        @RequestParam(required = false) String searchBy,
+        @RequestParam(required = false, defaultValue = "") String keyword
+    ) {
         Page<RequestCounsellingVO> requests = requestCounsellingService.getAllRequests(
-            page, size, status, email, name, phone, schoolName, dueDate
+            page, size, searchBy, keyword
         );
         return ApiResponse.<Page<RequestCounsellingVO>>builder()
             .code(HttpStatus.OK.value())
-            .message("All parents retrieved successfully")
+            .message("All request counselling retrieved successfully")
             .data(requests)
             .build();
     }
 
-    @Operation(summary = "Get request counselling", description = "Get detailed request counselling")
-    @GetMapping("/{requestCounsellingId}")
-    public ApiResponse<RequestCounsellingVO> getRequestCounselling(@PathVariable Integer requestCounsellingId) {
+    @Operation(summary = "Get request counselling", description = "Get detailed request counselling by admin")
+    @GetMapping("/get-by-admin/{requestCounsellingId}")
+    public ApiResponse<RequestCounsellingVO> getRequestCounsellingByAdmin(@PathVariable Integer requestCounsellingId) {
         return ApiResponse.<RequestCounsellingVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Get request counselling successfully!")
-                .data(requestCounsellingService.getRequestCounselling(requestCounsellingId))
+                .data(requestCounsellingService.getRequestCounsellingByAdmin(requestCounsellingId))
                 .build();
     }
 
-    @Operation(summary = "Update request counselling", description = "Update request counselling result")
-    @PutMapping("/update-request-counselling")
-    public ApiResponse<Void> updateRequestCounselling(@Valid @RequestBody RequestCounsellingUpdateDTO request) {
-        requestCounsellingService.updateRequestCounselling(request);
+    @Operation(summary = "Get request counselling", description = "Get detailed request counselling by school owner")
+    @GetMapping("/get-by-school-owner/{requestCounsellingId}")
+    public ApiResponse<RequestCounsellingVO> getRequestCounsellingBySchoolOwner(@PathVariable Integer requestCounsellingId) {
+        return ApiResponse.<RequestCounsellingVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get request counselling successfully!")
+                .data(requestCounsellingService.getRequestCounsellingBySchoolOwner(requestCounsellingId))
+                .build();
+    }
+
+    @Operation(summary = "Update request counselling", description = "Update request counselling result by admin")
+    @PutMapping("/update-request-counselling-by-admin")
+    public ApiResponse<Void> updateRequestCounsellingByAdmin(@Valid @RequestBody RequestCounsellingUpdateDTO request) {
+        requestCounsellingService.updateRequestCounsellingByAdmin(request);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
                 .message("Update request counselling successfully!")
                 .build();
     }
 
-    @Operation(summary = "List All Reminder", description = "List all reminder requests that are waiting School Owner solve or expired, with optional name search")
+    @Operation(summary = "Update request counselling", description = "Update request counselling result by school owner")
+    @PutMapping("/update-request-counselling-by-school-owner")
+    public ApiResponse<Void> updateRequestCounsellingBySchoolOwner(@Valid @RequestBody RequestCounsellingUpdateDTO request) {
+        requestCounsellingService.updateRequestCounsellingBySchoolOwner(request);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Update request counselling successfully!")
+                .build();
+    }
+
+    @Operation(summary = "List All Reminder",
+        description = "List all reminder requests that are waiting for School Owner to solve or expired, with optional search by name, email, phone, or school name")
     @GetMapping("/all-reminder")
     public ApiResponse<Page<RequestCounsellingVO>> getAllReminder(
         @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "") String name) {
+        @RequestParam(defaultValue = "15") int size,
+        @RequestParam(required = false) String searchBy,
+        @RequestParam(required = false, defaultValue = "") String keyword) {
 
         Page<RequestCounsellingVO> requests = reminderService.getAllReminder(
-            page, size, Arrays.asList((byte) 0, (byte) 2), name.trim()
+            page, size, Arrays.asList((byte) 0, (byte) 2), searchBy, keyword.trim()
         );
 
         return ApiResponse.<Page<RequestCounsellingVO>>builder()

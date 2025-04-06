@@ -38,7 +38,7 @@ export const registerApi = createApi({
         }),
         getCountries: builder.query<Country[], void>({
             query: () => ({
-                url: "https://restcountries.com/v3.1/all",
+                url: "https://restcountries.com/v3.1/all?fields=cca2,name,idd,flags",
             }),
             transformResponse: (response: any[]): Country[] =>
                 response

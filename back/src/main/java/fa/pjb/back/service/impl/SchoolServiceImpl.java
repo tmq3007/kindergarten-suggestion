@@ -20,8 +20,10 @@ import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
+import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
+import fa.pjb.back.model.mapper.SchoolProjection;
 import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.repository.specification.SchoolSpecification;
@@ -35,10 +37,7 @@ import org.apache.tika.Tika;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -67,6 +66,7 @@ public class SchoolServiceImpl implements SchoolService {
     private final UtilityRepository utilityRepository;
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
+    private final ReviewMapper reviewMapper;
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
@@ -83,7 +83,7 @@ public class SchoolServiceImpl implements SchoolService {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
     public SchoolDetailVO getSchoolInfo(Integer schoolId) {
-        School school = schoolRepository.findById(schoolId).orElseThrow(SchoolNotFoundException::new);
+        School school = schoolRepository.findByIdWithOriginalSchool(schoolId).orElseThrow(SchoolNotFoundException::new);
         List<SchoolOwnerVO> schoolOwnerVOList = findSchoolOwnerBySchool(school.getId());
         return schoolMapper.toSchoolDetailVOWithSchoolOwners(school, schoolOwnerVOList);
     }
@@ -589,7 +589,17 @@ public class SchoolServiceImpl implements SchoolService {
         // 3. Update the original school with data from the draft
         try {
             // Copy properties from draft to origin school, excluding certain fields
-            BeanUtils.copyProperties(draft, originSchool, "id", "originalSchool", "draft", "status", "postedDate", "schoolOwners");
+            BeanUtils.copyProperties(
+                    draft,
+                    originSchool,
+                    "id",
+                    "originalSchool",
+                    "draft",
+                    "status",
+                    "postedDate",
+                    "schoolOwners",
+                    "reviews"
+            );
 
             // Update facilities and utilities to avoid shared references
             if (draft.getFacilities() != null) {
@@ -679,9 +689,16 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public Page<SchoolDetailVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO) {
-        Specification<School> spec = Specification
-                .where(SchoolSpecification.hasName(schoolSearchDTO.name()))
+    public Page<SchoolListVO> getAllDrafts(String name, String district, String email, String phone, Pageable pageable) {
+        Page<SchoolProjection> draftPage = schoolRepository.findAllDrafts(name, district, email, phone,
+            pageable);
+        return draftPage.map(schoolMapper::toSchoolListVO);
+    }
+
+    @Override
+    public Page<SchoolSearchVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO) {
+        Specification<School> spec = Specification.<School>where(null)
+                .and(SchoolSpecification.hasName(schoolSearchDTO.name()))
                 .and(SchoolSpecification.hasType(schoolSearchDTO.type()))
                 .and(SchoolSpecification.hasReceivingAge(schoolSearchDTO.age()))
                 .and(SchoolSpecification.hasFeeRange(schoolSearchDTO.minFee(), schoolSearchDTO.maxFee()))
@@ -689,17 +706,112 @@ public class SchoolServiceImpl implements SchoolService {
                 .and(SchoolSpecification.hasProvince(schoolSearchDTO.province()))
                 .and(SchoolSpecification.hasDistrict(schoolSearchDTO.district()));
 
-        Pageable pageable = PageRequest.of(schoolSearchDTO.page(), schoolSearchDTO.size(), Sort.by(Sort.Direction.DESC, schoolSearchDTO.sortBy()));
+        String directionStr = schoolSearchDTO.sortDirection();
+        Sort.Direction direction = directionStr == null || "desc".equalsIgnoreCase(directionStr)
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        Pageable pageable;
+
+        if ("rating".equalsIgnoreCase(schoolSearchDTO.sortBy())) {
+            // Xử lý riêng cho rating
+            spec = spec.and(SchoolSpecification.hasRatingSort(
+                    direction == Sort.Direction.DESC ? "desc" : "asc"
+            ));
+            pageable = PageRequest.of(schoolSearchDTO.page(), schoolSearchDTO.size());
+        } else {
+            // Các trường hợp sắp xếp thông thường
+            pageable = PageRequest.of(
+                    schoolSearchDTO.page(),
+                    schoolSearchDTO.size(),
+                    Sort.by(direction, schoolSearchDTO.sortBy())
+            );
+        }
+
         Page<School> schoolPage = schoolRepository.findAll(spec, pageable);
-        return schoolPage.map(schoolMapper::toSchoolDetailVO);
+        return schoolPage.map(school -> schoolMapper.toSchoolSearchVO(school, reviewMapper));
+    }
+
+    @Override
+    public Page<SchoolSearchNativeVO> searchSchoolByCriteriaWithNative(SchoolSearchDTO dto) {
+        // Calculate the offset for pagination based on the current page and page size
+        int offset = dto.page() * dto.size();
+
+        List<Object[]> rawResults; // Hold raw SQL result rows as Object arrays
+        long total; // Hold the total number of matching results
+
+        // Determine if the query needs to filter by facility or utility
+        boolean hasFacility = dto.facilityIds() != null && !dto.facilityIds().isEmpty();
+        boolean hasUtility = dto.utilityIds() != null && !dto.utilityIds().isEmpty();
+        boolean shouldUseFullQuery = hasFacility || hasUtility;
+
+        if (shouldUseFullQuery) {
+            // If filtering by facilities or utilities, use the complex query
+            int facilitySize = hasFacility ? dto.facilityIds().size() : 0;
+            int utilitySize = hasUtility ? dto.utilityIds().size() : 0;
+
+            // Run the native SQL query that joins facilities/utilities and returns raw result
+            rawResults = schoolRepository.searchSchoolsWithFacilityAndUtilityRaw(
+                    dto.name(), dto.type(), dto.age(), dto.minFee(), dto.maxFee(),
+                    dto.province(), dto.district(),
+                    dto.facilityIds(), dto.utilityIds(),
+                    facilitySize, utilitySize,
+                    dto.sortBy(), dto.sortDirection(),
+                    dto.size(), offset
+            );
+
+            // Count total schools that match the filters (with facility/utility filters applied)
+            total = schoolRepository.countSchoolsWithFacilityAndUtility(
+                    dto.name(), dto.type(), dto.age(), dto.minFee(), dto.maxFee(),
+                    dto.province(), dto.district(),
+                    dto.facilityIds(), dto.utilityIds(),
+                    facilitySize, utilitySize
+            );
+        } else {
+            // If no facility/utility filter, run simpler query (no joins)
+            rawResults = schoolRepository.searchSchoolsBasicRaw(
+                    dto.name(), dto.type(), dto.age(), dto.minFee(), dto.maxFee(),
+                    dto.province(), dto.district(),
+                    dto.sortBy(), dto.sortDirection(),
+                    dto.size(), offset
+            );
+
+            // Count total schools matching the basic filters
+            total = schoolRepository.countSchoolsBasic(
+                    dto.name(), dto.type(), dto.age(), dto.minFee(), dto.maxFee(),
+                    dto.province(), dto.district()
+            );
+        }
+
+        // Convert each Object[] row into SchoolSearchNativeVO using a custom constructor
+        List<SchoolSearchNativeVO> results = rawResults.stream()
+                .map(SchoolSearchNativeVO::new)
+                .toList();
+
+        // Return paginated result as a Spring Data Page
+        return new PageImpl<>(results, PageRequest.of(dto.page(), dto.size()), total);
     }
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
-                                            String street, String email, String phone, Pageable pageable) {
-        Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
+        String street, String email, String phone, Pageable pageable) {
+        Page<SchoolProjection> schoolPage = schoolRepository.findSchools(name, district, email, phone, pageable);
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
+
+    @Override
+    public Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String district, String email, String phone, Pageable pageable) {
+        Page<SchoolProjection> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
+        return schoolPage.map(schoolMapper::toSchoolListVO);
+    }
+
+//    @Override
+//    public Page<SchoolListVO> getChangeSchoolRequest(String name, String province,
+//        String district,
+//        String street, String email, String phone, Pageable pageable) {
+//        Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
+//        return schoolPage.map(schoolMapper::toSchoolListVO);
+//    }
 
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId) {
@@ -721,7 +833,8 @@ public class SchoolServiceImpl implements SchoolService {
         return schoolMapper.toSchoolDetailVOWithSchoolOwners(draft, schoolOwnerVOList);
     }
 
-    private List<SchoolOwnerVO> findSchoolOwnerByDraft(Integer id) {
+    @Override
+    public List<SchoolOwnerVO> findSchoolOwnerByDraft(Integer id) {
         List<SchoolOwnerProjection> projections = schoolOwnerRepository.searchSchoolOwnersByDraftId(id);
         // Convert projection to VO
         return projections.stream()
@@ -916,6 +1029,16 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
+    }
+
+    @Override
+    public Long countActiveSchoolsWithoutRefId() {
+        return schoolRepository.countActiveSchoolsWithoutRefId();
+    }
+
+    @Override
+    public Long countAllDrafts() {
+        return schoolRepository.countAllDrafts();
     }
 
 }

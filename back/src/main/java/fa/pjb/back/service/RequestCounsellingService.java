@@ -12,20 +12,15 @@ public interface RequestCounsellingService {
 
     RequestCounsellingVO createRequestCounselling(RequestCounsellingDTO request);
 
-    Page<RequestCounsellingVO> getAllRequests(
-            int page,
-            int size,
-            Byte status,
-            String email,
-            String name,
-            String phone,
-            String schoolName,
-            LocalDateTime dueDate
-    );
+    Page<RequestCounsellingVO> getAllRequests(int page, int size, String searchBy, String keyword);
 
-    RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId);
+    RequestCounsellingVO getRequestCounsellingByAdmin(Integer requestCounsellingId);
 
-    void updateRequestCounselling(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
+    RequestCounsellingVO getRequestCounsellingBySchoolOwner(Integer requestCounsellingId);
+
+    void updateRequestCounsellingByAdmin(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
+
+    void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
 
 
 }
