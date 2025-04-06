@@ -40,20 +40,27 @@ public class AuthController {
 
         int cookieTtl = (int) (ttl + 86400);
 
-        String domain = "kindergartenshop.online";
+        String serverDomain = "kindergartenshop.online";
+        String clientDomain = "kinder-taupe.vercel.app";
 
-        // Cookie ACCESS_TOKEN (HttpOnly, Secure, SameSite=None)
+        // Cookie ACCESS_TOKEN (HttpOnly, Secure, SameSite=None) for server domain
         String accessTokenCookie = "ACCESS_TOKEN=" + loginVO.accessToken()
-                                   + "; Domain=" + domain
+                                   + "; Domain=" + serverDomain
                                    + "; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=" + cookieTtl;
 
-        // Cookie CSRF_TOKEN (Secure, SameSite=None)
-        String csrfTokenCookie = "CSRF_TOKEN=" + loginVO.csrfToken()
-                                 + "; Domain=" + domain
+        // Cookie CSRF_TOKEN (Secure, SameSite=None) for server domain
+        String serverCsrfTokenCookie = "CSRF_TOKEN=" + loginVO.csrfToken()
+                                 + "; Domain=" + serverDomain
+                                 + "; Secure; SameSite=None; Path=/; Max-Age=" + cookieTtl;
+
+        // Cookie CSRF_TOKEN (Secure, SameSite=None) for client domain
+        String clientCsrfTokenCookie = "CSRF_TOKEN=" + loginVO.csrfToken()
+                                 + "; Domain=" + clientDomain
                                  + "; Secure; SameSite=None; Path=/; Max-Age=" + cookieTtl;
 
         response.setHeader("Set-Cookie", accessTokenCookie);
-        response.addHeader("Set-Cookie", csrfTokenCookie);
+        response.addHeader("Set-Cookie", serverCsrfTokenCookie);
+        response.addHeader("Set-Cookie", clientCsrfTokenCookie);
     }
 
     @Operation(summary = "Login", description = "Login into content website")
