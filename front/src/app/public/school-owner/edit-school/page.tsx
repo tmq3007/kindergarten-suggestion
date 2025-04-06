@@ -37,6 +37,7 @@ export default function EditSchool() {
         data: data?.data,
         isLoading,
     });
+    console.log('school id: ', school?.id)
     const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
 
     if (isLoading) {

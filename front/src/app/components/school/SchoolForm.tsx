@@ -136,7 +136,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     formLoaded = false,
                                                     isDetailPage,
                                                 }) => {
-
+    console.log("id in School Form: ", schoolId);
     const [form] = Form.useForm(externalForm);
 
     const emailInputRef = useRef<any>(null);
@@ -469,7 +469,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             isReadOnly={isReadOnly}
                             ref={emailInputRef}
                             triggerCheckEmail={triggerCheckEmail}
-                            id={schoolId}
+                            schoolId={schoolId}
                         />
                         <PhoneInput
                             onPhoneChange={(phone) => form.setFieldsValue({phone})}

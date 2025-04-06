@@ -88,8 +88,8 @@ const EmailInput = forwardRef(({
 
     useImperativeHandle(ref, () => ({
         validateEmail,
-        setEmailStatus, // Thêm dòng này
-        setEmailHelp,   // Thêm dòng này
+        setEmailStatus,
+        setEmailHelp,
     }));
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
