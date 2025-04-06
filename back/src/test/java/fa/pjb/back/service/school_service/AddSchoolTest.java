@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -128,9 +129,10 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.APPROVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC))
+                "Description", null, null, null, LocalDateTime.now()
                 , null,
                 Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                ,null
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -218,8 +220,9 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SAVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
+                "Description", null, null, null, LocalDateTime.now(),
                 null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                ,null
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -279,8 +282,8 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
-                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                "Description", null, null, null,  LocalDateTime.now(),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now())),null
 
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
@@ -335,8 +338,8 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
-                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                "Description", null, null, null,  LocalDateTime.now(),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now())),null
 
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
@@ -379,8 +382,8 @@ class AddSchoolTest {
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
                 1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
-                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                "Description", null, null, null, LocalDateTime.now(),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now())),null
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 

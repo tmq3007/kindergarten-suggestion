@@ -1,0 +1,251 @@
+/* CommentSection.module.css */
+
+/* Scoped styles for the CommentSection component */
+.commentSection {
+    /* No direct styles needed here, but this class will scope the Ant Design styles */
+}
+
+.container {
+    width: 100%;
+}
+
+.detailsSection {
+    margin-bottom: 16px;
+}
+
+.detailsTitle {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 700;
+}
+
+@media (min-width: 768px) {
+    .detailsTitle {
+        font-size: 1.25rem; /* text-xl */
+    }
+}
+
+/* Custom classes for ReviewItem */
+.headerFeedback,
+.headerRating {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.headerText {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: auto;
+    min-height: 36px;
+}
+
+@media (min-width: 768px) {
+    .headerText {
+        min-height: 48px;
+    }
+}
+
+.overallRatingRow {
+    background-color: #fffbe6;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .overallRatingRow {
+        font-size: 16px;
+    }
+}
+
+.overallRatingRow td {
+    padding: 8px 4px !important;
+}
+
+@media (min-width: 768px) {
+    .overallRatingRow td {
+        padding: 12px 8px !important;
+    }
+}
+
+.bodyFeedback,
+.bodyRating {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+/* Scoped Ant Design styles */
+.commentSection .ant-tabs {
+    margin-bottom: 16px;
+}
+
+.commentSection .ant-tabs-tab {
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-right: 4px;
+    font-size: 14px;
+    color: #000;
+    transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-tabs-tab {
+        padding: 8px 16px;
+        margin-right: 8px;
+        font-size: 16px;
+    }
+}
+
+.commentSection .ant-tabs-tab-active {
+    color: #000 !important;
+}
+
+.commentSection .ant-tabs-tab:hover {
+    background-color: #fadb14;
+    color: #000;
+}
+
+.commentSection .ant-progress-text {
+    font-size: 12px;
+    color: #000;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-progress-text {
+        font-size: 14px;
+    }
+}
+
+.commentSection .ant-rate {
+    color: #fadb14;
+}
+
+.commentSection .ant-rate-expanded {
+    font-size: 16px;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-rate-expanded {
+        font-size: 20px;
+    }
+}
+
+.commentSection .ant-rate-overall {
+    font-size: 20px;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-rate-overall {
+        font-size: 24px;
+    }
+}
+
+.commentSection .ant-divider-vertical {
+    height: auto;
+    border-left: 1px solid #d9d9d9;
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-divider-vertical {
+        display: block;
+    }
+}
+
+.commentSection .ant-collapse {
+    border: none !important;
+    background: transparent !important;
+}
+
+.commentSection .ant-collapse > .ant-collapse-item {
+    border-bottom: 1px solid #d9d9d9 !important;
+}
+
+.commentSection .ant-collapse-header {
+    align-items: center !important;
+    padding: 8px 0 !important;
+    transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-collapse-header {
+        padding: 12px 0 !important;
+    }
+}
+
+.commentSection .ant-collapse-content-box {
+    padding: 12px 0 !important;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-collapse-content-box {
+        padding: 16px 0 !important;
+    }
+}
+
+.commentSection .ant-table {
+    background: transparent !important;
+}
+
+.commentSection .ant-table-thead > tr > th {
+    background: transparent !important;
+    font-weight: bold;
+    border-bottom: 1px solid #d9d9d9 !important;
+    padding: 8px 4px !important;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-table-thead > tr > th {
+        padding: 8px !important;
+    }
+}
+
+.commentSection .ant-table-tbody > tr > td {
+    border-bottom: 1px solid #d9d9d9 !important;
+    padding: 8px 4px !important;
+}
+
+@media (min-width: 768px) {
+    .commentSection .ant-table-tbody > tr > td {
+        padding: 8px !important;
+    }
+}
+
+.commentSection .ant-table-tbody > tr:last-child > td {
+    border-bottom: none !important;
+}
+
+.commentSection .ant-collapse-item-active .headerFeedback,
+.commentSection .ant-collapse-item-active .headerRating {
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.commentSection .ant-collapse-item-active .bodyFeedback,
+.commentSection .ant-collapse-item-active .bodyRating {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.commentSection .ant-list-item {
+    padding: 0 !important;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+        display: block;
+    }
+    99% {
+        opacity: 0;
+        transform: translateY(-10px);
+        display: block;
+    }
+    100% {
+        opacity: 0;
+        display: none;
+    }
+}

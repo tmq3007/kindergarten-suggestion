@@ -260,9 +260,9 @@ export const schoolApi = createApi({
             keepUnusedDataFor: 0,
         }),
 
-        checkEditSchoolEmail: build.mutation<ApiResponse<string>, { email: string; schoolId: number }>({
-            query: ({email, schoolId}) => ({
-                url: `/school/check-editing-email?email=${encodeURIComponent(email)}&schoolId=${schoolId}`,
+        checkEditSchoolEmail: build.mutation<ApiResponse<string>, { email: string; id: number }>({
+            query: ({email, id}) => ({
+                url: `/school/check-editing-email?email=${encodeURIComponent(email)}&schoolId=${id}`,
                 method: "POST",
             }),
         }),

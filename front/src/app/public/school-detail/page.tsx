@@ -1,7 +1,7 @@
-
 import React, {FunctionComponent} from 'react';
 import SchoolDetails from "@/app/components/school/SchoolDetails";
 import {SchoolDetailVO} from "@/redux/services/schoolApi";
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 
 const schoolData: SchoolDetailVO = {
     id: 1,
@@ -24,31 +24,20 @@ const schoolData: SchoolDetailVO = {
     facilities: [{fid: 1, name: "Library"}, {fid: 2, name: "Playground"}],
     utilities: [{uid: 1, name: "Bus Service"}],
     posted_date: new Date(),
-    imageList: [{
-        cloudId: "1", url: "https://storage.googleapis.com/kss-file-storage/School_Images/School_178_Image_5e568f15-f999-4b3f-91a8-3b554d748e08_resized_temp470652562443453075.png",
-        filename: ''
-    }, {
-        cloudId: "2", url: "https://storage.googleapis.com/kss-file-storage/School_Images/School_178_Image_8879b738-ed88-45d9-bb6a-95e6e393ead6_resized_temp17100598076507967427.png",
-        filename: ''
-    },{
-        cloudId: "3", url: "https://storage.googleapis.com/kss-file-storage/School_Images/School_178_Image_8879b738-ed88-45d9-bb6a-95e6e393ead6_resized_temp17100598076507967427.png",
-        filename: ''
-    },{
-        cloudId: "4", url: "https://storage.googleapis.com/kss-file-storage/School_Images/School_178_Image_8879b738-ed88-45d9-bb6a-95e6e393ead6_resized_temp17100598076507967427.png",
-        filename: ''
-    },{
-        cloudId: "1", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school1.jpg",
-        filename: ''
-    }, {
-        cloudId: "2", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school2.jpg",
-        filename: ''
-    },{
-        cloudId: "3", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school3.jpg",
-        filename: ''
-    },{
-        cloudId: "4", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school4.jpg",
-        filename: ''
-    }],
+    imageList: [
+        {
+            cloudId: "1", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school1.jpg",
+            filename: ''
+        }, {
+            cloudId: "2", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school2.jpg",
+            filename: ''
+        }, {
+            cloudId: "3", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school3.jpg",
+            filename: ''
+        }, {
+            cloudId: "4", url: "https://storage.googleapis.com/kss-file-storage/SO_Images/school4.jpg",
+            filename: ''
+        }],
     schoolOwners: [{
         id: 1, fullname: "John Doe",
         userId: 0,
@@ -73,13 +62,20 @@ const methodOptions = [
 const SchoolDetailPage: FunctionComponent = () => {
 
     return (
-        <div className="w-full mt-16">
+        <div className="w-full mt-20">
+            <MyBreadcrumb
+                paths={[
+                    {label: "School Search", href: "/public/search-school"},
+                    {label: "School Details"},
+                ]}
+            />
+
             <SchoolDetails schoolData={schoolData}
                            CHILD_RECEIVING_AGE_OPTIONS={ageOptions}
                            SCHOOL_TYPE_OPTIONS={typeOptions}
                            EDUCATION_METHOD_OPTIONS={methodOptions}/>
         </div>
-        );
+    );
 };
 
 export default SchoolDetailPage;

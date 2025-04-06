@@ -619,7 +619,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             />
                         </Form.Item>
                         <Form.Item label="School image" name="image" valuePropName="fileList"
-                                   getValueFromEvent={(e) => e?.fileList || []}>
+                                   getValueFromEvent={(e) => e?.fileList || []} tooltip={"Consider using 16:9 images for best result"}>
                             <ImageUpload
                                 form={form}
                                 fieldName="image"

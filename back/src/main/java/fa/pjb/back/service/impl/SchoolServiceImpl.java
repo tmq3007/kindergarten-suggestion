@@ -66,7 +66,6 @@ public class SchoolServiceImpl implements SchoolService {
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
     private final ReviewMapper reviewMapper;
-    private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
     private final GCPFileStorageService imageService;

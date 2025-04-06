@@ -156,54 +156,52 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                     )}
                 </div>
             ) : (
-                <ImgCrop aspect={16 / 9} rotationSlider quality={1}>
-                    <Upload.Dragger
-                        multiple
-                        listType="picture-card"
-                        name="files"
-                        fileList={fileList}
-                        beforeUpload={beforeUpload}
-                        maxCount={maxCount}
-                        accept={formattedAccept}
-                        onPreview={handlePreview}
-                        onChange={handleChange}
-                        className="custom-upload-dragger"
+                <Upload.Dragger
+                    multiple
+                    listType="picture-card"
+                    name="files"
+                    fileList={fileList}
+                    beforeUpload={beforeUpload}
+                    maxCount={maxCount}
+                    accept={formattedAccept}
+                    onPreview={handlePreview}
+                    onChange={handleChange}
+                    className="custom-upload-dragger"
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "16px",
+                        }}
                     >
                         <div
                             style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
+                                display: "grid",
+                                gridTemplateColumns: "1fr 3fr",
                                 gap: "16px",
+                                width: "100%",
+                                alignItems: "center",
                             }}
                         >
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "1fr 3fr",
-                                    gap: "16px",
-                                    width: "100%",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <div style={{textAlign: "center"}}>
-                                    <InboxOutlined style={{fontSize: "50px", color: "#1890ff"}}/>
-                                </div>
-                                <div style={{textAlign: "center"}}>
-                                    <p className="ant-upload-text" style={{margin: 0}}>
-                                        Click or drag file to this area to upload
-                                    </p>
-                                    <p className="ant-upload-text" style={{margin: 0}}>
-                                        Upload files of format <strong>{displayAccept}</strong> only
-                                    </p>
-                                    <p className="ant-upload-text" style={{margin: 0}}>
-                                        Maximum size: <strong>{maxSizeMB}MB</strong>
-                                    </p>
-                                </div>
+                            <div style={{textAlign: "center"}}>
+                                <InboxOutlined style={{fontSize: "50px", color: "#1890ff"}}/>
+                            </div>
+                            <div style={{textAlign: "center"}}>
+                                <p className="ant-upload-text" style={{margin: 0}}>
+                                    Click or drag file to this area to upload
+                                </p>
+                                <p className="ant-upload-text" style={{margin: 0}}>
+                                    Upload files of format <strong>{displayAccept}</strong> only
+                                </p>
+                                <p className="ant-upload-text" style={{margin: 0}}>
+                                    Maximum size: <strong>{maxSizeMB}MB</strong>
+                                </p>
                             </div>
                         </div>
-                    </Upload.Dragger>
-                </ImgCrop>
+                    </div>
+                </Upload.Dragger>
             )}
 
             {previewImage && (
@@ -228,4 +226,4 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             `}</style>
         </>
     );
-};
+}
