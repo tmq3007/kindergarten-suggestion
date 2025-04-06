@@ -125,9 +125,8 @@ export type SchoolVO = {
     facilities?: { fid: number }[]; // Add facilities(assuming this structure)
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
-    rating?: number;
+    reviews?: ReviewVO;
     schoolOwners?: SchoolOwnerVO[];
-    refId: number;
 };
 export type ExpectedSchool = {
     expectedSchool: string
@@ -252,7 +251,7 @@ export const schoolApi = createApi({
             providesTags: ["School"],
         }),
 
-        checkSchoolEmail: build.query<ApiResponse<boolean>, string>({
+        checkSchoolEmail: build.query<ApiResponse<string>, string>({
             query: (email) => ({
                 url: `/school/check-email/${email}`,
                 method: "GET",
@@ -266,7 +265,6 @@ export const schoolApi = createApi({
                 method: "POST",
             }),
         }),
-
 
 
         addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({

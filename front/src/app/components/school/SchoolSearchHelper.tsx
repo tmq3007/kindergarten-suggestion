@@ -1,15 +1,16 @@
 'use client'
-import { Checkbox, Col, Input, Row, Select, Slider } from "antd";
+import {Checkbox, Col, Input, Row, Select, Slider} from "antd";
 import React from "react";
-import { CHILD_RECEIVING_AGE_OPTIONS, FACILITY_OPTIONS, SCHOOL_TYPE_OPTIONS, UTILITY_OPTIONS } from "@/lib/constants";
-import { SchoolSearchDTO } from "@/redux/services/schoolApi";
+import {CHILD_RECEIVING_AGE_OPTIONS, FACILITY_OPTIONS, SCHOOL_TYPE_OPTIONS, UTILITY_OPTIONS} from "@/lib/constants";
+import {SchoolSearchDTO} from "@/redux/services/schoolApi";
 
 interface SchoolSearchHelperProps {
     searchParams: SchoolSearchDTO;
     onApplyFiltersAction: (updatedParams: SchoolSearchDTO) => void;
+    isLoading?: boolean;
 }
 
-export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction }: SchoolSearchHelperProps) {
+export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction, isLoading }: SchoolSearchHelperProps) {
     // Handler for school type filter
     const handleSchoolTypeChange = (value: number | null) => {
         onApplyFiltersAction({
@@ -70,6 +71,7 @@ export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction 
                     onChange={handleSchoolTypeChange}
                     allowClear
                     value={searchParams.type}
+                    disabled={isLoading}
                 />
             </div>
 
@@ -83,6 +85,7 @@ export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction 
                     onChange={handleAgeChange}
                     allowClear
                     value={searchParams.age}
+                    disabled={isLoading}
                 />
             </div>
 
@@ -99,6 +102,7 @@ export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction 
                     ]}
                     onChange={handleFeeRangeChange}
                     tooltip={{ formatter: (value) => `${value} millions` }}
+                    disabled={isLoading}
                 />
                 <Row gutter={16} className="mt-2">
                     <Col span={12}>
@@ -127,6 +131,7 @@ export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction 
                     }))}
                     onChange={handleFacilitiesChange}
                     value={searchParams.facilityIds}
+                    disabled={isLoading}
                 />
             </div>
 
@@ -141,6 +146,7 @@ export default function SchoolSearchHelper({ searchParams, onApplyFiltersAction 
                     }))}
                     onChange={handleUtilitiesChange}
                     value={searchParams.utilityIds}
+                    disabled={isLoading}
                 />
             </div>
         </div>

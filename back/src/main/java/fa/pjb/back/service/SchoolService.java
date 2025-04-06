@@ -5,10 +5,7 @@ import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.SchoolSearchDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.vo.ExpectedSchoolVO;
-import fa.pjb.back.model.vo.SchoolDetailVO;
-import fa.pjb.back.model.vo.SchoolListVO;
-import fa.pjb.back.model.vo.SchoolOwnerVO;
+import fa.pjb.back.model.vo.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,6 +54,9 @@ public interface SchoolService {
 
     Boolean isDraft(Integer schoolId);
 
-    Page<SchoolDetailVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO);
+    Page<SchoolSearchVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO);
 
+    Page<SchoolSearchNativeVO> searchSchoolByCriteriaWithNative(SchoolSearchDTO dto);
+
+    List<SchoolOwnerVO> findSchoolOwnerByDraft(Integer id);
 }
