@@ -11,12 +11,8 @@ export async function GET(req: Request) {
 
         console.log(`🔗 Fetching image from: ${url}`);
 
-        // Gửi request để lấy ảnh từ URL gốc
+        // Send request to get image from origin URL
         const response = await fetch(url, { method: 'GET' });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch image. Status: ${response.status}`);
-        }
 
         const buffer = await response.arrayBuffer();
 
@@ -27,7 +23,6 @@ export async function GET(req: Request) {
             },
         });
     } catch (error) {
-        console.error('❌ Lỗi khi tải ảnh:', error);
         return NextResponse.json({ error: 'Failed to fetch image' }, { status: 500 });
     }
 }

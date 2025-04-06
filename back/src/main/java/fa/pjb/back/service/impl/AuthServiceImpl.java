@@ -128,6 +128,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginVO refresh(HttpServletRequest request) throws JwtUnauthorizedException {
         String csrfTokenFromCookie = httpRequestHelper.extractJwtTokenFromCookie(request, "CSRF_TOKEN");
         String csrfTokenFromHeader = request.getHeader("X-CSRF-TOKEN");
+
         if (csrfTokenFromCookie == null || !csrfTokenFromCookie.equals(csrfTokenFromHeader)) {
             log.info("==================CSRF exception==================");
             throw new JwtUnauthorizedException("Invalid CSRF Token");
