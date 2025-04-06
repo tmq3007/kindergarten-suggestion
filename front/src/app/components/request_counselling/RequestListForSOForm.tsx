@@ -122,7 +122,7 @@ export default function RequestListForSOForm({
       key: "fullName",
       width: 150,
       render: (fullName: string, record: { id: number }) => (
-          <Link href={`/admin/management/request/request-detail/${record.id}`}>
+          <Link href={`/public/school-owner/view-request/request-counselling-detail/${record.id}`}>
             <span className="text-blue-500 hover:underline">{fullName}</span>
           </Link>
       ),

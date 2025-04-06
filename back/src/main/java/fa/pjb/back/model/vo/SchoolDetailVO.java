@@ -2,7 +2,7 @@ package fa.pjb.back.model.vo;
 
 import lombok.Builder;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -47,10 +47,13 @@ public record SchoolDetailVO(
 
         List<MediaVO> imageList,
 
-        Date posted_date,
+        LocalDateTime postedDate,
 
         ReviewVO review,
 
-        Set<SchoolOwnerVO> schoolOwners
+        Set<SchoolOwnerVO> schoolOwners,
+
+        Integer refId
+
 ) {
 }

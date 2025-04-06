@@ -236,10 +236,9 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public String sendCounsellingRequestUpdateEmail(String to, String username, String response) {
+    public String sendCounsellingRequestUpdateEmail(String to, String response) {
         try {
             Map<String, Object> model = new HashMap<>();
-            model.put("username", username);
             model.put("response", response);
             sendEmailWithTemplate(to, "no-reply-email-KTS-system <Update Counselling Request>", "update-counselling-request", model);
             return "send counselling request update successfully!";

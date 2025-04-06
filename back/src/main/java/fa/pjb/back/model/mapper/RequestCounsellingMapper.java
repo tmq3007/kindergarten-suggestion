@@ -10,6 +10,7 @@ public interface RequestCounsellingMapper {
 
     @Mapping(source = "school.name", target = "schoolName")
     @Mapping(source = "due_date", target = "dueDate")
+    @Mapping(target = "address", expression = "java( requestCounselling.getParent() != null ? requestCounselling.getParent().getStreet() + \" \" + requestCounselling.getParent().getWard() + \" \" + requestCounselling.getParent().getDistrict() + \" \" + requestCounselling.getParent().getProvince() : null)")
     RequestCounsellingVO toRequestCounsellingVO(RequestCounselling requestCounselling);
 
     @Mapping(target = "address", expression = "java(formatAddress(projection))")

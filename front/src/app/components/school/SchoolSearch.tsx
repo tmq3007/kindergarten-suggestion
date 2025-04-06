@@ -14,8 +14,12 @@ import {useRouter, useSearchParams} from "next/navigation";
 const sortOptions = [
     {value: 'postedDate', label: 'Latest'},
     {value: 'rating', label: 'By Rating'},
-    {value: 'fee', label: 'By Price'},
-    {value: 'name', label: 'Alphabetically'},
+    {value: 'feeFrom', label: 'By Price'},
+];
+
+const sortDirectionOptions = [
+    { value: 'desc', label: 'Descending' },
+    { value: 'asc', label: 'Ascending' },
 ];
 
 export default function SchoolSearch({
@@ -57,8 +61,10 @@ export default function SchoolSearch({
             urlParams.set('page', (params.page + 1).toString());
             urlParams.set('size', params.size.toString());
             urlParams.set('sortBy', params.sortBy);
+            if (params.sortDirection) urlParams.set('sortDirection', params.sortDirection);
 
-            router.replace(`?${urlParams.toString()}`, {scroll: false});
+            router.push(`?${urlParams.toString()}`, {scroll: false});
+            // router.refresh();
         };
 
         updateURL(searchParamsState);
@@ -110,6 +116,15 @@ export default function SchoolSearch({
         setSearchParamsState(prev => ({
             ...prev,
             sortBy: value,
+            sortDirection: 'desc',
+            page: 0,
+        }));
+    };
+
+    const handleSortDirectionChange = (value: string) => {
+        setSearchParamsState(prev => ({
+            ...prev,
+            sortDirection: value,
             page: 0,
         }));
     };
@@ -142,6 +157,7 @@ export default function SchoolSearch({
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onPressEnter={handleSearch}
+                        disabled={isLoading}
                     />
                     <Select
                         value={provinceName || 'Province/City'}
@@ -150,35 +166,40 @@ export default function SchoolSearch({
                         onSelect={handleSelectProvince}
                         allowClear
                         onClear={() => handleSelectProvince('')}
+                        disabled={isLoading}
                     />
                     <Select
                         value={districtName || 'District'}
                         className="w-1/2 h-[42px] bg-white"
                         options={districtOptions}
-                        disabled={provinceCode === -1}
+                        disabled={provinceCode === -1 || isLoading}
                         onSelect={handleSelectDistrict}
                         allowClear
                         onClear={() => handleSelectDistrict('')}
+
                     />
                     <Button
                         className="w-1/6 h-[42px] bg-custom hover:!bg-custom-700 text-white hover:!text-white rounded-lg"
                         icon={<MagnifyingGlassIcon className="h-4 w-4"/>}
                         onClick={handleSearch}
+                        disabled={isLoading}
                     >
                         <span className="hidden md:inline">Search</span>
                     </Button>
                 </Space.Compact>
             </div>
 
-            <MyBreadcrumb
-                paths={[
-                    {label: "Home", href: "/public"},
-                    {label: "School Search"},
-                ]}
-            />
+         <div>
+             <MyBreadcrumb
+                 paths={[
+                     {label: "Home", href: "/public"},
+                     {label: "School Search"},
+                 ]}
+             />
+         </div>
 
             {initialSearchResult?.data?.page.totalElements > 0 && (
-                <p className="text-center">
+                <p className="text-center my-5 font-medium">
                     Found {initialSearchResult.data.page.totalElements} matching schools
                 </p>
             )}
@@ -189,16 +210,24 @@ export default function SchoolSearch({
                     type="primary"
                     onClick={() => setOpen(true)}
                     icon={<FunnelIcon className="h-4 w-4"/>}
+                    disabled={isLoading}
                 >
                     Filter
                 </Button>
 
                 <div className="text-right mb-4">
                     <Select
+                        value={searchParamsState.sortDirection}
+                        options={sortDirectionOptions}
+                        onChange={handleSortDirectionChange}
+                        disabled={isLoading}
+                        className={'mr-2'}
+                    />
+                    <Select
                         value={searchParamsState.sortBy}
-                        style={{width: 120}}
                         options={sortOptions}
                         onChange={handleSortChange}
+                        disabled={isLoading}
                     />
                 </div>
             </div>
@@ -213,6 +242,7 @@ export default function SchoolSearch({
                 <SchoolSearchHelper
                     searchParams={searchParamsState}
                     onApplyFiltersAction={applyFiltersAction}
+                    isLoading={isLoading}
                 />
             </Drawer>
 
@@ -222,6 +252,7 @@ export default function SchoolSearch({
                         <SchoolSearchHelper
                             searchParams={searchParamsState}
                             onApplyFiltersAction={applyFiltersAction}
+                            isLoading={isLoading}
                         />
                     </div>
                 </Col>

@@ -28,4 +28,10 @@ public interface UserService {
     SchoolOwner getCurrentSchoolOwner();
 
     Boolean checkPhoneExist(String phone);
+
+    Boolean checkPhoneExistExcept(String phone, Integer userId);
+
+    Boolean checkEmailExistExcept(String email, Integer userId);
+
+    Boolean checkEmailExist(String email);
 }

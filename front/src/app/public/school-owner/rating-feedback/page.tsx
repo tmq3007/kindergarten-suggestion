@@ -643,6 +643,13 @@ const RatingsDashboard = () => {
                                                                     </span>
                                                     </Tooltip>
                                                 )}
+                                                {(item.status === REVIEW_STATUS.PENDING) && (
+                                                    <Tooltip open={false} placement="topRight" title={item.report} color="red" key="pending-tooltip">
+                                                                    <span className="text-xs text-gray-500 cursor-default">
+                                                                        This review is waiting for confirm by admin
+                                                                    </span>
+                                                    </Tooltip>
+                                                )}
                                             </div>
                                         </List.Item>
                                     </motion.div>

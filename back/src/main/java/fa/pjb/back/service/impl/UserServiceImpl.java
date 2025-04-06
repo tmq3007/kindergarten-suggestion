@@ -90,6 +90,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean checkPhoneExistExcept(String phone, Integer userId) {
+        Boolean temp = userRepository.existsByPhoneAndIdNot(phone.trim(), userId);
+        log.info("temp:{}",String.valueOf(temp));
+        return temp;
+    }
+
+    @Override
+    public Boolean checkEmailExistExcept(String email, Integer userId){
+        Boolean temp = userRepository.existsByEmailAndIdNot(email.trim(), userId);
+        log.info("temp:{}",String.valueOf(temp));
+        return temp;
+    }
+
+    @Override
+    public Boolean checkEmailExist(String email) {
+        Boolean temp = userRepository.existsByEmail(email.trim());
+        log.info(String.valueOf(temp));
+        return temp;
+    }
+
+    @Override
     public Page<UserVO> getAllUsersAdmin(int page, int size, String searchBy, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size);
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {

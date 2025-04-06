@@ -91,6 +91,7 @@ export interface SchoolSearchDTO {
     page: number;
     size: number;
     sortBy: string;
+    sortDirection: string;
 }
 
 export interface Page<T> {
@@ -124,8 +125,9 @@ export type SchoolVO = {
     facilities?: { fid: number }[]; // Add facilities(assuming this structure)
     utilities?: { uid: number }[]; // Add utilities (assuming this structure)
     imageList?: MediaVO[];
-    review?: ReviewVO;
+    rating?: number;
     schoolOwners?: SchoolOwnerVO[];
+    refId: number;
 };
 export type ExpectedSchool = {
     expectedSchool: string
@@ -486,12 +488,13 @@ export const {
     useGetSchoolByIdQuery,
     useApproveSchoolMutation,
     useSearchExpectedSchoolQuery,
+    useSearchByCriteriaQuery,
     useLazySearchSchoolOwnersForAddSchoolQuery,
     useMergeDraftMutation,
     useIsDraftQuery,
-    useSearchByCriteriaQuery,
     useGetActiveSchoolsWithoutRefIdQuery,
     useGetAllDraftsQuery,
     useCountActiveSchoolsWithoutRefIdQuery,
     useCountAllDraftsQuery,
+    useLazySearchByCriteriaQuery,
 } = schoolApi;

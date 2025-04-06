@@ -4,6 +4,8 @@ import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.mapper.RequestCounsellingProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -51,4 +53,10 @@ public interface RequestCounsellingRepository extends JpaRepository<RequestCouns
         "FROM RequestCounselling r " +
         "LEFT JOIN r.school s")
     Page<RequestCounsellingProjection> findAllProjected(Specification<RequestCounselling> spec, Pageable pageable);
+
+    @Query("SELECT COUNT(rc) > 0 FROM RequestCounselling rc " +
+            "WHERE rc.id = :requestId AND :ownerId IN (SELECT so.id FROM rc.school s JOIN s.schoolOwners so)")
+    @EntityGraph(attributePaths = {"school", "school.schoolOwners"})
+    boolean isRequestManagedByOwner(@Param("requestId") Integer requestId,
+                                    @Param("ownerId") Integer ownerId);
 }

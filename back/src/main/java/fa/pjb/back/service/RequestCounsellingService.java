@@ -14,9 +14,13 @@ public interface RequestCounsellingService {
 
     Page<RequestCounsellingVO> getAllRequests(int page, int size, String searchBy, String keyword);
 
-    RequestCounsellingVO getRequestCounselling(Integer requestCounsellingId);
+    RequestCounsellingVO getRequestCounsellingByAdmin(Integer requestCounsellingId);
 
-    void updateRequestCounselling(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
+    RequestCounsellingVO getRequestCounsellingBySchoolOwner(Integer requestCounsellingId);
+
+    void updateRequestCounsellingByAdmin(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
+
+    void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
 
 
 }
