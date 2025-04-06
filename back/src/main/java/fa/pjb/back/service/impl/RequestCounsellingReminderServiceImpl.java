@@ -8,6 +8,7 @@ import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERequestCounsellingStatus;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
+import fa.pjb.back.model.mapper.RequestCounsellingProjection;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.RequestCounsellingRepository;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -175,7 +177,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
 
     @Override
     public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses, String searchBy, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("dueDate").descending());
         List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
 
         Specification<RequestCounselling> spec = (root, query, cb) -> {
@@ -196,7 +198,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
                         break;
                     case "schoolName":
                         Join<RequestCounselling, School> schoolJoin = root.join("school");
-                        predicates.add(cb.like(cb.lower(schoolJoin.get("name")), searchValue)); // Assuming 'name' is the field in School
+                        predicates.add(cb.like(cb.lower(schoolJoin.get("name")), searchValue));
                         break;
                     default:
                         predicates.add(cb.like(cb.lower(root.get("name")), searchValue));
@@ -206,8 +208,8 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(spec, pageable);
-        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+        Page<RequestCounsellingProjection> requestPage = requestCounsellingRepository.findAllProjected(spec, pageable);
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVOFromProjection);
     }
 
     @Override
@@ -215,6 +217,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         Optional<SchoolOwner> schoolOwnerOpt = schoolOwnerRepository.findByUserId(schoolOwnerId);
         if (schoolOwnerOpt.isEmpty()) {
             log.warn("No SchoolOwner found for id: {}", schoolOwnerId);
+            return Page.empty(PageRequest.of(page - 1, size));
         }
 
         SchoolOwner schoolOwner = schoolOwnerOpt.get();
@@ -223,15 +226,15 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
             return Page.empty(PageRequest.of(page - 1, size));
         }
 
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("dueDate").descending());
         List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
 
         Integer schoolId = schoolOwner.getSchool().getId();
-        Page<RequestCounselling> requestPage = requestCounsellingRepository.findBySchoolIdAndStatusIn(
+        Page<RequestCounsellingProjection> requestPage = requestCounsellingRepository.findBySchoolIdAndStatusIn(
             schoolId, statusList, pageable
         );
 
-        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVOFromProjection);
     }
 
 

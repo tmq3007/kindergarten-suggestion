@@ -22,6 +22,7 @@ import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
+import fa.pjb.back.model.mapper.SchoolProjection;
 import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.repository.specification.SchoolSpecification;
@@ -680,7 +681,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public Page<SchoolListVO> getAllDrafts(String name, String district, String email, String phone, Pageable pageable) {
-        Page<School> draftPage = schoolRepository.findAllDrafts(name, district, email, phone,
+        Page<SchoolProjection> draftPage = schoolRepository.findAllDrafts(name, district, email, phone,
             pageable);
         return draftPage.map(schoolMapper::toSchoolListVO);
     }
@@ -704,13 +705,13 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
         String street, String email, String phone, Pageable pageable) {
-        Page<School> schoolPage = schoolRepository.findSchools(name, district, email, phone, pageable);
+        Page<SchoolProjection> schoolPage = schoolRepository.findSchools(name, district, email, phone, pageable);
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 
     @Override
     public Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String district, String email, String phone, Pageable pageable) {
-        Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
+        Page<SchoolProjection> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
 

@@ -12,6 +12,7 @@ import fa.pjb.back.model.entity.RequestCounselling;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
+import fa.pjb.back.model.mapper.RequestCounsellingProjection;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.ParentRepository;
@@ -27,6 +28,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -102,7 +104,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
 
     @Override
     public Page<RequestCounsellingVO> getAllRequests(int page, int size, String searchBy, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("dueDate").descending());
 
         Specification<RequestCounselling> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -124,7 +126,6 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
                         predicates.add(criteriaBuilder.like(criteriaBuilder.lower(schoolJoin.get("name")), searchValue));
                         break;
                     default:
-                        // Fallback to name if searchBy is unrecognized
                         predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchValue));
                         break;
                 }
@@ -133,8 +134,8 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
             return predicates.isEmpty() ? null : criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(specification, pageable);
-        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+        Page<RequestCounsellingProjection> requestPage = requestCounsellingRepository.findAllProjected(specification, pageable);
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVOFromProjection);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SCHOOL_OWNER')")

@@ -1,6 +1,7 @@
 package fa.pjb.back.repository;
 
 import fa.pjb.back.model.entity.School;
+import fa.pjb.back.model.mapper.SchoolProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,13 +33,16 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
     @Query("SELECT s FROM School s JOIN SchoolOwner so ON s.id = so.school.id WHERE so.user.id = :userId and s.status != 6")
     Optional<School> findSchoolByUserIdAndStatusNotDelete(@Param("userId") Integer userId);
 
-    @Query("SELECT s FROM School s " +
+    @Query("SELECT s.id AS id, s.name AS name, s.street AS street, s.ward AS ward, " +
+        "s.district AS district, s.province AS province, s.phone AS phone, " +
+        "s.email AS email, s.postedDate AS postedDate, s.status AS status " +
+        "FROM School s " +
         "WHERE s.status NOT IN (0, 6) " +
         "AND (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
         "AND (:district IS NULL OR s.district = :district) " +
         "AND (:email IS NULL OR LOWER(s.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
         "AND (:phone IS NULL OR s.phone = :phone)")
-    Page<School> findSchools(
+    Page<SchoolProjection> findSchools(
         @Param("name") String name,
         @Param("district") String district,
         @Param("email") String email,
@@ -52,7 +56,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
         "AND (:district IS NULL OR s.district = :district) " +
         "AND (:email IS NULL OR LOWER(s.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
         "AND (:phone IS NULL OR s.phone = :phone)")
-    Page<School> findActiveSchoolsWithoutRefId(
+    Page<SchoolProjection> findActiveSchoolsWithoutRefId(
         @Param("name") String name,
         @Param("district") String district,
         @Param("email") String email,
@@ -66,7 +70,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
         "AND (:district IS NULL OR s.district = :district) " +
         "AND (:email IS NULL OR LOWER(s.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
         "AND (:phone IS NULL OR s.phone = :phone)")
-    Page<School> findAllDrafts(
+    Page<SchoolProjection> findAllDrafts(
         @Param("name") String name,
         @Param("district") String district,
         @Param("email") String email,

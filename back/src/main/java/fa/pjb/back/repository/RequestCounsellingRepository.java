@@ -1,8 +1,10 @@
 package fa.pjb.back.repository;
 
 import fa.pjb.back.model.entity.RequestCounselling;
+import fa.pjb.back.model.mapper.RequestCounsellingProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -32,5 +34,21 @@ public interface RequestCounsellingRepository extends JpaRepository<RequestCouns
 
     Page<RequestCounselling> findByStatusIn(List<Byte> statuses, Pageable pageable);
 
-    Page<RequestCounselling> findBySchoolIdAndStatusIn(Integer schoolId, List<Byte> statuses, Pageable pageable);
+    @Query("SELECT r.id AS id, r.name AS name, r.email AS email, r.phone AS phone, " +
+        "r.status AS status, r.due_date AS dueDate, s.name AS schoolName, " +
+        "s.street AS street, s.ward AS ward, s.district AS district, s.province AS province " +
+        "FROM RequestCounselling r " +
+        "LEFT JOIN r.school s " +
+        "WHERE r.school.id = :schoolId AND r.status IN :statuses")
+    Page<RequestCounsellingProjection> findBySchoolIdAndStatusIn(
+        @Param("schoolId") Integer schoolId,
+        @Param("statuses") List<Byte> statuses,
+        Pageable pageable
+    );
+    @Query("SELECT r.id AS id, r.name AS name, r.email AS email, r.phone AS phone, " +
+        "r.status AS status, r.due_date AS dueDate, s.name AS schoolName, " +
+        "s.street AS street, s.ward AS ward, s.district AS district, s.province AS province " +
+        "FROM RequestCounselling r " +
+        "LEFT JOIN r.school s")
+    Page<RequestCounsellingProjection> findAllProjected(Specification<RequestCounselling> spec, Pageable pageable);
 }
