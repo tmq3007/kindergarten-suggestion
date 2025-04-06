@@ -68,4 +68,9 @@ public class User implements UserDetails {
         return Set.of(new SimpleGrantedAuthority(role.toString()));
     }
 
+    @Override
+    public boolean isEnabled() {
+        return Boolean.TRUE.equals(status);
+    }
+
 }

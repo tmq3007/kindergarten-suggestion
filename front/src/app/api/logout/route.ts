@@ -6,7 +6,7 @@ export async function PUT(req: NextRequest) {
     console.log("Hello logout")
 
     try {
-        // Lấy đối tượng cookies
+        // Get Cookies
         const cookie = await cookies();
 
         cookie.delete("ACCESS_TOKEN");

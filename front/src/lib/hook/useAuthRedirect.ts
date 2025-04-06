@@ -15,6 +15,10 @@ interface JwtPayload {
     iat: number;
 }
 
+const setClientCookie = (name: string, value: string, maxAgeSeconds: number) => {
+    document.cookie = `${name}=${value}; Max-Age=${maxAgeSeconds}; Path=/; Secure; SameSite=None`;
+};
+
 const useAuthRedirect = (
     data: any,
     error: FetchBaseQueryError | SerializedError | undefined,
@@ -31,6 +35,7 @@ const useAuthRedirect = (
             processed.current = true;
 
             const accessToken = data.data.accessToken;
+            const csrfToken = data.data.csrfToken;
             const hasSchool = data.data.hasSchool;
             const hasDraft = data.data.hasDraft;
 
@@ -43,6 +48,10 @@ const useAuthRedirect = (
                     hasSchool,
                     hasDraft
                 }));
+
+                const now = Math.floor(Date.now() / 1000);
+                const ttl = decoded.exp - now + 86400;
+                setClientCookie("CSRF_TOKEN", csrfToken, ttl);
             } catch (e) {
                 messageApi.error("Failed to decode token.", 1);
             }
