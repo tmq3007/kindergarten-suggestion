@@ -266,6 +266,7 @@ export const schoolApi = createApi({
         }),
 
 
+
         addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({
             query: (schoolDTO) => {
                 const formData = createSchoolFormAddData(schoolDTO);
