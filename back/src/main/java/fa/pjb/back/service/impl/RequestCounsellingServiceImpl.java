@@ -46,7 +46,6 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final RequestCounsellingRepository requestCounsellingRepository;
     private final ParentRepository parentRepository;
     private final SchoolRepository schoolRepository;
-    private final SchoolMapper schoolMapper;
     private final RequestCounsellingMapper requestCounsellingMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final UserService userService;

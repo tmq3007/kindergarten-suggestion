@@ -3,6 +3,8 @@ import Cookies from 'js-cookie';
 import {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {router} from "next/client";
 import {resetUser} from "@/redux/features/userSlice";
+import {jwtDecode, JwtPayload} from "jwt-decode";
+import setClientCookie from "@/lib/util/setClientCookie";
 
 // BASE_URL của server
 export const BASE_URL = 'http://localhost:8080/api';
@@ -58,17 +60,11 @@ export const baseQueryWithReauth = async (
 
         if (refreshResult.data) {
             const {accessToken, csrfToken} = refreshResult.data.data;
-            // Gọi API của Next.js để lưu token mới vào cookie
-            await fetch('/api/auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    accessToken,
-                    csrfToken: csrfToken,
-                }),
-            });
+            // Save csrfToken in client Cookie
+            const decoded = jwtDecode<JwtPayload>(accessToken);
+            const now = Math.floor(Date.now() / 1000);
+            const ttl = decoded.exp as number - now + 86400;
+            setClientCookie("CSRF_TOKEN", csrfToken, ttl);
 
             // Gửi lại request với Cookie đã được cập nhật token mới
             result = await baseQuery(
