@@ -6,6 +6,7 @@ import {CustomFetchBaseQueryError} from "@/redux/services/config/baseQuery";
 import {useDispatch} from "react-redux";
 import {updateUser} from "@/redux/features/userSlice";
 import {jwtDecode} from "jwt-decode";
+import setClientCookie from "@/lib/util/setClientCookie";
 
 interface JwtPayload {
     sub: string;
@@ -14,10 +15,6 @@ interface JwtPayload {
     exp: number;
     iat: number;
 }
-
-const setClientCookie = (name: string, value: string, maxAgeSeconds: number) => {
-    document.cookie = `${name}=${value}; Max-Age=${maxAgeSeconds}; Path=/; Secure; SameSite=None`;
-};
 
 const useAuthRedirect = (
     data: any,
