@@ -257,7 +257,7 @@ const Profile = () => {
                                            form={form}
                                            ref={emailInputRef}
                                            triggerCheckEmail={triggerCheckEmail}
-                                           id={userIdNumber}
+                                           schoolId={userIdNumber}
                                        />
                                        <Form.Item
                                            name="dob"

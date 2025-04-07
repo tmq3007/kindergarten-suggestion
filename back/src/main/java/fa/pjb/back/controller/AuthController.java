@@ -40,7 +40,7 @@ public class AuthController {
 
         int cookieTtl = (int) (ttl + 86400);
 
-        String domain = "kindergartenshop.online";
+        String domain = "localhost";
 
         // Cookie ACCESS_TOKEN (HttpOnly, Secure, SameSite=None)
         String accessTokenCookie = "ACCESS_TOKEN=" + loginVO.accessToken()
@@ -122,11 +122,13 @@ public class AuthController {
     }
 
     @PutMapping("refresh-token")
-    public ApiResponse<LoginVO> refreshToken(HttpServletRequest request) {
+    public ApiResponse<LoginVO> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        LoginVO loginVO = authService.refresh(request);
+        setAuthCookies(response, loginVO);
         return ApiResponse.<LoginVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Login successfully!")
-                .data(authService.refresh(request))
+                .data(loginVO)
                 .build();
     }
 

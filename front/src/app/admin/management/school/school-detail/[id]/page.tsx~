@@ -87,7 +87,7 @@ export default function SchoolDetail() {
                     school={school}
                     isAdmin={true}
                     schoolId={schoolId}
-                    triggerCheckEmail={triggerCheckEditEmail}
+                    triggerCheckEditEmail={triggerCheckEditEmail}
                 />
             </div>
         </div>
