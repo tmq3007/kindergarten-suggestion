@@ -268,6 +268,9 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
             @Param("district") String district
     );
 
+    @Query("SELECT s FROM School s LEFT JOIN FETCH s.originalSchool WHERE s.id = :id")
+    Optional<School> findByIdWithOriginalSchool(@Param("id") Integer id);
+
     Optional<School> findByEmail(String email);
 
     @Query("SELECT s FROM School s  WHERE s.id = :schoolId")
