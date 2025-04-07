@@ -1,4 +1,5 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import localData from "./localApi/vietnam-address.json"; // Import file JSON trực tiếp
 
 export interface Province {
     code: number;
@@ -22,18 +23,82 @@ export interface Ward {
 
 export const addressApi = createApi({
     reducerPath: 'addressApi',
-    baseQuery: fetchBaseQuery({baseUrl: 'https://provinces.open-api.vn/api/'}),
+    baseQuery: () => ({ data: {} }), // Không cần baseQuery thực sự
     endpoints: (builder) => ({
         getProvinces: builder.query<Province[], void>({
-            query: () => 'p/',
+            async queryFn() {
+                try {
+                    const response = localData.provinces || [];
+                    const transformedData = response.map((province: any) => ({
+                        code: province.code,
+                        name: province.name,
+                        // Không include districts để giảm kích thước dữ liệu ban đầu
+                    }));
+                    return { data: transformedData };
+                } catch (error) {
+                    return { error: { status: "FETCH_ERROR", error: String(error) } };
+                }
+            },
         }),
+
         getDistricts: builder.query<District[], number>({
-            query: (provinceCode) => `p/${provinceCode}?depth=2`,
-            transformResponse: (response: { districts: District[] }) => response.districts || [],
+            async queryFn(provinceCode) {
+                try {
+                    const province = localData.provinces.find((p: any) => p.code === provinceCode);
+                    if (!province) {
+                        return { data: [] };
+                    }
+
+                    const transformedData = province.districts.map((district: any) => ({
+                        code: district.code,
+                        name: district.name,
+                        province_code: district.province_code,
+                        // Không include wards để giảm kích thước dữ liệu
+                    }));
+
+                    return { data: transformedData };
+                } catch (error) {
+                    return { error: { status: "FETCH_ERROR", error: String(error) } };
+                }
+            },
         }),
+
         getWards: builder.query<Ward[], number>({
-            query: (districtCode) => `d/${districtCode}?depth=2`,
-            transformResponse: (response: { wards: Ward[] }) => response.wards || [],
+            async queryFn(districtCode) {
+                try {
+                    // Tìm district trong tất cả các provinces
+                    let targetWards: Ward[] = [];
+
+                    for (const province of localData.provinces) {
+                        if (province.districts) {
+                            const district = province.districts.find(d => d.code === districtCode);
+                            if (district && district.wards) {
+                                targetWards = district.wards.map((ward: any) => ({
+                                    code: ward.code,
+                                    name: ward.name,
+                                    district_code: ward.district_code,
+                                }));
+                                break;
+                            }
+                        }
+                    }
+
+                    return { data: targetWards };
+                } catch (error) {
+                    return { error: { status: "FETCH_ERROR", error: String(error) } };
+                }
+            },
+        }),
+
+        // Phiên bản lấy tất cả dữ liệu cùng lúc (nếu cần)
+        getFullAddressData: builder.query<Province[], void>({
+            async queryFn() {
+                try {
+                    return { data: localData.provinces };
+                } catch (error) {
+                    return { error: { status: "FETCH_ERROR", error: String(error) } };
+                }
+            },
         }),
     }),
 });
@@ -42,4 +107,5 @@ export const {
     useGetProvincesQuery,
     useGetDistrictsQuery,
     useGetWardsQuery,
+    useGetFullAddressDataQuery,
 } = addressApi;
