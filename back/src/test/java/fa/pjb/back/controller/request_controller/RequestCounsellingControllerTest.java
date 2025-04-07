@@ -1,7 +1,9 @@
 package fa.pjb.back.controller.request_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.controller.RequestCounsellingController;
+import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.service.RequestCounsellingReminderService;
@@ -23,7 +25,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -44,6 +48,16 @@ class RequestCounsellingControllerTest {
     @Mock
     private RequestCounsellingService requestCounsellingService;
     private ObjectMapper objectMapper;
+
+    // Test data variables
+    private RequestCounsellingDTO normalRequest;
+    private RequestCounsellingDTO minimalRequest;
+    private RequestCounsellingDTO maximalRequest;
+    private RequestCounsellingVO normalResponse;
+    private RequestCounsellingVO minimalResponse;
+    private RequestCounsellingVO maximalResponse;
+
+
     @BeforeEach
     void setUp() {
 
@@ -75,6 +89,86 @@ class RequestCounsellingControllerTest {
             LocalDateTime.now().plusDays(1),
             "Test response"
         );
+
+        // Normal case setup
+        normalRequest = new RequestCounsellingDTO(
+                1, // userId
+                100, // schoolId
+                "Need help with enrollment", // inquiry
+                (byte) 1, // status
+                "user@example.com", // email
+                "1234567890", // phone
+                "John Doe", // name
+                LocalDateTime.now().plusDays(7) // dueDate
+        );
+
+        normalResponse = RequestCounsellingVO.builder()
+                .id(1)
+                .schoolName("Test School")
+                .inquiry(normalRequest.inquiry())
+                .status(normalRequest.status())
+                .email(normalRequest.email())
+                .phone(normalRequest.phone())
+                .name(normalRequest.name())
+                .address("123 Test St")
+                .dueDate(normalRequest.dueDate())
+                .response("Pending")
+                .build();
+
+        // Minimal boundary case setup
+        minimalRequest = new RequestCounsellingDTO(
+                1, // userId
+                1, // minimal schoolId
+                "A", // minimal inquiry
+                (byte) 0, // minimal status
+                "a@b.c", // minimal email
+                "1", // minimal phone
+                "A", // minimal name
+                LocalDateTime.now().plusMinutes(1) // minimal future dueDate
+        );
+
+        minimalResponse = RequestCounsellingVO.builder()
+                .id(2)
+                .schoolName("Minimal School")
+                .inquiry(minimalRequest.inquiry())
+                .status(minimalRequest.status())
+                .email(minimalRequest.email())
+                .phone(minimalRequest.phone())
+                .name(minimalRequest.name())
+                .address("1 St")
+                .dueDate(minimalRequest.dueDate())
+                .response("Pending")
+                .build();
+
+        // Maximal boundary case setup
+        String maxInquiry = "A".repeat(1000); // Assuming 1000 is max length for inquiry
+        String maxEmail = "a".repeat(244) + "@example.com"; // 254 chars is typical max for email
+        String maxPhone = "1".repeat(15); // Assuming 15 is max for phone
+        String maxName = "A".repeat(255); // Assuming 255 is max for name
+
+        maximalRequest = new RequestCounsellingDTO(
+                999999, // large userId
+                999999, // large schoolId
+                maxInquiry,
+                (byte) 127, // max value for byte
+                maxEmail,
+                maxPhone,
+                maxName,
+                LocalDateTime.now().plusYears(10) // far future dueDate
+        );
+
+        maximalResponse = RequestCounsellingVO.builder()
+                .id(3)
+                .schoolName("Max School")
+                .inquiry(maximalRequest.inquiry())
+                .status(maximalRequest.status())
+                .email(maximalRequest.email())
+                .phone(maximalRequest.phone())
+                .name(maximalRequest.name())
+                .address("999 Max St")
+                .dueDate(maximalRequest.dueDate())
+                .response("Pending")
+                .build();
     }
 
     /** 🟢 NORMAL CASE: User has multiple overdue requests */
@@ -385,5 +479,66 @@ class RequestCounsellingControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
             .andExpect(jsonPath("$.data.content").isEmpty());
+    }
+
+    // Normal Case
+    @Test
+    void createRequestCounselling_ShouldReturnSuccess_WhenValidRequest() {
+        // Arrange
+        when(requestCounsellingService.createRequestCounselling(normalRequest)).thenReturn(normalResponse);
+
+        // Act
+        ApiResponse<RequestCounsellingVO> response = requestCounsellingController.createRequestCounselling(normalRequest);
+
+        // Assert
+        assertEquals(HttpStatus.OK.value(), response.getCode());
+        assertEquals("Counseling request created successfully!", response.getMessage());
+        assertEquals(normalResponse, response.getData());
+        verify(requestCounsellingService, times(1)).createRequestCounselling(normalRequest);
+    }
+
+    // Abnormal Case
+    @Test
+    void createRequestCounselling_ShouldThrowException_WhenServiceFails() {
+        // Arrange
+        when(requestCounsellingService.createRequestCounselling(normalRequest))
+                .thenThrow(new RuntimeException("Service unavailable"));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> {
+            requestCounsellingController.createRequestCounselling(normalRequest);
+        });
+        verify(requestCounsellingService, times(1)).createRequestCounselling(normalRequest);
+    }
+
+    // Boundary Cases
+    @Test
+    void createRequestCounselling_ShouldAccept_WhenMinimalValidFields() {
+        // Arrange
+        when(requestCounsellingService.createRequestCounselling(minimalRequest)).thenReturn(minimalResponse);
+
+        // Act
+        ApiResponse<RequestCounsellingVO> response = requestCounsellingController.createRequestCounselling(minimalRequest);
+
+        // Assert
+        assertEquals(HttpStatus.OK.value(), response.getCode());
+        assertEquals("Counseling request created successfully!", response.getMessage());
+        assertEquals(minimalResponse, response.getData());
+        verify(requestCounsellingService, times(1)).createRequestCounselling(minimalRequest);
+    }
+
+    @Test
+    void createRequestCounselling_ShouldAccept_WhenMaximalValidFields() {
+        // Arrange
+        when(requestCounsellingService.createRequestCounselling(maximalRequest)).thenReturn(maximalResponse);
+
+        // Act
+        ApiResponse<RequestCounsellingVO> response = requestCounsellingController.createRequestCounselling(maximalRequest);
+
+        // Assert
+        assertEquals(HttpStatus.OK.value(), response.getCode());
+        assertEquals("Counseling request created successfully!", response.getMessage());
+        assertEquals(maximalResponse, response.getData());
+        verify(requestCounsellingService, times(1)).createRequestCounselling(maximalRequest);
     }
 }
