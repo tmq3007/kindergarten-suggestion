@@ -44,6 +44,7 @@ public class ReviewController {
                 .build();
     }
 
+
     @Operation(summary = "Get reviews list by school public", description = "Get reviews list of school for public school details")
     @GetMapping("/public/{schoolId}")
     public ApiResponse<Page<ReviewVO>> getReviewsPublic(

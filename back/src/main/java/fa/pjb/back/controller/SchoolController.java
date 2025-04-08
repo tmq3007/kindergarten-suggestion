@@ -32,7 +32,6 @@ import java.util.List;
 public class SchoolController {
 
     private final SchoolService schoolService;
-
     @Operation(summary = "Get school details for public", description = "Get school details by school id for public website")
     @GetMapping("/public/{schoolId}")
     public ApiResponse<SchoolDetailVO> getPublicSchoolInfoById(@PathVariable Integer schoolId) {
