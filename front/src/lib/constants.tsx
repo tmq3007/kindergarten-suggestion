@@ -1,31 +1,50 @@
+import {
+    PlaySquareOutlined,
+    CameraOutlined,
+    SafetyOutlined,
+    ReadOutlined,
+    CoffeeOutlined,
+    SoundOutlined,
+    TeamOutlined,
+    ExperimentOutlined,
+    CarOutlined,
+    ClockCircleOutlined,
+    CalendarOutlined,
+    MedicineBoxOutlined,
+    RocketOutlined,
+    ContactsOutlined,
+} from "@ant-design/icons";
+import {MdOutlineBreakfastDining} from "react-icons/md";
+
+
 export const ROLES = {
     ADMIN: "ROLE_ADMIN",
     SCHOOL_OWNER: "ROLE_SCHOOL_OWNER",
     PARENT: "ROLE_PARENT",
 } as const;
 
-//School Options
+// Facility Options
 export const FACILITY_OPTIONS = [
-    {label: "Outdoor playground", value: "0"},
-    {label: "Camera", value: "1"},
-    {label: "Swimming pool", value: "2"},
-    {label: "Library", value: "3"},
-    {label: "Cafeteria", value: "4"},
-    {label: "Musical room", value: "5"},
-    {label: "PE room", value: "6"},
-    {label: "STEM room", value: "7"}
+    { label: "Outdoor playground", value: "0", icon: <PlaySquareOutlined /> },
+    { label: "Camera", value: "1", icon: <CameraOutlined /> },
+    { label: "Swimming pool", value: "2", icon: <SafetyOutlined /> },
+    { label: "Library", value: "3", icon: <ReadOutlined /> },
+    { label: "Cafeteria", value: "4", icon: <CoffeeOutlined /> },
+    { label: "Musical room", value: "5", icon: <SoundOutlined /> },
+    { label: "PE room", value: "6", icon: <TeamOutlined /> },
+    { label: "STEM room", value: "7", icon: <ExperimentOutlined /> },
 ];
 
+// Utility Options
 export const UTILITY_OPTIONS = [
-    {label: "School bus", value: "0"},
-    {label: "Breakfast", value: "1"},
-    {label: "Afterschool care", value: "2"},
-    {label: "Saturday class", value: "3"},
-    {label: "Health check", value: "4"},
-    {label: "Picnic activities", value: "5"},
-    {label: "E-Contact book", value: "6"}
+    { label: "School bus", value: "0", icon: <CarOutlined /> },
+    { label: "Breakfast", value: "1", icon: <MdOutlineBreakfastDining /> },
+    { label: "Afterschool care", value: "2", icon: <ClockCircleOutlined /> },
+    { label: "Saturday class", value: "3", icon: <CalendarOutlined /> },
+    { label: "Health check", value: "4", icon: <MedicineBoxOutlined /> },
+    { label: "Picnic activities", value: "5", icon: <RocketOutlined /> },
+    { label: "E-Contact book", value: "6", icon: <ContactsOutlined /> },
 ];
-
 export const SCHOOL_STATUS_OPTIONS = [
     {label: "Saved", value: "0"},
     {label: "Submitted", value: "1"},
