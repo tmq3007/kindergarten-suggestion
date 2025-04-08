@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpecificationExecutor<School> {
+
+    @Query("SELECT s FROM School s LEFT JOIN FETCH s.schoolOwners WHERE s.id = :id")
+    Optional<School> findByIdWithSchoolOwners(@Param("id") Integer id);
+
     @Query(value = """
              -- Select school basic information along with calculated rating, facilities, and utilities
              SELECT\s

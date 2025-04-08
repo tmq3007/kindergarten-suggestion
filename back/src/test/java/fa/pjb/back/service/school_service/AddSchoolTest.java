@@ -8,8 +8,8 @@ import fa.pjb.back.common.exception._14xx_data.UploadFileException;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.ERole;
-import fa.pjb.back.model.enums.FileFolderEnum;
-import fa.pjb.back.model.enums.SchoolStatusEnum;
+import fa.pjb.back.model.enums.EFileFolder;
+import fa.pjb.back.model.enums.ESchoolStatus;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.SchoolDetailVO;
@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,7 +97,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_NormalCase_AdminUser_WithImages() throws IOException {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1, 2), "Description"
         );
@@ -122,15 +123,16 @@ class AddSchoolTest {
         when(multipartFile.getBytes()).thenReturn(validJpegBytes);
         when(imageService.convertMultiPartFileToFile(images)).thenReturn(files);
         List<FileUploadVO> imageVOs = List.of(new FileUploadVO(200, "image.jpeg", (long) 1024, "filename", "fileId", "url"));
-        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES), any()))
+        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(EFileFolder.SCHOOL_IMAGES), any()))
                 .thenReturn(imageVOs);
 
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
-                1, SchoolStatusEnum.APPROVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
+                1, ESchoolStatus.APPROVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC))
+                "Description", null, null, null, LocalDateTime.now()
                 , null,
                 Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                ,null
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -141,7 +143,7 @@ class AddSchoolTest {
         assertEquals(facilities, school.getFacilities());
         assertEquals(utilities, school.getUtilities());
         assertEquals(schoolOwners, school.getSchoolOwners());
-        assertEquals(SchoolStatusEnum.APPROVED.getValue(), school.getStatus());
+        assertEquals(ESchoolStatus.APPROVED.getValue(), school.getStatus());
 
         ArgumentCaptor<List<Media>> mediaCaptor = ArgumentCaptor.forClass(List.class);
         verify(mediaRepository).saveAll(mediaCaptor.capture());
@@ -196,7 +198,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_NormalCase_NonAdminUser_SavedStatus_NoImages() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SAVED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SAVED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1, 2), "Description"
         );
@@ -205,7 +207,7 @@ class AddSchoolTest {
         School school = getSchool();
         when(schoolMapper.toSchool(dto)).thenReturn(school);
         School savedSchool = getSavedSchool();
-        savedSchool.setStatus(SchoolStatusEnum.SAVED.getValue());
+        savedSchool.setStatus(ESchoolStatus.SAVED.getValue());
         when(schoolRepository.save(school)).thenReturn(savedSchool);
 
         Set<Facility> facilities = Set.of(new Facility(), new Facility());
@@ -216,10 +218,11 @@ class AddSchoolTest {
         when(schoolOwnerRepository.findAllByIdIn(dto.schoolOwners())).thenReturn(schoolOwners);
 
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
-                1, SchoolStatusEnum.SAVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
+                1, ESchoolStatus.SAVED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
+                "Description", null, null, null, LocalDateTime.now(),
                 null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                ,null
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -227,7 +230,7 @@ class AddSchoolTest {
 
         assertEquals(schoolDetailVO, result);
         assertEquals(1, result.id());
-        assertEquals(SchoolStatusEnum.SAVED.getValue(), result.status());
+        assertEquals(ESchoolStatus.SAVED.getValue(), result.status());
         assertEquals("Test School", result.name());
         assertEquals((byte) 1, result.schoolType());
         assertEquals("District 1", result.district());
@@ -256,7 +259,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_NormalCase_NonAdminUser_NoImages() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1, 2), "Description"
         );
@@ -266,7 +269,7 @@ class AddSchoolTest {
         School school = getSchool();
         when(schoolMapper.toSchool(dto)).thenReturn(school);
         School savedSchool = getSavedSchool();
-        savedSchool.setStatus(SchoolStatusEnum.SUBMITTED.getValue());
+        savedSchool.setStatus(ESchoolStatus.SUBMITTED.getValue());
         when(schoolRepository.save(school)).thenReturn(savedSchool);
 
         Set<Facility> facilities = Set.of(new Facility(), new Facility());
@@ -277,10 +280,10 @@ class AddSchoolTest {
         when(schoolOwnerRepository.findAllByIdIn(dto.schoolOwners())).thenReturn(schoolOwners);
 
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
-                1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
+                1, ESchoolStatus.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
-                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                "Description", null, null, null,  LocalDateTime.now(),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now())),null
 
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
@@ -289,7 +292,7 @@ class AddSchoolTest {
 
         assertEquals(schoolDetailVO, result);
         assertEquals(1, result.id());
-        assertEquals(SchoolStatusEnum.SUBMITTED.getValue(), result.status());
+        assertEquals(ESchoolStatus.SUBMITTED.getValue(), result.status());
         assertEquals("Test School", result.name());
         assertEquals((byte) 1, result.schoolType());
         assertEquals("District 1", result.district());
@@ -318,7 +321,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_NormalCase_NullCollectionsAndImages() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, null, null, null, "Description"
         );
@@ -326,17 +329,17 @@ class AddSchoolTest {
         when(user.getRole()).thenReturn(ERole.ROLE_SCHOOL_OWNER);
         when(user.getUsername()).thenReturn("testuser");
         School school = getSchool();
-        school.setStatus(SchoolStatusEnum.SUBMITTED.getValue());
+        school.setStatus(ESchoolStatus.SUBMITTED.getValue());
         when(schoolMapper.toSchool(dto)).thenReturn(school);
         School savedSchool = getSavedSchool();
-        savedSchool.setStatus(SchoolStatusEnum.SUBMITTED.getValue());
+        savedSchool.setStatus(ESchoolStatus.SUBMITTED.getValue());
         when(schoolRepository.save(school)).thenReturn(savedSchool);
 
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
-                1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
+                1, ESchoolStatus.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
-                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                "Description", null, null, null,  LocalDateTime.now(),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now())),null
 
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
@@ -348,7 +351,7 @@ class AddSchoolTest {
         assertNull(school.getFacilities());
         assertNull(school.getUtilities());
         assertEquals(new HashSet<>(), school.getSchoolOwners());
-        assertEquals(SchoolStatusEnum.SUBMITTED.getValue(), school.getStatus());
+        assertEquals(ESchoolStatus.SUBMITTED.getValue(), school.getStatus());
         verify(emailService).sendSubmitEmailToAllAdmin(
                 "Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1"
         );
@@ -359,7 +362,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_NormalCase_EmptyCollectionsAndImages() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(), Set.of(), Set.of(), "Description"
         );
@@ -367,20 +370,20 @@ class AddSchoolTest {
         when(user.getRole()).thenReturn(ERole.ROLE_SCHOOL_OWNER);
         when(user.getUsername()).thenReturn("testuser");
         School school = getSchool();
-        school.setStatus(SchoolStatusEnum.SUBMITTED.getValue());
+        school.setStatus(ESchoolStatus.SUBMITTED.getValue());
         when(schoolMapper.toSchool(dto)).thenReturn(school);
         School savedSchool = getSavedSchool();
-        savedSchool.setStatus(SchoolStatusEnum.SUBMITTED.getValue());
+        savedSchool.setStatus(ESchoolStatus.SUBMITTED.getValue());
         when(schoolRepository.save(school)).thenReturn(savedSchool);
 
         when(facilityRepository.findAllByFidIn(dto.facilities())).thenReturn(Set.of());
         when(utilityRepository.findAllByUidIn(dto.utilities())).thenReturn(Set.of());
 
         SchoolDetailVO schoolDetailVO = new SchoolDetailVO(
-                1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
+                1, ESchoolStatus.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
-                "Description", null, null, null, Date.from(LocalDate.now().atStartOfDay().toInstant(java.time.ZoneOffset.UTC)),
-                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now()))
+                "Description", null, null, null, LocalDateTime.now(),
+                null,Set.of(new SchoolOwnerVO(1, 1, "test", "test", "test", "test", "test", null, LocalDate.now())),null
         );
         when(schoolMapper.toSchoolDetailVO(savedSchool)).thenReturn(schoolDetailVO);
 
@@ -391,7 +394,7 @@ class AddSchoolTest {
         assertEquals(Set.of(), school.getFacilities());
         assertEquals(Set.of(), school.getUtilities());
         assertEquals(Set.of(), school.getSchoolOwners());
-        assertEquals(SchoolStatusEnum.SUBMITTED.getValue(), school.getStatus());
+        assertEquals(ESchoolStatus.SUBMITTED.getValue(), school.getStatus());
         verify(emailService).sendSubmitEmailToAllAdmin(
                 "Test School", "testuser", "http://localhost:3000/admin/management/school/school-detail/1"
         );
@@ -402,7 +405,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_AbnormalCase_EmailExists() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, null, null, null, "Description"
         );
@@ -419,7 +422,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_AbnormalCase_InvalidFacilities() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2, 3), Set.of(1, 2, 3), Set.of(1, 2, 3), "Description"
         );
@@ -446,7 +449,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_AbnormalCase_AuthenticationFailed() {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, null, null, null, "Description"
         );
@@ -463,7 +466,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_AbnormalCase_ImageFileTooLarge() throws IOException {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, null, null, null, "Description"
         );
@@ -490,7 +493,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_AbnormalCase_InvalidImageType() throws IOException {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, null, null, null, "Description"
         );
@@ -519,7 +522,7 @@ class AddSchoolTest {
     @Test
     void testAddSchool_AbnormalCase_ImageUploadFails() throws IOException {
         SchoolDTO dto = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, null, null, null, "Description"
         );
@@ -541,12 +544,12 @@ class AddSchoolTest {
 
         List<File> files = List.of(new File("test.jpg"));
         when(imageService.convertMultiPartFileToFile(images)).thenReturn(files);
-        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES), any()))
+        when(imageService.uploadListFiles(eq(files), contains("School_1Image_"), eq(EFileFolder.SCHOOL_IMAGES), any()))
                 .thenThrow(new UploadFileException("Error while uploading images"));
 
         assertThrows(UploadFileException.class, () -> schoolService.addSchool(dto, images));
         verify(schoolRepository).save(school);
-        verify(imageService).uploadListFiles(eq(files), contains("School_1Image_"), eq(FileFolderEnum.SCHOOL_IMAGES), any());
+        verify(imageService).uploadListFiles(eq(files), contains("School_1Image_"), eq(EFileFolder.SCHOOL_IMAGES), any());
         verify(mediaRepository, never()).saveAll(any());
     }
 }

@@ -34,6 +34,8 @@ import school5 from '@public/school5.jpg'
 import SchoolOwnersSelect from "@/app/components/school/SchoolOwnerSelect";
 import SchoolNameInput from "@/app/components/school/SchoolNameInput";
 import Image from "next/image";
+import ReactImageGallery from "react-image-gallery";
+import "react-image-gallery/styles/css/image-gallery.css";
 
 interface SchoolFieldType {
     name: string;
@@ -95,6 +97,21 @@ const images = [
     school5.src,
 ];
 
+const imagesList = [
+    {
+        original: "https://picsum.photos/id/1018/1000/600/",
+        thumbnail: "https://picsum.photos/id/1018/250/150/",
+    },
+    {
+        original: "https://picsum.photos/id/1015/1000/600/",
+        thumbnail: "https://picsum.photos/id/1015/250/150/",
+    },
+    {
+        original: "https://picsum.photos/id/1019/1000/600/",
+        thumbnail: "https://picsum.photos/id/1019/250/150/",
+    },
+];
+
 const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     isReadOnly,
                                                     form: externalForm,
@@ -119,7 +136,7 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                     formLoaded = false,
                                                     isDetailPage,
                                                 }) => {
-
+    console.log("id in School Form: ", schoolId);
     const [form] = Form.useForm(externalForm);
 
     const emailInputRef = useRef<any>(null);
@@ -149,94 +166,93 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                         <Col xs={24}>
                             <Card title="School Images" className="w-full">
                                 {/* Large main image */}
-                                <div
-                                    className="px-1 md:px-10 mb-6 flex justify-center items-center w-full h-[150px] xs:h-[200px] sm:h-[250px] md:h-[350px] lg:h-[450px]">
-                                    {/*<AnimatePresence mode='wait'>*/}
-                                    {/*    <motion.img*/}
-                                    {/*        key={mainImage}*/}
-                                    {/*        src={mainImage}*/}
-                                    {/*        alt="Main Display"*/}
-                                    {/*        className="object-cover w-full h-full rounded-lg"*/}
-                                    {/*        initial={{opacity: 0}}*/}
-                                    {/*        animate={{opacity: 1}}*/}
-                                    {/*        exit={{opacity: 0}}*/}
-                                    {/*        transition={{duration: 0.4, ease: "linear"}}*/}
-                                    {/*    />*/}
-                                    {/*</AnimatePresence>*/}
-                                    <Image src={mainImage} alt={"hello"} fill priority/>
+                                {/*<div*/}
+                                {/*    className="px-1 md:px-10 mb-6 flex justify-center items-center w-full h-[150px] xs:h-[200px] sm:h-[250px] md:h-[350px] lg:h-[450px]">*/}
+                                {/*    /!*<AnimatePresence mode='wait'>*!/*/}
+                                {/*    /!*    <motion.img*!/*/}
+                                {/*    /!*        key={mainImage}*!/*/}
+                                {/*    /!*        src={mainImage}*!/*/}
+                                {/*    /!*        alt="Main Display"*!/*/}
+                                {/*    /!*        className="object-cover w-full h-full rounded-lg"*!/*/}
+                                {/*    /!*        initial={{opacity: 0}}*!/*/}
+                                {/*    /!*        animate={{opacity: 1}}*!/*/}
+                                {/*    /!*        exit={{opacity: 0}}*!/*/}
+                                {/*    /!*        transition={{duration: 0.4, ease: "linear"}}*!/*/}
+                                {/*    /!*    />*!/*/}
+                                {/*    /!*</AnimatePresence>*!/*/}
 
-                                </div>
+                                {/*</div>*/}
 
-                                {/* Small thumbnail carousel */}
-                                <Carousel
-                                    dots={false}
-                                    autoplaySpeed={3000}
-                                    autoplay={true}
-                                    afterChange={handleThumbnailClick}
-                                    infinite={true}
-                                    slidesToShow={5}
-                                    slidesToScroll={1}
-                                    className="px-1 md:px-10 mb-4 flex justify-center items-center text-center"
-                                    draggable={true}
-                                    responsive={[
-                                        {
-                                            breakpoint: 1024,
-                                            settings: {
-                                                slidesToShow: 4,
-                                                centerMode: true,
-                                                centerPadding: "30px",
-                                            },
-                                        },
-                                        {
-                                            breakpoint: 768,
-                                            settings: {
-                                                slidesToShow: 3,
-                                                centerMode: true,
-                                                centerPadding: "20px",
-                                            },
-                                        },
-                                        {
-                                            breakpoint: 480,
-                                            settings: {
-                                                slidesToShow: 2,
-                                                centerMode: true,
-                                                centerPadding: "10px",
-                                            },
-                                        },
-                                        {
-                                            breakpoint: 360,
-                                            settings: {
-                                                slidesToShow: 1,
-                                                centerMode: true,
-                                                centerPadding: "0px",
-                                            },
-                                        },
-                                    ]}
-                                >
-                                    {(() => {
-                                        const displayImages = [...imageList.map(img => img.url)];
-                                        if (displayImages.length < 5) {
-                                            const remainingCount = 5 - displayImages.length;
-                                            displayImages.push(...images.slice(0, remainingCount));
-                                        }
+                                {/*/!* Small thumbnail carousel *!/*/}
+                                {/*<Carousel*/}
+                                {/*    dots={false}*/}
+                                {/*    autoplaySpeed={3000}*/}
+                                {/*    autoplay={true}*/}
+                                {/*    afterChange={handleThumbnailClick}*/}
+                                {/*    infinite={true}*/}
+                                {/*    slidesToShow={5}*/}
+                                {/*    slidesToScroll={1}*/}
+                                {/*    className="px-1 md:px-10 mb-4 flex justify-center items-center text-center"*/}
+                                {/*    draggable={true}*/}
+                                {/*    responsive={[*/}
+                                {/*        {*/}
+                                {/*            breakpoint: 1024,*/}
+                                {/*            settings: {*/}
+                                {/*                slidesToShow: 4,*/}
+                                {/*                centerMode: true,*/}
+                                {/*                centerPadding: "30px",*/}
+                                {/*            },*/}
+                                {/*        },*/}
+                                {/*        {*/}
+                                {/*            breakpoint: 768,*/}
+                                {/*            settings: {*/}
+                                {/*                slidesToShow: 3,*/}
+                                {/*                centerMode: true,*/}
+                                {/*                centerPadding: "20px",*/}
+                                {/*            },*/}
+                                {/*        },*/}
+                                {/*        {*/}
+                                {/*            breakpoint: 480,*/}
+                                {/*            settings: {*/}
+                                {/*                slidesToShow: 2,*/}
+                                {/*                centerMode: true,*/}
+                                {/*                centerPadding: "10px",*/}
+                                {/*            },*/}
+                                {/*        },*/}
+                                {/*        {*/}
+                                {/*            breakpoint: 360,*/}
+                                {/*            settings: {*/}
+                                {/*                slidesToShow: 1,*/}
+                                {/*                centerMode: true,*/}
+                                {/*                centerPadding: "0px",*/}
+                                {/*            },*/}
+                                {/*        },*/}
+                                {/*    ]}*/}
+                                {/*>*/}
+                                {/*    {(() => {*/}
+                                {/*        const displayImages = [...imageList.map(img => img.url)];*/}
+                                {/*        if (displayImages.length < 5) {*/}
+                                {/*            const remainingCount = 5 - displayImages.length;*/}
+                                {/*            displayImages.push(...images.slice(0, remainingCount));*/}
+                                {/*        }*/}
 
-                                        return displayImages.map((src, index) => (
-                                            <div
-                                                key={index}
-                                                onClick={() => handleThumbnailClick(index)}
-                                                className="cursor-pointer flex justify-center items-center h-full w-full"
-                                            >
-                                                <img
-                                                    src={src}
-                                                    alt={`Thumbnail ${index + 1}`}
-                                                    className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"
-                                                />
-                                                {/*<Image src={src} alt={"hello"} fill priority/>*/}
-                                            </div>
-                                        ));
-                                    })()}
-                                </Carousel>
-
+                                {/*        return displayImages.map((src, index) => (*/}
+                                {/*            <div*/}
+                                {/*                key={index}*/}
+                                {/*                onClick={() => handleThumbnailClick(index)}*/}
+                                {/*                className="cursor-pointer flex justify-center items-center h-full w-full"*/}
+                                {/*            >*/}
+                                {/*                <img*/}
+                                {/*                    src={src}*/}
+                                {/*                    alt={`Thumbnail ${index + 1}`}*/}
+                                {/*                    className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"*/}
+                                {/*                />*/}
+                                {/*                /!*<Image src={src} alt={"hello"} fill priority/>*!/*/}
+                                {/*            </div>*/}
+                                {/*        ));*/}
+                                {/*    })()}*/}
+                                {/*</Carousel>*/}
+                                <ReactImageGallery items={imagesList}/>
                             </Card>
                         </Col>
 
@@ -603,12 +619,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             />
                         </Form.Item>
                         <Form.Item label="School image" name="image" valuePropName="fileList"
-                                   getValueFromEvent={(e) => e?.fileList || []}>
+                                   getValueFromEvent={(e) => e?.fileList || []} tooltip={"Consider using 16:9 images for best result"}>
                             <ImageUpload
                                 form={form}
                                 fieldName="image"
                                 maxCount={10}
-                                accept={["image/png", "image/jpg", "image/jpeg"]}
+                                accept={["image/png","image/jpg","image/jpeg"]}
                                 maxSizeMB={5}
                                 hideImageUpload={hideImageUpload}
                                 imageList={imageList}

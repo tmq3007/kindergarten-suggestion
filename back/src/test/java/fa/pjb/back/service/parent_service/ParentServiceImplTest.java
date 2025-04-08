@@ -8,7 +8,7 @@ import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.enums.FileFolderEnum;
+import fa.pjb.back.model.enums.EFileFolder;
 import fa.pjb.back.model.mapper.ParentMapper;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.ParentVO;
@@ -274,7 +274,7 @@ class ParentServiceImplTest {
         when(mockImage.getSize()).thenReturn(1024L);
         when(mockImage.getContentType()).thenReturn("image/jpeg");
         doNothing().when(mockImage).transferTo(any(File.class));
-        when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
+        when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(EFileFolder.USER_IMAGES)))
                 .thenReturn(imageVO);
         when(parentMapper.toParentVO(parent)).thenReturn(parentVO);
 
@@ -442,7 +442,7 @@ class ParentServiceImplTest {
         when(userRepository.findByEmail("updated@parent.com")).thenReturn(Optional.empty());
         // Sử dụng any(File.class) thay vì (File) any()
         doNothing().when(mockImage).transferTo(any(File.class));
-        when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(FileFolderEnum.USER_IMAGES)))
+        when(ggDriveImageService.uploadImage(any(File.class), eq("Parent_1_Profile_"), eq(EFileFolder.USER_IMAGES)))
                 .thenReturn(imageVO);
 
         assertThrows(RuntimeException.class, () ->

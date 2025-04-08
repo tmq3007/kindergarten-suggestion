@@ -40,22 +40,20 @@ public class AuthController {
 
         int cookieTtl = (int) (ttl + 86400);
 
-        // Access Token
-        Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", loginVO.accessToken());
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(cookieTtl);
+        String domain = "localhost";
 
-        // CSRF Token
-        Cookie csrfTokenCookie = new Cookie("CSRF_TOKEN", loginVO.csrfToken());
-        csrfTokenCookie.setHttpOnly(false);
-        csrfTokenCookie.setSecure(true);
-        csrfTokenCookie.setPath("/");
-        csrfTokenCookie.setMaxAge(cookieTtl);
+        // Cookie ACCESS_TOKEN (HttpOnly, Secure, SameSite=None)
+        String accessTokenCookie = "ACCESS_TOKEN=" + loginVO.accessToken()
+                                   + "; Domain=" + domain
+                                   + "; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=" + cookieTtl;
 
-        response.addCookie(accessTokenCookie);
-        response.addCookie(csrfTokenCookie);
+        // Cookie CSRF_TOKEN (Secure, SameSite=None)
+        String csrfTokenCookie = "CSRF_TOKEN=" + loginVO.csrfToken()
+                                 + "; Domain=" + domain
+                                 + "; Secure; SameSite=None; Path=/; Max-Age=" + cookieTtl;
+
+        response.setHeader("Set-Cookie", accessTokenCookie);
+        response.addHeader("Set-Cookie", csrfTokenCookie);
     }
 
     @Operation(summary = "Login", description = "Login into content website")
@@ -124,11 +122,13 @@ public class AuthController {
     }
 
     @PutMapping("refresh-token")
-    public ApiResponse<LoginVO> refreshToken(HttpServletRequest request) {
+    public ApiResponse<LoginVO> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        LoginVO loginVO = authService.refresh(request);
+        setAuthCookies(response, loginVO);
         return ApiResponse.<LoginVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Login successfully!")
-                .data(authService.refresh(request))
+                .data(loginVO)
                 .build();
     }
 

@@ -63,8 +63,12 @@ public class SecurityConfig {
                                 .requestMatchers("/api/school/review/top4").permitAll()
                                 .requestMatchers("/api/school/search-by-criteria").permitAll()
                                 .requestMatchers("/api/counselling/request").permitAll()
+                                .requestMatchers("/api/school/public/**").permitAll()
                                 .requestMatchers("/api/v3/api-doc/**").permitAll()
                                 .requestMatchers("/api/swagger-ui/**").permitAll()
+                                .requestMatchers("/api/school/review/public/**").permitAll()
+                                .requestMatchers("/api/school/review/public/**/stats").permitAll()
+
                                 .anyRequest().authenticated()
 //                                .anyRequest().permitAll()
                 )
@@ -78,7 +82,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://marcowu.shop"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://kinder-taupe.vercel.app/"));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Collections.singletonList("*"));

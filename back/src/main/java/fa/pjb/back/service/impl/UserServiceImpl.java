@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import static fa.pjb.back.model.enums.ERole.*;
-import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
+import static fa.pjb.back.model.enums.EFileFolder.SO_IMAGES;
 
 @Slf4j
 @RequiredArgsConstructor

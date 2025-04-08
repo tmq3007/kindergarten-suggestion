@@ -59,7 +59,7 @@ const EmailInput = forwardRef(({
                 console.log("3")
                 console.log('Checking email with ID:', {email, id});
 
-                response = await triggerCheckEmail({email: email, id}).unwrap();
+                response = await triggerCheckEmail({email: email, id:id}).unwrap();
             } else {
                 // In case of ADD school, check all emails
                 response = await triggerCheckEmail(email).unwrap();
@@ -88,8 +88,8 @@ const EmailInput = forwardRef(({
 
     useImperativeHandle(ref, () => ({
         validateEmail,
-        setEmailStatus, // Thêm dòng này
-        setEmailHelp,   // Thêm dòng này
+        setEmailStatus,
+        setEmailHelp,
     }));
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -8,7 +8,7 @@ import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import SchoolFormSkeleton from "@/app/components/skeleton/SchoolFormSkeleton";
 import {ROLES, SCHOOL_STATUS} from "@/lib/constants";
-import {useGetSchoolByIdQuery, useIsDraftQuery} from "@/redux/services/schoolApi";
+import {useCheckEditSchoolEmailMutation, useGetSchoolByIdQuery, useIsDraftQuery} from "@/redux/services/schoolApi";
 import {RootState} from '@/redux/store';
 import {useSelector} from "react-redux";
 import SchoolFormWrapper from "@/app/components/school/SchoolFormWrapper";
@@ -19,6 +19,7 @@ export default function SchoolDetail() {
     const schoolId = Number(params.id as string);
     const {data: getSchoolData, isError, isLoading} = useGetSchoolByIdQuery(schoolId);
     const {data: isDraftData} = useIsDraftQuery(schoolId);
+    const [triggerCheckEditEmail] = useCheckEditSchoolEmailMutation();
     const user = useSelector((state: RootState) => state.user);
     const role = useSelector((state: RootState) => state.user?.role);
     const [form] = Form.useForm();
@@ -81,7 +82,13 @@ export default function SchoolDetail() {
             }
 
             <div className="read-only-form email-locked">
-                <SchoolFormWrapper form={form} school={school} isAdmin={true}/>
+                <SchoolFormWrapper
+                    form={form}
+                    school={school}
+                    isAdmin={true}
+                    schoolId={schoolId}
+                    triggerCheckEmail={triggerCheckEditEmail}
+                />
             </div>
         </div>
     );

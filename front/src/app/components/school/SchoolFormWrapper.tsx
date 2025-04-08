@@ -10,12 +10,24 @@ interface SchoolFormWrapperProps {
     isEdit?: boolean;
     isDetailPage?: boolean;
     isAdmin?: boolean;
+    schoolId?: number;
+    triggerCheckEmail?: any;
 }
 
-export default function SchoolFormWrapper({form, school, isEdit, isDetailPage, isAdmin}: SchoolFormWrapperProps) {
+export default function SchoolFormWrapper({
+                                              form,
+                                              school,
+                                              isEdit,
+                                              isDetailPage,
+                                              isAdmin,
+                                              schoolId,
+                                              triggerCheckEmail,
+                                          }: SchoolFormWrapperProps) {
 
     return (
         <SchoolForm
+            triggerCheckEmail={triggerCheckEmail}
+            schoolId={schoolId}
             isDetailPage={isDetailPage}
             isEdit={isEdit}
             isReadOnly={true}
