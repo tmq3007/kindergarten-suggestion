@@ -71,26 +71,18 @@ export const requestCounsellingApi = createApi({
         {
           page?: number;
           size?: number;
-          status?: number;
-          email?: string;
-          name?: string;
-          phone?: string;
-          schoolName?: string;
-          dueDate?: string;
+          searchBy?: string;
+          keyword?: string;
         }
     >({
-      query: ({ page = 1, size, status, email, name, phone, schoolName, dueDate }) => ({
+      query: ({ page = 1, size = 10, searchBy, keyword }) => ({
         url: "counselling/all",
         method: "GET",
         params: {
           page,
           size,
-          ...(status !== undefined && { status }),
-          ...(email && { email }),
-          ...(name && { name }),
-          ...(phone && { phone }),
-          ...(schoolName && { schoolName }),
-          ...(dueDate && { dueDate }),
+          ...(searchBy && { searchBy }),
+          ...(keyword && { keyword }),
         },
       }),
       providesTags: ["RequestList"],
@@ -131,16 +123,17 @@ export const requestCounsellingApi = createApi({
 
     getAllReminder: builder.query<
         ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
-        { page?: number; size?: number; statuses?: number[]; name?: string } // Thêm name
+        { page?: number; size?: number; statuses?: number[]; searchBy?: string; keyword?: string } // Updated type
     >({
-      query: ({ page = 1, size = 10, statuses, name }) => ({
+      query: ({ page = 1, size = 10, statuses, searchBy, keyword }) => ({
         url: "counselling/all-reminder",
         method: "GET",
         params: {
           page,
           size,
           ...(statuses && statuses.length > 0 && { statuses: statuses.join(",") }),
-          ...(name && { name }),
+          ...(searchBy && { searchBy }),
+          ...(keyword && { keyword }),
         },
       }),
       providesTags: ["RequestList"],

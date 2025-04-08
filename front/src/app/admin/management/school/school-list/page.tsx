@@ -1,378 +1,279 @@
 "use client";
 
-import {Input, Button, Table, Tag, Space, notification, ConfigProvider, Modal} from "antd";
-import {SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined} from "@ant-design/icons";
 import Link from "next/link";
-import React, {useState, useEffect} from "react";
-import {useRouter} from "next/navigation";
-import {useSelector} from "react-redux";
-import {RootState} from "@/redux/store";
+import React, {useState, useCallback, useMemo} from "react";
+import { Card, Modal, notification, Segmented, Tabs, Badge } from "antd";
+import {
+  useCountActiveSchoolsWithoutRefIdQuery, useCountAllDraftsQuery,
+  useGetActiveSchoolsWithoutRefIdQuery, useGetAllDraftsQuery,
+  useGetSchoolListQuery,
+  useUpdateSchoolStatusByAdminMutation,
+} from "@/redux/services/schoolApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
-import {useGetSchoolListQuery, useUpdateSchoolStatusByAdminMutation} from "@/redux/services/schoolApi";
+import SearchByComponent from "@/app/components/common/SearchByComponent";
+import SchoolListForm from "@/app/components/school/SchoolListForm";
 import MyEditor from "@/app/components/common/MyEditor";
+import { SegmentedValue } from "antd/es/segmented";
+import type { TabsProps } from 'antd';
+import useIsMobile from "@/lib/hook/useIsMobile";
+import { ClockCircleOutlined, FileTextOutlined, HomeOutlined } from "@ant-design/icons";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
-interface SchoolVO {
-   id: number;
-   status: number;
-   name: string;
-   schoolType: number;
-   district: string;
-   ward: string;
-   province: string;
-   street: string;
-   email: string;
-   phone: string;
-   receivingAge: number;
-   educationMethod: number;
-   feeFrom: number;
-   feeTo: number;
-   description: string;
-   postedDate: string;
+const searchOptions = [
+  { value: "name", label: "School Name" },
+  { value: "email", label: "Email" },
+  { value: "phone", label: "Phone" },
+  { value: "district", label: "District" },
+
+];
+
+
+const TAB_KEYS = {
+  ALL_SCHOOLS: "1",
+  NEW_SCHOOL_REQUESTS: "2",
+  CHANGE_REQUESTS: "3",
+} as const;
+
+export default function SchoolListPage() {
+  const [activeTabKey, setActiveTabKey] = useState<string>(TAB_KEYS.ALL_SCHOOLS);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [responseContent, setResponseContent] = useState<string>("");
+  const [schoolId, setSchoolId] = useState<number>(0);
+  const isMobile = useIsMobile();
+
+  const [notificationApi, contextHolder] = notification.useNotification();
+  const [updateSchoolStatusByAdmin, { isLoading: isUpdatingStatus }] = useUpdateSchoolStatusByAdminMutation();
+
+  // Lấy số lượng từ API
+  const { data: activeCountData } = useCountActiveSchoolsWithoutRefIdQuery();
+  const { data: draftCountData } = useCountAllDraftsQuery();
+  const activeCount = activeCountData?.data || 0;
+  const draftCount = draftCountData?.data || 0;
+
+  const handleTabChange = useCallback((value: SegmentedValue) => {
+    setActiveTabKey(value.toString());
+  }, []);
+
+  const segmentOptions = useMemo(() => [
+    {
+      label: isMobile ? (
+          <HomeOutlined className="text-xl" />
+      ) : (
+          <span className="font-bold text-lg flex items-center justify-center gap-2">
+                    <HomeOutlined /> All Schools
+                </span>
+      ),
+      value: TAB_KEYS.ALL_SCHOOLS,
+    },
+    {
+      label: isMobile ? (
+          <Badge count={activeCount} overflowCount={99} offset={[10, 0]}>
+            <FileTextOutlined className="text-xl" />
+          </Badge>
+      ) : (
+          <span className="font-bold text-lg flex items-center justify-center gap-2">
+                    <FileTextOutlined /> New School Requests
+                    <Badge count={activeCount} overflowCount={99} offset={[10, 0]} />
+                </span>
+      ),
+      value: TAB_KEYS.NEW_SCHOOL_REQUESTS,
+    },
+    {
+      label: isMobile ? (
+          <Badge count={draftCount} overflowCount={99} offset={[10, 0]}>
+            <ClockCircleOutlined className="text-xl" />
+          </Badge>
+      ) : (
+          <span className="font-bold text-lg flex items-center justify-center gap-2">
+                    <ClockCircleOutlined /> Change Requests
+                    <Badge count={draftCount} overflowCount={99} offset={[10, 0]} />
+                </span>
+      ),
+      value: TAB_KEYS.CHANGE_REQUESTS,
+    },
+  ], [isMobile, activeCount, draftCount]);
+
+  const tabItems: TabsProps['items'] = [
+    {
+      key: TAB_KEYS.ALL_SCHOOLS,
+      label: "All Schools",
+      children: (
+          <SchoolListWrapper
+              title="All Schools"
+              useQueryTrigger={useGetSchoolListQuery}
+              searchOptions={searchOptions}
+          />
+      ),
+    },
+    {
+      key: TAB_KEYS.NEW_SCHOOL_REQUESTS,
+      label: "New School Requests",
+      children: (
+          <SchoolListWrapper
+              title="New School Requests"
+              useQueryTrigger={useGetActiveSchoolsWithoutRefIdQuery}
+              searchOptions={searchOptions}
+          />
+      ),
+    },
+    {
+      key: TAB_KEYS.CHANGE_REQUESTS,
+      label: "Change Requests",
+      children: (
+          <SchoolListWrapper
+              title="Change Requests"
+              useQueryTrigger={useGetAllDraftsQuery}
+              searchOptions={searchOptions}
+          />
+      ),
+    },
+  ];
+
+  const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
+    notificationApi[type]({
+      message,
+      description,
+      placement: "topRight",
+    });
+  };
+
+  const handleOpenModalDelete = (id: number) => {
+    setModalVisible(true);
+    setSchoolId(id);
+  };
+
+  const handleResponseChange = (response: string) => {
+    setResponseContent(response);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await updateSchoolStatusByAdmin({ schoolId, status: 6, response: responseContent }).unwrap();
+      setModalVisible(false);
+      openNotificationWithIcon(
+          "success",
+          "School deleted successfully!",
+          "The school has been deleted successfully!"
+      );
+    } catch (error) {
+      openNotificationWithIcon("error", "Error", "Failed to delete school.");
+    }
+  };
+
+  return (
+      <div>
+        {contextHolder}
+        <MyBreadcrumb
+            paths={[
+              { label: "School Management", href: "/admin/management/school/school-list" },
+              { label: "School List" },
+            ]}
+        />
+        <Card
+            title={
+              <Segmented
+                  className="p-1"
+                  options={segmentOptions}
+                  value={activeTabKey}
+                  onChange={handleTabChange}
+                  block
+              />
+            }
+        >
+          <Tabs
+              activeKey={activeTabKey}
+              tabBarStyle={{ display: "none" }}
+              size="large"
+              destroyInactiveTabPane
+              items={tabItems}
+          />
+        </Card>
+
+        <Modal
+            title={<p className="font-bold text-3xl text-start">{"Delete School"}</p>}
+            open={modalVisible}
+            onOk={handleDelete}
+            onCancel={() => setModalVisible(false)}
+            okText="Yes"
+            cancelText="No, Take me back!"
+            confirmLoading={isUpdatingStatus}
+            getContainer={false}
+        >
+          <p className="text-lg text-start">
+            {"Are you sure you want to delete this school? If yes, briefly describe the reason:"}
+          </p>
+          <MyEditor description={responseContent} onChange={handleResponseChange} />
+        </Modal>
+      </div>
+  );
+}
+// Component wrapper mới để tái sử dụng logic hiển thị danh sách
+interface SchoolListWrapperProps {
+  useQueryTrigger: any;
+  searchOptions: { label: string; value: string }[];
+  title?: string;
 }
 
+const SchoolListWrapper: React.FC<SchoolListWrapperProps> = ({ useQueryTrigger, searchOptions, title = "" }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(15);
+  const [searchCriteria, setSearchCriteria] = useState({
+    searchBy: searchOptions[0].value,
+    keyword: undefined as string | undefined,
+  });
 
-//handle status type
-const getStatusText = (status: number) => {
-   switch (status) {
-       case 0:
-           return "Saved";
-       case 1:
-           return "Submitted";
-       case 2:
-           return "Approved";
-       case 3:
-           return "Rejected";
-       case 4:
-           return "Published";
-       case 5:
-           return "Unpublished";
-       case 6:
-           return "Deleted";
-       default:
-           return "Unknown";
-   }
+  const { data, isLoading, isFetching, error } = useQueryTrigger({
+    page: currentPage,
+    size: currentPageSize,
+    [searchCriteria.searchBy]: searchCriteria.keyword || undefined,
+  });
+
+  const fetchPage = useCallback((page: number, size: number) => {
+    setCurrentPage(page);
+    setCurrentPageSize(size);
+  }, []);
+
+  const handleSearch = useCallback(
+      (criteria: { searchBy: string; keyword: string | undefined }) => {
+        setSearchCriteria(criteria);
+        setCurrentPage(1);
+      },
+      []
+  );
+
+  return (
+      <Card
+          title={
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+              <SchoolManageTitle title={title} />
+              <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
+                <div className="w-full md:w-80">
+                  <SearchByComponent
+                      onSearch={handleSearch}
+                      options={searchOptions}
+                      initialSearchBy="name"
+                  />
+                </div>
+                <Link
+                    href="/admin/management/school/add-school"
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 text-center"
+                >
+                  Add School
+                </Link>
+              </div>
+            </div>
+          }
+      >
+        <div className="mt-4">
+          <SchoolListForm
+              fetchPage={fetchPage}
+              data={data}
+              error={error}
+              isLoading={isLoading}
+              isFetching={isFetching}
+              onDelete={(id: number) => (document.getElementById("delete-modal") as any)?.setModalVisible(true, id)}
+          />
+        </div>
+      </Card>
+  );
 };
-
-export default function SchoolList() {
-   const [searchText, setSearchText] = useState("");
-   const [page, setPage] = useState(1);
-   const pageSize = 10;
-   const router = useRouter();
-
-
-   const role = useSelector((state: RootState) => state.user?.role);
-   const userIdString = useSelector((state: RootState) => state.user?.id);
-   const userId = userIdString ? parseInt(userIdString as string) : null;
-
-
-   const [notificationApi, contextHolder] = notification.useNotification();
-   const [allSchools, setAllSchools] = useState<SchoolVO[]>([]);
-   const [filteredSchools, setFilteredSchools] = useState<SchoolVO[]>([]);
-   const [totalElements, setTotalElements] = useState(0);
-
-   const [updateSchoolStatusByAdmin, {isLoading: isUpdatingStatus}] = useUpdateSchoolStatusByAdminMutation();
-    const [modalVisible, setModalVisible] = useState(false);
-    const [responseContent, setResponseContent] = useState<string>("");
-    const [schoolId, setSchoolId] = useState<number>(0);
-
-
-   //check login
-   if (!userId) {
-       console.warn("No userId found in Redux store, redirecting to login");
-       router.push("/login");
-       return null;
-   }
-
-
-   //show out notification
-   const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
-       notificationApi[type]({
-           message,
-           description,
-           placement: "topRight",
-       });
-   };
-
-   const handleOpenModalDelete = (id: number) => {
-       setModalVisible(true);
-       setSchoolId(id);
-   }
-
-    const handleResponseChange = (response: string) => {
-        setResponseContent(response);
-    };
-
-   const handleDelete = async () => {
-       try {
-           await updateSchoolStatusByAdmin({schoolId: Number(schoolId), status: 6, response: responseContent}).unwrap();
-           setModalVisible(false);
-           openNotificationWithIcon(
-               "success",
-               "School deleted successfully!",
-               "The school has been deleted successfully!"
-           );
-       } catch (error) {
-           console.log("error==================")
-       }
-   }
-
-   //get all school list
-   const {data, isLoading, error} = useGetSchoolListQuery({
-       page: 1,
-       size: 1000,
-       name: searchText || undefined,
-   });
-
-
-   useEffect(() => {
-       if (error) {
-           console.log("API Error:", error);
-           if ("status" in error && error.status === 401) {
-               openNotificationWithIcon("error", "Session Expired", "Please log in again.");
-               router.push("/login");
-           } else {
-               openNotificationWithIcon("error", "Error", "Failed to load school list.");
-           }
-       }
-   }, [error, router]);
-
-
-   //filter school list (admin can't view saved school status = 0 & 6)
-   useEffect(() => {
-       const schools: SchoolVO[] = data?.data?.content || [];
-       console.log("Original schools:", schools);
-       const filtered = schools.filter((school) => school.status !== 0 && school.status !== 6);
-
-
-       // Sort by postedDate (newest to oldest)
-       const sorted = [...filtered].sort((a, b) => {
-           const dateA = a.postedDate ? new Date(a.postedDate) : null;
-           const dateB = b.postedDate ? new Date(b.postedDate) : null;
-           if (!dateA && !dateB) return 0;
-           if (!dateA) return 1;
-           if (!dateB) return -1;
-           return dateB.getTime() - dateA.getTime();
-       });
-       console.log("Sorted schools:", sorted);
-
-
-       setAllSchools(schools);
-       setFilteredSchools(sorted); // Sử dụng sorted thay vì filtered
-       setTotalElements(sorted.length);
-   }, [data]);
-
-
-   const tableData = filteredSchools
-   .slice((page - 1) * pageSize, page * pageSize)
-   .map((school) => {
-       return {
-           key: school.id,
-           id: school.id,
-           schoolName: school.name,
-           address: `${school.street}, ${school.ward}, ${school.district}, ${school.province}`,
-           phone: school.phone,
-           email: school.email,
-           postedDate: school.postedDate
-               ? new Date(school.postedDate).toLocaleDateString("vi-VN", {
-                   day: "2-digit",
-                   month: "2-digit",
-                   year: "numeric",
-               })
-               : "N/A",
-           status: getStatusText(school.status),
-       };
-   });
-
-
-   const columns = [
-       {
-           title: <div className={'text-center'}>School Name</div>,
-           dataIndex: "schoolName",
-           key: "schoolName",
-           minWidth: 150,
-           render: (schoolName: string, record: { id: number }) => (
-               <Link href={`/admin/management/school/school-detail/${record.id}`}>
-                   <span className="text-blue-500 hover:underline">{schoolName}</span>
-               </Link>
-           ),
-       },
-       {
-           title: <div className={'text-center'}>Address</div>,
-           dataIndex: "address",
-           key: "address",
-           minWidth: 200,
-           onCell: (record: { address: string }) => ({
-               onClick: () => {
-                   navigator.clipboard
-                       .writeText(record.address)
-                       .then(() => {
-                           openNotificationWithIcon("success", "Success", "Address copied to clipboard!");
-                       })
-                       .catch(() => {
-                           openNotificationWithIcon("error", "Error", "Failed to copy address.");
-                       });
-               },
-               style: {cursor: "pointer"},
-           }),
-       },
-       {
-           title: <div className={'text-center'}>Phone No.</div>,
-           dataIndex: "phone",
-           key: "phone",
-           minWidth: 120,
-           align: "right" as const,
-           onCell: (record: { phone: string }) => ({
-               onClick: () => {
-                   navigator.clipboard
-                       .writeText(record.phone)
-                       .then(() => {
-                           openNotificationWithIcon("success", "Success", "Phone number copied to clipboard!");
-                       })
-                       .catch(() => {
-                           openNotificationWithIcon("error", "Error", "Failed to copy phone number.");
-                       });
-               },
-               style: {cursor: "pointer"},
-           }),
-       },
-       {
-           title: <div className={'text-center'}>Email</div>,
-           dataIndex: "email",
-           key: "email",
-           minWidth: 150,
-           onCell: (record: { email: string }) => ({
-               onClick: () => {
-                   navigator.clipboard
-                       .writeText(record.email)
-                       .then(() => {
-                           openNotificationWithIcon("success", "Success", "Email copied to clipboard!");
-                       })
-                       .catch(() => {
-                           openNotificationWithIcon("error", "Error", "Failed to copy email.");
-                       });
-               },
-               style: {cursor: "pointer"},
-           }),
-       },
-       {
-           title: <div className={'text-center'}>Posted Date</div>,
-           dataIndex: "postedDate",
-           key: "postedDate",
-           minWidth: 100,
-           align: "center" as const,
-       },
-       {
-           title: "Status",
-           dataIndex: "status",
-           key: "status",
-           minWidth: 100,
-           align: "center" as const,
-           render: (status: string) => {
-               const colorMap: { [key: string]: string } = {
-                   Submitted: "default",
-                   Approved: "gold",
-                   Rejected: "red",
-                   Published: "cyan",
-                   Unpublished: "orange",
-                   Deleted: "gray",
-                   Unknown: "default",
-               };
-               return <Tag color={colorMap[status] || "default"}>{status.toUpperCase()}</Tag>;
-           },
-       },
-       {
-           title: <div className={'text-center'}>Actions</div>,
-           key: "action",
-           minWidth: 90,
-           align: "center" as const,
-           render: (_: any, record: { id: number }) => (
-               <Space size="middle" className="flex justify-center">
-                   <Link href={`/admin/management/school/edit-school/${record.id}`}>
-                       <Button type="link" icon={<EditOutlined/>}/>
-                   </Link>
-                   <Button type="link" onClick={() => handleOpenModalDelete(record.id)} icon={<DeleteOutlined/>} danger/>
-               </Space>
-           ),
-       },
-   ];
-
-
-   const getRowClassName = (_: any, index: number) => {
-       return index % 2 === 0 ? "table-row-light" : "table-row-dark";
-   };
-
-
-   return (
-       <div className="pt-2">
-           {contextHolder}
-           <MyBreadcrumb
-               paths={[
-                   {label: "School Management", href: "/admin/management/school/school-list"},
-                   {label: "School List"},
-               ]}
-           />
-           <SchoolManageTitle title={"School List"}/>
-           <div className="bg-white px-2 py-5 rounded">
-               <div className="flex justify-between items-center mb-4">
-                   <Input
-                       placeholder="Search by school name"
-                       prefix={<SearchOutlined/>}
-                       value={searchText}
-                       onChange={(e) => setSearchText(e.target.value)}
-                       style={{maxWidth: "300px", width: "100%"}}
-                   />
-                   <Link href="/admin/management/school/add-school">
-                       <Button type="primary" icon={<PlusOutlined/>}>
-                           Add School
-                       </Button>
-                   </Link>
-               </div>
-               <ConfigProvider
-                   theme={{
-                       token: {
-                           borderRadiusLG: 0,
-                       },
-                   }}
-               >
-                   <Table
-                       size="small"
-                       columns={columns}
-                       dataSource={tableData}
-                       loading={isLoading}
-                       scroll={{x: "max-content"}}
-                       pagination={{
-                           current: page,
-                           pageSize,
-                           total: totalElements,
-                           onChange: (newPage) => setPage(newPage),
-                           position: ["bottomCenter"],
-                           responsive: true,
-                       }}
-                       locale={{emptyText: error ? "Error loading data" : "No results found"}}
-                       rowClassName={getRowClassName}
-                   />
-               </ConfigProvider>
-           </div>
-
-           <Modal
-               title={<p className={'font-bold text-3xl text-start'}>{"Delete School"}</p>}
-               open={modalVisible}
-               onOk={handleDelete}
-               onCancel={() => {
-                   setModalVisible(false);
-               }}
-               okText="Yes"
-               cancelText="No, Take me back!"
-               confirmLoading={isUpdatingStatus}
-               getContainer={false}
-           >
-               <p className={'text-lg text-start'}>{"Are you sure you want to delete this school? If yes, briefly describe the reason:"}</p>
-                   <MyEditor
-                       description={responseContent}
-                       onChange={handleResponseChange}
-                   />
-           </Modal>
-       </div>
-   );
-}
