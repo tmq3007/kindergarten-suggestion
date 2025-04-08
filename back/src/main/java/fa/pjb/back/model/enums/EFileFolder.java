@@ -3,7 +3,7 @@ package fa.pjb.back.model.enums;
 import lombok.Getter;
 
 @Getter
-public enum FileFolderEnum {
+public enum EFileFolder {
 
     SCHOOL_IMAGES("School_Images"),
     USER_IMAGES("User_Images"),
@@ -11,6 +11,6 @@ public enum FileFolderEnum {
 
     private final String value;
 
-    FileFolderEnum(String value){this.value=value;}
+    EFileFolder(String value){this.value=value;}
 
 }

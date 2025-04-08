@@ -10,8 +10,7 @@ interface SchoolFormWrapperProps {
     isEdit?: boolean;
     isDetailPage?: boolean;
     isAdmin?: boolean;
-    schoolId?: number;
-    triggerCheckEmail?: any;
+    schoolId?: number
 }
 
 export default function SchoolFormWrapper({
@@ -20,13 +19,11 @@ export default function SchoolFormWrapper({
                                               isEdit,
                                               isDetailPage,
                                               isAdmin,
-                                              schoolId,
-                                              triggerCheckEmail,
+                                              schoolId
                                           }: SchoolFormWrapperProps) {
 
     return (
         <SchoolForm
-            triggerCheckEmail={triggerCheckEmail}
             schoolId={schoolId}
             isDetailPage={isDetailPage}
             isEdit={isEdit}

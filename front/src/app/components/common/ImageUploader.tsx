@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Upload, UploadFile, UploadProps, notification, Image, FormInstance} from 'antd';
+import React, {useEffect, useState} from 'react';
+import {FormInstance, Image, notification, Upload, UploadFile, UploadProps} from 'antd';
 import {InboxOutlined, PlusOutlined} from '@ant-design/icons';
 import 'antd/dist/reset.css';
 import ImgCrop from "antd-img-crop";
@@ -48,8 +48,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     const displayAccept = accept
         ? Array.isArray(accept)
             ? accept.map(type => {
-                const extension = type.split('/')[1]?.toUpperCase();
-                return extension === 'JPEG' ? 'JPG' : extension; // Normalize JPEG to JPG
+                return type.split('/')[1]?.toUpperCase() ; // type of image
             }).join(', ')
             : accept.split('/')[1]?.toUpperCase() || accept
         : 'any type';

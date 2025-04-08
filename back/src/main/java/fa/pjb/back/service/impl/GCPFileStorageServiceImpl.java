@@ -2,7 +2,7 @@ package fa.pjb.back.service.impl;
 
 import com.google.cloud.storage.*;
 import fa.pjb.back.common.util.UploadFileInterface;
-import fa.pjb.back.model.enums.FileFolderEnum;
+import fa.pjb.back.model.enums.EFileFolder;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.service.GCPFileStorageService;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -44,7 +44,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
         this.executorService = Executors.newFixedThreadPool(Math.min(10, Runtime.getRuntime().availableProcessors() * 2));
     }
 
-    public static File processImage(File file, FileFolderEnum fileFolder) throws IOException {
+    public static File processImage(File file, EFileFolder fileFolder) throws IOException {
         if (file == null || !file.exists() || !file.canRead()) {
             throw new IOException("Invalid input file: " + (file != null ? file.getAbsolutePath() : "null"));
         }
@@ -76,7 +76,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
         File resizedFile = outputFilePath.toFile();
 
         // Resize image
-        if (fileFolder.equals(FileFolderEnum.SCHOOL_IMAGES)) {
+        if (fileFolder.equals(EFileFolder.SCHOOL_IMAGES)) {
             try (OutputStream os = new FileOutputStream(resizedFile)) {
                 Thumbnails.of(originalImage)
                         .size(1280, 760)
@@ -97,7 +97,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
     }
 
     @Override
-    public FileUploadVO uploadImage(File file, String fileNamePrefix, FileFolderEnum fileFolder) {
+    public FileUploadVO uploadImage(File file, String fileNamePrefix, EFileFolder fileFolder) {
         File resizedFile = null;
         try {
             resizedFile = processImage(file, fileFolder);
@@ -126,7 +126,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
     }
 
     @Override
-    public FileUploadVO uploadFile(File file, String fileNamePrefix, FileFolderEnum fileFolder) {
+    public FileUploadVO uploadFile(File file, String fileNamePrefix, EFileFolder fileFolder) {
         try {
             String uniqueFileName = fileNamePrefix + UUID.randomUUID() + "_" + file.getName();
             String destinationPath = fileFolder.getValue() + "/" + uniqueFileName;
@@ -158,9 +158,8 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
     }
 
     @Override
-    public List<FileUploadVO> uploadListFiles(List<File> files, String fileNamePrefix, FileFolderEnum
-                                                      fileFolder,
-                                              UploadFileInterface<File, String, FileFolderEnum, FileUploadVO> uploadMethod) {
+    public List<FileUploadVO> uploadListFiles(List<File> files, String fileNamePrefix, EFileFolder fileFolder,
+                                              UploadFileInterface<File, String, EFileFolder, FileUploadVO> uploadMethod) {
         if (files == null || files.isEmpty()) {
             log.info("No files provided for upload");
             return Collections.emptyList();

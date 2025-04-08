@@ -2,7 +2,7 @@ package fa.pjb.back.service.parent_service;
 
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.model.entity.*;
-import fa.pjb.back.model.enums.ParentInSchoolEnum;
+import fa.pjb.back.model.enums.EParentInSchool;
 import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.UserService;
@@ -122,7 +122,7 @@ public class EnrollParentTest {
                 pis.getSchool().equals(school) &&
                         pis.getParent().equals(parent) &&
                         pis.getFrom().equals(LocalDate.now()) &&
-                        pis.getStatus().equals(ParentInSchoolEnum.ACTIVE.getValue())
+                        pis.getStatus().equals(EParentInSchool.ACTIVE.getValue())
         ));
     }
 

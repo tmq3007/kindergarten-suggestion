@@ -50,8 +50,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
-import static fa.pjb.back.model.enums.SchoolStatusEnum.*;
+import static fa.pjb.back.model.enums.EFileFolder.SCHOOL_IMAGES;
+import static fa.pjb.back.model.enums.ESchoolStatus.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -414,12 +414,38 @@ public class SchoolServiceImpl implements SchoolService {
         User user = userService.getCurrentUser();
         if (user == null) return null;
         // Check if the school exists
-        School oldSchool = schoolRepository.findById(schoolDTO.id()).orElseThrow(SchoolNotFoundException::new);
+        School oldSchool = schoolRepository.findByIdWithSchoolOwners(schoolDTO.id()).orElseThrow(SchoolNotFoundException::new);
+        Set<SchoolOwner> oldSchoolSchoolOwners = oldSchool.getSchoolOwners();
         Byte curStatus = oldSchool.getStatus();
 
         // Update entity fields from DTO
         School school = prepareSchoolData(schoolDTO, oldSchool);
         school.setStatus(curStatus);
+
+        // Update school owner
+        if (schoolDTO.schoolOwners() != null && !schoolDTO.schoolOwners().isEmpty()) {
+            Set<SchoolOwner> schoolOwners = schoolOwnerRepository.findAllByIdIn(schoolDTO.schoolOwners());
+            if (schoolOwners.size() != schoolDTO.schoolOwners().size()) {
+                throw new InvalidDataException("One or more SchoolOwner IDs not found");
+            }
+
+            // Remove old owners' relationship
+            if (oldSchoolSchoolOwners != null) {
+                for (SchoolOwner oldOwner : oldSchoolSchoolOwners) {
+                    oldOwner.setSchool(null);
+                    schoolOwnerRepository.save(oldOwner);
+                }
+            }
+
+            // Assign new owners
+            for (SchoolOwner owner : schoolOwners) {
+                owner.setSchool(school);
+            }
+
+            school.setSchoolOwners(schoolOwners);
+        } else {
+            school.setSchoolOwners(new HashSet<>());
+        }
 
         // Save the updated school data
         schoolRepository.save(school);

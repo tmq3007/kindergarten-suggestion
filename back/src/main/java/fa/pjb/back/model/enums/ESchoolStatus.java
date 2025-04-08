@@ -3,7 +3,7 @@ package fa.pjb.back.model.enums;
 import lombok.Getter;
 
 @Getter
-public enum SchoolStatusEnum {
+public enum ESchoolStatus {
 
     SAVED((byte) 0),
     SUBMITTED((byte) 1),
@@ -15,7 +15,7 @@ public enum SchoolStatusEnum {
 
     private final byte value;
 
-    SchoolStatusEnum(byte value) {
+    ESchoolStatus(byte value) {
         this.value = value;
     }
 
