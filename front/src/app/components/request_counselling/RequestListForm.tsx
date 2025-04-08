@@ -1,12 +1,13 @@
 "use client";
 
-import { Table, Tag, notification, ConfigProvider, Card } from "antd";
+import { Table, Tag, Pagination } from "antd";
 import React, { useState } from "react";
 import { ApiResponse } from "@/redux/services/config/baseQuery";
 import { Pageable } from "@/redux/services/userApi";
 import { RequestCounsellingVO } from "@/redux/services/requestCounsellingApi";
 import { REQUEST_COUNSELLING_STATUS_OPTIONS } from "@/lib/constants";
 import Link from "next/link";
+import ErrorComponent from "@/app/components/common/ErrorComponent";
 
 interface RequestListFormProps {
   data: ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined;
@@ -25,15 +26,10 @@ export default function RequestListForm({
                                           fetchPage,
                                           searchText,
                                         }: RequestListFormProps) {
-  const [notificationApi, contextHolder] = notification.useNotification();
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const totalElements = data?.data.page.totalElements || 0;
-
-  const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
-    notificationApi[type]({ message, description, placement: "topRight" });
-  };
 
   const handlePageChange = (page: number, size: number) => {
     setCurrent(page);
@@ -41,13 +37,11 @@ export default function RequestListForm({
     fetchPage(page, size);
   };
 
-  // Sử dụng trực tiếp dữ liệu từ server, không lọc cục bộ
   const requests = [...(data?.data.content || [])].sort((a, b) => {
     const dateA = new Date(a.dueDate);
     const dateB = new Date(b.dueDate);
     return dateA.getTime() - dateB.getTime();
   });
-
 
   const tableData = requests.map((request) => {
     const statusOption = REQUEST_COUNSELLING_STATUS_OPTIONS.find(
@@ -86,13 +80,10 @@ export default function RequestListForm({
       title: <div className="text-center">Email</div>,
       dataIndex: "email",
       key: "email",
-      width: 100,
+      width: 200,
       onCell: (record: { email: string }) => ({
         onClick: () => {
-          navigator.clipboard
-          .writeText(record.email)
-          .then(() => openNotificationWithIcon("success", "Success", "Email copied to clipboard!"))
-          .catch(() => openNotificationWithIcon("error", "Error", "Failed to copy email."));
+          navigator.clipboard.writeText(record.email);
         },
         style: { cursor: "pointer" },
       }),
@@ -105,10 +96,7 @@ export default function RequestListForm({
       align: "right" as const,
       onCell: (record: { phone: string }) => ({
         onClick: () => {
-          navigator.clipboard
-          .writeText(record.phone)
-          .then(() => openNotificationWithIcon("success", "Success", "Phone number copied to clipboard!"))
-          .catch(() => openNotificationWithIcon("error", "Error", "Failed to copy phone number."));
+          navigator.clipboard.writeText(record.phone);
         },
         style: { cursor: "pointer" },
       }),
@@ -131,51 +119,32 @@ export default function RequestListForm({
     },
   ];
 
-  const getRowClassName = (_: any, index: number) => {
-    return index % 2 === 0 ? "table-row-light" : "table-row-dark";
-  };
-
   if (error) {
-    return <div>Error loading data</div>;
+    return <ErrorComponent error={error} />;
   }
 
   return (
-      <Card bordered={false} style={{ width: "100%", boxShadow: "none",minHeight: "calc(100vh - 300px)" }}>
-        {contextHolder}
-        <div className="px-6 py-4">
-          <ConfigProvider
-              theme={{
-                token: {
-                  borderRadiusLG: 0,
-                },
-              }}
-          >
-            <Table
-                size="small"
-                columns={columns}
-                dataSource={tableData}
-                loading={isLoading || isFetching}
-                scroll={{ x: "max-content" }}
-                pagination={{
-                  current: current,
-                  pageSize,
-                  total: totalElements,
-                  onChange: handlePageChange,
-                  position: ["bottomCenter"],
-                  responsive: true,
-                  showSizeChanger: true,
-                  pageSizeOptions: ["10", "20", "50", "100"],
-                }}
-                locale={{ emptyText: "No results found" }}
-                rowClassName={getRowClassName}
-                bordered
-                style={{
-                  background: "white",
-                  borderRadius: "12px"
-                }}
-            />
-          </ConfigProvider>
+      <div>
+        <Table
+            className="over-flow-scroll"
+            columns={columns}
+            dataSource={tableData}
+            loading={isLoading || isFetching}
+            scroll={{ x: "max-content" }}
+            pagination={false}
+            locale={{ emptyText: "No results found" }}
+            size="small"
+        />
+        <div className="flex justify-between items-center px-4 py-3">
+          <Pagination
+              current={current}
+              pageSize={pageSize}
+              total={totalElements}
+              onChange={handlePageChange}
+              pageSizeOptions={["10", "20", "50", "100"]}
+              showSizeChanger
+          />
         </div>
-      </Card>
+      </div>
   );
 }

@@ -2,11 +2,13 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.model.entity.RequestCounselling;
+import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERequestCounsellingStatus;
 import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
+import fa.pjb.back.model.mapper.RequestCounsellingProjection;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.RequestCounsellingRepository;
@@ -14,6 +16,7 @@ import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
 import fa.pjb.back.service.RequestCounsellingReminderService;
+import jakarta.persistence.criteria.Join;
 import java.util.Arrays;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -172,19 +176,40 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     }
 
     @Override
-    public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses, String name) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public Page<RequestCounsellingVO> getAllReminder(int page, int size, List<Byte> statuses, String searchBy, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("dueDate").descending());
         List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
+
         Specification<RequestCounselling> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(root.get("status").in(statusList));
-            if (name != null && !name.trim().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase().trim() + "%"));
+
+            if (keyword != null && !keyword.trim().isEmpty() && searchBy != null) {
+                String searchValue = "%" + keyword.toLowerCase().trim() + "%";
+                switch (searchBy) {
+                    case "name":
+                        predicates.add(cb.like(cb.lower(root.get("name")), searchValue));
+                        break;
+                    case "email":
+                        predicates.add(cb.like(cb.lower(root.get("email")), searchValue));
+                        break;
+                    case "phone":
+                        predicates.add(cb.like(cb.lower(root.get("phone")), searchValue));
+                        break;
+                    case "schoolName":
+                        Join<RequestCounselling, School> schoolJoin = root.join("school");
+                        predicates.add(cb.like(cb.lower(schoolJoin.get("name")), searchValue));
+                        break;
+                    default:
+                        predicates.add(cb.like(cb.lower(root.get("name")), searchValue));
+                        break;
+                }
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(spec, pageable);
-        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+
+        Page<RequestCounsellingProjection> requestPage = requestCounsellingRepository.findAllProjected(spec, pageable);
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVOFromProjection);
     }
 
     @Override
@@ -192,6 +217,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
         Optional<SchoolOwner> schoolOwnerOpt = schoolOwnerRepository.findByUserId(schoolOwnerId);
         if (schoolOwnerOpt.isEmpty()) {
             log.warn("No SchoolOwner found for id: {}", schoolOwnerId);
+            return Page.empty(PageRequest.of(page - 1, size));
         }
 
         SchoolOwner schoolOwner = schoolOwnerOpt.get();
@@ -200,15 +226,15 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
             return Page.empty(PageRequest.of(page - 1, size));
         }
 
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("dueDate").descending());
         List<Byte> statusList = (statuses == null || statuses.isEmpty()) ? Arrays.asList((byte) 0, (byte) 2) : statuses;
 
         Integer schoolId = schoolOwner.getSchool().getId();
-        Page<RequestCounselling> requestPage = requestCounsellingRepository.findBySchoolIdAndStatusIn(
+        Page<RequestCounsellingProjection> requestPage = requestCounsellingRepository.findBySchoolIdAndStatusIn(
             schoolId, statusList, pageable
         );
 
-        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVOFromProjection);
     }
 
 

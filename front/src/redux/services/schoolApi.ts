@@ -401,6 +401,68 @@ export const schoolApi = createApi({
                     ]
                     : [{type: 'SchoolList', id: 'SEARCH'}],
         }),
+        getActiveSchoolsWithoutRefId: build.query<
+            ApiResponse<Page<SchoolVO>>,
+            {
+                page?: number;
+                size?: number;
+                name?: string;
+                province?: string;
+                district?: string;
+                street?: string;
+                email?: string;
+                phone?: string;
+            }
+        >({
+            query: ({ page = 1, size, name, province, district, street, email, phone }) => ({
+                url: `/school/active-no-ref`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(name && { name }),
+                    ...(province && { province }),
+                    ...(district && { district }),
+                    ...(street && { street }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
+                },
+            }),
+            providesTags: ["SchoolList"],
+        }),
+        getAllDrafts: build.query<
+            ApiResponse<Page<SchoolVO>>,
+            { page?: number; size?: number; name?: string; district?: string; email?: string; phone?: string }
+        >({
+            query: ({ page = 1, size, name, district, email, phone }) => ({
+                url: `/school/all-drafts`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(name && { name }),
+                    ...(district && { district }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
+                },
+            }),
+            providesTags: ["SchoolList"],
+        }),
+        countActiveSchoolsWithoutRefId: build.query<ApiResponse<number>, void>({
+            query: () => ({
+                url: `/school/count/active-no-ref`,
+                method: "GET",
+            }),
+            providesTags: ["SchoolList"],
+        }),
+
+        countAllDrafts: build.query<ApiResponse<number>, void>({
+            query: () => ({
+                url: `/school/count/drafts`,
+                method: "GET",
+            }),
+            providesTags: ["SchoolList"],
+        }),
 
         loadSchoolDetails: build.query<ApiResponse<SchoolDetailVO>, number>({
             query: (schoolId) => ({
@@ -431,6 +493,10 @@ export const {
     useLazySearchSchoolOwnersForAddSchoolQuery,
     useMergeDraftMutation,
     useIsDraftQuery,
+    useGetActiveSchoolsWithoutRefIdQuery,
+    useGetAllDraftsQuery,
+    useCountActiveSchoolsWithoutRefIdQuery,
+    useCountAllDraftsQuery,
     useLazySearchByCriteriaQuery,
     useLoadSchoolDetailsQuery
 } = schoolApi;

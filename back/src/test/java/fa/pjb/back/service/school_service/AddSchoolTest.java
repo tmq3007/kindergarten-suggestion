@@ -44,6 +44,9 @@ import static org.mockito.Mockito.*;
 class AddSchoolTest {
 
     @InjectMocks
+
+
+
     private SchoolServiceImpl schoolService;
 
     @Mock
