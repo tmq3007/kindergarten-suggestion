@@ -14,7 +14,7 @@ public class AutoGeneratorHelper {
     private final UserRepository userRepository;
     // Function to generate random password
     public String generateRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(8) + "a";
+        return RandomStringUtils.randomAlphanumeric(8) + "9";
     }
 
     public String generateUsername(String fullName) {
