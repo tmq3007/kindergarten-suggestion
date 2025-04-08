@@ -8,6 +8,8 @@ import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.enums.EReviewStatus;
 import fa.pjb.back.model.mapper.ReviewMapper;
+import fa.pjb.back.model.mapper.ReviewProjection;
+import fa.pjb.back.model.vo.RatingStatVO;
 import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.repository.ReviewRepository;
@@ -15,12 +17,15 @@ import fa.pjb.back.service.ReviewService;
 import fa.pjb.back.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,23 +45,16 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate, String status) {
         Byte statusByte = null;
         if (status != null) {
-            switch (status.toUpperCase()) {
-                case "APPROVED":
-                    statusByte = (byte) 0;
-                    break;
-                case "REJECTED":
-                    statusByte = (byte) 1;
-                    break;
-                case "PENDING":
-                    statusByte = (byte) 2;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid status value. Use: APPROVED, REJECTED, or PENDING");
-            }
+            statusByte = switch (status.toUpperCase()) {
+                case "APPROVED" -> (byte) 0;
+                case "REJECTED" -> (byte) 1;
+                case "PENDING" -> (byte) 2;
+                default ->
+                        throw new IllegalArgumentException("Invalid status value. Use: APPROVED, REJECTED, or PENDING");
+            };
         }
 
         List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeAdmin(schoolId, fromDate, toDate, statusByte);
-        log.info("reviews: {}", reviews.get(0).getStatus());
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
         }
@@ -69,19 +67,13 @@ public class ReviewServiceImpl implements ReviewService {
         School school = schoolOwner.getSchool();
         Byte statusByte = null;
         if (status != null) {
-            switch (status.toUpperCase()) {
-                case "APPROVED":
-                    statusByte = (byte) 0;
-                    break;
-                case "REJECTED":
-                    statusByte = (byte) 1;
-                    break;
-                case "PENDING":
-                    statusByte = (byte) 2;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid status value. Use: APPROVED, REJECTED, or PENDING");
-            }
+            statusByte = switch (status.toUpperCase()) {
+                case "APPROVED" -> (byte) 0;
+                case "REJECTED" -> (byte) 1;
+                case "PENDING" -> (byte) 2;
+                default ->
+                        throw new IllegalArgumentException("Invalid status value. Use: APPROVED, REJECTED, or PENDING");
+            };
         }
 
         List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeSO(school.getId(), fromDate, toDate,statusByte);
@@ -188,5 +180,82 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Page<ReviewVO> getReviewListBySchoolForPublic(Integer schoolId, Integer page, Integer size, Integer star) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        Page<ReviewProjection> projections = reviewRepository.findReviewWithStarFilter(
+                schoolId,
+                pageable,
+                star);
+
+        return projections.map(reviewMapper::toReviewVOFromProjection);
+    }
+    @Override
+    public RatingStatVO getReviewStatsBySchool(Integer schoolId) {
+        Long totalRatings = reviewRepository.countBySchoolId(schoolId);
+
+        if (totalRatings == null || totalRatings == 0) {
+            return new RatingStatVO(0.0, 0, new HashMap<>(), new HashMap<>());
+        }
+
+        // Fetch reviews for star range calculation
+        List<Review> reviews = reviewRepository.findBySchoolId(schoolId);
+        Map<String, Integer> ratingsByStarRange = calculateRatingsByStarRange(reviews);
+
+        // Fetch category averages
+        Map<String, Double> categoryRatings = calculateCategoryRatings(schoolId);
+
+        // Fetch overall average
+        Double averageRating = reviewRepository.getAverageRatingBySchoolId(schoolId);
+
+        return new RatingStatVO(
+                averageRating != null ? averageRating : 0.0,
+                totalRatings,
+                ratingsByStarRange,
+                categoryRatings
+        );
+    }
+
+    private Map<String, Integer> calculateRatingsByStarRange(List<Review> reviews) {
+        Map<String, Integer> ratings = new HashMap<>();
+        ratings.put("1", 0);
+        ratings.put("2", 0);
+        ratings.put("3", 0);
+        ratings.put("4", 0);
+        ratings.put("5", 0);
+
+        for (Review review : reviews) {
+            double avg = (review.getLearningProgram() + review.getFacilitiesAndUtilities() +
+                    review.getExtracurricularActivities() + review.getTeacherAndStaff() +
+                    review.getHygieneAndNutrition()) / 5.0;
+
+            if (avg == 5.0) ratings.put("5", ratings.get("5") + 1);
+            else if (avg >= 4.0) ratings.put("4", ratings.get("4") + 1);
+            else if (avg >= 3.0) ratings.put("3", ratings.get("3") + 1);
+            else if (avg >= 2.0) ratings.put("2", ratings.get("2") + 1);
+            else if (avg >= 1.0) ratings.put("1", ratings.get("1") + 1);
+        }
+
+        return ratings;
+    }
+
+    private Map<String, Double> calculateCategoryRatings(Integer schoolId) {
+        Map<String, Double> categoryRatings = new HashMap<>();
+
+        Double learningProgram = reviewRepository.getAvgLearningProgramBySchoolId(schoolId);
+        Double facilities = reviewRepository.getAvgFacilitiesBySchoolId(schoolId);
+        Double extracurricular = reviewRepository.getAvgExtracurricularBySchoolId(schoolId);
+        Double teachers = reviewRepository.getAvgTeachersBySchoolId(schoolId);
+        Double hygiene = reviewRepository.getAvgHygieneBySchoolId(schoolId);
+
+        categoryRatings.put("learningProgram", learningProgram != null ? learningProgram : 0.0);
+        categoryRatings.put("facilitiesAndUtilities", facilities != null ? facilities : 0.0);
+        categoryRatings.put("extracurricularActivities", extracurricular != null ? extracurricular : 0.0);
+        categoryRatings.put("teachersAndStaff", teachers != null ? teachers : 0.0);
+        categoryRatings.put("hygieneAndNutrition", hygiene != null ? hygiene : 0.0);
+
+        return categoryRatings;
+    }
 
 }

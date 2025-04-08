@@ -829,6 +829,12 @@ public class SchoolServiceImpl implements SchoolService {
                 .toList();
     }
 
+    @Override
+    public SchoolDetailVO getPublicSchoolInfo(Integer schoolId) {
+        School school = schoolRepository.findSchoolBySchoolId(schoolId).orElseThrow(SchoolNotFoundException::new);
+        return schoolMapper.toSchoolDetailVO(school);
+    }
+
     /**
      * Updates the status of a school based on the provided status code.
      **/
