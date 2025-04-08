@@ -9,6 +9,7 @@ import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
+import fa.pjb.back.model.mapper.RequestCounsellingProjection;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.vo.ParentRequestListVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
@@ -19,6 +20,7 @@ import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.RequestCounsellingService;
 import fa.pjb.back.service.UserService;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -27,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -103,20 +106,40 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         return requestCounsellingMapper.toRequestCounsellingVO(savedEntity);
     }
 
-    public Page<RequestCounsellingVO> getAllRequests(
-            int page, int size, Byte status, String email, String name, String phone,
-            String schoolName, LocalDateTime dueDate) {
+    @Override
+    public Page<RequestCounsellingVO> getAllRequests(int page, int size, String searchBy, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("dueDate").descending());
 
-        Pageable pageable = PageRequest.of(page - 1, size);
         Specification<RequestCounselling> specification = (root, query, criteriaBuilder) -> {
-            if (name != null && !name.isEmpty()) {
-                return criteriaBuilder.like(root.get("name"), "%" + name + "%");
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.trim().isEmpty() && searchBy != null) {
+                String searchValue = "%" + keyword.toLowerCase().trim() + "%";
+                switch (searchBy) {
+                    case "name":
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchValue));
+                        break;
+                    case "email":
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), searchValue));
+                        break;
+                    case "phone":
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("phone")), searchValue));
+                        break;
+                    case "schoolName":
+                        Join<RequestCounselling, School> schoolJoin = root.join("school");
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(schoolJoin.get("name")), searchValue));
+                        break;
+                    default:
+                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchValue));
+                        break;
+                }
             }
-            return null;
+
+            return predicates.isEmpty() ? null : criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        Page<RequestCounselling> requestPage = requestCounsellingRepository.findAll(specification, pageable);
-        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVO);
+        Page<RequestCounsellingProjection> requestPage = requestCounsellingRepository.findAllProjected(specification, pageable);
+        return requestPage.map(requestCounsellingMapper::toRequestCounsellingVOFromProjection);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

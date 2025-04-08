@@ -63,8 +63,12 @@ public class SecurityConfig {
                                 .requestMatchers("/api/school/review/top4").permitAll()
                                 .requestMatchers("/api/school/search-by-criteria").permitAll()
                                 .requestMatchers("/api/counselling/request").permitAll()
+                                .requestMatchers("/api/school/public/**").permitAll()
                                 .requestMatchers("/api/v3/api-doc/**").permitAll()
                                 .requestMatchers("/api/swagger-ui/**").permitAll()
+                                .requestMatchers("/api/school/review/public/**").permitAll()
+                                .requestMatchers("/api/school/review/public/{schoolId}/stats").permitAll()
+
                                 .anyRequest().authenticated()
 //                                .anyRequest().permitAll()
                 )

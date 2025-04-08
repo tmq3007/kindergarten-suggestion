@@ -3,6 +3,7 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
 import fa.pjb.back.model.dto.ReviewReportDTO;
+import fa.pjb.back.model.vo.RatingStatVO;
 import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
 import fa.pjb.back.service.ReviewService;
@@ -11,7 +12,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -41,6 +44,31 @@ public class ReviewController {
                 .build();
     }
 
+
+    @Operation(summary = "Get reviews list by school public", description = "Get reviews list of school for public school details")
+    @GetMapping("/public/{schoolId}")
+    public ApiResponse<Page<ReviewVO>> getReviewsPublic(
+            @PathVariable Integer schoolId,
+            @RequestParam(required = false, defaultValue = "15") Integer size,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false) Integer star) {
+
+        Page<ReviewVO> reviews = reviewService.getReviewListBySchoolForPublic(schoolId, page, size, star);
+        return ApiResponse.<Page<ReviewVO>>builder()
+                .code(200)
+                .message("Reviews retrieved successfully")
+                .data(reviews)
+                .build();
+    }
+    @Operation(summary = "Get reviews stats by school public", description = "Get review stats of school for public school details")
+    @GetMapping("public/{schoolId}/stats")
+    public ApiResponse<RatingStatVO> getReviewStatsBySchool(@PathVariable Integer schoolId) {
+        return ApiResponse.<RatingStatVO>builder()
+                .code(200)
+                .message("Review stats retrieved successfully")
+                .data(reviewService.getReviewStatsBySchool(schoolId))
+                .build();
+    }
     @Operation(summary = "Get reviews by school owner", description = "Get review of school in date range")
     @GetMapping("/")
     public ApiResponse<List<ReviewVO>> getReviewsBySchoolOwner(
