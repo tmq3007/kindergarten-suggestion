@@ -50,8 +50,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
-import static fa.pjb.back.model.enums.SchoolStatusEnum.*;
+import static fa.pjb.back.model.enums.EFileFolder.SCHOOL_IMAGES;
+import static fa.pjb.back.model.enums.ESchoolStatus.*;
 
 @Slf4j
 @RequiredArgsConstructor

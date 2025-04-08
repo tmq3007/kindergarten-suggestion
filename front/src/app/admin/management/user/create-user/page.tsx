@@ -39,14 +39,9 @@ const fadeInUpVariants: Variants = {
 const CreateUser: React.FC = () => {
     const [form] = Form.useForm();
     const [api, contextHolder] = notification.useNotification();
-    const dispatch = useDispatch<AppDispatch>();
     const [createUser] = useCreateUserMutation();
     const [spinning, setSpinning] = React.useState(false);
     const [percent, setPercent] = React.useState(0);
-    const { data: countries, isLoading: isLoadingCountry } = useGetCountriesQuery();
-    const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(
-        countries?.find((c) => c.code === "VN") // Default to Vietnam
-    );
     const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined); // Track selected role
 
     const [triggerCheckEmail] = useLazyCheckEmailQuery();
@@ -56,23 +51,14 @@ const CreateUser: React.FC = () => {
 
     const onFinish = async (values: any) => {
         setSpinning(true);
-        const countriesWithTrunkPrefix = countries
-            ? countries
-                .filter(country => country.idd?.root)
-                .map(country => country.cca2)
-            : [];
 
-        const selectedCountryCode = selectedCountry?.dialCode || "+84";
-        const shouldKeepZero = countriesKeepZero.includes(selectedCountryCode);
-        const formattedPhone = shouldKeepZero
-            ? `${selectedCountryCode}${values.phone}`
-            : `${selectedCountryCode}${values.phone.replace(/^0+/, "")}`;
+        const fullPhoneNumber = phoneInputRef.current?.getFormattedPhoneNumber() || values.phone;
 
         let formattedValues = {
             ...values,
             dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
             role: values.role === "parent" ? "ROLE_PARENT" : "ROLE_" + values.role.toUpperCase(),
-            phone: formattedPhone,
+            phone: fullPhoneNumber,
             status: Boolean(values.status),
             email: values.email,
 
@@ -100,17 +86,6 @@ const CreateUser: React.FC = () => {
 
     const openNotificationWithIcon = (type: 'success' | 'error', message: string, description: string) => {
         api[type]({ message, description });
-    };
-
-    const handleCountryChange = (value: string) => {
-        if (countries) {
-            const country = countries.find((c) => c.code === value);
-            if (country) setSelectedCountry(country);
-        }
-    };
-
-    const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value.replace(/\D/g, "");
     };
 
     const handleRoleChange = (value: string) => {
@@ -171,18 +146,6 @@ const CreateUser: React.FC = () => {
                             </motion.div>
 
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={2}>
-                                {/*<Form.Item*/}
-                                {/*    label="Email"*/}
-                                {/*    name="email"*/}
-                                {/*    rules={[*/}
-                                {/*        { required: true, message: 'Email is required!' },*/}
-                                {/*        { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address!' }*/}
-                                {/*    ]}*/}
-                                {/*    hasFeedback*/}
-                                {/*    className={'mb-10'}*/}
-                                {/*>*/}
-                                {/*    <Input />*/}
-                                {/*</Form.Item>*/}
                                 <EmailInput
                                     form={form}
                                     ref={emailInputRef}
@@ -191,50 +154,6 @@ const CreateUser: React.FC = () => {
                             </motion.div>
 
                             <motion.div variants={fadeInUpVariants} initial="initial" animate="animate" custom={3}>
-                                {/*<Form.Item*/}
-                                {/*    label="Phone No."*/}
-                                {/*    name="phone"*/}
-                                {/*    rules={[*/}
-                                {/*        { required: true, message: 'Phone number is required!' },*/}
-                                {/*        { pattern: /^\d{4,14}$/, message: 'Phone number is wrong!' }*/}
-                                {/*    ]}*/}
-                                {/*    className={'mb-10'}*/}
-                                {/*>*/}
-                                {/*    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">*/}
-                                {/*        <Select*/}
-                                {/*            value={selectedCountry?.code || "VN"}*/}
-                                {/*            loading={isLoadingCountry}*/}
-                                {/*            onChange={handleCountryChange}*/}
-                                {/*            style={{ width: 120, borderRight: "1px #ccc" }}*/}
-                                {/*            optionLabelProp="label2"*/}
-                                {/*            showSearch={false}*/}
-                                {/*        >*/}
-                                {/*            {countries?.map((country) => (*/}
-                                {/*                <Select.Option*/}
-                                {/*                    key={country.code}*/}
-                                {/*                    value={country.code}*/}
-                                {/*                    label={country.label}*/}
-                                {/*                    label2={*/}
-                                {/*                        <span className="flex items-center">*/}
-                                {/*                            <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" preview={false} />*/}
-                                {/*                            {country.code} {country.dialCode}*/}
-                                {/*                        </span>*/}
-                                {/*                    }*/}
-                                {/*                >*/}
-                                {/*                    <div className="flex items-center">*/}
-                                {/*                        <Image src={country.flag} alt={country.label} width={20} height={14} className="mr-2" />*/}
-                                {/*                        {country.dialCode} - {country.label}*/}
-                                {/*                    </div>*/}
-                                {/*                </Select.Option>*/}
-                                {/*            ))}*/}
-                                {/*        </Select>*/}
-                                {/*        <Input*/}
-                                {/*            placeholder="Enter your phone number"*/}
-                                {/*            onChange={handlePhoneNumberChange}*/}
-                                {/*            style={{ flex: 1, border: "none", boxShadow: "none" }}*/}
-                                {/*        />*/}
-                                {/*    </div>*/}
-                                {/*</Form.Item>*/}
                                 <PhoneInput form={form}
                                             onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                                             ref={phoneInputRef}

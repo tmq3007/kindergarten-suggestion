@@ -1,6 +1,9 @@
 package fa.pjb.back.model.enums;
 
-public enum ParentInSchoolEnum {
+import lombok.Getter;
+
+@Getter
+public enum EParentInSchool {
 
     PENDING((byte) 0),
     ACTIVE((byte) 1),
@@ -8,11 +11,8 @@ public enum ParentInSchoolEnum {
 
     private final byte value;
 
-    ParentInSchoolEnum(byte value) {
+    EParentInSchool(byte value) {
         this.value = value;
     }
 
-    public byte getValue() {
-        return value;
-    }
 }

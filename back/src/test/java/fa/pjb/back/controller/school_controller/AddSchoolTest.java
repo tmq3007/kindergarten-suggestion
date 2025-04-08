@@ -3,8 +3,7 @@ package fa.pjb.back.controller.school_controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fa.pjb.back.common.exception._14xx_data.InvalidFileFormatException;
 import fa.pjb.back.model.dto.SchoolDTO;
-import fa.pjb.back.model.enums.SchoolStatusEnum;
-import fa.pjb.back.model.vo.ReviewVO;
+import fa.pjb.back.model.enums.ESchoolStatus;
 import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.model.vo.SchoolOwnerVO;
 import fa.pjb.back.service.SchoolService;
@@ -54,14 +53,14 @@ class AddSchoolTest {
 
         // Valid SchoolDTO for successful case
         validSchoolDTO = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
         );
 
         // Expected SchoolDetailVO returned by service
         schoolDetailVO = new SchoolDetailVO(
-                1, SchoolStatusEnum.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
+                1, ESchoolStatus.SUBMITTED.getValue(), "Test School", (byte) 1, "District 1", "Ward 1", "Hanoi",
                 "Street 1", "test@example.com", "+84123456789", (byte) 1, (byte) 1, 1000, 2000, "http://test.com",
                 "Description", null, null, null, new Date(), null,
                 Set.of(new SchoolOwnerVO(1,1,"test","test","test","test","test",null,LocalDate.now()))
@@ -101,7 +100,7 @@ class AddSchoolTest {
     void testAddSchool_ValidationFailure_MissingFields() throws Exception {
         // Invalid DTO with missing required fields
         SchoolDTO invalidDTO = new SchoolDTO(
-                null, "", null, null, SchoolStatusEnum.SUBMITTED.getValue(),
+                null, "", null, null, ESchoolStatus.SUBMITTED.getValue(),
                 "", "", "", null, "", "", null, null, null, null, null, null, null, null
         );
 
@@ -129,7 +128,7 @@ class AddSchoolTest {
     void testAddSchool_ValidationFailure_InvalidFeeRange() throws Exception {
         // Invalid DTO with feeFrom > feeTo
         SchoolDTO invalidFeeDTO = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "+84123456789",
                 1, 1, 2000, 1000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
         );
@@ -178,7 +177,7 @@ class AddSchoolTest {
     void testAddSchool_ValidationFailure_InvalidPhoneFormat() throws Exception {
         // DTO with an invalid phone number (no "+" and too few digits)
         SchoolDTO invalidPhoneDTO = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "test@example.com", "12345", // Invalid phone
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
         );
@@ -202,7 +201,7 @@ class AddSchoolTest {
     void testAddSchool_ValidationFailure_InvalidEmailFormat() throws Exception {
         // DTO with an invalid email (no "@" or domain)
         SchoolDTO invalidEmailDTO = new SchoolDTO(
-                1, "Test School", 1, "http://test.com", SchoolStatusEnum.SUBMITTED.getValue(),
+                1, "Test School", 1, "http://test.com", ESchoolStatus.SUBMITTED.getValue(),
                 "Hanoi", "District 1", "Ward 1", "Street 1", "invalidemail", "+84123456789",
                 1, 1, 1000, 2000, Set.of(1, 2), Set.of(1, 2), Set.of(1), "Description"
         );
