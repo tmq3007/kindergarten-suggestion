@@ -49,6 +49,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final RequestCounsellingMapper requestCounsellingMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final UserService userService;
+    private final SchoolMapper schoolMapper;
     private final ReviewRepository reviewRepository;
 
     private User getCurrentUser() {
@@ -225,7 +226,7 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
                     .dueDate(requestCounselling.getDue_date())
                     .response(requestCounselling.getResponse())
                     .totalSchoolReview(Integer.parseInt(String.valueOf(statisticsObject[0])))
-                    .averageSchoolRating((Double) statisticsObject[1])
+                    .averageSchoolRating(Math.floor(((Double) statisticsObject[1]) * 10) / 10)
                     .build();
         });
     }

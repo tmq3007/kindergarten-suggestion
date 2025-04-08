@@ -15,7 +15,7 @@ import {notification} from "antd";
 // Component chính của trang
 export default function MyRequestPage() {
     const [page, setPage] = useState(1);
-    const pageSize = 10;
+    const pageSize = 3;
     const router = useRouter();
 
     const userIdString = useSelector((state: RootState) => state.user?.id);
@@ -53,11 +53,14 @@ export default function MyRequestPage() {
     };
 
     return (
+        <>
+            {contextHolder}
             <ParentRequestList
                 data={data}
                 isLoading={isLoading}
             isFetching={isFetching}
             error={error}
             fetchPage={fetchPage}/>
+        </>
     );
 }

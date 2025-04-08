@@ -51,12 +51,12 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
 
     return (
         <div className="mx-auto mt-1 px-4 py-5">
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 items-start border-2 border-blue-300 rounded-lg shadow-md p-4 bg-gray-50">
                 {/* Request Card - Chiếm 3/6 cột */}
                 <div
                     className="md:col-span-3 bg-white border-2 border-blue-300 rounded-lg shadow-md p-4 min-h-[300px] h-auto">
                     {/* Nội dung Request */}
-                    <div className="flex justify-between items-center mb-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-center mb-2">
                         <Text className='text-lg'><span className='text-blue-500 underline'>Request Number:</span> <span
                             className='text-blue-500 font-bold'> #{request.id}</span></Text>
                         <Text className='text-xs'>{dueDate}</Text>
