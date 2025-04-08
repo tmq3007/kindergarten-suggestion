@@ -43,7 +43,7 @@ const MyBreadcrumb: React.FC<BreadcrumbProps> = ({paths}) => {
     ];
 
     return (
-        <div className="mb-2 bg-white w-full shadow-sm rounded-lg p-2 inline-block">
+        <div className="mb-2 bg-white shadow-sm rounded-lg p-2 inline-block">
             <Breadcrumb
                 className="text-sm"
                 separator={<span className="text-gray-600 mx-2">{">"}</span>}

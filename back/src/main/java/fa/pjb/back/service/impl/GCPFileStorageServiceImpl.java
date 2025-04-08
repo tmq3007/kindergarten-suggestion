@@ -44,7 +44,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
         this.executorService = Executors.newFixedThreadPool(Math.min(10, Runtime.getRuntime().availableProcessors() * 2));
     }
 
-    public static File processImage(File file) throws IOException {
+    public static File processImage(File file, EFileFolder fileFolder) throws IOException {
         if (file == null || !file.exists() || !file.canRead()) {
             throw new IOException("Invalid input file: " + (file != null ? file.getAbsolutePath() : "null"));
         }
@@ -76,23 +76,31 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
         File resizedFile = outputFilePath.toFile();
 
         // Resize image
-        try (OutputStream os = new FileOutputStream(resizedFile)) {
-            Thumbnails.of(originalImage)
-                    .size(600, 600)
-                    .outputFormat("png")
+        if (fileFolder.equals(EFileFolder.SCHOOL_IMAGES)) {
+            try (OutputStream os = new FileOutputStream(resizedFile)) {
+                Thumbnails.of(originalImage)
+                        .size(1280, 760)
+                        .outputFormat("png")
 //                    .outputQuality(0.9)
-                    .toOutputStream(os);
+                        .toOutputStream(os);
+            }
+        } else {
+            try (OutputStream os = new FileOutputStream(resizedFile)) {
+                Thumbnails.of(originalImage)
+                        .size(1000, 1000)
+                        .outputFormat("png")
+//                    .outputQuality(0.9)
+                        .toOutputStream(os);
+            }
         }
-
         return resizedFile;
     }
-
 
     @Override
     public FileUploadVO uploadImage(File file, String fileNamePrefix, EFileFolder fileFolder) {
         File resizedFile = null;
         try {
-            resizedFile = processImage(file);
+            resizedFile = processImage(file, fileFolder);
             String uniqueFileName = fileNamePrefix + UUID.randomUUID() + "_" + resizedFile.getName();
             String destinationPath = fileFolder.getValue() + "/" + uniqueFileName;
 
@@ -103,7 +111,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
 
             Blob blob = storage.create(blobInfo, Files.readAllBytes(resizedFile.toPath()));
             blob.createAcl(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
-            
+
             String imageUrl = String.format("https://storage.googleapis.com/%s/%s", bucketName, destinationPath);
             return new FileUploadVO(200, "Upload successful", blob.getSize(), blob.getName(), blob.getBlobId().getName(), imageUrl);
         } catch (IOException e) {

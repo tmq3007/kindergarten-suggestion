@@ -1,6 +1,6 @@
 'use client'
 import React, {useEffect, useRef, useState} from 'react';
-import { Tabs, Form, Input, DatePicker, Button, Spin, notification, Select } from 'antd';
+import { Tabs, Form, Input, DatePicker, Button, notification, Select } from 'antd';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import dayjs from 'dayjs';
@@ -20,7 +20,6 @@ import EmailInput from "@/app/components/common/EmailInput";
 import {useLazyCheckEmailExceptMeQuery, useLazyCheckPhoneExceptMeQuery} from "@/redux/services/userApi";
 
 
-const { Option } = Select;
 const { TabPane } = Tabs;
 
 
@@ -257,7 +256,7 @@ const Profile = () => {
                                            form={form}
                                            ref={emailInputRef}
                                            triggerCheckEmail={triggerCheckEmail}
-                                           userId={userIdNumber}
+                                           id={userIdNumber}
                                        />
                                        <Form.Item
                                            name="dob"

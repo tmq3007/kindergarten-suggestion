@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {FormInstance, Image, notification, Upload, UploadFile, UploadProps} from 'antd';
 import {InboxOutlined, PlusOutlined} from '@ant-design/icons';
 import 'antd/dist/reset.css';
+import ImgCrop from "antd-img-crop";
 
 interface ImageUploadProps {
     form: FormInstance;
@@ -27,7 +28,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                                                             maxCount = 10,
                                                             accept,
                                                             maxSizeMB = 5,
-                                                            hideImageUpload=false,
+                                                            hideImageUpload = false,
                                                             imageList = [],
                                                             formLoaded = false,
                                                         }) => {
@@ -86,11 +87,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     };
 
     const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
-        console.log("📸 Trước khi cập nhật:", fileList);
-        console.log("📥 Ảnh mới được thêm / cập nhật:", newFileList);
         setFileList(newFileList);
         form.setFieldsValue({[fieldName]: newFileList});
-        console.log("📌 Danh sách ảnh sau khi cập nhật:", newFileList);
     };
 
     const beforeUpload = (file: File) => {
@@ -227,4 +225,4 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             `}</style>
         </>
     );
-};
+}

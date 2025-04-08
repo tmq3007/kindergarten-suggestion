@@ -33,6 +33,17 @@ public class SchoolController {
 
     private final SchoolService schoolService;
 
+    @Operation(summary = "Get school details for public", description = "Get school details by school id for public website")
+    @GetMapping("/public/{schoolId}")
+    public ApiResponse<SchoolDetailVO> getPublicSchoolInfoById(@PathVariable Integer schoolId) {
+        return ApiResponse.<SchoolDetailVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get school information successfully.")
+                .data(schoolService.getPublicSchoolInfo(schoolId))
+                .build();
+    }
+
+
     @Operation(summary = "Get school info", description = "Get school information by school id")
     @GetMapping("/{schoolId}")
     public ApiResponse<SchoolDetailVO> getSchoolInfoById(@PathVariable Integer schoolId) {
