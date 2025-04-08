@@ -23,6 +23,7 @@ import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.mapper.SchoolMapper;
 import fa.pjb.back.model.mapper.SchoolOwnerProjection;
+import fa.pjb.back.model.mapper.SchoolProjection;
 import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.*;
 import fa.pjb.back.repository.specification.SchoolSpecification;
@@ -50,8 +51,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
-import static fa.pjb.back.model.enums.SchoolStatusEnum.*;
+import static fa.pjb.back.model.enums.EFileFolder.SCHOOL_IMAGES;
+import static fa.pjb.back.model.enums.ESchoolStatus.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -66,7 +67,6 @@ public class SchoolServiceImpl implements SchoolService {
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
     private final ReviewMapper reviewMapper;
-    private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
     private final GCPFileStorageService imageService;
@@ -714,6 +714,13 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
+    public Page<SchoolListVO> getAllDrafts(String name, String district, String email, String phone, Pageable pageable) {
+        Page<SchoolProjection> draftPage = schoolRepository.findAllDrafts(name, district, email, phone,
+            pageable);
+        return draftPage.map(schoolMapper::toSchoolListVO);
+    }
+
+    @Override
     public Page<SchoolSearchVO> searchSchoolByCriteria(SchoolSearchDTO schoolSearchDTO) {
         Specification<School> spec = Specification.<School>where(null)
                 .and(SchoolSpecification.hasName(schoolSearchDTO.name()))
@@ -812,10 +819,24 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public Page<SchoolListVO> getAllSchools(String name, String province, String district,
-                                            String street, String email, String phone, Pageable pageable) {
-        Page<School> schoolPage = schoolRepository.findSchools(name, province, district, street, email, phone, pageable);
+        String street, String email, String phone, Pageable pageable) {
+        Page<SchoolProjection> schoolPage = schoolRepository.findSchools(name, district, email, phone, pageable);
         return schoolPage.map(schoolMapper::toSchoolListVO);
     }
+
+    @Override
+    public Page<SchoolListVO> getActiveSchoolsWithoutRefId(String name, String district, String email, String phone, Pageable pageable) {
+        Page<SchoolProjection> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
+        return schoolPage.map(schoolMapper::toSchoolListVO);
+    }
+
+//    @Override
+//    public Page<SchoolListVO> getChangeSchoolRequest(String name, String province,
+//        String district,
+//        String street, String email, String phone, Pageable pageable) {
+//        Page<School> schoolPage = schoolRepository.findActiveSchoolsWithoutRefId(name, district, email, phone, pageable);
+//        return schoolPage.map(schoolMapper::toSchoolListVO);
+//    }
 
     @Override
     public SchoolDetailVO getSchoolByUserId(Integer userId) {
@@ -854,6 +875,12 @@ public class SchoolServiceImpl implements SchoolService {
                         projection.getDob()
                 ))
                 .toList();
+    }
+
+    @Override
+    public SchoolDetailVO getPublicSchoolInfo(Integer schoolId) {
+        School school = schoolRepository.findSchoolBySchoolId(schoolId).orElseThrow(SchoolNotFoundException::new);
+        return schoolMapper.toSchoolDetailVO(school);
     }
 
     /**
@@ -1033,6 +1060,16 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public boolean checkPhoneExists(String phone) {
         return schoolRepository.existsByPhone(phone);
+    }
+
+    @Override
+    public Long countActiveSchoolsWithoutRefId() {
+        return schoolRepository.countActiveSchoolsWithoutRefId();
+    }
+
+    @Override
+    public Long countAllDrafts() {
+        return schoolRepository.countAllDrafts();
     }
 
 }

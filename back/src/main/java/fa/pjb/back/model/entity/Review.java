@@ -14,20 +14,20 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "Review")
 public class Review {
+    @EmbeddedId
+    private ReviewId primaryId;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "school_id", nullable = false)
+    @JoinColumn(name = "school_id", nullable = false, insertable=false, updatable=false)
     private School school;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "parent_id", nullable = false)
+    @JoinColumn(name = "parent_id", nullable = false, insertable=false, updatable=false)
     private Parent parent;
 
     @NotNull
@@ -64,5 +64,7 @@ public class Review {
     @NotNull
     @Column(name = "status", nullable = false)
     private Byte status;
+
+
 
 }

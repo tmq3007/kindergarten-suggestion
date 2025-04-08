@@ -1,5 +1,27 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, baseQueryWithReauth } from "@/redux/services/config/baseQuery";
+import {createApi} from "@reduxjs/toolkit/query/react";
+import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
+import {Pageable} from "@/redux/services/userApi";
+import {SchoolVO} from "@/redux/services/schoolApi";
+
+
+export type RatingStats = {
+    averageRating: number;
+    totalRatings: number;
+    ratingsByStarRange: {
+        "1": number; // Count of reviews with average >= 1 and < 2
+        "2": number; // Count of reviews with average >= 2 and < 3
+        "3": number; // Count of reviews with average >= 3 and < 4
+        "4": number; // Count of reviews with average >= 4 and < 5
+        "5": number; // Count of reviews with average = 5
+    };
+    categoryRatings: {
+        learningProgram: number;
+        facilitiesAndUtilities: number;
+        extracurricularActivities: number;
+        teachersAndStaff: number;
+        hygieneAndNutrition: number;
+    };
+}
 
 export type ReviewVO = {
     id: number;
@@ -24,7 +46,7 @@ type ReviewRequest = {
     schoolId?: number;
     fromDate?: string; // Chuỗi ISO date, ví dụ: "2024-01-01"
     toDate?: string;   // Chuỗi ISO date
-    status?:string;
+    status?: string;
 };
 
 export type ReviewReportDTO = {
@@ -46,14 +68,14 @@ export type ReviewReportReminderVO = {
 export const reviewApi = createApi({
     reducerPath: "reviewApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ['Review'],
+    tagTypes: ['Review','ReviewStats'],
     endpoints: (build) => ({
         getReviewBySchoolId: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
-            query: ({ schoolId, fromDate, toDate,status }) => {
+            query: ({schoolId, fromDate, toDate, status}) => {
                 const params = new URLSearchParams();
                 if (fromDate) params.append("fromDate", fromDate);
                 if (toDate) params.append("toDate", toDate);
-                if(status) params.append("status",status);
+                if (status) params.append("status", status);
                 return {
                     url: `/school/review/${schoolId}${params.toString() ? `?${params.toString()}` : ''}`,
                     method: "GET",
@@ -63,11 +85,11 @@ export const reviewApi = createApi({
         }),
 
         getReviewBySchoolOwner: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
-            query: ({ fromDate, toDate,status }) => {
+            query: ({fromDate, toDate, status}) => {
                 const params = new URLSearchParams();
                 if (fromDate) params.append("fromDate", fromDate);
                 if (toDate) params.append("toDate", toDate);
-                if(status) params.append("status",status);
+                if (status) params.append("status", status);
                 const queryString = params.toString();
                 return {
                     url: `/school/review/${queryString ? `?${queryString}` : ''}`,
@@ -86,7 +108,7 @@ export const reviewApi = createApi({
         }),
 
         reportReview: build.mutation<ApiResponse<ReviewVO>, ReviewReportDTO>({
-            query: (ReviewReportDTO ) => ({
+            query: (ReviewReportDTO) => ({
                 url: `/school/review/report`,
                 method: 'PUT',
                 body: ReviewReportDTO
@@ -95,7 +117,7 @@ export const reviewApi = createApi({
         }),
 
         reportDecision: build.mutation<ApiResponse<ReviewVO>, ReviewAcceptDenyDTO>({
-            query: (ReviewAcceptDenyDTO ) => ({
+            query: (ReviewAcceptDenyDTO) => ({
                 url: `/school/review/report/decision`,
                 method: 'PUT',
                 body: ReviewAcceptDenyDTO
@@ -109,7 +131,28 @@ export const reviewApi = createApi({
                 method: 'GET',
             }),
             providesTags: ['Review'],
-        })
+        }),
+
+        getReviewBySchoolForPublic: build.query<ApiResponse<{ content: ReviewVO[]; page: Pageable }>, {schoolId: number, page?: number, size?:number, star?: number}>({
+            query: ({schoolId, page=1, size, star}) => ({
+                url: `/school/review/public/${schoolId}`,
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    star
+                }
+            }),
+            providesTags: ["Review"],
+        }),
+
+        getReviewStatsBySchool: build.query<ApiResponse<RatingStats>, number>({
+            query: (schoolId) => ({
+                url: `/school/review/public/${schoolId}/stats`,
+                method: "GET",
+            }),
+            providesTags: ["ReviewStats"],
+        }),
     }),
 });
 
@@ -119,5 +162,7 @@ export const {
     useGetReviewBySchoolOwnerQuery,
     useReportReviewMutation,
     useReportDecisionMutation,
-    useGetReviewReportRemindersQuery
+    useGetReviewReportRemindersQuery,
+    useGetReviewBySchoolForPublicQuery,
+    useGetReviewStatsBySchoolQuery
 } = reviewApi;

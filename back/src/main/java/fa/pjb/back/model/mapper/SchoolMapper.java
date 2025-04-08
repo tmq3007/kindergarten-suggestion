@@ -47,6 +47,8 @@ public interface SchoolMapper {
 
     SchoolListVO toSchoolListVO(School school);
 
+    SchoolListVO toSchoolListVO(SchoolProjection schoolProjection);
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "facilities", ignore = true)
     @Mapping(target = "utilities", ignore = true)
@@ -64,6 +66,8 @@ public interface SchoolMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "id", ignore = true)
     School toDraft(SchoolDTO schoolDTO, @MappingTarget School draft);
+
+
 
     // Convert List<Integer> to Set<Facility>
     @Named("mapFacilityIds")

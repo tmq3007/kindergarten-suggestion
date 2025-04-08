@@ -1,7 +1,8 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Upload, UploadFile, UploadProps, notification, Image, FormInstance} from 'antd';
+import React, {useEffect, useState} from 'react';
+import {FormInstance, Image, notification, Upload, UploadFile, UploadProps} from 'antd';
 import {InboxOutlined, PlusOutlined} from '@ant-design/icons';
 import 'antd/dist/reset.css';
+import ImgCrop from "antd-img-crop";
 
 interface ImageUploadProps {
     form: FormInstance;
@@ -27,7 +28,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                                                             maxCount = 10,
                                                             accept,
                                                             maxSizeMB = 5,
-                                                            hideImageUpload=false,
+                                                            hideImageUpload = false,
                                                             imageList = [],
                                                             formLoaded = false,
                                                         }) => {
@@ -47,8 +48,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     const displayAccept = accept
         ? Array.isArray(accept)
             ? accept.map(type => {
-                const extension = type.split('/')[1]?.toUpperCase();
-                return extension === 'JPEG' ? 'JPG' : extension; // Normalize JPEG to JPG
+                return type.split('/')[1]?.toUpperCase() ; // type of image
             }).join(', ')
             : accept.split('/')[1]?.toUpperCase() || accept
         : 'any type';
@@ -87,11 +87,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     };
 
     const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
-        console.log("📸 Trước khi cập nhật:", fileList);
-        console.log("📥 Ảnh mới được thêm / cập nhật:", newFileList);
         setFileList(newFileList);
         form.setFieldsValue({[fieldName]: newFileList});
-        console.log("📌 Danh sách ảnh sau khi cập nhật:", newFileList);
     };
 
     const beforeUpload = (file: File) => {
@@ -228,4 +225,4 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             `}</style>
         </>
     );
-};
+}

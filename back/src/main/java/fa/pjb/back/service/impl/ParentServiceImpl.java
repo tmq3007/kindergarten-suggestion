@@ -11,8 +11,8 @@ import fa.pjb.back.common.util.AutoGeneratorHelper;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.*;
-import fa.pjb.back.model.enums.FileFolderEnum;
-import fa.pjb.back.model.enums.ParentInSchoolEnum;
+import fa.pjb.back.model.enums.EFileFolder;
+import fa.pjb.back.model.enums.EParentInSchool;
 import fa.pjb.back.model.mapper.MediaMapper;
 import fa.pjb.back.model.mapper.ParentInSchoolMapper;
 import fa.pjb.back.model.mapper.ParentMapper;
@@ -168,7 +168,7 @@ public class ParentServiceImpl implements ParentService {
             FileUploadVO imageVO = ggDriveImageService.uploadImage(
                     tempFile,
                     "Parent_" + userId + "_Profile_",
-                    FileFolderEnum.USER_IMAGES
+                    EFileFolder.USER_IMAGES
             );
             log.info("imageVO: {}", imageVO);
 
@@ -269,7 +269,7 @@ public class ParentServiceImpl implements ParentService {
             FileUploadVO imageVO = ggDriveImageService.uploadImage(
                     tempFile,
                     "Parent_" + parentId + "_Profile_",
-                    FileFolderEnum.USER_IMAGES
+                    EFileFolder.USER_IMAGES
             );
             log.info("imageVO: {}", imageVO);
 
@@ -385,7 +385,7 @@ public class ParentServiceImpl implements ParentService {
                 .orElseThrow(RecordNotFoundException::new);
 
         // Change status from PENDING to ACTIVE
-        parentInSchool.setStatus(ParentInSchoolEnum.ACTIVE.getValue());
+        parentInSchool.setStatus(EParentInSchool.ACTIVE.getValue());
 
         // Save enroll date
         parentInSchool.setFrom(LocalDate.now());
@@ -406,7 +406,7 @@ public class ParentServiceImpl implements ParentService {
                 .orElseThrow(RecordNotFoundException::new);
 
         // Change status from ACTIVE to INACTIVE
-        parentInSchool.setStatus(ParentInSchoolEnum.INACTIVE.getValue());
+        parentInSchool.setStatus(EParentInSchool.INACTIVE.getValue());
 
         // Save un-enroll date
         parentInSchool.setTo(LocalDate.now());

@@ -1,104 +1,83 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import ReminderListForm from "@/app/components/reminder/ReminderListForm";
+import Link from "next/link";
+import React, { useState } from "react";
+import { Card } from "antd";
 import { useGetAllReminderQuery } from "@/redux/services/requestCounsellingApi";
-import { Input, notification, Button } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
+import SearchByComponent from "@/app/components/common/SearchByComponent";
+import ReminderListForm from "@/app/components/reminder/ReminderListForm";
+
+// Search options for the SearchByComponent
+const searchOptions = [
+  { value: "name", label: "Fullname" },
+  { value: "email", label: "Email" },
+  { value: "phone", label: "Phone" },
+  { value: "schoolName", label: "School Name" },
+];
 
 export default function RequestReminderList() {
-  const [searchText, setSearchText] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
-  const router = useRouter();
-
-  const role = useSelector((state: RootState) => state.user?.role);
-  const userIdString = useSelector((state: RootState) => state.user?.id);
-  const userId = userIdString ? parseInt(userIdString as string) : null;
-
-  const [notificationApi, contextHolder] = notification.useNotification();
-
-  if (!userId) {
-    console.warn("No userId found in Redux store, redirecting to login");
-    router.push("/login");
-    return null;
-  }
-
-  const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
-    notificationApi[type]({ message, description, placement: "topRight" });
-  };
-
-  const { data, isLoading, isFetching, error } = useGetAllReminderQuery({
-    page: page,
-    size: pageSize,
-    statuses: [0, 2],
-    name: searchQuery,
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [searchCriteria, setSearchCriteria] = useState({
+    searchBy: searchOptions[0].value,
+    keyword: undefined as string | undefined,
   });
 
-  useEffect(() => {
-    if (error) {
-      console.log("API Error:", error);
-      if ("status" in error && error.status === 401) {
-        openNotificationWithIcon("error", "Session Expired", "Please log in again.");
-        router.push("/login");
-      } else {
-        openNotificationWithIcon("error", "Error", "Failed to load request list.");
-      }
-    }
-  }, [error, router]);
+  const { data, isLoading, isFetching, error } = useGetAllReminderQuery({
+    page: currentPage,
+    size: currentPageSize,
+    statuses: [0, 2],
+    searchBy: searchCriteria.searchBy,
+    keyword: searchCriteria.keyword,
+  });
 
-  const fetchPage = (newPage: number, newSize: number) => {
-    console.log("Fetching page:", newPage, "with size:", newSize);
-    setPage(newPage);
+  const fetchPage = (page: number, size: number) => {
+    setCurrentPage(page);
+    setCurrentPageSize(size);
   };
 
-  const handleSearch = () => {
-    setSearchQuery(searchText);
-    setPage(1);
+  const handleSearch = (criteria: { searchBy: string; keyword: string | undefined }) => {
+    setSearchCriteria(criteria);
+    setCurrentPage(1);
   };
 
   return (
-      <div className="pt-2">
-        {contextHolder}
+      <div>
         <MyBreadcrumb
             paths={[
               { label: "Reminder", href: "/admin/management/reminder/request-reminder" },
               { label: "Request Reminder" },
             ]}
         />
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-2xl font-bold">Request List</div>
-              <div className="flex items-center gap-2">
-                <Input
-                    placeholder="Search by full name"
-                    prefix={<SearchOutlined />}
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    onPressEnter={handleSearch}
-                    style={{ maxWidth: "300px", width: "100%" }}
-                />
-                <Button type="primary" onClick={handleSearch}>
-                  Search
-                </Button>
+        <Card
+            title={
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+                <SchoolManageTitle title={"Request List"} />
+                <div className="w-full md:w-auto flex flex-col md:flex-row items-end md:items-center gap-4">
+                  <div className="w-full md:w-80">
+                    <SearchByComponent
+                        onSearch={handleSearch}
+                        options={searchOptions}
+                        initialSearchBy="name"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            }
+        >
+          <div className="mt-4">
             <ReminderListForm
+                fetchPage={fetchPage}
                 data={data}
+                error={error}
                 isLoading={isLoading}
                 isFetching={isFetching}
-                error={error}
-                fetchPage={fetchPage}
-                searchText={searchQuery}
+                searchText={searchCriteria.keyword || ""}
             />
           </div>
-        </div>
+        </Card>
       </div>
   );
 }
