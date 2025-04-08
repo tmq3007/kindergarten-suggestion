@@ -1,6 +1,6 @@
 package fa.pjb.back.controller;
 
-import fa.pjb.back.model.enums.FileFolderEnum;
+import fa.pjb.back.model.enums.EFileFolder;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.service.GCPFileStorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class FileUploadController {
     public ResponseEntity<FileUploadVO> uploadSingleFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "prefix", defaultValue = "file_") String fileNamePrefix,
-            @RequestParam(value = "folder", defaultValue = "SCHOOL_IMAGES") FileFolderEnum folder) {
+            @RequestParam(value = "folder", defaultValue = "SCHOOL_IMAGES") EFileFolder folder) {
         try {
             List<java.io.File> tempFiles = gcpFileStorageService.convertMultiPartFileToFile(List.of(file));
             if (tempFiles.isEmpty()) {
@@ -52,7 +52,7 @@ public class FileUploadController {
     public ResponseEntity<FileUploadVO> uploadSingleImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "prefix", defaultValue = "image_") String fileNamePrefix,
-            @RequestParam(value = "folder", defaultValue = "IMAGES") FileFolderEnum folder) {
+            @RequestParam(value = "folder", defaultValue = "IMAGES") EFileFolder folder) {
         try {
             List<java.io.File> tempFiles = gcpFileStorageService.convertMultiPartFileToFile(List.of(file));
             if (tempFiles.isEmpty()) {
@@ -74,7 +74,7 @@ public class FileUploadController {
     public ResponseEntity<List<FileUploadVO>> uploadMultipleFiles(
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam(value = "prefix", defaultValue = "file_") String fileNamePrefix,
-            @RequestParam(value = "folder", defaultValue = "FILES") FileFolderEnum folder) {
+            @RequestParam(value = "folder", defaultValue = "FILES") EFileFolder folder) {
         try {
             List<java.io.File> tempFiles = gcpFileStorageService.convertMultiPartFileToFile(files);
             if (tempFiles.isEmpty()) {
@@ -96,7 +96,7 @@ public class FileUploadController {
     public ResponseEntity<List<FileUploadVO>> uploadMultipleImages(
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam(value = "prefix", defaultValue = "image_") String fileNamePrefix,
-            @RequestParam(value = "folder", defaultValue = "IMAGES") FileFolderEnum folder) {
+            @RequestParam(value = "folder", defaultValue = "IMAGES") EFileFolder folder) {
         try {
             List<java.io.File> tempFiles = gcpFileStorageService.convertMultiPartFileToFile(files);
             if (tempFiles.isEmpty()) {

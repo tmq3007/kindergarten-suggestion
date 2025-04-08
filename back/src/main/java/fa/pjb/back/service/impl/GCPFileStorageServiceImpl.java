@@ -2,7 +2,7 @@ package fa.pjb.back.service.impl;
 
 import com.google.cloud.storage.*;
 import fa.pjb.back.common.util.UploadFileInterface;
-import fa.pjb.back.model.enums.FileFolderEnum;
+import fa.pjb.back.model.enums.EFileFolder;
 import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.service.GCPFileStorageService;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -89,7 +89,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
 
 
     @Override
-    public FileUploadVO uploadImage(File file, String fileNamePrefix, FileFolderEnum fileFolder) {
+    public FileUploadVO uploadImage(File file, String fileNamePrefix, EFileFolder fileFolder) {
         File resizedFile = null;
         try {
             resizedFile = processImage(file);
@@ -118,7 +118,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
     }
 
     @Override
-    public FileUploadVO uploadFile(File file, String fileNamePrefix, FileFolderEnum fileFolder) {
+    public FileUploadVO uploadFile(File file, String fileNamePrefix, EFileFolder fileFolder) {
         try {
             String uniqueFileName = fileNamePrefix + UUID.randomUUID() + "_" + file.getName();
             String destinationPath = fileFolder.getValue() + "/" + uniqueFileName;
@@ -150,8 +150,8 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
     }
 
     @Override
-    public List<FileUploadVO> uploadListFiles(List<File> files, String fileNamePrefix, FileFolderEnum fileFolder,
-                                              UploadFileInterface<File, String, FileFolderEnum, FileUploadVO> uploadMethod) {
+    public List<FileUploadVO> uploadListFiles(List<File> files, String fileNamePrefix, EFileFolder fileFolder,
+                                              UploadFileInterface<File, String, EFileFolder, FileUploadVO> uploadMethod) {
         if (files == null || files.isEmpty()) {
             log.info("No files provided for upload");
             return Collections.emptyList();
