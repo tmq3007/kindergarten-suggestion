@@ -6,7 +6,7 @@ interface EmailInputProps {
     form: FormInstance;
     isReadOnly?: boolean;
     triggerCheckEmail: any; // Check email query for new school
-    schoolId?: number; // Inject schoolId when editing school
+    id?: number; // Inject schoolId when editing school
     fieldName?: string;
 }
 
@@ -14,11 +14,9 @@ const EmailInput = forwardRef(({
                                    form,
                                    isReadOnly,
                                    triggerCheckEmail,
-                                   schoolId,
+                                   id,
                                    fieldName = "email"
                                }: EmailInputProps, ref) => {
-    console.log("id in EmailInput: ", schoolId);
-
     const [email, setEmail] = useState<string>(form.getFieldValue('email') || '');
 
     useEffect(() => {
@@ -53,12 +51,15 @@ const EmailInput = forwardRef(({
         setEmailHelp('Checking email...');
 
         try {
+
+
             console.log("2")
             let response
-            if (schoolId) {
+            if (id) {
                 console.log("3")
-                console.log('Checking email with ID:', {email, schoolId});
-                response = await triggerCheckEmail({email: email, schoolId: schoolId}).unwrap();
+                console.log('Checking email with ID:', {email, id});
+
+                response = await triggerCheckEmail({email: email, id:id}).unwrap();
             } else {
                 // In case of ADD school, check all emails
                 response = await triggerCheckEmail(email).unwrap();

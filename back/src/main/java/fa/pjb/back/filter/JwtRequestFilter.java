@@ -59,7 +59,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             "/api/user/check-phone-exist",
             "/api/user/check-phone-exist-except",
             "/api/user/check-email-exist",
-            "/api/user/check-email-exist-except"
+            "/api/user/check-email-exist-except",
+            "/api/school/public/",
+            "/api/school/review/public/"
+
     );
 
     @Override

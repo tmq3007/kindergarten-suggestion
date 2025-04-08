@@ -4,7 +4,6 @@ import {SchoolOwnerVO} from "./schoolOwnerApi";
 import {UploadFile} from "antd";
 import {MediaVO} from "@/redux/services/parentApi";
 import {Pageable} from "@/redux/services/userApi";
-import {ReviewVO} from "@/redux/services/reviewApi";
 
 export interface Facility {
     fid: number;
@@ -184,18 +183,11 @@ export interface SchoolCreateDTO extends SchoolDTO {
 
 }
 
-const formatPhoneNumber = (phone: string | undefined): string => {
-    if (phone && phone.startsWith('+84') && /^\+84\d{9,10}$/.test(phone)) {
-        return phone.substring(3);
-    }
-    return 'Invalid phone number';
-};
-
 
 export const schoolApi = createApi({
     reducerPath: "schoolApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["School", "SchoolList"],
+    tagTypes: ["School", "SchoolList",'SchoolDetails'],
     endpoints: (build) => ({
         // Get school list
         getSchoolList: build.query<
@@ -260,9 +252,9 @@ export const schoolApi = createApi({
             keepUnusedDataFor: 0,
         }),
 
-        checkEditSchoolEmail: build.mutation<ApiResponse<string>, { email: string; schoolId: number }>({
-            query: ({email, schoolId}) => ({
-                url: `/school/check-editing-email?email=${encodeURIComponent(email)}&schoolId=${schoolId}`,
+        checkEditSchoolEmail: build.mutation<ApiResponse<string>, { email: string; id: number }>({
+            query: ({email, id}) => ({
+                url: `/school/check-editing-email?email=${encodeURIComponent(email)}&schoolId=${id}`,
                 method: "POST",
             }),
         }),
@@ -472,6 +464,14 @@ export const schoolApi = createApi({
             providesTags: ["SchoolList"],
         }),
 
+        loadSchoolDetails: build.query<ApiResponse<SchoolDetailVO>, number>({
+            query: (schoolId) => ({
+                url: `/school/public/${schoolId}`,
+                method: 'GET',
+            }),
+            providesTags: ["SchoolDetails"],
+        }),
+
     }),
 });
 
@@ -498,4 +498,5 @@ export const {
     useCountActiveSchoolsWithoutRefIdQuery,
     useCountAllDraftsQuery,
     useLazySearchByCriteriaQuery,
+    useLoadSchoolDetailsQuery
 } = schoolApi;

@@ -51,8 +51,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fa.pjb.back.model.enums.FileFolderEnum.SCHOOL_IMAGES;
-import static fa.pjb.back.model.enums.SchoolStatusEnum.*;
+import static fa.pjb.back.model.enums.EFileFolder.SCHOOL_IMAGES;
+import static fa.pjb.back.model.enums.ESchoolStatus.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,7 +67,6 @@ public class SchoolServiceImpl implements SchoolService {
     private final MediaRepository mediaRepository;
     private final SchoolMapper schoolMapper;
     private final ReviewMapper reviewMapper;
-    private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
     private final EmailService emailService;
     private final GCPFileStorageService imageService;
@@ -876,6 +875,12 @@ public class SchoolServiceImpl implements SchoolService {
                         projection.getDob()
                 ))
                 .toList();
+    }
+
+    @Override
+    public SchoolDetailVO getPublicSchoolInfo(Integer schoolId) {
+        School school = schoolRepository.findSchoolBySchoolId(schoolId).orElseThrow(SchoolNotFoundException::new);
+        return schoolMapper.toSchoolDetailVO(school);
     }
 
     /**

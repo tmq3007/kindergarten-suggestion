@@ -67,4 +67,6 @@ public interface SchoolService {
     Page<SchoolSearchNativeVO> searchSchoolByCriteriaWithNative(SchoolSearchDTO dto);
 
     List<SchoolOwnerVO> findSchoolOwnerByDraft(Integer id);
+
+    SchoolDetailVO getPublicSchoolInfo(Integer schoolId);
 }

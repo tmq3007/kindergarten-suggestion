@@ -196,7 +196,7 @@ const RequestCounsellingModal: React.FC = () => {
 
     if (!isAdminOrSO) {
         return (
-            <div className="flex items-center justify-center">
+            <div className="flex mt-[100px] items-center justify-center">
                 <Button type="primary" onClick={showModal} disabled={isParentLoading}>
                     Request Counselling
                 </Button>

@@ -1,0 +1,183 @@
+/* CommentSection.module.css */
+.container {
+    width: 100%;
+}
+
+.tabs {
+    margin-bottom: 16px;
+}
+
+.tab {
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-right: 4px;
+    font-size: 14px;
+    color: #000;
+    transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .tab {
+        padding: 8px 16px;
+        margin-right: 8px;
+        font-size: 16px;
+    }
+}
+
+.tabActive {
+    color: #000 !important;
+}
+
+.tab:hover {
+    background-color: #fadb14;
+    color: #000;
+}
+
+.progressText {
+    font-size: 12px;
+    color: #000;
+}
+
+@media (min-width: 768px) {
+    .progressText {
+        font-size: 14px;
+    }
+}
+
+.rate {
+    color: #fadb14;
+}
+
+.rateExpanded {
+    font-size: 16px;
+}
+
+@media (min-width: 768px) {
+    .rateExpanded {
+        font-size: 20px;
+    }
+}
+
+.rateOverall {
+    font-size: 20px;
+}
+
+@media (min-width: 768px) {
+    .rateOverall {
+        font-size: 24px;
+    }
+}
+
+.dividerVertical {
+    height: auto;
+    border-left: 1px solid #d9d9d9;
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .dividerVertical {
+        display: block;
+    }
+}
+
+.collapse {
+    border: none !important;
+    background: transparent !important;
+}
+
+.collapseItem {
+}
+
+.collapseHeader {
+    align-items: center !important;
+    padding: 8px 0 !important;
+    transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .collapseHeader {
+        padding: 12px 0 !important;
+    }
+}
+
+.collapseContentBox {
+    padding: 12px 0 !important;
+}
+
+@media (min-width: 768px) {
+    .collapseContentBox {
+        padding: 16px 0 !important;
+    }
+}
+
+.table {
+    background: transparent !important;
+}
+
+.tableTheadTh {
+    background: transparent !important;
+    font-weight: bold;
+    border-bottom: 1px solid #d9d9d9 !important;
+    padding: 8px 4px !important;
+}
+
+@media (min-width: 768px) {
+    .tableTheadTh {
+        padding: 8px !important;
+    }
+}
+
+.tableTbodyTd {
+    border-bottom: 1px solid #d9d9d9 !important;
+    padding: 8px 4px !important;
+}
+
+@media (min-width: 768px) {
+    .tableTbodyTd {
+        padding: 8px !important;
+    }
+}
+
+.tableTbodyTdLast {
+    border-bottom: none !important;
+}
+
+.overallRatingRow {
+    background-color: #fffbe6;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .overallRatingRow {
+        font-size: 16px;
+    }
+}
+
+.overallRatingRowTd {
+    padding: 8px 4px !important;
+}
+
+@media (min-width: 768px) {
+    .overallRatingRowTd {
+        padding: 12px 8px !important;
+    }
+}
+
+.listItem {
+    padding: 0 !important;
+}
+
+.headerText {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: auto;
+    min-height: 36px;
+}
+
+@media (min-width: 768px) {
+    .headerText {
+        min-height: 48px;
+    }
+}
