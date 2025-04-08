@@ -78,7 +78,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://kinder-taupe.vercel.app/"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://kinder-taupe.vercel.app/", "https://kss.kindergartenshop.online"));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Collections.singletonList("*"));

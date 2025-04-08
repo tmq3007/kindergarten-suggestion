@@ -40,7 +40,7 @@ public class AuthController {
 
         int cookieTtl = (int) (ttl + 86400);
 
-        String domain = "localhost";
+        String domain = "kindergartenshop.online";
 
         // Cookie ACCESS_TOKEN (HttpOnly, Secure, SameSite=None)
         String accessTokenCookie = "ACCESS_TOKEN=" + loginVO.accessToken()
