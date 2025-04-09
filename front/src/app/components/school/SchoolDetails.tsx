@@ -42,6 +42,8 @@ import {RootState} from "@/redux/store";
 import useIsMobile from "@/lib/hook/useIsMobile";
 import {useRequestEnrollingSchoolMutation} from "@/redux/services/parentApi";
 import useNotification from "antd/es/notification/useNotification";
+import ParentLoginForm from "@/app/components/user/ParentLoginForm";
+import RegisterForm from "@/app/components/user/RegisterForm";
 
 interface SchoolDetailsProps {
     schoolData: SchoolDetailVO;
@@ -75,9 +77,30 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
     const [requestEnrollingSchool, {isLoading: isRequestEnrollingSchoolLoading}] = useRequestEnrollingSchoolMutation();
     const [notificationApi, contextHolder] = useNotification();
 
+    const userRole = useSelector((state: RootState) => state.user?.role);
+    const isParent = userRole === "ROLE_PARENT";
+    const isAdminOrSo = userRole === "ROLE_ADMIN" || userRole === "ROLE_SCHOOL_OWNER";
+
+    const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+
     const showModal = () => {
-        setIsModalOpen(true);
-    };
+        if (isParent) {
+            setIsModalOpen(true);
+        } else if (isAdminOrSo) {
+            notificationApi.error({
+                message: "Access Denied",
+                description: "You have to be a parent to request counselling! Please login or sign up to continue.",
+            });
+        } else {
+            notificationApi.error({
+                message: "Access Denied",
+                description: "You have to be a parent to request counselling! Please login or sign up to continue.",
+            });
+            setIsLoginModalOpen(true);
+            setIsModalOpen(false);
+        }
+     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
@@ -176,8 +199,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
     // Map facility and utility IDs from schoolData to their options
     const facilityIds = facilities.map((f) => String(f.fid));
     const utilityIds = utilities.map((u) => String(u.uid));
-    const userRole = useSelector((state: RootState) => state.user?.role);
-    const isMobile = useIsMobile();
+     const isMobile = useIsMobile();
     // Define tab items
     const tabItems = [
             {
@@ -299,8 +321,8 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                     <h2 className="text-4xl font-bold text-black">{name || "Unknown School"}</h2>
                                     <div className="flex flex-col gap-2">
                                         <AddRequestModal schoolId={id} schoolName={name}/>
-                                        <Button className="w-[35%] lg:w-full mx-auto">Rate School</Button>
-                                        <Button danger onClick={showModal} className="w-[35%] lg:w-full mx-auto">
+                                        <Button  >Rate School</Button>
+                                        <Button danger onClick={showModal} >
                                             Enroll
                                         </Button>
                                         <Modal
@@ -320,6 +342,43 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                                 <span className={'font-medium'}>School address:</span>
                                                 <span>{[street, ward, district, province].filter(Boolean).join(", ") || "N/A"}</span>
                                             </Space>
+                                        </Modal>
+                                        <Modal
+                                            title={<div className="text-center text-2xl">Login into your account</div>}
+                                            open={isLoginModalOpen}
+                                            onOk={() => setIsLoginModalOpen(false)}
+                                            onCancel={() => setIsLoginModalOpen(false)}
+                                            centered
+                                            footer={null}
+                                            destroyOnClose={true}
+                                            getContainer={false}
+                                        >
+                                            <ParentLoginForm
+                                                onSuccess={() => setIsLoginModalOpen(false)}
+                                                onCancel={() => {
+                                                    setIsLoginModalOpen(false);
+                                                    setIsSignupModalOpen(true);
+                                                }}
+                                            />
+                                        </Modal>
+
+                                        <Modal
+                                            title={<div className="text-center text-2xl">Create a new user</div>}
+                                            open={isSignupModalOpen}
+                                            onOk={() => setIsSignupModalOpen(false)}
+                                            onCancel={() => setIsSignupModalOpen(false)}
+                                            centered
+                                            footer={null}
+                                            destroyOnClose={true}
+                                            getContainer={false}
+                                        >
+                                            <RegisterForm
+                                                onSuccess={() => {
+                                                    setIsLoginModalOpen(true);
+                                                    setIsSignupModalOpen(false);
+                                                }}
+                                                onCancel={() => setIsSignupModalOpen(false)}
+                                            />
                                         </Modal>
                                     </div>
                                 </div>
