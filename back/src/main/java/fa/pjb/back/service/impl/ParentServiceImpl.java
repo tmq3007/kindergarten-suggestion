@@ -1,5 +1,6 @@
 package fa.pjb.back.service.impl;
 
+import com.sun.jdi.request.DuplicateRequestException;
 import fa.pjb.back.common.exception._10xx_user.UserNotCreatedException;
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._11xx_email.EmailAlreadyExistedException;
@@ -18,6 +19,7 @@ import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.ReviewRepository;
+import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.GCPFileStorageService;
@@ -57,6 +59,7 @@ public class ParentServiceImpl implements ParentService {
     private final UserRepository userRepository;
     private final ParentInSchoolRepository parentInSchoolRepository;
     private final ReviewRepository reviewRepository;
+    private final SchoolRepository schoolRepository;
     private final ParentMapper parentMapper;
     private final ParentInSchoolMapper pisMapper;
     private final AutoGeneratorHelper autoGeneratorHelper;
@@ -534,6 +537,40 @@ public class ParentServiceImpl implements ParentService {
         });
     }
 
+    @Override
+    @PreAuthorize("hasRole('ROLE_PARENT')")
+    public Boolean enrollSchool(Integer schoolId) {
+        // Get the current parent
+        Parent parent = userService.getCurrentParent();
+
+        // Get the enroll school
+        School school = schoolRepository
+                .findById(schoolId)
+                .orElseThrow(RecordNotFoundException::new);
+
+        // Create composite key for ParentInSchool
+        ParentInSchoolId parentInSchoolId = ParentInSchoolId.builder()
+                .parentId(parent.getId())
+                .schoolId(school.getId())
+                .fromKey(LocalDate.now())
+                .build();
+
+        if (parentInSchoolRepository.existsById(parentInSchoolId)) {
+            throw new DuplicateRequestException("Parent already enrolled in this school.");
+        }
+
+        // Create a new ParentInSchool
+        ParentInSchool entity = ParentInSchool.builder()
+                .parentInSchoolId(parentInSchoolId)
+                .school(school)
+                .parent(parent)
+                .from(LocalDate.now())
+                .status(EParentInSchool.PENDING.getValue())
+                .build();
+
+        parentInSchoolRepository.save(entity);
+        return true;
+    }
 
 }
 

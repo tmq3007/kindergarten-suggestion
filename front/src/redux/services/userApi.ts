@@ -70,6 +70,7 @@ export const userApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["User", "UserDetail","UserList","Admin"],
     endpoints: (build) => ({
+
         getUserList: build.query<
             ApiResponse<{ content: UserVO[]; page: Pageable }>,
             { page?: number; size?: number; searchBy?: string; keyword?:string  }
@@ -120,6 +121,7 @@ export const userApi = createApi({
             }),
             invalidatesTags: ["UserList", "User"],
         }),
+
         createUser: build.mutation<ApiResponse<UserCreateDTO>, { data: UserCreateDTO; imageList?: File[] }>({
             query: ({ data, imageList }) => {
                 const formData = new FormData();
@@ -142,6 +144,7 @@ export const userApi = createApi({
             },
             invalidatesTags: ["Admin"],
         }),
+
         checkPhone: build.query<ApiResponse<boolean>, string>({
             query: (phone) => ({
                 url: "/user/check-phone-exist",
@@ -150,6 +153,7 @@ export const userApi = createApi({
             }),
             keepUnusedDataFor: 0,
         }),
+
         checkPhoneExceptMe: build.query<ApiResponse<boolean>, { phone: string; id: number }>({
             query: ({phone, id}) => ({
                 url: "/user/check-phone-exist-except",
@@ -179,6 +183,7 @@ export const userApi = createApi({
             },
             keepUnusedDataFor: 0,
         }),
+
     }),
 });
 

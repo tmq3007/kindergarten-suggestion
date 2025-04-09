@@ -16,6 +16,7 @@ export const schoolOwnerApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["SchoolOwner"],
     endpoints: (build) => ({
+
         getSchoolOfSchoolOwner: build.query<ApiResponse<SchoolVO>, void>({
             query: () => ({
                 url: `/school-owner/school-info`,

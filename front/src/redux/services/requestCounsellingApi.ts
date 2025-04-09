@@ -62,6 +62,7 @@ export const requestCounsellingApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["RequestCounselling", "RequestList"],
     endpoints: (builder) => ({
+
         alertReminder: builder.query<ApiResponse<RequestCounsellingReminderVO>, number>({
             query: (userId) => ({
                 url: `counselling/alert-reminder?userId=${userId}`,
@@ -112,6 +113,7 @@ export const requestCounsellingApi = createApi({
             transformErrorResponse: (response: { status: string | number }) => response.status,
             providesTags: ["RequestCounselling"],
         }),
+
         getRequestCounsellingBySchoolOwner: builder.query<ApiResponse<RequestCounsellingVO>, number>({
             query: (requestCounsellingId) => ({
                 url: `counselling/get-by-school-owner/${requestCounsellingId}`,
@@ -120,6 +122,7 @@ export const requestCounsellingApi = createApi({
             transformErrorResponse: (response: { status: string | number }) => response.status,
             providesTags: ["RequestCounselling"],
         }),
+
         updateRequestCounsellingByAdmin: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
             query: (data) => ({
                 url: `/counselling/update-request-counselling-by-admin`,
@@ -128,6 +131,7 @@ export const requestCounsellingApi = createApi({
             }),
             invalidatesTags: ["RequestCounselling", "RequestList"],
         }),
+
         updateRequestCounsellingBySchoolOwner: builder.mutation<ApiResponse<undefined>, RequestCounsellingUpdateDTO>({
             query: (data) => ({
                 url: `/counselling/update-request-counselling-by-school-owner`,
@@ -154,6 +158,7 @@ export const requestCounsellingApi = createApi({
             }),
             providesTags: ["RequestList"],
         }),
+
         getRemindersBySchoolOwner: builder.query<
             ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
             { page?: number; size?: number; schoolOwnerId: number }
@@ -171,6 +176,7 @@ export const requestCounsellingApi = createApi({
             }),
             providesTags: ["RequestList"],
         }),
+
         getAllRequestCounsellingByParent: builder.query<
             ApiResponse<{ content: ParentRequestListVO[]; page: Pageable }> | undefined,
             { page?: number; size?: number }
@@ -185,6 +191,7 @@ export const requestCounsellingApi = createApi({
             }),
             providesTags: ["RequestList"],
         }),
+
         countOpenRequestCounsellingByParent: builder.query<
             ApiResponse<{ content: number }> | undefined,
             void
@@ -195,6 +202,7 @@ export const requestCounsellingApi = createApi({
             }),
             providesTags: ["RequestList"],
         })
+
     }),
 });
 

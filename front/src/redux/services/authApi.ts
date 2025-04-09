@@ -31,6 +31,7 @@ export const authApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ['Auth'],
     endpoints: (build) => ({
+
         loginByAdmin: build.mutation<ApiResponse<LoginVO>, LoginDTO>({
             query: (loginDTO) => ({
                 url: '/auth/login/admin',
@@ -38,6 +39,7 @@ export const authApi = createApi({
                 body: loginDTO, // Gửi dữ liệu loginDTO trong body của request
             }),
         }),
+
         loginByParent: build.mutation<ApiResponse<LoginVO>, LoginDTO>({
             query: (loginDTO) => ({
                 url: '/auth/login/public',
@@ -45,6 +47,7 @@ export const authApi = createApi({
                 body: loginDTO, // Gửi dữ liệu loginDTO trong body của request
             }),
         }),
+
         forgotPassword: build.mutation<ApiResponse<ForgotPasswordVO>, ForgotPasswordDTO>({
             query: (forgotPasswordDTO) => ({
                 url: '/auth/forgot-password',
@@ -52,6 +55,7 @@ export const authApi = createApi({
                 body: forgotPasswordDTO, // Gửi dữ liệu forgotPasswordDTO trong body của request
             }),
         }),
+
         resetPassword: build.mutation<ApiResponse<null>, ResetPasswordDTO>({
             query: (resetPasswordDTO) => ({
                 url: '/auth/reset-password',
@@ -59,6 +63,7 @@ export const authApi = createApi({
                 body: resetPasswordDTO, // Gửi dữ liệu resetPasswordDTO trong body của request
             }),
         }),
+
         logout: build.mutation<ApiResponse<undefined>, undefined>({
             query: () => ({
                 url: '/auth/logout',
