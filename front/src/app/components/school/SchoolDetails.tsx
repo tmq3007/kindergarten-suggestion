@@ -169,7 +169,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                     <CommentOutlined/>,
                 children:
                     (
-                        <Card className="w-full sha dow-lg border-none bg-white lg:p-6 md:p-0">
+                        <Card className="w-full sha dow-lg border shadow-lg bg-white lg:p-6 md:p-0">
                             {isLoading ? (
                                 <Spin tip="Loading reviews..."/>
                             ) : error ? (
@@ -207,7 +207,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                 <Col xs={24} lg={24} className="flex">
                                     <Card
                                         title="Basic Information"
-                                        className="w-full  border  bg-white p-6" styles={{
+                                        className="w-full  border shadow-lg bg-white p-6" styles={{
                                         body: {padding: 0}
                                     }}
                                     >
@@ -320,16 +320,8 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
 
                         {/* Section 3: School Introduction and Comments with Tabs outside Card */}
                         <Col xs={24}>
-                            <ConfigProvider
-                                theme={{
-                                    token: {
-                                        colorBorder: 'red'
-                                    }
-                                }}
-                            >
-                            <Tabs defaultActiveKey="1" type="card" rootClassName="" items={tabItems}
+                            <Tabs defaultActiveKey="1" type="card" items={tabItems}
                                   size="large" animated={{inkBar: true, tabPane: true}}/>
-                            </ConfigProvider>
                         </Col>
                     </Row>
                 </Col>

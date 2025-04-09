@@ -55,7 +55,7 @@ public class ReviewController {
                 .build();
     }
     @Operation(summary = "Save review", description = "This API use the save review of parent")
-    @PostMapping("/public/save")
+    @PostMapping("/save")
     public ApiResponse<ReviewVO> saveReview(@RequestBody @Valid ReviewDTO reviewData){
         return ApiResponse.<ReviewVO>builder()
                 .code(HttpStatus.OK.value())

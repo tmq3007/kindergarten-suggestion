@@ -2,22 +2,23 @@ package fa.pjb.back.service.impl;
 
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.ReviewNotFoundException;
+import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
 import fa.pjb.back.model.dto.ReviewDTO;
 import fa.pjb.back.model.dto.ReviewReportDTO;
-import fa.pjb.back.model.entity.Review;
-import fa.pjb.back.model.entity.ReviewId;
-import fa.pjb.back.model.entity.School;
-import fa.pjb.back.model.entity.SchoolOwner;
+import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.EReviewStatus;
 import fa.pjb.back.model.mapper.ReviewMapper;
 import fa.pjb.back.model.mapper.ReviewProjection;
 import fa.pjb.back.model.vo.RatingStatVO;
 import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
+import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.ReviewRepository;
+import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.ReviewService;
 import fa.pjb.back.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
     private final UserService userService;
+    private final SchoolRepository schoolRepository;
+    private final ParentRepository parentRepository;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
@@ -211,34 +215,52 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewMapper.toReviewVO(review);
 
     }
+
+
     @Transactional
     @Override
     public ReviewVO saveReview(ReviewDTO reviewData) {
-        if(reviewData.id()==null){
+        if (reviewData.id() == null) {
+            // Step 1: Fetch School and Parent entities
+            School school = schoolRepository.findById(reviewData.schoolId())
+                    .orElseThrow(SchoolNotFoundException::new);
+            Parent parent = parentRepository.findById(reviewData.parentId())
+                    .orElseThrow(UserNotFoundException::new);
+
+            // Step 2: Set embedded ID
             ReviewId reviewId = new ReviewId();
-            reviewId.setParentId(reviewData.parentId());
-            reviewId.setSchoolId(reviewData.schoolId());
+            reviewId.setParentId(parent.getId());
+            reviewId.setSchoolId(school.getId());
+
+            // Step 3: Build the Review entity
             Review temp = Review.builder()
                     .primaryId(reviewId)
+                    .school(school)        // required due to insertable = false
+                    .parent(parent)        // required due to insertable = false
                     .facilitiesAndUtilities(reviewData.facilitiesAndUtilities())
                     .extracurricularActivities(reviewData.extracurricularActivities())
                     .hygieneAndNutrition(reviewData.hygieneAndNutrition())
                     .learningProgram(reviewData.learningProgram())
                     .teacherAndStaff(reviewData.teacherAndStaff())
                     .feedback(reviewData.feedback())
-                    .receiveDate(LocalDate.now())
+                    .receiveDate(LocalDateTime.now())
+                    .status((byte) 1)      // set this too, since it's @NotNull
                     .build();
+
             temp = reviewRepository.save(temp);
             return reviewMapper.toReviewVO(temp);
-        }else{
-            Review temp = reviewRepository.findByReviewId(reviewData.id()).orElseThrow(ReviewNotFoundException::new);
+        } else {
+            Review temp = reviewRepository.findByReviewId(reviewData.id())
+                    .orElseThrow(ReviewNotFoundException::new);
+
             temp.setFeedback(reviewData.feedback());
             temp.setExtracurricularActivities(reviewData.extracurricularActivities());
             temp.setFacilitiesAndUtilities(reviewData.facilitiesAndUtilities());
             temp.setHygieneAndNutrition(reviewData.hygieneAndNutrition());
             temp.setLearningProgram(reviewData.learningProgram());
             temp.setTeacherAndStaff(reviewData.teacherAndStaff());
-            temp.setReceiveDate(LocalDate.now());
+            temp.setReceiveDate(LocalDateTime.now());
+
             temp = reviewRepository.save(temp);
             return reviewMapper.toReviewVO(temp);
         }
