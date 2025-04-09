@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 public record ReviewVO(
@@ -33,7 +34,7 @@ public record ReviewVO(
 
         String feedback,
 
-        LocalDate receiveDate,
+        LocalDateTime receiveDate,
 
         String report,
 

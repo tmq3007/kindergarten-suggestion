@@ -1,7 +1,6 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 import {Pageable} from "@/redux/services/userApi";
-import {SchoolVO} from "@/redux/services/schoolApi";
 
 
 export type RatingStats = {
@@ -21,6 +20,19 @@ export type RatingStats = {
         teachersAndStaff: number;
         hygieneAndNutrition: number;
     };
+}
+
+
+export type ReviewDTO ={
+    id?: number
+    schoolId: number;
+    parentId: number;
+    learningProgram: number;
+    facilitiesAndUtilities: number;
+    extracurricularActivities: number;
+    teacherAndStaff: number;
+    hygieneAndNutrition: number;
+    feedback: string;
 }
 
 export type ReviewVO = {
@@ -44,8 +56,8 @@ export type ReviewVO = {
 
 type ReviewRequest = {
     schoolId?: number;
-    fromDate?: string; // Chuỗi ISO date, ví dụ: "2024-01-01"
-    toDate?: string;   // Chuỗi ISO date
+    fromDate?: string;
+    toDate?: string;
     status?: string;
 };
 
@@ -153,6 +165,23 @@ export const reviewApi = createApi({
             }),
             providesTags: ["ReviewStats"],
         }),
+
+        getReviewBySchoolAndParent: build.query<ApiResponse<ReviewVO>, { schoolId: number, parentId: number}>({
+            query: ({schoolId, parentId}) => ({
+                url: `/school/review/public/${schoolId}/${parentId}`,
+                method: "GET",
+            }),
+            providesTags: ["Review"],
+        }),
+
+        submitRatings: build.mutation<void,ReviewDTO >({
+            query: (ratingsData) => ({
+                url: `/school/review/save`,
+                method: 'POST',
+                body: ratingsData,
+            }),
+            invalidatesTags: ["Review","ReviewStats"],
+        }),
     }),
 });
 
@@ -164,5 +193,7 @@ export const {
     useReportDecisionMutation,
     useGetReviewReportRemindersQuery,
     useGetReviewBySchoolForPublicQuery,
-    useGetReviewStatsBySchoolQuery
+    useGetReviewStatsBySchoolQuery,
+    useGetReviewBySchoolAndParentQuery,
+    useSubmitRatingsMutation
 } = reviewApi;

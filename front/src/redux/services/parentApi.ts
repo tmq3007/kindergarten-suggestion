@@ -2,6 +2,7 @@ import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 import {SchoolVO} from "@/redux/services/schoolApi";
 import {Pageable, UserDetailDTO} from "@/redux/services/userApi";
+import {ParentRequestListVO} from "@/redux/services/requestCounsellingApi";
 
 interface ChangePasswordDTO {
     oldPassword: string;
@@ -52,6 +53,20 @@ export type ParentInSchoolVO = {
     providedRating?: number;
     comment?: string;
 }
+
+export type ParentInSchoolDetailVO = {
+    id: number;
+    school: SchoolVO;
+    fromDate: Date;
+    toDate?: Date;
+    status: number,
+    providedRating?: number;
+    comment?: string;
+    hasEditCommentPermission: boolean
+    totalSchoolReview: number | 0;
+    averageSchoolRating: number | 0.0;
+}
+
 export type MediaVO = {
     url: string;
     filename: string;
@@ -216,6 +231,34 @@ export const parentApi = createApi({
             },
             invalidatesTags: ['Parent'],
         }),
+        getPresentAcademicHistoryByParent: build.query<
+            ApiResponse<{ content: ParentInSchoolDetailVO[]; page: Pageable }> | undefined,
+            { page?: number; size?: number; }
+        >({
+            query: ({page = 1, size = 2}) => ({
+                url: "parent/get-present-academic-history",
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                },
+            }),
+            providesTags: ["AcademicHistory"],
+        }),
+        getPreviousAcademicHistoryByParent: build.query<
+            ApiResponse<{ content: ParentInSchoolDetailVO[]; page: Pageable }> | undefined,
+            { page?: number; size?: number; }
+        >({
+            query: ({page = 1, size = 2}) => ({
+                url: "parent/get-previous-academic-history",
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                },
+            }),
+            providesTags: ["AcademicHistory"],
+        }),
 
     }),
 });
@@ -233,5 +276,7 @@ export const {
     useEnrollParentMutation,
     useUnEnrollParentMutation,
     useRejectParentMutation,
-    useChangeAvatarMutation
+    useChangeAvatarMutation,
+    useGetPresentAcademicHistoryByParentQuery,
+    useGetPreviousAcademicHistoryByParentQuery
 } = parentApi;

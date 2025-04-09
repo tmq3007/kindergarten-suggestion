@@ -1,17 +1,15 @@
-// AverageRatingSection.tsx
 "use client";
 import React from "react";
 import { Star, StarHalf } from "lucide-react";
-import {RatingStats} from "@/redux/services/reviewApi";
+import { RatingStats } from "@/redux/services/reviewApi";
 
 interface AverageRatingSectionProps {
-    dataStat?: RatingStats,
-    isLoading: boolean,
-    isError: boolean
+    dataStat?: RatingStats;
+    isLoading: boolean;
+    isError: boolean;
 }
 
-const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat,isLoading,isError }) => {
-
+const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat, isLoading, isError }) => {
     const defaultStats = {
         averageRating: 0,
         totalRatings: 0,
@@ -25,7 +23,7 @@ const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat,is
         },
     };
 
-    const stats = dataStat || defaultStats;
+    const stats = dataStat !== undefined ? dataStat : defaultStats;
 
     const RatingBar = ({ rating, max }: { rating: number; max: number }) => {
         const percentage = (rating / max) * 100;
@@ -45,9 +43,7 @@ const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat,is
                 {[...Array(fullStars)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 md:w-6 md:h-6 fill-amber-400 text-amber-400" />
                 ))}
-                {hasHalfStar && (
-                    <StarHalf className="w-5 h-5 md:w-6 md:h-6 fill-amber-400 text-amber-400" />
-                )}
+                {hasHalfStar && <StarHalf className="w-5 h-5 md:w-6 md:h-6 fill-amber-400 text-amber-400" />}
                 {[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
                     <Star
                         key={i + fullStars + (hasHalfStar ? 1 : 0)}
@@ -86,42 +82,43 @@ const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat,is
                 <StarRating rating={stats.averageRating} />
             </div>
 
-            {/* Category Averages */}
-            <div className="space-y-3 md:space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
-                    <span className="text-gray-700 text-sm md:text-base">Learning program:</span>
-                    <RatingBar rating={stats.categoryRatings.learningProgram} max={5} />
-                    <span className="text-right text-sm md:text-base">
-            ({stats.categoryRatings.learningProgram.toFixed(1)}/5)
-          </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
-                    <span className="text-gray-700 text-sm md:text-base">Facilities and Utilities:</span>
-                    <RatingBar rating={stats.categoryRatings.facilitiesAndUtilities} max={5} />
-                    <span className="text-right text-sm md:text-base">
-            ({stats.categoryRatings.facilitiesAndUtilities.toFixed(1)}/5)
-          </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
-                    <span className="text-gray-700 text-sm md:text-base">Extracurricular Activities:</span>
-                    <RatingBar rating={stats.categoryRatings.extracurricularActivities} max={5} />
-                    <span className="text-right text-sm md:text-base">
-            ({stats.categoryRatings.extracurricularActivities.toFixed(1)}/5)
-          </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
-                    <span className="text-gray-700 text-sm md:text-base">Teachers and Staff:</span>
-                    <RatingBar rating={stats.categoryRatings.teachersAndStaff} max={5} />
-                    <span className="text-right text-sm md:text-base">
-            ({stats.categoryRatings.teachersAndStaff.toFixed(1)}/5)
-          </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
-                    <span className="text-gray-700 text-sm md:text-base">Hygiene and Nutrition:</span>
-                    <RatingBar rating={stats.categoryRatings.hygieneAndNutrition} max={5} />
-                    <span className="text-right text-sm md:text-base">
-            ({stats.categoryRatings.hygieneAndNutrition.toFixed(1)}/5)
-          </span>
+            <div className="w-1/2 mx-auto">
+                <div className="space-y-3 md:space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
+                        <span className="text-gray-700 text-sm md:text-base">Learning program:</span>
+                        <RatingBar rating={stats.categoryRatings.learningProgram ?? 0} max={5} />
+                        <span className="text-right text-sm md:text-base">
+                            ({(stats.categoryRatings.learningProgram ?? 0).toFixed(1)}/5)
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
+                        <span className="text-gray-700 text-sm md:text-base">Facilities and Utilities:</span>
+                        <RatingBar rating={stats.categoryRatings.facilitiesAndUtilities ?? 0} max={5} />
+                        <span className="text-right text-sm md:text-base">
+                            ({(stats.categoryRatings.facilitiesAndUtilities ?? 0).toFixed(1)}/5)
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
+                        <span className="text-gray-700 text-sm md:text-base">Extracurricular Activities:</span>
+                        <RatingBar rating={stats.categoryRatings.extracurricularActivities ?? 0} max={5} />
+                        <span className="text-right text-sm md:text-base">
+                            ({(stats.categoryRatings.extracurricularActivities ?? 0).toFixed(1)}/5)
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
+                        <span className="text-gray-700 text-sm md:text-base">Teachers and Staff:</span>
+                        <RatingBar rating={stats.categoryRatings.teachersAndStaff ?? 0} max={5} />
+                        <span className="text-right text-sm md:text-base">
+                            ({(stats.categoryRatings.teachersAndStaff ?? 0).toFixed(1)}/5)
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
+                        <span className="text-gray-700 text-sm md:text-base">Hygiene and Nutrition:</span>
+                        <RatingBar rating={stats.categoryRatings.hygieneAndNutrition ?? 0} max={5} />
+                        <span className="text-right text-sm md:text-base">
+                            ({(stats.categoryRatings.hygieneAndNutrition ?? 0).toFixed(1)}/5)
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

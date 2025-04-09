@@ -13,13 +13,11 @@ import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.enums.EFileFolder;
 import fa.pjb.back.model.enums.EParentInSchool;
-import fa.pjb.back.model.mapper.MediaMapper;
-import fa.pjb.back.model.mapper.ParentInSchoolMapper;
-import fa.pjb.back.model.mapper.ParentMapper;
-import fa.pjb.back.model.mapper.ParentProjection;
+import fa.pjb.back.model.mapper.*;
 import fa.pjb.back.model.vo.*;
 import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
+import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.GCPFileStorageService;
@@ -39,6 +37,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -56,12 +56,15 @@ public class ParentServiceImpl implements ParentService {
     private final ParentRepository parentRepository;
     private final UserRepository userRepository;
     private final ParentInSchoolRepository parentInSchoolRepository;
+    private final ReviewRepository reviewRepository;
     private final ParentMapper parentMapper;
     private final ParentInSchoolMapper pisMapper;
     private final AutoGeneratorHelper autoGeneratorHelper;
     private final GCPFileStorageService ggDriveImageService;
     private final UserService userService;
     private final MediaMapper mediaMapper;
+    private final SchoolMapper schoolMapper;
+    private final ReviewMapper reviewMapper;
 
     @Transactional
     @Override
@@ -231,7 +234,7 @@ public class ParentServiceImpl implements ParentService {
     }
 
     @Transactional
-    public MediaVO changeAvatar(Integer parentId, MultipartFile image){
+    public MediaVO changeAvatar(Integer parentId, MultipartFile image) {
         Parent parent = parentRepository.findParentByUserId(parentId);
         if (parent == null) {
             throw new UserNotFoundException();
@@ -343,12 +346,13 @@ public class ParentServiceImpl implements ParentService {
         }
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(status,searchBy, keyword, pageable);
+        Page<ParentProjection> parentProjections = parentRepository.findAllParentsWithFilters(status, searchBy, keyword, pageable);
 
         return parentProjections.map(parentMapper::toParentVOFromProjection);
     }
+
     @Override
-    public Page<ParentVO> getParentBySchool( int page, int size, String searchBy, String keyword) {
+    public Page<ParentVO> getParentBySchool(int page, int size, String searchBy, String keyword) {
         //Check if valid searchBy value
         if (!Arrays.asList("username", "fullname", "email", "phone").contains(searchBy)) {
             throw new InvalidDataException("Invalid searchBy value: " + searchBy);
@@ -431,10 +435,11 @@ public class ParentServiceImpl implements ParentService {
 
         return true;
     }
+
     @Override
     public Integer getSchoolRequestCount() {
         User user = userService.getCurrentUser();
-        return parentInSchoolRepository.countParentInSchoolBySchoolIdAndStatus(user.getSchoolOwner().getSchool().getId(),(byte)0);
+        return parentInSchoolRepository.countParentInSchoolBySchoolIdAndStatus(user.getSchoolOwner().getSchool().getId(), (byte) 0);
     }
 
     @Override
@@ -448,6 +453,85 @@ public class ParentServiceImpl implements ParentService {
                         (Review) result[2]          // review
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<ParentInSchoolDetailVO> getPresentAcademicHistory(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        User user = userService.getCurrentUser();
+
+        Page<Object[]> results = parentInSchoolRepository.findPresentAcademicHistoryWithReviews(user.getParent().getId(), pageable);
+
+        return results.map(result -> {
+
+            SchoolSearchVO schoolSearchVO = schoolMapper.toSchoolSearchVO((School) result[1], reviewMapper);
+
+            List<Object[]> statistics = reviewRepository.getReviewStatisticsBySchoolId(schoolSearchVO.id());
+
+            Object[] statisticsObject = statistics.get(0);
+
+            ParentInSchool parentInSchool = (ParentInSchool) result[0];
+
+            Review review = (Review) result[2];
+
+            log.info("Review: {}", review);
+
+            return ParentInSchoolDetailVO.builder()
+                    .id(parentInSchool.getId())
+                    .school(schoolSearchVO)
+                    .fromDate(parentInSchool.getFrom())
+                    .toDate(parentInSchool.getTo())
+                    .status(parentInSchool.getStatus())
+                    .providedRating(review == null ? null : (review.getLearningProgram() +
+                            review.getFacilitiesAndUtilities() +
+                            review.getExtracurricularActivities() +
+                            review.getTeacherAndStaff() +
+                            review.getHygieneAndNutrition()) / 5.0)
+                    .comment(review == null ? null : review.getFeedback())
+                    .hasEditCommentPermission(true)
+                    .totalSchoolReview(Integer.parseInt(String.valueOf(statisticsObject[0])))
+                    .averageSchoolRating(Math.floor(((Double) statisticsObject[1]) * 10) / 10)
+                    .build();
+        });
+    }
+
+    @Override
+    public Page<ParentInSchoolDetailVO> getPreviousAcademicHistory(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        User user = userService.getCurrentUser();
+
+        Page<Object[]> results = parentInSchoolRepository.findPreviousAcademicHistoryWithReviews(user.getParent().getId(), pageable);
+
+        return results.map(result -> {
+            SchoolSearchVO schoolSearchVO = schoolMapper.toSchoolSearchVO((School) result[1], reviewMapper);
+
+            List<Object[]> statistics = reviewRepository.getReviewStatisticsBySchoolId(schoolSearchVO.id());
+
+            Object[] statisticsObject = statistics.get(0);
+
+            ParentInSchool parentInSchool = (ParentInSchool) result[0];
+
+            Review review = (Review) result[2];
+
+            boolean hasPermission = Math.abs(ChronoUnit.DAYS.between(LocalDate.now(), parentInSchool.getTo())) >= 30;
+
+            return ParentInSchoolDetailVO.builder()
+                    .id(parentInSchool.getId())
+                    .school(schoolSearchVO)
+                    .fromDate(parentInSchool.getFrom())
+                    .toDate(parentInSchool.getTo())
+                    .status(parentInSchool.getStatus())
+                    .providedRating(review == null ? null : (review.getLearningProgram() +
+                            review.getFacilitiesAndUtilities() +
+                            review.getExtracurricularActivities() +
+                            review.getTeacherAndStaff() +
+                            review.getHygieneAndNutrition()) / 5.0)
+                    .comment(review == null ? null : review.getFeedback())
+                    .hasEditCommentPermission(hasPermission)
+                    .totalSchoolReview(Integer.parseInt(String.valueOf(statisticsObject[0])))
+                    .averageSchoolRating(Math.floor(((Double) statisticsObject[1]) * 10) / 10)
+                    .build();
+        });
     }
 
 

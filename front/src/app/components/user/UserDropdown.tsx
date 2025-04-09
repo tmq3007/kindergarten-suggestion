@@ -94,18 +94,24 @@ export default function UserDropdown({username}: UserDropdownProps) {
         ...(role === ROLES.PARENT ? [
             {
                 label: (
-                    <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
+                    <Link
+                        href={"/public/my-request "}
+                        className="block hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
+                    >
                         My Requests
-                    </div>
+                    </Link>
                 ),
                 key: "2",
             },
             {type: "divider" as "divider"},
             {
                 label: (
-                    <div className="hover:translate-x-4 hover:text-blue-500 transition-transform duration-300">
+                    <Link
+                        href={"/public/my-school "}
+                        className="block hover:translate-x-4 hover:!text-blue-500 transition-transform duration-300"
+                    >
                         My Schools
-                    </div>
+                    </Link>
                 ),
                 key: "1",
             },
