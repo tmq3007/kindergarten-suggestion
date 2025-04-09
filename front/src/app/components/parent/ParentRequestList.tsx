@@ -89,7 +89,7 @@ export default function ParentRequestList({
             ) : (
                 <>
                     {(totalOpenReq > 0) && (
-                        <p className="text-start text-lg mt-5">
+                        <p className="text-start ml-5 text-lg mt-5">
                             You have {totalOpenReq} open requests
                         </p>
                     )}
