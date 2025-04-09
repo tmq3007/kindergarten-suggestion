@@ -1,7 +1,6 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {ApiResponse, baseQueryWithReauth} from "@/redux/services/config/baseQuery";
 import {Pageable} from "@/redux/services/userApi";
-import {SchoolVO} from "@/redux/services/schoolApi";
 
 
 export type RatingStats = {

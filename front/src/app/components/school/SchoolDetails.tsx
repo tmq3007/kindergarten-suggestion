@@ -1,6 +1,6 @@
 "use client";
 import React, {FunctionComponent} from "react";
-import {Card, Col, Row, Descriptions, Tabs, Alert, Spin, ConfigProvider} from "antd";
+import {Card, Col, Row, Descriptions, Tabs, Alert, Spin, ConfigProvider, Button} from "antd";
 import {
     EnvironmentOutlined,
     MailOutlined,
@@ -83,9 +83,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
     // Map facility and utility IDs from schoolData to their options
     const facilityIds = facilities.map((f) => String(f.fid));
     const utilityIds = utilities.map((u) => String(u.uid));
-
     const userRole = useSelector((state: RootState) => state.user?.role);
-
     const isMobile = useIsMobile();
     // Define tab items
     const tabItems = [

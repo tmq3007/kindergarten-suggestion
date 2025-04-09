@@ -129,4 +129,11 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
     @Query("SELECT r FROM Review r WHERE r.id = :id")
     Optional<Review> findByReviewId(@Param("id") Integer id);
+    @Query("SELECT COUNT(r), " +
+            "((COALESCE(AVG(r.learningProgram), 0) + COALESCE(AVG(r.teacherAndStaff), 0) + " +
+            "COALESCE(AVG(r.facilitiesAndUtilities), 0) + COALESCE(AVG(r.extracurricularActivities), 0) + " +
+            "COALESCE(AVG(r.hygieneAndNutrition), 0)) / 5.0)" +
+            "FROM Review r WHERE r.school.id = :schoolId")
+    List<Object[]> getReviewStatisticsBySchoolId(@Param("schoolId") Integer schoolId);
+
 }
