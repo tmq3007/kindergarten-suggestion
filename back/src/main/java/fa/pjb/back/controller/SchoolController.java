@@ -76,6 +76,7 @@ public class SchoolController {
             .build();
     }
 
+    @Operation(summary = "Check email", description = "Check email exists or not")
     @GetMapping("/check-email/{email}")
     public ApiResponse<Boolean> checkEmail(@PathVariable String email) {
         return ApiResponse.<Boolean>builder()
@@ -84,7 +85,7 @@ public class SchoolController {
                 .data(schoolService.checkEmailExists(email))
                 .build();
     }
-
+    @Operation(summary = "Check email when edit", description = "Check email exists or not")
     @PostMapping("/check-editing-email")
     public ApiResponse<Boolean> checkEmailEdit(
             @RequestParam @NotBlank(message = "Email is not blank") @Email(message = "Email is not valid") String email,

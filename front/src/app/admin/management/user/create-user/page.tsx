@@ -17,6 +17,7 @@ import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import {ImageUpload} from "@/app/components/common/ImageUploader";
 import PhoneInput from "@/app/components/common/PhoneInput";
 import EmailInput from "@/app/components/common/EmailInput";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 const { Title } = Typography;
 
 const formItemLayout = {
@@ -103,7 +104,7 @@ const CreateUser: React.FC = () => {
                 ]}
             />
 
-            <Title level={3} className="mt-0.5 ml-16 mb-5">Add New User</Title>
+            <SchoolManageTitle title={'Add New User'}/>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -264,7 +265,7 @@ const CreateUser: React.FC = () => {
                                         valuePropName="fileList"
                                         getValueFromEvent={(e) => e?.fileList || []}
                                         rules={[
-                                            { required: true, message: 'Business license  is required for School Owner!' }
+                                            { required: false  , message: 'Business license  is required for School Owner!' }
                                         ]}
                                     >
                                         <ImageUpload

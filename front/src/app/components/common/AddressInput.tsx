@@ -65,7 +65,7 @@ const AddressInput: React.FC<AddressInputProps> = ({isReadOnly, form, onAddressC
                 province: form.getFieldValue('province'),
                 district: form.getFieldValue('district'),
                 ward: wardName,
-                street: form.getFieldValue('street'),
+                street: undefined,
             });
         }
     };
@@ -144,7 +144,8 @@ const AddressInput: React.FC<AddressInputProps> = ({isReadOnly, form, onAddressC
             </Form.Item>
             <Form.Item name="street" className="mb-4">
                 <Input
-                    placeholder="Enter School Address here..."
+                    placeholder="Enter detail address here..."
+                    disabled={!isReadOnly && !selectedWardCode}
                     onChange={onStreetChange}
                     readOnly={isReadOnly}
                 />

@@ -25,16 +25,26 @@ const SchoolDetailPage: FunctionComponent = () => {
     // Loading state with Skeleton
     if (isLoading) {
         return (
-            <div className="w-full mt-20 p-10">
+            <div className="w-full mt-20 px-10">
+                <MyBreadcrumb
+                    paths={[
+                        { label: "School Search", href: "/public/search-school" },
+                        { label: "School Details" },
+                    ]}
+                />
                 <Row gutter={[24, 24]} justify="center">
                     <Col xs={24}>
-                        <Skeleton.Image active className={'!w-full !h-80'} /> {/* Image carousel */}
+                        <Skeleton.Image active className={'!w-full !h-[500px]'} /> {/* Image carousel */}
+                    </Col>
+
+                    <Col xs={24}>
+                        <Skeleton.Image active className={'!w-full !h-[200px]'} /> {/* Image carousel */}
                     </Col>
                     <Col xs={24}>
-                        <Skeleton active paragraph={{ rows: 6 }}/> {/* Basic info */}
+                        <Skeleton active paragraph={{ rows: 8 }} title={{ width: "30%" }} /> {/* Basic info */}
                     </Col>
                     <Col xs={24}>
-                        <Skeleton active paragraph={{ rows: 6 }}/> {/* Tabs */}
+                        <Skeleton active paragraph={{ rows: 10 }}  /> {/* Tabs */}
                     </Col>
                 </Row>
             </div>
