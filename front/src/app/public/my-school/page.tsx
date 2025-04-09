@@ -7,12 +7,13 @@ import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import {useRouter} from "next/navigation";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
+import RatingsPopupWrapper from "@/app/components/review/ReviewPopupWrapper";
 
 const CurrentSchoolsSection = dynamic(() => import('@/app/components/parent/ParentCurrentSchoolList'));
 const PreviousSchoolsSection = dynamic(() => import('@/app/components/parent/ParentPreviousSchoolList'));
 
 const SchoolInfoTabs = () => {
-    const [activeTab, setActiveTab] = useState('1'); // Mặc định là tab '1'
+    const [activeTab, setActiveTab] = useState('1');
     const router = useRouter();
 
     const userIdString = useSelector((state: RootState) => state.user?.id);
@@ -23,12 +24,11 @@ const SchoolInfoTabs = () => {
         router.push("/public");
         return null;
     }
-
     const items = [
         {
             key: '1',
             label: 'Current Schools',
-            children: <CurrentSchoolsSection/>,
+            children: <CurrentSchoolsSection />,
         },
         {
             key: '2',
@@ -55,6 +55,7 @@ const SchoolInfoTabs = () => {
                 type="card" rootClassName="border-cyan-500"
                 size="large" animated={{inkBar: true, tabPane: true}}
             />
+
         </div>
     );
 };

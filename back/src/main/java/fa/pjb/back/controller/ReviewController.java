@@ -46,12 +46,12 @@ public class ReviewController {
                 .build();
     }
     @Operation(summary = "Get review by school and parent", description = "Get review by school and parent for update rating")
-    @GetMapping("/public/{schoolId}/{parentId}")
-    public ApiResponse<ReviewVO> getReviewBySchoolAndParent(@PathVariable Integer schoolId, @PathVariable Integer parentId) {
+    @GetMapping("/{schoolId}/parent")
+    public ApiResponse<ReviewVO> getReviewBySchoolAndParent(@PathVariable Integer schoolId) {
         return ApiResponse.<ReviewVO>builder()
                 .code(200)
                 .message("Review retrieved successfully")
-                .data(reviewService.getReviewBySchoolAndParent(schoolId, parentId))
+                .data(reviewService.getReviewBySchoolAndParent(schoolId))
                 .build();
     }
     @Operation(summary = "Save review", description = "This API use the save review of parent")
