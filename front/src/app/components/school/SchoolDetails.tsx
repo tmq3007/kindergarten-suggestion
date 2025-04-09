@@ -23,6 +23,9 @@ import {
 import SchoolImageCarousel from "@/app/components/common/SchoolImageCarousel";
 import CommentSection from "@/app/components/review/CommentSection";
 import {ReviewVO, useGetReviewBySchoolForPublicQuery} from "@/redux/services/reviewApi";
+import AddRequestModal from "@/app/components/user/AddRequestModal";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store";
 import useIsMobile from "@/lib/hook/useIsMobile";
 
 interface SchoolDetailsProps {
@@ -80,6 +83,9 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
     // Map facility and utility IDs from schoolData to their options
     const facilityIds = facilities.map((f) => String(f.fid));
     const utilityIds = utilities.map((u) => String(u.uid));
+
+    const userRole = useSelector((state: RootState) => state.user?.role);
+
     const isMobile = useIsMobile();
     // Define tab items
     const tabItems = [
@@ -207,8 +213,15 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                         body: {padding: 0}
                                     }}
                                     >
-                                        <h2 className="text-3xl font-bold mb-6">{name || "Unknown School"}</h2>
-                                        <Descriptions bordered className="w-full text-xl" column={1}
+                                        <div className="flex mt-5 items-center justify-between mb-6">
+                                            <h2 className="text-3xl font-bold">{name || "Unknown School"}</h2>
+                                            <div className="flex flex-col gap-4">
+                                                <AddRequestModal schoolId={id} schoolName={name} />
+                                                <Button>Rate School</Button>
+                                            </div>
+
+                                        </div>
+                                        <Descriptions bordered className="w-full text-xl"  column={1}
                                                       layout={isMobile ? "vertical" : "horizontal"}
                                                       styles={{content: {fontSize: '16px'}}} size={"middle"}
                                         >
