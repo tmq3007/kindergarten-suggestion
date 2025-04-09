@@ -9,15 +9,14 @@ import {
     ParentInSchoolDetailVO,
     useGetPreviousAcademicHistoryByParentQuery
 } from "@/redux/services/parentApi";
-import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import ParentSchoolInfo from "@/app/components/parent/ParentSchoolInfo";
-
+import ParentSchoolListSkeleton from "@/app/components/skeleton/ParentSchoolListSkeleton";
 
 
 // Component chính của trang
 export default function PreviousSchoolsSection() {
     const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(2);
+    const pageSize = 2;
     const router = useRouter();
 
     const userIdString = useSelector((state: RootState) => state.user?.id);
@@ -33,16 +32,22 @@ export default function PreviousSchoolsSection() {
     }
 
     const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
-        notificationApi[type]({ message, description, placement: "topRight" });
+        notificationApi[type]({message, description, placement: "topRight"});
     };
 
-    const {data, isLoading, isFetching, error} = useGetPreviousAcademicHistoryByParentQuery({page: current, size: pageSize});
+    const {data, isLoading, isFetching, error} = useGetPreviousAcademicHistoryByParentQuery({
+        page: current,
+        size: pageSize
+    });
 
     useEffect(() => {
         if (!data?.data?.content) {
             setSchoolData([]);
             return;
         }
+
+        // Debug dữ liệu từ API
+        console.log(`Page ${current} data:`, data.data.content);
 
         const schools = [...data.data.content].sort(
             (a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime()
@@ -66,7 +71,6 @@ export default function PreviousSchoolsSection() {
 
     const handlePageChange = (page: number, size: number) => {
         setCurrent(page);
-        setPageSize(size);
     };
 
     return (
@@ -81,13 +85,17 @@ export default function PreviousSchoolsSection() {
                 )}
 
                 {(isLoading || isFetching) ? (
-                    <div>Skeleton</div>
+                    <div className='mb-4'>
+                        <ParentSchoolListSkeleton/>
+                        <ParentSchoolListSkeleton/>
+                    </div>
                 ) : (
                     <>
                         {schoolData.length ? (
                             <>
-                                {schoolData.map((pis) => (
-                                    <div key={pis.id} className="w-full mb-4 transition-shadow">
+                                {schoolData.map((pis, index) => (
+                                    <div key={`${pis.id}-${current}-${index}`}
+                                         className="w-full mb-4 transition-shadow">
                                         <ParentSchoolInfo pis={pis} isCurrent={false}/>
                                     </div>
                                 ))}
@@ -104,7 +112,7 @@ export default function PreviousSchoolsSection() {
                                 </div>
                             </>
                         ) : (
-                            <Empty className="mt-10" description="No schools found" />
+                            <Empty className="mt-10" description="No schools found"/>
                         )}
                     </>
                 )}

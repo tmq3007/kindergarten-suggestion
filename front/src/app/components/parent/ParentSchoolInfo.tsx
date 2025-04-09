@@ -172,7 +172,8 @@ export default function ParentSchoolInfo({
             </div>
             {/*Rate Section*/}
             <div className={'col-span-1 border-2 bg-white rounded-lg shadow-md ml-2 p-4 h-full'}>
-                {(isCurrent && pis.providedRating === null || pis.comment === null) && (
+                {/*Case 1: You haven't rated the school yet and status is Active*/}
+                {(isCurrent && pis.providedRating === null) && (
                     <div className={'flex flex-col items-center justify-center h-full'}>
                         <span className={'text-lg font-bold text-custom-600'}>You haven't rated the school yet. Please share with us your feedback.</span>
                         {/*Rate Button*/}
@@ -181,6 +182,8 @@ export default function ParentSchoolInfo({
                             Rate School
                         </Button>
                     </div>)}
+
+                {/*Case 2: You rated the school yet and status is Active*/}
                 {(isCurrent && pis.providedRating !== null) && (
                     <div className={'flex flex-col items-center justify-center h-full'}>
                         <span className={'text-lg font-bold text-custom-600'}>Your Average Rating:</span>
@@ -192,16 +195,19 @@ export default function ParentSchoolInfo({
                             View Rating Details
                         </Button>
                     </div>)}
+
+                {/*Case 3: You haven't rated the school yet and status is Inactive*/}
                 {(!isCurrent && pis.providedRating === null && !pis.hasEditCommentPermission ) && (
                     <div className={'flex flex-col items-center justify-center h-full'}>
                         <span className={'text-lg font-bold text-custom-600'}>There's no rating of yours for this school. You can only rate the school you're currently enrolled in.</span>
                     </div>)}
-                {(!isCurrent && pis.providedRating !== null && !pis.hasEditCommentPermission) && (
+
+                {/*Case 4: You rated the school yet and status is Inactive*/}
+                {(!isCurrent && pis.providedRating !== null && pis.hasEditCommentPermission) && (
                     <div className={'flex flex-col items-center justify-center h-full'}>
                         <span className={'text-lg font-bold text-custom-600'}>Your Average Rating:</span>
                         <span className={'ml-2'}>{`${pis.providedRating}/5`}</span>
                         <Rate allowHalf disabled value={pis.providedRating}/>
-
                         <Button htmlType="button"
                                 className={'mt-7 w-1/2 p-4 font-bold whitespace-normal text-xs bg-white-600 hover:!bg-custom-700 text-custom-600 hover:!text-white hover:!border-white hover:!shadow-none border-2 border-custom-700 shadow-md'}>
                             View Rating Details

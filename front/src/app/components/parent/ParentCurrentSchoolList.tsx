@@ -7,13 +7,14 @@ import {RootState} from "@/redux/store";
 import {Empty, notification, Pagination} from "antd";
 import {ParentInSchoolDetailVO, useGetPresentAcademicHistoryByParentQuery} from "@/redux/services/parentApi";
 import ParentSchoolInfo from "@/app/components/parent/ParentSchoolInfo";
+import ParentSchoolListSkeleton from "@/app/components/skeleton/ParentSchoolListSkeleton";
 
 
 
 // Component chính của trang
 export default function CurrentSchoolsSection() {
     const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(2);
+    const pageSize = 2;
     const router = useRouter();
 
     const userIdString = useSelector((state: RootState) => state.user?.id);
@@ -62,7 +63,6 @@ export default function CurrentSchoolsSection() {
 
     const handlePageChange = (page: number, size: number) => {
         setCurrent(page);
-        setPageSize(size);
     };
 
     return (
@@ -71,13 +71,16 @@ export default function CurrentSchoolsSection() {
             <div className="">
 
                 {(isLoading || isFetching) ? (
-                    <div>Skeleton</div>
+                    <div className='mb-4'>
+                        <ParentSchoolListSkeleton/>
+                        <ParentSchoolListSkeleton/>
+                    </div>
                 ) : (
                     <>
                         {schoolData.length ? (
                             <>
-                                {schoolData.map((pis) => (
-                                    <div key={pis.id} className="w-full mb-4 transition-shadow">
+                                {schoolData.map((pis, index) => (
+                                    <div key={`${pis.id}-${current}-${index}`} className="w-full mb-4 transition-shadow">
                                         <ParentSchoolInfo pis={pis} isCurrent={true} />
                                     </div>
                                 ))}
