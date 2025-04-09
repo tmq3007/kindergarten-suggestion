@@ -101,7 +101,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     public ReviewVO makeReport(ReviewReportDTO reviewReportDTO) {
-        Review review = reviewRepository.findById(reviewReportDTO.id()).orElse(null);
+        Review review = reviewRepository.findByReviewId(reviewReportDTO.id()).orElse(null);
 
         if(review == null){
             throw new ReviewNotFoundException();
@@ -121,7 +121,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ReviewVO acceptReport(ReviewAcceptDenyDTO reviewAcceptDenyDTO) {
-        Review review = reviewRepository.findById(reviewAcceptDenyDTO.id()).orElse(null);
+        Review review = reviewRepository.findByReviewId(reviewAcceptDenyDTO.id()).orElse(null);
 
         if(review == null){
             throw new ReviewNotFoundException();
