@@ -31,7 +31,7 @@ public interface ReviewService {
 
     Page<ReviewVO> getReviewListBySchoolForPublic(Integer schoolId, Integer page, Integer size, Integer star);
 
-    ReviewVO getReviewBySchoolAndParent(Integer schoolId, Integer parentId);
+    ReviewVO getReviewBySchoolAndParent(Integer schoolId);
 
     ReviewVO saveReview( ReviewDTO reviewData);
 }

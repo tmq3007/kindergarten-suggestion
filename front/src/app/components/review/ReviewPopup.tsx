@@ -5,6 +5,8 @@ import { Modal, Rate, Input, Button, Typography, message, Spin, Alert } from "an
 import { ArrowRightIcon as ArrowRightOutlined, DoorClosedIcon as CloseOutlined } from "lucide-react";
 import { motion } from "framer-motion";
 import {ReviewDTO, useSubmitRatingsMutation} from "@/redux/services/reviewApi";
+import {useDispatch} from "react-redux";
+import {parentApi} from "@/redux/services/parentApi";
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -18,7 +20,6 @@ interface RatingCategory {
 
 interface RatingsPopupProps {
     schoolId: number;
-    parentId: number;
     schoolName?: string;
     isOpen: boolean;
     onCloseAction: () => void;
@@ -48,7 +49,6 @@ const COLORS = {
 
 export default function RatingsPopup({
                                          schoolId,
-                                         parentId,
                                          schoolName = "School",
                                          isOpen,
                                          onCloseAction,
@@ -66,7 +66,7 @@ export default function RatingsPopup({
         { name: "Teachers and Staff:", value: null, key: "teachers", color: "#722ed1" },
         { name: "Hygiene and Nutrition:", value: null, key: "hygiene", color: "#eb2f96" },
     ]);
-
+    const dispatch = useDispatch();
     const [messageApi, contextHolder] = message.useMessage();
     const [submitRatings, { isLoading: isSubmitting, error: submitError }] = useSubmitRatingsMutation();
 
@@ -103,8 +103,8 @@ export default function RatingsPopup({
     useEffect(() => {
         if (submitError) {
             const errorMessage =
-                "status" in submitError
-                    ? `Error ${submitError.status}: Failed to submit ratings`
+                "code" in submitError
+                    ? `Error ${submitError.code}: Failed to submit ratings`
                     : "Network error occurred while submitting ratings";
             messageApi.error(errorMessage);
         }
@@ -145,7 +145,6 @@ export default function RatingsPopup({
         const ratingsData : ReviewDTO = {
             id: initialRatings?.id,
             schoolId: schoolId || initialRatings?.schoolId || -1,
-            parentId: parentId || initialRatings?.parentId || -1,
             learningProgram: categories.find((c) => c.key === "learning")?.value || 0,
             facilitiesAndUtilities: categories.find((c) => c.key === "facilities")?.value || 0,
             extracurricularActivities: categories.find((c) => c.key === "activities")?.value || 0,
@@ -158,7 +157,7 @@ export default function RatingsPopup({
             .unwrap()
             .then(() => {
                 messageApi.success("Thank you for your ratings!");
-                console.log("Submitted ratings:", ratingsData);
+                dispatch(parentApi.util.invalidateTags(['AcademicHistory']));
                 setTimeout(() => {
                     onCloseAction();
                 }, 1500);
@@ -261,7 +260,8 @@ export default function RatingsPopup({
                                                                 ? category.color
                                                                 : undefined,
                                                 }}
-                                                character={({ index }) => (
+                                                key={category.key}
+                                                character={() => (
                                                     <motion.span whileHover={{ scale: 1.2 }} transition={{ type: "spring", stiffness: 300 }}>
                                                         ★
                                                     </motion.span>

@@ -70,6 +70,28 @@ class ReviewControllerTest {
                 .andExpect(jsonPath("$.data[0].feedback").value("Great school"));
     }
 
+    @Test
+    void getReviews_WithDateParams() throws Exception {
+        List<ReviewVO> reviews = Arrays.asList(
+                new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
+                        (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5,
+                        "Great school", LocalDateTime.now(), null, (byte) 0)
+        );
+
+        when(reviewService.getAllReviewByAdmin(eq(100),
+                eq(LocalDate.parse("2024-01-01")),
+                eq(LocalDate.parse("2024-12-31")),
+                eq(null)))
+                .thenReturn(reviews);
+
+        mockMvc.perform(get("/school/review/100")
+                        .param("fromDate", "2024-01-01")
+                        .param("toDate", "2024-12-31")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").isArray());
+    }
 
     @Test
     void getReviews_InvalidDateFormat_ShouldReturnBadRequest() throws Exception {

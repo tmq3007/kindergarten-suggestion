@@ -23,13 +23,19 @@ const ageMapping: AgeMapping = {
     1: "From 1 to 3 years",
     2: "From 3 to 6 years",
 };
-
+interface ParentSchoolInfoProps {
+    pis: ParentInSchoolDetailVO;
+    isCurrent: boolean;
+    onCloseModalAction: () => void;
+    onOpenModalAction: (schoolId: number, schoolName: string, isUpdate: boolean) => void;
+}
 
 export default function ParentSchoolInfo({
                                              pis,
                                              isCurrent,
-
-                                         }: { pis: ParentInSchoolDetailVO, isCurrent: boolean }) {
+                                             onCloseModalAction,
+                                             onOpenModalAction,
+                                         }: ParentSchoolInfoProps) {
 
     const getFacilityLabel = (fid: number | { fid: number }) => {
         const id = typeof fid === 'number' ? fid : fid.fid;
@@ -58,7 +64,8 @@ export default function ParentSchoolInfo({
                     />
                     <div className={'mt-2'}>
                         <Rate allowHalf disabled value={pis.averageSchoolRating}/>
-                        <span className={'ml-2'}>{`${pis.averageSchoolRating}/5 (${pis.totalSchoolReview} ratings)`}</span>
+                        <span
+                            className={'ml-2'}>{`${pis.averageSchoolRating}/5 (${pis.totalSchoolReview} ratings)`}</span>
                     </div>
 
                 </div>
@@ -177,9 +184,14 @@ export default function ParentSchoolInfo({
                     <div className={'flex flex-col items-center justify-center h-full'}>
                         <span className={'text-lg font-bold text-custom-600'}>You haven't rated the school yet. Please share with us your feedback.</span>
                         {/*Rate Button*/}
-                        <Button htmlType="button"
-                                className={'mt-10 w-1/2 p-4 font-bold whitespace-normal text-xs bg-custom-700 hover:!bg-white text-white hover:!text-custom-600 hover:!border-custom-700 hover:!shadow-md border-2 border-white shadow-md'}>
-                            Rate School
+                        <Button
+                            key={pis.school.id}
+                            type="primary"
+                            onClick={() => onOpenModalAction(pis.school.id, pis.school.name, false)}
+                            className="text-lg px-6 py-2 h-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-none shadow-lg"
+                            size="large"
+                        >
+                            Rate
                         </Button>
                     </div>)}
 
@@ -190,9 +202,14 @@ export default function ParentSchoolInfo({
                         <span className={'ml-2'}>{`${pis.providedRating}/5`}</span>
                         <Rate allowHalf disabled value={pis.providedRating}/>
 
-                        <Button htmlType="button"
-                                className={'mt-7 w-1/2 p-4 font-bold whitespace-normal text-xs bg-white-600 hover:!bg-custom-700 text-custom-600 hover:!text-white hover:!border-white hover:!shadow-none border-2 border-custom-700 shadow-md'}>
-                            View Rating Details
+                        <Button
+                            key={pis.school.id}
+                            type="primary"
+                            onClick={() => onOpenModalAction(pis.school.id, pis.school.name, true)}
+                            className="text-lg px-6 py-2 h-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-none shadow-lg"
+                            size="large"
+                        >
+                            Update
                         </Button>
                     </div>)}
 

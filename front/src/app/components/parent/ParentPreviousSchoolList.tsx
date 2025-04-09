@@ -1,7 +1,7 @@
 'use client';
 
-import React, {Suspense, useEffect, useState} from 'react';
-import {useParams, useRouter} from "next/navigation";
+import React, { useEffect, useState} from 'react';
+import { useRouter} from "next/navigation";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {Empty, notification, Pagination} from "antd";
@@ -12,6 +12,7 @@ import {
 import ParentSchoolInfo from "@/app/components/parent/ParentSchoolInfo";
 import ParentSchoolListSkeleton from "@/app/components/skeleton/ParentSchoolListSkeleton";
 
+import RatingsPopupWrapper from "@/app/components/review/ReviewPopupWrapper";
 
 // Component chính của trang
 export default function PreviousSchoolsSection() {
@@ -73,6 +74,21 @@ export default function PreviousSchoolsSection() {
         setCurrent(page);
     };
 
+    const [selectedSchool, setSelectedSchool] = useState<{
+        schoolId: number;
+        schoolName: string;
+        isUpdate: boolean;
+    } | null>(null);
+
+    const handleOpenModal = (schoolId: number, schoolName: string, isUpdate: boolean) => {
+        setSelectedSchool({schoolId, schoolName, isUpdate });
+    };
+
+
+    const handleCloseModal = () => {
+        setSelectedSchool(null);
+    };
+
     return (
         <>
             {contextHolder}
@@ -94,9 +110,8 @@ export default function PreviousSchoolsSection() {
                         {schoolData.length ? (
                             <>
                                 {schoolData.map((pis, index) => (
-                                    <div key={`${pis.id}-${current}-${index}`}
-                                         className="w-full mb-4 transition-shadow">
-                                        <ParentSchoolInfo pis={pis} isCurrent={false}/>
+                                    <div key={`${pis.id}-${current}-${index}`} className="w-full mb-4 transition-shadow">
+                                        <ParentSchoolInfo onOpenModalAction={handleOpenModal} onCloseModalAction={handleCloseModal} pis={pis} isCurrent={false}/>
                                     </div>
                                 ))}
 
@@ -110,6 +125,15 @@ export default function PreviousSchoolsSection() {
                                         className="mb-5"
                                     />
                                 </div>
+                                {selectedSchool && (
+                                    <RatingsPopupWrapper
+                                        schoolId={selectedSchool.schoolId}
+                                        schoolName={selectedSchool.schoolName}
+                                        isUpdate={selectedSchool.isUpdate}
+                                        isOpen={!!selectedSchool}
+                                        onCloseAction={handleCloseModal}
+                                    />
+                                )}
                             </>
                         ) : (
                             <Empty className="mt-10" description="No schools found"/>
