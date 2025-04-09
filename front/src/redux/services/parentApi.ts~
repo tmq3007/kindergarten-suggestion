@@ -297,6 +297,5 @@ export const {
     useRejectParentMutation,
     useChangeAvatarMutation,
     useGetPresentAcademicHistoryByParentQuery,
-    useGetPreviousAcademicHistoryByParentQuery,
-    useRequestEnrollingSchoolMutation
+    useGetPreviousAcademicHistoryByParentQuery
 } = parentApi;

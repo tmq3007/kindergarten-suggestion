@@ -254,7 +254,7 @@ class UpdateSchoolByAdminTest {
                 .facilities(Set.of(FacilityVO.builder().fid(1).build(), FacilityVO.builder().fid(2).build()))
                 .utilities(Set.of(UtilityVO.builder().uid(3).build(), UtilityVO.builder().uid(4).build()))
                 .imageList(List.of(MediaVO.builder().url("https://image1.jpg").build(), MediaVO.builder().url("https://image2.jpg").build()))
-                .postedDate(new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .posted_date(new Date())
                 .build();
 
         when(schoolService.updateSchoolByAdmin(any(SchoolDTO.class), any(List.class))).thenReturn(schoolDetailVO);

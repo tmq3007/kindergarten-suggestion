@@ -309,6 +309,4 @@ public class SchoolController {
             .build();
     }
 
-
-
 }

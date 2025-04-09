@@ -63,7 +63,7 @@ const SchoolDetailPage: FunctionComponent = () => {
     // Handle case when no data is returned (but not loading)
     if (!schoolData) {
         return (
-            <div className="w-full min-h-screen mt-20">
+            <div className="w-full h-screen mt-20">
                 <div className="text-center">
                     <p>No school data found</p>
                 </div>

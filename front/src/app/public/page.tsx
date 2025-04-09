@@ -13,6 +13,8 @@ export default function Page() {
             transition={{duration: 1.8, ease: "easeInOut"}}
             className="w-full min-h-[800px] relative"
         >
+            {/*Preload image*/}
+            <img src={background.src} alt="" style={{display: 'none'}}/>
             <div
                 style={{
                     backgroundImage: `url(${background.src})`,

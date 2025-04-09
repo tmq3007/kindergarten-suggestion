@@ -35,10 +35,6 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
                      ) / 5.0, 1)
                      FROM Review r
                      WHERE r.school_id = s.id
-                       AND r.receive_date = (
-                           SELECT MAX(r2.receive_date)
-                           FROM Review r2 WHERE r2.school_id = s.id
-                       )
                  ), 0) AS rating,
 
                  -- Join and collect associated facility and utility IDs into comma-separated strings
@@ -62,7 +58,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
                     OR (:minFee IS NOT NULL AND :maxFee IS NULL AND s.fee_from >= :minFee)
                     OR (:minFee IS NULL AND :maxFee IS NOT NULL AND s.fee_from <= :maxFee)
                     OR (s.fee_from BETWEEN :minFee AND :maxFee))
-
+               AND s.ref_id IS NULL
              -- Group by school to aggregate facilities and utilities properly
              GROUP BY s.id
 
@@ -112,18 +108,14 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
 
                      -- Calculate average rating based on 5 criteria from the most recent review
                      COALESCE((
-                         SELECT ROUND(AVG(
-                             r.learning_program + r.facilities_and_utilities +
-                             r.extracurricular_activities + r.teacher_and_staff +
-                             r.hygiene_and_nutrition
-                         ) / 5.0, 1)
-                         FROM Review r
-                         WHERE r.school_id = s.id
-                           AND r.receive_date = (
-                               SELECT MAX(r2.receive_date)
-                               FROM Review r2 WHERE r2.school_id = s.id
-                           )
-                     ), 0) AS rating,
+                        SELECT ROUND(AVG(
+                            r.learning_program + r.facilities_and_utilities +
+                            r.extracurricular_activities + r.teacher_and_staff +
+                            r.hygiene_and_nutrition
+                        ) / 5.0, 1)
+                        FROM Review r
+                        WHERE r.school_id = s.id
+                    ), 0) AS rating,
 
                      -- Concatenate list of facility IDs associated with the school
                      GROUP_CONCAT(DISTINCT f.fid),
@@ -150,6 +142,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
                      OR (:minFee IS NULL AND :maxFee IS NOT NULL AND s.fee_from <= :maxFee)
                      OR (s.fee_from BETWEEN :minFee AND :maxFee)
                    )
+                   AND s.ref_id IS NULL
 
                  -- Group results by school ID to apply aggregation functions
                  GROUP BY s.id
@@ -206,6 +199,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
                         OR (:minFee IS NULL AND :maxFee IS NOT NULL AND s.fee_from <= :maxFee)
                         OR (s.fee_from BETWEEN :minFee AND :maxFee)
                       )
+                      AND s.ref_id IS NULL
 
                     -- Group by school to allow aggregate filtering in HAVING clause
                     GROUP BY s.id
@@ -262,6 +256,7 @@ public interface SchoolRepository extends JpaRepository<School, Integer>, JpaSpe
                      OR (:minFee IS NULL AND :maxFee IS NOT NULL AND s.fee_from <= :maxFee)
                      OR (s.fee_from BETWEEN :minFee AND :maxFee)
                     )
+                    AND s.ref_id IS NULL
             """, nativeQuery = true)
     long countSchoolsBasic(
             @Param("name") String name,

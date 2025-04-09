@@ -56,7 +56,7 @@ export default function SchoolInfo({school}: { school: SchoolVO }) {
             <div className={'h-full w-full md:w-1/2 lg:w-2/3 md:pl-5'}>
                 <Link
                     className={'text-3xl text-custom-600 underline hover:underline block mb-3'}
-                    href={'/'}>
+                    href={`/public/school-detail/${school.id}`}>
                     {school.name}
                 </Link>
                 <Row gutter={16} className={'mt-2'}>
@@ -81,7 +81,7 @@ export default function SchoolInfo({school}: { school: SchoolVO }) {
                         </div>
                     </Col>
                     <Col className="gutter-row break-all" md={12} lg={16}>
-                        {school.website}
+                        <Link className={'underline'} href={school.website}>{school.website}</Link>
                     </Col>
                 </Row>
 
