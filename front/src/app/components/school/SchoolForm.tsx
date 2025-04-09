@@ -33,8 +33,6 @@ import school4 from '@public/school4.jpg'
 import school5 from '@public/school5.jpg'
 import SchoolOwnersSelect from "@/app/components/school/SchoolOwnerSelect";
 import SchoolNameInput from "@/app/components/school/SchoolNameInput";
-import Image from "next/image";
-import ReactImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
 import {AnimatePresence, motion} from "framer-motion";
 
@@ -246,14 +244,12 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                                                 <img
                                                     src={src}
                                                     alt={`Thumbnail ${index + 1}`}
-                                                    className="!scale-90 hover:!scale-100 h-20 lg:h-40 object-cover rounded-lg transition-all duration-500"
+                                                    className="!scale-90 hover:!scale-100 h-20 lg:h-32 aspect-[16/9] object-cover rounded-lg transition-all duration-500"
                                                 />
-                                                {/*<Image src={src} alt={"hello"} fill priority/>*/}
                                             </div>
                                         ));
                                     })()}
                                 </Carousel>
-                                {/*<ReactImageGallery items={imagesList}/>*/}
                             </Card>
                         </Col>
 
@@ -620,12 +616,13 @@ const SchoolForm: React.FC<SchoolFormFields> = ({
                             />
                         </Form.Item>
                         <Form.Item label="School image" name="image" valuePropName="fileList"
-                                   getValueFromEvent={(e) => e?.fileList || []} tooltip={"Consider using 16:9 images for best result"}>
+                                   getValueFromEvent={(e) => e?.fileList || []}
+                                   tooltip={"Consider using 16:9 images for best result"}>
                             <ImageUpload
                                 form={form}
                                 fieldName="image"
                                 maxCount={10}
-                                accept={["image/png","image/jpg","image/jpeg"]}
+                                accept={["image/png", "image/jpg", "image/jpeg"]}
                                 maxSizeMB={5}
                                 hideImageUpload={hideImageUpload}
                                 imageList={imageList}

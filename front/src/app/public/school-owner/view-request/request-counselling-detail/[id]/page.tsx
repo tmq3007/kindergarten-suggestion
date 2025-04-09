@@ -12,7 +12,6 @@ import useRequestCounsellingForm from "@/lib/hook/useRequestCounsellingForm";
 import RequestCounsellingManageTitle from "@/app/components/request_counselling/RequestCounsellingManageTitle";
 import RequestCounsellingFormSkeleton from "@/app/components/skeleton/RequestCounsellingFormSkeleton";
 
-
 export default function RequestCounsellingDetail() {
     const params = useParams();
     const requestCounsellingId = Number(params.id as string);

@@ -16,11 +16,7 @@ import fa.pjb.back.model.enums.EFileFolder;
 import fa.pjb.back.model.enums.EParentInSchool;
 import fa.pjb.back.model.mapper.*;
 import fa.pjb.back.model.vo.*;
-import fa.pjb.back.repository.ParentInSchoolRepository;
-import fa.pjb.back.repository.ParentRepository;
-import fa.pjb.back.repository.ReviewRepository;
-import fa.pjb.back.repository.SchoolRepository;
-import fa.pjb.back.repository.UserRepository;
+import fa.pjb.back.repository.*;
 import fa.pjb.back.service.AuthService;
 import fa.pjb.back.service.GCPFileStorageService;
 import fa.pjb.back.service.ParentService;
@@ -39,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -486,10 +481,10 @@ public class ParentServiceImpl implements ParentService {
                     .toDate(parentInSchool.getTo())
                     .status(parentInSchool.getStatus())
                     .providedRating(review == null ? null : (review.getLearningProgram() +
-                            review.getFacilitiesAndUtilities() +
-                            review.getExtracurricularActivities() +
-                            review.getTeacherAndStaff() +
-                            review.getHygieneAndNutrition()) / 5.0)
+                                                             review.getFacilitiesAndUtilities() +
+                                                             review.getExtracurricularActivities() +
+                                                             review.getTeacherAndStaff() +
+                                                             review.getHygieneAndNutrition()) / 5.0)
                     .comment(review == null ? null : review.getFeedback())
                     .hasEditCommentPermission(true)
                     .totalSchoolReview(Integer.parseInt(String.valueOf(statisticsObject[0])))
@@ -525,10 +520,10 @@ public class ParentServiceImpl implements ParentService {
                     .toDate(parentInSchool.getTo())
                     .status(parentInSchool.getStatus())
                     .providedRating(review == null ? null : (review.getLearningProgram() +
-                            review.getFacilitiesAndUtilities() +
-                            review.getExtracurricularActivities() +
-                            review.getTeacherAndStaff() +
-                            review.getHygieneAndNutrition()) / 5.0)
+                                                             review.getFacilitiesAndUtilities() +
+                                                             review.getExtracurricularActivities() +
+                                                             review.getTeacherAndStaff() +
+                                                             review.getHygieneAndNutrition()) / 5.0)
                     .comment(review == null ? null : review.getFeedback())
                     .hasEditCommentPermission(hasPermission)
                     .totalSchoolReview(Integer.parseInt(String.valueOf(statisticsObject[0])))
@@ -547,6 +542,17 @@ public class ParentServiceImpl implements ParentService {
         School school = schoolRepository
                 .findById(schoolId)
                 .orElseThrow(RecordNotFoundException::new);
+
+        // Check if this Parent has been active in this School or not
+        List<ParentInSchool> existingEnrollments = parentInSchoolRepository.findAllByParent_IdAndSchool_Id(parent.getId(), school.getId());
+        log.info("==================================");
+        log.info("pis: {}", existingEnrollments);
+        boolean hasActive = existingEnrollments.stream()
+                .anyMatch(pis -> pis.getStatus() == EParentInSchool.ACTIVE.getValue());
+
+        if (hasActive) {
+            return false;
+        }
 
         // Create composite key for ParentInSchool
         ParentInSchoolId parentInSchoolId = ParentInSchoolId.builder()
