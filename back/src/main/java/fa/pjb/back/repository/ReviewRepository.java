@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
@@ -123,4 +124,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "WHERE r.school.id = :schoolId " +
             "AND r.status IN (0 , 2) ")
     List<Review> findBySchoolId(Integer schoolId);
+    @Query("SELECT r " +
+            "FROM Review r " +
+            "WHERE r.id = :id ")
+    Optional<Review> findById(Integer id);
 }

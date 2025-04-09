@@ -1,5 +1,5 @@
-import React from 'react';
-import { Tooltip, Badge, Menu } from 'antd';
+import React, { useEffect } from 'react';
+import { Tooltip, Badge } from 'antd';
 import { BellFilled, BellOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
@@ -14,12 +14,14 @@ const NotificationTooltip = () => {
     const isSchoolOwner = userRole === 'ROLE_SCHOOL_OWNER';
     const isAdmin = userRole === 'ROLE_ADMIN';
 
-    // Fetch notifications for School Owner
+    // Fetch notifications for School Owner with polling
     const { data, error, isLoading } = useAlertReminderQuery(Number(userId), {
         skip: !isSchoolOwner || !userId,
-    });
+     });
 
-    const { data: adminData, error: adminError, isLoading: adminLoading } = useGetReviewReportRemindersQuery();
+    // Fetch notifications for Admin with polling
+    const { data: adminData, error: adminError, isLoading: adminLoading } = useGetReviewReportRemindersQuery(undefined, {
+     });
 
     const reminderData = data?.data || [];
     const schoolOwnerNotifications = Array.isArray(reminderData) ? reminderData : [reminderData];
@@ -29,11 +31,11 @@ const NotificationTooltip = () => {
 
     // School Owner Notifications content for Tooltip
     const schoolOwnerTooltipContent = (
-        <div className="w-[230px]   bg-white p-2">
+        <div className="w-[230px] bg-white p-2">
             {isLoading ? (
                 <div className="py-2 text-center">Loading...</div>
             ) : error ? (
-                <div className="py-2 text-center">Error loading notifications</div>
+                <div className="py-2 text-center">No new notifications</div>
             ) : schoolOwnerNotifications.length > 0 ? (
                 schoolOwnerNotifications.map((item) => (
                     <div key={item.title || Math.random()} className="py-2">
@@ -55,8 +57,12 @@ const NotificationTooltip = () => {
 
     // Admin Notifications content for Tooltip
     const adminTooltipContent = (
-        <div className="w-[230px]   bg-white p-2">
-            {adminNotifications.length > 0 ? (
+        <div className="w-[230px] bg-white p-2">
+            {adminLoading ? (
+                <div className="py-2 text-center">Loading...</div>
+            ) : adminError ? (
+                <div className="py-2 text-center">No new notifications</div>
+            ) : adminNotifications.length > 0 ? (
                 adminNotifications.map((item) => (
                     <div key={item.schoolId} className="py-2 flex justify-between items-center">
                         <div>
@@ -82,12 +88,22 @@ const NotificationTooltip = () => {
             title={isSchoolOwner ? schoolOwnerTooltipContent : isAdmin ? adminTooltipContent : null}
             placement="bottomRight"
             color="white"
-            overlayInnerStyle={{ color: '#000' }} // Đặt màu chữ đen cho nội dung tooltip
+            overlayInnerStyle={{ color: '#000' }}
             className="z-0"
         >
             <div className="cursor-pointer">
                 <Badge
-                    count={isSchoolOwner ? schoolOwnerNotifications.length : isAdmin ? adminNotifications.length : 0}
+                    count={
+                        isSchoolOwner
+                            ? error
+                                ? 0
+                                : schoolOwnerNotifications.length
+                            : isAdmin
+                                ? adminError
+                                    ? 0
+                                    : adminNotifications.length
+                                : 0
+                    }
                     offset={[2, 2]}
                     size="small"
                     className="mr-3"
