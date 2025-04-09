@@ -21,6 +21,7 @@ export const registerApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ["Register"],
     endpoints: (builder) => ({
+
         register: builder.mutation<ApiResponse<string>, RegisterDTO>({
             query: (RegisterDTO) => ({
                 url: "/parent/register",
@@ -28,6 +29,7 @@ export const registerApi = createApi({
                 body: RegisterDTO,
             }),
         }),
+
         checkEmail: builder.query<ApiResponse<boolean>, string>({
             query: (email) => ({
                 url: "/auth/check-email",
@@ -36,6 +38,7 @@ export const registerApi = createApi({
             }),
             keepUnusedDataFor: 0,
         }),
+
         getCountries: builder.query<Country[], void>({
             // Trả về dữ liệu tĩnh và biến đổi nó
             async queryFn() {
@@ -57,6 +60,7 @@ export const registerApi = createApi({
                 }
             },
         }),
+
     }),
 })
 export const {useRegisterMutation, useLazyCheckEmailQuery, useGetCountriesQuery} = registerApi;

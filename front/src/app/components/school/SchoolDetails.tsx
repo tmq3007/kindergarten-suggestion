@@ -1,6 +1,19 @@
 "use client";
-import React, {FunctionComponent} from "react";
-import {Card, Col, Row, Descriptions, Tabs, Alert, Spin, ConfigProvider, Button} from "antd";
+import React, {FunctionComponent, useState} from "react";
+import {
+    Card,
+    Col,
+    Row,
+    Descriptions,
+    Tabs,
+    Alert,
+    Spin,
+    ConfigProvider,
+    Button,
+    Modal,
+    Space,
+    notification, message
+} from "antd";
 import {
     EnvironmentOutlined,
     MailOutlined,
@@ -27,6 +40,8 @@ import AddRequestModal from "@/app/components/user/AddRequestModal";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import useIsMobile from "@/lib/hook/useIsMobile";
+import {useRequestEnrollingSchoolMutation} from "@/redux/services/parentApi";
+import useNotification from "antd/es/notification/useNotification";
 
 interface SchoolDetailsProps {
     schoolData: SchoolDetailVO;
@@ -56,21 +71,99 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
         imageList,
     } = schoolData;
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [requestEnrollingSchool, {isLoading: isRequestEnrollingSchoolLoading}] = useRequestEnrollingSchoolMutation();
+    const [notificationApi, contextHolder] = useNotification();
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleOk = async () => {
+        try {
+            const requestEnrollingSchoolData = await requestEnrollingSchool(id).unwrap();
+            if (requestEnrollingSchoolData.data) {
+                notificationApi.success({
+                    message: "Enrollment Successfully",
+                    description: `Enrollment requested to ${name} successfully!`,
+                    duration: 1.5,
+                    placement: 'topRight',
+                });
+            } else {
+                notificationApi.error({
+                    message: "Enrollment Failed",
+                    description: "An error occurred while requesting enrollment. Please try again later.",
+                    duration: 1.5,
+                    placement: 'topRight',
+                });
+            }
+            setIsModalOpen(false);
+        } catch (err) {
+            notificationApi.error({
+                message: "Enrollment Failed",
+                description: "An error occurred while requesting enrollment. Please try again later.",
+                duration: 1.5,
+                placement: 'topRight',
+            });
+        }
+    };
+
     const styles = `
-        /* Facilities and Utilities */
-        .facility-item, .utility-item {
-            display: flex;
-            align-items: center;
-            padding: 4px 0;
-        }
-        .facility-present, .utility-present {
-            color: #00bcd4; /* Cyan to match your theme */
-            font-weight: bold;
-        }
-        .facility-absent, .utility-absent {
-            color: #d9d9d9; /* Light gray for absent items */
-        }
-    `;
+    /* Facilities and Utilities */
+    .facility-item, .utility-item {
+        display: flex;
+        align-items: center;
+        padding: 4px 0;
+    }
+    .facility-present, .utility-present {
+        color: #4D7FD7; 
+        font-weight: bold;
+    }
+    .facility-absent, .utility-absent {
+        color: #d9d9d9; /* Light gray for absent items */
+    }
+    
+    /* Custom Tabs styles */
+    .ant-tabs {
+        margin-top: -16px; /* Reduce space above tabs */
+    }
+    .ant-tabs-nav {
+        margin-bottom: 0 !important; /* Remove space between tabs and content */
+    }
+    .ant-tabs-nav::before {
+        border-bottom: none !important; /* Remove bottom border */
+    }
+    .ant-tabs-tab {
+        border-radius: 8px 8px 0 0 !important;
+        border: 1px solid #002F77 !important;
+        border-bottom: none !important;
+        margin-right: 4px !important;
+    }
+    .ant-tabs-tab-active {
+    background: #f0f7ff !important;
+    border-bottom: none !important;
+    z-index: 2;
+    }
+
+    .ant-tabs-content-holder {
+        border: 1px solid #002F77;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        padding: 16px;
+    }
+    .ant-tabs-nav::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: #002F77;
+        z-index: 1;
+    }`;
     // Fetch reviews using the API query
     const {data, error, isLoading} = useGetReviewBySchoolForPublicQuery({
         schoolId: id,
@@ -93,13 +186,13 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                 icon: <PaperClipOutlined/>,
                 children: (
 
-                    <Col xs={24}>
-                        <Row gutter={[24, 24]} justify="space-between">
+                    <Col xs={24} className={'!p-0'}>
+                        <Row gutter={[0, 0]} justify="space-between">
                             {/* Left Column: Basic Information */}
                             <Col xs={24} lg={16} className="flex">
-                                <Card className="w-full shadow-lg border  bg-white p-6">
+                                <Card className="w-full border-0 bg-white">
                                     <div
-                                        className="text-gray-800 text-lg"
+                                        className="text-gray-800"
                                         dangerouslySetInnerHTML={{__html: description || "N/A"}}
                                     />
                                 </Card>
@@ -108,10 +201,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                             {/* Right Column: Facilities & Utilities */}
                             <Col xs={24} lg={8} className="flex">
                                 <Card
-                                    title="Facilities & Utilities"
-                                    className="w-full shadow-lg border  bg-white p-6" styles={{
-                                    body: {padding: 0}
-                                }}
+                                    className="w-full border-l-0 lg:border-l border-t-1 lg:border-t-0 border-r-0 border-b-0 rounded-t-none rounded-bl-none bg-white p-6"
                                 >
                                     <div className="space-y-8">
                                         <div>
@@ -119,7 +209,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                                     <BookOutlined className="mr-2"/>
                                                     Facilities
                                                 </span>
-                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-lg">
+                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                                                 {FACILITY_OPTIONS.map((option, index) => {
                                                     const isPresent = facilityIds.includes(option.value);
                                                     return (
@@ -139,7 +229,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                                     <ToolOutlined className="mr-2"/>
                                                     Utilities
                                                 </span>
-                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-lg">
+                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                                                 {UTILITY_OPTIONS.map((option, index) => {
                                                     const isPresent = utilityIds.includes(option.value);
                                                     return (
@@ -190,151 +280,187 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
     ;
 
     return (
-        <div className="w-full flex justify-center mb-8">
-            <Row gutter={[24, 24]} justify="center">
-                {/* Section 1: School Images */}
-                <style>{styles}</style>
-                <Col xs={24}>
-                    <SchoolImageCarousel imageList={imageList}/>
-                </Col>
+        <>
+            {contextHolder}
+            <div className="w-full flex justify-center mb-8">
+                <Row gutter={[24, 24]} justify="center">
+                    {/* Section 1: School Images */}
+                    <style>{styles}</style>
+                    <Col xs={24}>
+                        <SchoolImageCarousel imageList={imageList}/>
+                    </Col>
 
-                <Col xs={24} className="flex justify-center">
-                    <Row gutter={[24, 24]} justify="center" className="w-full">
-                        {/* Section 2: Basic Information and Facilities & Utilities */}
-                        <Col xs={24}>
-                            <Row gutter={[24, 24]} justify="space-between">
-                                {/* Left Column: Basic Information */}
-                                <Col xs={24} lg={24} className="flex">
-                                    <Card
-                                        title="Basic Information"
-                                        className="w-full  border  bg-white p-6" styles={{
-                                        body: {padding: 0}
-                                    }}
-                                    >
-                                        <div className="flex mt-5 items-center justify-between mb-6">
-                                            <h2 className="text-3xl font-bold">{name || "Unknown School"}</h2>
-                                            <div className="flex flex-col gap-4">
-                                                <AddRequestModal schoolId={id} schoolName={name} />
-                                                <Button>Rate School</Button>
-                                            </div>
-
-                                        </div>
-                                        <Descriptions bordered className="w-full text-xl"  column={1}
-                                                      layout={isMobile ? "vertical" : "horizontal"}
-                                                      styles={{content: {fontSize: '16px'}}} size={"middle"}
+                    <Col xs={24} className="flex justify-center">
+                        <Row gutter={[24, 24]} justify="center" className="w-full">
+                            {/* Section 2: Basic Information and Facilities & Utilities */}
+                            <Card className="w-full border-custom-700 bg-white px-4 py-0 rounded-lg">
+                                {/* Header: Title + Action Buttons */}
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                    <h2 className="text-4xl font-bold text-black">{name || "Unknown School"}</h2>
+                                    <div className="flex flex-col gap-2">
+                                        <AddRequestModal schoolId={id} schoolName={name}/>
+                                        <Button className="w-[35%] lg:w-full mx-auto">Rate School</Button>
+                                        <Button danger onClick={showModal} className="w-[35%] lg:w-full mx-auto">
+                                            Enroll
+                                        </Button>
+                                        <Modal
+                                            title={<span
+                                                className={'text-2xl'}>Do you want to enroll into this school</span>}
+                                            open={isModalOpen}
+                                            onOk={handleOk}
+                                            onCancel={handleCancel}
+                                            confirmLoading={isRequestEnrollingSchoolLoading}
+                                            getContainer={false}
                                         >
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <EnvironmentOutlined className="mr-2"/>
-                                                        Address
-                                                    </span>
-                                                }
-                                            >
+                                            <Space>
+                                                <span className={'font-medium'}>School name:</span>
+                                                <span>{name}</span>
+                                            </Space>
+                                            <Space>
+                                                <span className={'font-medium'}>School address:</span>
+                                                <span>{[street, ward, district, province].filter(Boolean).join(", ") || "N/A"}</span>
+                                            </Space>
+                                        </Modal>
+                                    </div>
+                                </div>
+
+                                {/* Info Rows */}
+                                <Row gutter={[16, 16]}>
+                                    {/* Address */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <EnvironmentOutlined/>
+                                                Address:
+                                            </Col>
+                                            <Col xs={24} md={18} className="text-gray-700">
                                                 {[street, ward, district, province].filter(Boolean).join(", ") || "N/A"}
-                                            </Descriptions.Item>
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <MailOutlined className="mr-2"/>
-                                                        Email
-                                                    </span>
-                                                }
-                                            >
-                                                {email || "N/A"}
-                                            </Descriptions.Item>
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <PhoneOutlined className="mr-2"/>
-                                                        Contact
-                                                    </span>
-                                                }
-                                            >
-                                                {phone || "N/A"}
-                                            </Descriptions.Item>
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <GlobalOutlined className="mr-2"/>
-                                                        Website
-                                                    </span>
-                                                }
-                                            >
+                                            </Col>
+                                        </Row>
+                                    </Col>
+
+                                    {/* Email */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <MailOutlined/>
+                                                Email:
+                                            </Col>
+                                            <Col xs={24} md={18} className="text-gray-700">{email || "N/A"}</Col>
+                                        </Row>
+                                    </Col>
+
+                                    {/* Contact */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <PhoneOutlined/>
+                                                Contact:
+                                            </Col>
+                                            <Col xs={24} md={18} className="text-gray-700">{phone || "N/A"}</Col>
+                                        </Row>
+                                    </Col>
+
+                                    {/* Website */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <GlobalOutlined/>
+                                                Website:
+                                            </Col>
+                                            <Col xs={24} md={18}>
                                                 <a
                                                     href={website}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-blue-500"
-                                                    style={{wordBreak: "break-all"}}
+                                                    className="text-blue-500 break-all hover:underline"
                                                 >
                                                     {website || "N/A"}
                                                 </a>
-                                            </Descriptions.Item>
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <DollarOutlined className="mr-2"/>
-                                                        Tuition Fee
-                                                    </span>
-                                                }
-                                            >
+                                            </Col>
+                                        </Row>
+                                    </Col>
+
+                                    {/* Tuition Fee */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <DollarOutlined/>
+                                                Tuition Fee:
+                                            </Col>
+                                            <Col xs={24} md={18} className="text-gray-700">
                                                 From {feeFrom?.toLocaleString() || "N/A"} VND/month
                                                 {feeTo ? ` to ${feeTo?.toLocaleString()} VND/month` : ""}
-                                            </Descriptions.Item>
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <CalendarOutlined className="mr-2"/>
-                                                        Admission Age
-                                                    </span>
-                                                }
-                                            >
-                                                {CHILD_RECEIVING_AGE_OPTIONS.find((opt) => opt.value === String(receivingAge))?.label || "N/A"}
-                                            </Descriptions.Item>
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <BankOutlined className="mr-2"/>
-                                                        School Type
-                                                    </span>
-                                                }
-                                            >
-                                                {SCHOOL_TYPE_OPTIONS.find((opt) => opt.value === String(schoolType))?.label || "N/A"}
-                                            </Descriptions.Item>
-                                            <Descriptions.Item
-                                                label={
-                                                    <span className="text-base">
-                                                        <BookOutlined className="mr-2"/>
-                                                        Education Method
-                                                    </span>
-                                                }
-                                            >
-                                                {EDUCATION_METHOD_OPTIONS.find((opt) => opt.value === String(educationMethod))?.label || "N/A"}
-                                            </Descriptions.Item>
-                                        </Descriptions>
-                                    </Card>
-                                </Col>
-                            </Row>
-                        </Col>
+                                            </Col>
+                                        </Row>
+                                    </Col>
 
-                        {/* Section 3: School Introduction and Comments with Tabs outside Card */}
-                        <Col xs={24}>
-                            <ConfigProvider
-                                theme={{
-                                    token: {
-                                        colorBorder: 'red'
-                                    }
-                                }}
-                            >
-                            <Tabs defaultActiveKey="1" type="card" rootClassName="" items={tabItems}
-                                  size="large" animated={{inkBar: true, tabPane: true}}/>
-                            </ConfigProvider>
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
-        </div>
+                                    {/* Admission Age */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <CalendarOutlined/>
+                                                Admission Age:
+                                            </Col>
+                                            <Col xs={24} md={18} className="text-gray-700">
+                                                {CHILD_RECEIVING_AGE_OPTIONS.find((opt) => opt.value === String(receivingAge))?.label || "N/A"}
+                                            </Col>
+                                        </Row>
+                                    </Col>
+
+                                    {/* School Type */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <BankOutlined/>
+                                                School Type:
+                                            </Col>
+                                            <Col xs={24} md={18} className="text-gray-700">
+                                                {SCHOOL_TYPE_OPTIONS.find((opt) => opt.value === String(schoolType))?.label || "N/A"}
+                                            </Col>
+                                        </Row>
+                                    </Col>
+
+                                    {/* Education Method */}
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                                <BookOutlined/>
+                                                Education Method:
+                                            </Col>
+                                            <Col xs={24} md={18} className="text-gray-700">
+                                                {EDUCATION_METHOD_OPTIONS.find((opt) => opt.value === String(educationMethod))?.label || "N/A"}
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                </Row>
+                            </Card>
+
+
+                            {/* Section 3: School Introduction and Comments with Tabs outside Card */}
+                            <Col xs={24} className={'!p-0 mt-5'}>
+                                <ConfigProvider
+                                    theme={{
+                                        token: {
+                                            colorBorderSecondary: '#002F77',
+                                        }
+                                    }}
+                                >
+                                    <Tabs
+                                        defaultActiveKey="1"
+                                        type="card"
+                                        size="large"
+                                        animated={{inkBar: true, tabPane: true}}
+                                        items={tabItems}
+                                    />
+                                </ConfigProvider>
+
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+            </div>
+        </>
     );
 };
 

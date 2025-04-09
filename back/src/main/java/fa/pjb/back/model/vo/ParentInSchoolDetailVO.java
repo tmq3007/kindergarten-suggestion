@@ -3,6 +3,7 @@ package fa.pjb.back.model.vo;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 public record ParentInSchoolDetailVO(

@@ -28,6 +28,7 @@ public interface ParentInSchoolRepository extends JpaRepository<ParentInSchool, 
             "ORDER BY pis.status ASC , pis.from DESC")
     List<Object[]> findAcademicHistoryWithReviews(@Param("parentId") Integer parentId);
 
+<<<<<<< Updated upstream
     @Query("SELECT pis, s, r " +
             "FROM ParentInSchool pis " +
             "JOIN pis.school s " +
@@ -43,4 +44,6 @@ public interface ParentInSchoolRepository extends JpaRepository<ParentInSchool, 
             "WHERE pis.parent.id = :parentId AND pis.status = 2 " +
             "ORDER BY pis.from DESC")
     Page<Object[]> findPreviousAcademicHistoryWithReviews(@Param("parentId") Integer parentId, Pageable pageable);
+=======
+>>>>>>> Stashed changes
 }

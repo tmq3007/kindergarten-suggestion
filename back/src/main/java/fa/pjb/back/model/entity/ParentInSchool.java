@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 @AllArgsConstructor
@@ -17,9 +18,9 @@ import java.time.LocalDate;
 public class ParentInSchool {
 
     @EmbeddedId
-    private ParentInSchoolId primaInSchoolId;
+    private ParentInSchoolId parentInSchoolId;
 
-    @Column(name = "id", nullable = false)
+    @Column(name = "id", nullable = true, unique = true)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -30,12 +31,11 @@ public class ParentInSchool {
     @JoinColumn(name = "parent_id", nullable = false, insertable=false, updatable=false)
     private Parent parent;
 
-    @NotNull
-    @Column(name = "`from`", nullable = false)
-    private LocalDate from;
-
     @Column(name = "`to`")
     private LocalDate to;
+
+    @Column(name = "`from`", nullable = false,insertable=false, updatable=false)
+    private LocalDate from;
 
     @NotNull
     @ColumnDefault("b'0'")

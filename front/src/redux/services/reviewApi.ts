@@ -22,7 +22,6 @@ export type RatingStats = {
     };
 }
 
-
 export type ReviewDTO ={
     id?: number
     schoolId: number;
@@ -56,8 +55,8 @@ export type ReviewVO = {
 
 type ReviewRequest = {
     schoolId?: number;
-    fromDate?: string; // Chuỗi ISO date, ví dụ: "2024-01-01"
-    toDate?: string;   // Chuỗi ISO date
+    fromDate?: string;
+    toDate?: string;
     status?: string;
 };
 
@@ -82,6 +81,7 @@ export const reviewApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ['Review','ReviewStats'],
     endpoints: (build) => ({
+
         getReviewBySchoolId: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
             query: ({schoolId, fromDate, toDate, status}) => {
                 const params = new URLSearchParams();
@@ -171,15 +171,18 @@ export const reviewApi = createApi({
                 url: `/school/review/public/${schoolId}/${parentId}`,
                 method: "GET",
             }),
+            providesTags: ["Review"],
         }),
 
         submitRatings: build.mutation<void,ReviewDTO >({
             query: (ratingsData) => ({
-                url: `/school/review/public/save`,
+                url: `/school/review/save`,
                 method: 'POST',
                 body: ratingsData,
             }),
+            invalidatesTags: ["Review","ReviewStats"],
         }),
+
     }),
 });
 

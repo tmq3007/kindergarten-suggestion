@@ -1,6 +1,6 @@
 'use client'
 import SchoolDiffViewer from "@/app/components/school/SchoolDiffViewer";
-import {useParams} from "next/navigation";
+import {useParams, useRouter} from "next/navigation";
 import {useGetSchoolByIdQuery} from "@/redux/services/schoolApi";
 import {
     CHILD_RECEIVING_AGE_OPTIONS,
@@ -69,6 +69,7 @@ function mapSchoolOwnersToString(owners?: { fullname: string; email: string }[])
 }
 
 export default function ShowDiff() {
+    const router = useRouter();
     const params = useParams();
     const schoolId = Number(params.id as string);
     const {data: getDraftData, isLoading: isGetDraftLoading} = useGetSchoolByIdQuery(schoolId);
@@ -90,7 +91,14 @@ export default function ShowDiff() {
         );
     }
     return (
-        <div className={'px-5'}>
+        <div className={'px-5 text-xl'}>
+            <div
+                className={'underline text-custom-500 hover:cursor-pointer'}
+                onClick={() => router.back()}
+            >
+                Back
+            </div>
+
             <SchoolDiffViewer
                 original={school?.name}
                 draft={draft?.name}
