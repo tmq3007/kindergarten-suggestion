@@ -42,6 +42,7 @@ const SchoolImageCarousel: FunctionComponent<SchoolImageCarouselProps> = ({ imag
         /* Thumbnails container */
         .image-gallery-thumbnails-container {
             width: 100%;
+            margin-top: 20px;
         }
 
         /* Thumbnails wrapper */
@@ -56,24 +57,24 @@ const SchoolImageCarousel: FunctionComponent<SchoolImageCarouselProps> = ({ imag
             display: flex;
             justify-content: center;
             width: 100%;
-            gap: 10px; /* Add spacing between thumbnails */
+            gap: 20px; /* Add spacing between thumbnails */
+            
         }
 
         /* Individual thumbnail */
         .image-gallery-thumbnail {
+        margin: 0 20px;
             ${
         isFullScreen
             ? ""
-            : "width: 33%; /* Each thumbnail takes up 20% of the container width */" +
-            "max-width: 400px; /* Optional: cap the width for very wide screens */"
-    }
-            border: 2px solid transparent; /* Optional: for active state styling */
-            border-radius: 4px;
+            : "width: 33%;"
+        }
+            border: 0px solid transparent; /* Optional: for active state styling */
             overflow: hidden;
         }
 
         .image-gallery-thumbnail.active {
-            border: 2px solid #1890ff; /* Optional: highlight active thumbnail */
+            border: 0px solid #1890ff; /* Optional: highlight active thumbnail */
         }
 
         .image-gallery-thumbnail .image-gallery-thumbnail-image {
@@ -101,14 +102,12 @@ const SchoolImageCarousel: FunctionComponent<SchoolImageCarouselProps> = ({ imag
     return (
         <>
             <style>{styles}</style>
-            <Card className="w-full shadow-lg border border-cyan-500" styles={{ body: { padding: 6 } }}>
+            <Card className="w-full border-none " styles={{ body: { padding: 6 } }}>
                 <ReactImageGallery
                     showBullets
                     items={galleryImages}
                     useTranslate3D
                     onScreenChange={handleScreenChange}
-                    infinite
-                    disableThumbnailScroll={false}
                 />
             </Card>
         </>

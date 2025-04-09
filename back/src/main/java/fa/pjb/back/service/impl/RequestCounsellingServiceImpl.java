@@ -11,9 +11,12 @@ import fa.pjb.back.model.entity.*;
 import fa.pjb.back.model.mapper.RequestCounsellingMapper;
 import fa.pjb.back.model.mapper.RequestCounsellingProjection;
 import fa.pjb.back.model.mapper.SchoolMapper;
+import fa.pjb.back.model.vo.ParentRequestListVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
+import fa.pjb.back.model.vo.SchoolDetailVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.RequestCounsellingRepository;
+import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.RequestCounsellingService;
 import fa.pjb.back.service.UserService;
@@ -49,6 +52,8 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
     private final RequestCounsellingMapper requestCounsellingMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final UserService userService;
+    private final SchoolMapper schoolMapper;
+    private final ReviewRepository reviewRepository;
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -209,6 +214,54 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         requestCounselling.setResponse(currentRequestCounsellingResponse);
 
         eventPublisher.publishEvent(new CounsellingRequestUpdateEvent(request_email, currentRequestCounsellingResponse));
+    }
+
+    @Override
+    public Page<ParentRequestListVO> getAllRequestsByParent(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        User currentUser = getCurrentUser();
+        Parent parent = parentRepository.findParentByUserId(currentUser.getId());
+        if (parent == null) {
+            throw new UserNotFoundException();
+        }
+
+        Page<RequestCounselling> requestPage = requestCounsellingRepository.findByParentIdWithSchool(parent.getId(), pageable);
+
+        return requestPage.map(requestCounselling -> {
+
+            School school = requestCounselling.getSchool();
+
+            SchoolDetailVO schoolDetailVO = schoolMapper.toSchoolDetailVO(school);
+
+            List<Object[]> statistics = reviewRepository.getReviewStatisticsBySchoolId(school.getId());
+
+            Object[] statisticsObject = statistics.get(0);
+
+            return ParentRequestListVO.builder()
+                    .id(requestCounselling.getId())
+                    .school(schoolDetailVO)
+                    .inquiry(requestCounselling.getInquiry())
+                    .status(requestCounselling.getStatus())
+                    .email(requestCounselling.getEmail())
+                    .phone(requestCounselling.getPhone())
+                    .name(requestCounselling.getName())
+                    .address(requestCounselling.getParent().getStreet() + " " + requestCounselling.getParent().getWard() + " " + requestCounselling.getParent().getDistrict() + " " + requestCounselling.getParent().getProvince())
+                    .dueDate(requestCounselling.getDue_date())
+                    .response(requestCounselling.getResponse())
+                    .totalSchoolReview(Integer.parseInt(String.valueOf(statisticsObject[0])))
+                    .averageSchoolRating(Math.floor(((Double) statisticsObject[1]) * 10) / 10)
+                    .build();
+        });
+    }
+
+    @Override
+    public Integer countOpenRequestByParent() {
+        User currentUser = getCurrentUser();
+        Parent parent = parentRepository.findParentByUserId(currentUser.getId());
+        if (parent == null) {
+            throw new UserNotFoundException();
+        }
+        return requestCounsellingRepository.countOpenRequestByParentId(parent.getId());
     }
 
 }

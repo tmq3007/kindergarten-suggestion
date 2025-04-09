@@ -69,6 +69,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/school/review/public/**").permitAll()
                                 .requestMatchers("/api/school/review/public/{schoolId}/stats").permitAll()
 
+
                                 .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)

@@ -157,6 +157,51 @@
 /*   }*/
 /* }*/
 /* CSS cho bảng xen kẽ */
+
+
+
+/* Custom styles for the ratings popup */
+.ratings-popup .ant-modal-content {
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: linear-gradient(to bottom, #ffffff, #f9f9ff);
+}
+
+.ratings-popup .ant-rate {
+    font-size: 36px;
+}
+
+.ratings-popup .ant-rate-star {
+    margin-right: 12px;
+    transition: transform 0.2s ease;
+}
+
+.ratings-popup .ant-rate-star:hover {
+    transform: scale(1.1);
+}
+
+.ratings-popup .ant-input:focus {
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.ratings-popup .ant-btn {
+    transition: all 0.3s ease;
+}
+
+.ratings-popup .ant-btn:hover {
+    transform: translateY(-2px);
+}
+
+.ratings-popup .ant-modal-close {
+    transition: transform 0.3s ease;
+}
+
+.ratings-popup .ant-modal-close:hover {
+    transform: rotate(90deg);
+}
+
 .table-row-light {
     background-color: #ffffff; /* Màu trắng cho dòng chẵn */
 }

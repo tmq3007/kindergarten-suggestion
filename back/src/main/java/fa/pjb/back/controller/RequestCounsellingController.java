@@ -3,6 +3,7 @@ package fa.pjb.back.controller;
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
+import fa.pjb.back.model.vo.ParentRequestListVO;
 import fa.pjb.back.model.vo.RequestCounsellingReminderVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.service.RequestCounsellingReminderService;
@@ -149,6 +150,28 @@ public class RequestCounsellingController {
             .message("Fetched reminders for school owner successfully")
             .data(requests)
             .build();
+    }
+
+    @Operation(summary = "Get request counselling", description = "Get all request counselling by parent")
+    @GetMapping("/get-by-parent")
+    public ApiResponse<Page<ParentRequestListVO>> getRequestCounsellingByParent(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.<Page<ParentRequestListVO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get request counselling successfully!")
+                .data(requestCounsellingService.getAllRequestsByParent(page, size))
+                .build();
+    }
+
+    @Operation(summary = "Count open request counselling", description = "Count open request counselling")
+    @GetMapping("/count-open-request-by-parent")
+    public ApiResponse<Integer> countOpenRequestByParent() {
+        return ApiResponse.<Integer>builder()
+                .code(HttpStatus.OK.value())
+                .message("Count open request counselling successfully!")
+                .data(requestCounsellingService.countOpenRequestByParent())
+                .build();
     }
 
 

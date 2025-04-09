@@ -14,40 +14,50 @@ interface ReviewItemProps {
 const collapseStyle = `
 .headerFeedback,
 .headerRating {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scaleY(1);
+    transform-origin: top;
+    position: relative;
+    max-height: 100px;
+    overflow: hidden;
 }
 
 .ant-collapse-item-active .headerFeedback,
 .ant-collapse-item-active .headerRating {
     opacity: 0;
-    transform: translateY(-10px);
-    animation: fadeOut 0.3s ease forwards;
+    transform: translateY(-8px) scaleY(0.8);
+    animation: smoothHeightCollapse 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
-@keyframes fadeOut {
+@keyframes smoothHeightCollapse {
     0% {
         opacity: 1;
-        transform: translateY(0);
-        height: auto;
-        display: block;
+        transform: translateY(0) scaleY(1);
+        max-height: 100px;
+        margin-top: 4px;
+        visibility: visible;
     }
-    99% {
-        opacity: 0;
-        height: 0;
-        transform: translateY(-10px);
-        display: block;
+    40% {
+        opacity: 0.6;
+        transform: translateY(-5px) scaleY(0.7);
+        max-height: 60px;
+        margin-top: 2px;
     }
     100% {
         opacity: 0;
-        display: none;
+        transform: translateY(-8px) scaleY(0);
+        max-height: 0;
+        margin-top: 0;
+        visibility: hidden;
     }
 }
 
 .bodyFeedback,
 .bodyRating {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0;
     transform: translateY(10px);
 }

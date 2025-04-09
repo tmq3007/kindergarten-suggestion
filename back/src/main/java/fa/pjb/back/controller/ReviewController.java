@@ -2,6 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
+import fa.pjb.back.model.dto.ReviewDTO;
 import fa.pjb.back.model.dto.ReviewReportDTO;
 import fa.pjb.back.model.vo.RatingStatVO;
 import fa.pjb.back.model.vo.ReviewReportReminderVO;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +43,24 @@ public class ReviewController {
                 .code(200)
                 .message("Reviews retrieved successfully")
                 .data(reviews)
+                .build();
+    }
+    @Operation(summary = "Get review by school and parent", description = "Get review by school and parent for update rating")
+    @GetMapping("/public/{schoolId}/{parentId}")
+    public ApiResponse<ReviewVO> getReviewBySchoolAndParent(@PathVariable Integer schoolId, @PathVariable Integer parentId) {
+        return ApiResponse.<ReviewVO>builder()
+                .code(200)
+                .message("Review retrieved successfully")
+                .data(reviewService.getReviewBySchoolAndParent(schoolId, parentId))
+                .build();
+    }
+    @Operation(summary = "Save review", description = "This API use the save review of parent")
+    @PostMapping("/public/save")
+    public ApiResponse<ReviewVO> saveReview(@RequestBody @Valid ReviewDTO reviewData){
+        return ApiResponse.<ReviewVO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Review Saved")
+                .data(reviewService.saveReview(reviewData))
                 .build();
     }
 
