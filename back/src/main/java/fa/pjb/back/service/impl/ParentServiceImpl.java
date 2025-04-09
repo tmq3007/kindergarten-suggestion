@@ -516,7 +516,7 @@ public class ParentServiceImpl implements ParentService {
 
             Review review = (Review) result[2];
 
-            boolean hasPermission = Math.abs(ChronoUnit.DAYS.between(LocalDate.now(), parentInSchool.getTo())) >= 30;
+            boolean hasPermission = Math.abs(ChronoUnit.DAYS.between(LocalDate.now(), parentInSchool.getTo())) <= 30;
 
             return ParentInSchoolDetailVO.builder()
                     .id(parentInSchool.getId())
