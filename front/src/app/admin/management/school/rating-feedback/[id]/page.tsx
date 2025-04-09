@@ -623,7 +623,7 @@ const RatingsDashboard = () => {
                                                                 <ViewReportLink
                                                                     onClick={() => openModal({ id: item.id, report: item.report })}
                                                                     disabled={false}
-                                                                    onFetching={false}
+                                                                    onFetching={isFetching && loadingReviewId === item.id}
                                                                 />
                                                             )}
 

@@ -24,6 +24,7 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
     const userRole = useSelector((state: RootState) => state.user?.role);
     const userId = useSelector((state: RootState) => state.user?.id);
     const isParent = userRole === "ROLE_PARENT"
+    const isAdminOrSo = userRole === "ROLE_ADMIN" || userRole === "ROLE_SCHOOL_OWNER"
 
     const { data: parent, isLoading: isParentLoading } = useGetParentByIdQuery(Number(userId), {
         skip: !userId || !isParent,
@@ -32,8 +33,6 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
     const userEmail = parent?.data?.email;
     const userPhone = parent?.data?.phone;
     const userName = parent?.data?.fullname;
-
-    const router = useRouter();
 
     const [isSignupModalOpen, setIsSignupModalOpen] = useState<boolean>(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
@@ -53,12 +52,14 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
     }, [parent, isModalOpen, userId, isParent, schoolId, form]);
 
     const showModal = () => {
-        if (!isParent) {
-            messageApi.error("Please login first!").then(r => console.log(r));
+        if (isParent) {
+            setIsModalOpen(true);
+        }else if(isAdminOrSo)  {
+            messageApi.error("You have to be a parent to request counselling! Please login or sign up to continue!").then(r => console.log(r));
+        }else{
+            messageApi.error("You have to be a parent to request counselling! Please login or sign up to continue!").then(r => console.log(r));
             setIsLoginModalOpen(true)
             setIsModalOpen(false)
-        }else{
-            setIsModalOpen(true);
         }
 
     };
