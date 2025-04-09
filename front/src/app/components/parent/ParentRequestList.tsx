@@ -9,6 +9,7 @@ import {ParentRequestListVO} from '@/redux/services/requestCounsellingApi';
 import {Pageable} from '@/redux/services/userApi';
 import ParentRequestInfo from "@/app/components/parent/ParentRequestInfo";
 import ParentRequestListSkeleton from "@/app/components/skeleton/ParentRequestListSkeleton";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
 interface ParentRequestListFormProps {
     data: ApiResponse<{ content: ParentRequestListVO[]; page: Pageable }> | undefined;
@@ -78,6 +79,8 @@ export default function ParentRequestList({
                 ]}
             />
 
+            <SchoolManageTitle title={'My Requests'}/>
+
             {(isLoading || isFetching) ? (
                 <>
                 <ParentRequestListSkeleton/>
@@ -86,7 +89,7 @@ export default function ParentRequestList({
             ) : (
                 <>
                     {(totalOpenReq > 0) && (
-                        <p className="text-center">
+                        <p className="text-start text-lg mt-5">
                             You have {totalOpenReq} open requests
                         </p>
                     )}
