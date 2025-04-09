@@ -48,7 +48,7 @@ export const registerApi = createApi({
                             dialCode: country.idd.root
                                 ? `${country.idd.root}${country.idd.suffixes ? country.idd.suffixes[0] : ""}`
                                 : "",
-                            flag: country.flags?.png || country.flags?.svg || "",
+                            flag: country.flags?.png ? `/${country.flags.png}` : country.flags?.svg ? `/${country.flags.svg}` : "",
                         }))
                         .filter((country: Country) => country.dialCode);
                     return { data: transformedData };
