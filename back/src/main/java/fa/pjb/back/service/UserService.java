@@ -3,6 +3,7 @@ package fa.pjb.back.service;
 import fa.pjb.back.model.dto.UserCreateDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
+import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.vo.UserVO;
@@ -26,6 +27,8 @@ public interface UserService {
     User getCurrentUser();
 
     SchoolOwner getCurrentSchoolOwner();
+
+    Parent getCurrentParent();
 
     Boolean checkPhoneExist(String phone);
 

@@ -150,7 +150,7 @@ public class ParentController {
                 .build();
     }
 
-    @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
+    @Operation(summary = "Enroll Parent", description = "This api will be used by school owner to enroll a parent into a school")
     @PutMapping("/enroll/{parentInSchoolId}")
     public ApiResponse<Boolean> enrollParent(@PathVariable Integer parentInSchoolId) {
         return ApiResponse.<Boolean>builder()
@@ -213,6 +213,16 @@ public class ParentController {
                 .code(HttpStatus.OK.value())
                 .message("Previous academic history retrieved successfully")
                 .data(academicHistory)
+                .build();
+    }
+
+    @Operation(summary = "Enroll into a school", description = "This api will be used to enroll a parent into a school")
+    @PostMapping("/request-enroll/{schoolId}")
+    public ApiResponse<Boolean> requestEnrollingSchool(@PathVariable Integer schoolId) {
+        return ApiResponse.<Boolean>builder()
+                .code(HttpStatus.OK.value())
+                .message("Enroll into school successfully")
+                .data(parentService.enrollSchool(schoolId))
                 .build();
     }
 

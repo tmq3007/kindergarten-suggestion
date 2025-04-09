@@ -14,7 +14,6 @@ import fa.pjb.back.model.dto.UserCreateDTO;
 import fa.pjb.back.model.dto.UserDetailDTO;
 import fa.pjb.back.model.dto.UserUpdateDTO;
 import fa.pjb.back.model.entity.Media;
-import fa.pjb.back.model.entity.Parent;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
 import fa.pjb.back.model.enums.ERole;
@@ -24,7 +23,6 @@ import fa.pjb.back.model.vo.FileUploadVO;
 import fa.pjb.back.model.vo.MediaVO;
 import fa.pjb.back.model.vo.UserVO;
 import fa.pjb.back.repository.MediaRepository;
-import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.UserRepository;
 import fa.pjb.back.service.EmailService;
@@ -36,7 +34,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -50,7 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import static fa.pjb.back.model.enums.ERole.*;
-import static fa.pjb.back.model.enums.EFileFolder.SO_IMAGES;
+import static fa.pjb.back.model.enums.FileFolderEnum.SO_IMAGES;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -65,12 +62,10 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final SchoolOwnerRepository schoolOwnerRepository;
-    private final ParentRepository parentRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final AutoGeneratorHelper autoGeneratorHelper;
 
-    @Override
     public User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         // Check if principal is an instance of User entity
@@ -81,22 +76,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
     public SchoolOwner getCurrentSchoolOwner() {
         User user = getCurrentUser();
         return schoolOwnerRepository.findWithSchoolAndDraftByUserId(user.getId())
                 .orElseThrow(UserNotFoundException::new);
-    }
-
-    @Override
-    public Parent getCurrentParent() {
-        User user = getCurrentUser();
-        Parent parent = parentRepository.findParentByUserId(user.getId());
-        if (parent == null) {
-            throw new UserNotFoundException();
-        } else {
-            return parent;
-        }
     }
 
     @Override
@@ -109,14 +92,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean checkPhoneExistExcept(String phone, Integer userId) {
         Boolean temp = userRepository.existsByPhoneAndIdNot(phone.trim(), userId);
-        log.info("temp:{}", String.valueOf(temp));
+        log.info("temp:{}",String.valueOf(temp));
         return temp;
     }
 
     @Override
-    public Boolean checkEmailExistExcept(String email, Integer userId) {
+    public Boolean checkEmailExistExcept(String email, Integer userId){
         Boolean temp = userRepository.existsByEmailAndIdNot(email.trim(), userId);
-        log.info("temp:{}", String.valueOf(temp));
+        log.info("temp:{}",String.valueOf(temp));
         return temp;
     }
 
@@ -142,36 +125,36 @@ public class UserServiceImpl implements UserService {
     public UserDetailDTO getUserDetailById(int userId) {
         // Tìm User theo ID
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         // Lấy thông tin cơ bản từ User
         UserDetailDTO.UserDetailDTOBuilder builder = UserDetailDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .dob(user.getDob() != null ? user.getDob().toString() : "")
-                .phone(user.getPhone())
-                .role(formatRole(user.getRole()))
-                .status(Boolean.TRUE.equals(user.getStatus()));
+            .id(user.getId())
+            .username(user.getUsername())
+            .fullname(user.getFullname())
+            .email(user.getEmail())
+            .dob(user.getDob() != null ? user.getDob().toString() : "")
+            .phone(user.getPhone())
+            .role(formatRole(user.getRole()))
+            .status(Boolean.TRUE.equals(user.getStatus()));
 
         // Kiểm tra role và lấy thông tin từ SchoolOwner nếu là ROLE_SCHOOL_OWNER
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
             SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(userId)
-                    .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + userId));
 
             builder.expectedSchool(schoolOwner.getExpectedSchool())
-                    .business_registration_number(schoolOwner.getBusiness_registration_number())
-                    .imageList(schoolOwner.getImages() != null
-                            ? schoolOwner.getImages().stream()
-                            .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
-                            .collect(Collectors.toList())
-                            : null);
+                .business_registration_number(schoolOwner.getBusiness_registration_number())
+                .imageList(schoolOwner.getImages() != null
+                    ? schoolOwner.getImages().stream()
+                    .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
+                    .collect(Collectors.toList())
+                    : null);
         } else {
             // Nếu không phải ROLE_SCHOOL_OWNER, các trường bổ sung để null
             builder.expectedSchool(null)
-                    .business_registration_number(null)
-                    .imageList(null);
+                .business_registration_number(null)
+                .imageList(null);
         }
 
         return builder.build();
@@ -185,7 +168,6 @@ public class UserServiceImpl implements UserService {
             case ROLE_ADMIN -> "ROLE_ADMIN";
         };
     }
-
     //Covert String Role => ERole
     private ERole convertRole(String role) {
         return switch (role.toUpperCase()) {
@@ -201,7 +183,7 @@ public class UserServiceImpl implements UserService {
     public UserDetailDTO updateUser(UserUpdateDTO dto, List<MultipartFile> imageList) {
         // Tìm user theo ID
         User user = userRepository.findById(dto.id())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.id()));
 
         // Kiểm tra email trùng lặp
         if (userRepository.existsByEmailAndIdNot(dto.email(), dto.id())) {
@@ -220,17 +202,17 @@ public class UserServiceImpl implements UserService {
         // Xử lý SchoolOwner nếu role là ROLE_SCHOOL_OWNER
         if (dto.role().equals("ROLE_SCHOOL_OWNER")) {
             if (schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumberAndUserIdNot(
-                    dto.business_registration_number(), dto.id())) {
+                dto.business_registration_number(), dto.id())) {
                 throw new InvalidBRNAlException("Business registration number already exists.");
             }
 
             // Tìm hoặc tạo mới SchoolOwner
             SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(dto.id())
-                    .orElseGet(() -> SchoolOwner.builder()
-                            .user(user)
-                            .publicPermission(true)
-                            .assignTime(LocalDate.from(LocalDateTime.now()))
-                            .build());
+                .orElseGet(() -> SchoolOwner.builder()
+                    .user(user)
+                    .publicPermission(true)
+                    .assignTime(LocalDate.from(LocalDateTime.now()))
+                    .build());
 
             // Cập nhật thông tin SchoolOwner
             schoolOwner.setExpectedSchool(dto.expectedSchool());
@@ -250,42 +232,41 @@ public class UserServiceImpl implements UserService {
 
         // Trả về UserDetailDTO
         UserDetailDTO.UserDetailDTOBuilder builder = UserDetailDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .dob(user.getDob() != null ? user.getDob().toString() : "")
-                .phone(user.getPhone())
-                .role(formatRole(user.getRole()))
-                .status(Boolean.TRUE.equals(user.getStatus()));
+            .id(user.getId())
+            .username(user.getUsername())
+            .fullname(user.getFullname())
+            .email(user.getEmail())
+            .dob(user.getDob() != null ? user.getDob().toString() : "")
+            .phone(user.getPhone())
+            .role(formatRole(user.getRole()))
+            .status(Boolean.TRUE.equals(user.getStatus()));
 
         // Nếu là ROLE_SCHOOL_OWNER, thêm thông tin từ SchoolOwner
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
             SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(user.getId())
-                    .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + user.getId()));
+                .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + user.getId()));
 
             builder.expectedSchool(schoolOwner.getExpectedSchool())
-                    .business_registration_number(schoolOwner.getBusiness_registration_number())
-                    .imageList(schoolOwner.getImages() != null
-                            ? schoolOwner.getImages().stream()
-                            .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
-                            .collect(Collectors.toList())
-                            : null);
+                .business_registration_number(schoolOwner.getBusiness_registration_number())
+                .imageList(schoolOwner.getImages() != null
+                    ? schoolOwner.getImages().stream()
+                    .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
+                    .collect(Collectors.toList())
+                    : null);
         } else {
             builder.expectedSchool(null)
-                    .business_registration_number(null)
-                    .imageList(null);
+                .business_registration_number(null)
+                .imageList(null);
         }
 
         return builder.build();
     }
-
     // Active or Deactivate user status
     @Override
     public UserDetailDTO toggleStatus(int userId) {
         // Tìm User theo ID
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         // Đảo ngược trạng thái
         user.setStatus(!Boolean.TRUE.equals(user.getStatus())); // Xử lý trường hợp null
@@ -293,31 +274,31 @@ public class UserServiceImpl implements UserService {
 
         // Trả về UserDetailDTO với builder
         UserDetailDTO.UserDetailDTOBuilder builder = UserDetailDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .dob(user.getDob() != null ? user.getDob().toString() : "") // Thay null bằng ""
-                .phone(user.getPhone())
-                .role(formatRole(user.getRole()))
-                .status(Boolean.TRUE.equals(user.getStatus())); // Trả về Boolean
+            .id(user.getId())
+            .username(user.getUsername())
+            .fullname(user.getFullname())
+            .email(user.getEmail())
+            .dob(user.getDob() != null ? user.getDob().toString() : "") // Thay null bằng ""
+            .phone(user.getPhone())
+            .role(formatRole(user.getRole()))
+            .status(Boolean.TRUE.equals(user.getStatus())); // Trả về Boolean
 
         // Nếu là ROLE_SCHOOL_OWNER, thêm thông tin từ SchoolOwner
         if (user.getRole() == ERole.ROLE_SCHOOL_OWNER) {
             SchoolOwner schoolOwner = schoolOwnerRepository.findByUserId(userId)
-                    .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("SchoolOwner not found for user ID: " + userId));
 
             builder.expectedSchool(schoolOwner.getExpectedSchool())
-                    .business_registration_number(schoolOwner.getBusiness_registration_number())
-                    .imageList(schoolOwner.getImages() != null
-                            ? schoolOwner.getImages().stream()
-                            .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
-                            .collect(Collectors.toList())
-                            : null);
+                .business_registration_number(schoolOwner.getBusiness_registration_number())
+                .imageList(schoolOwner.getImages() != null
+                    ? schoolOwner.getImages().stream()
+                    .map(img -> new MediaVO(img.getUrl(), img.getFilename(), img.getCloudId()))
+                    .collect(Collectors.toList())
+                    : null);
         } else {
             builder.expectedSchool(null)
-                    .business_registration_number(null)
-                    .imageList(null);
+                .business_registration_number(null)
+                .imageList(null);
         }
 
         return builder.build();

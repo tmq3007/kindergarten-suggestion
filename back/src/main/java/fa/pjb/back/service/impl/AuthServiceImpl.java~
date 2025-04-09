@@ -115,7 +115,6 @@ public class AuthServiceImpl implements AuthService {
                 draft = school.getDraft();
             }
         }
-
         return LoginVO.builder()
                 .accessToken(accessToken)
                 .csrfToken(csrfToken)
@@ -200,8 +199,7 @@ public class AuthServiceImpl implements AuthService {
         deleteCookie(response, "ACCESS_TOKEN");
         deleteCookie(response, "CSRF_TOKEN");
 
-        // Clear SecurityContext
-        SecurityContextHolder.clearContext();
+        // Optionally, clear SecurityContext
     }
 
     @Override

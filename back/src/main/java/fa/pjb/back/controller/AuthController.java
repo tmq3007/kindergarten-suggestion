@@ -103,8 +103,8 @@ public class AuthController {
 
     @Operation(summary = "Logout", description = "Logout user from the system")
     @PutMapping("logout")
-    public ApiResponse<?> logout() {
-        authService.logout();
+    public ApiResponse<?> logout(HttpServletResponse response) {
+        authService.logout(response);
         return ApiResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Logout successfully!")

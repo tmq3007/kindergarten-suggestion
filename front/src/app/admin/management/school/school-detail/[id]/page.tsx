@@ -76,7 +76,7 @@ export default function SchoolDetail() {
                     <div className="my-4 flex justify-end">
                         <Link href={`/admin/management/school/school-detail/${schoolId}/diff`}
                               className="text-blue-500 hover:underline">
-                            Show Different
+                            Show Difference
                         </Link>
                     </div>
             }
