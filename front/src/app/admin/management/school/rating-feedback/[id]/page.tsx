@@ -133,8 +133,9 @@ const RatingsDashboard = () => {
     const queryParams = useMemo(() => {
         const params: { schoolId: number; fromDate?: string; toDate?: string; status?: string } = { schoolId };
         if (dateRange && dateRange[0] && dateRange[1]) {
-            params.fromDate = dateRange[0].format("YYYY-MM-DD");
-            params.toDate = dateRange[1].format("YYYY-MM-DD");
+            // Convert to full ISO datetime
+            params.fromDate = dateRange[0].startOf('day').toISOString();
+            params.toDate = dateRange[1].endOf('day').toISOString();
         }
         if (statusFilter) {
             params.status = statusFilter;
@@ -142,7 +143,13 @@ const RatingsDashboard = () => {
         return params;
     }, [schoolId, dateRange, statusFilter]);
 
+
+
     const { data, isLoading, error,isFetching, refetch } = useGetReviewBySchoolIdQuery(queryParams);
+
+    useEffect(() => {
+        refetch();
+    }, [queryParams, refetch]);
 
     useEffect(() => {
         if (!isFetching) {

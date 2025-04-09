@@ -130,14 +130,19 @@ const RatingsDashboard = () => {
     useEffect(() => {
         const params: QueryParams = {};
         if (dateRange?.[0] && dateRange?.[1]) {
-            params.fromDate = dateRange[0].format("YYYY-MM-DD");
-            params.toDate = dateRange[1].format("YYYY-MM-DD");
+            // Convert to full ISO datetime
+            params.fromDate = dateRange[0].startOf('day').toISOString();
+            params.toDate = dateRange[1].endOf('day').toISOString();
         }
         if (statusFilter) {
             params.status = statusFilter;
         }
         setQueryParams(params);
-    }, [dateRange,statusFilter]);
+    }, [dateRange, statusFilter]);
+
+    useEffect(() => {
+        refetch();
+    }, [queryParams, refetch]);
 
     useEffect(() => {
         if (data?.data) {
