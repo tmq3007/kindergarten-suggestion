@@ -5,6 +5,7 @@ import ErrorComponent from "../common/ErrorComponent";
 import {Pageable, UserVO, useToggleUserStatusMutation} from "@/redux/services/userApi";
 import message from "antd/lib/message";
 import UserActionButtons from "@/app/components/user/UserActionButtons";
+import Link from "next/link";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; page: Pageable }> | undefined;
@@ -30,7 +31,21 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
 
     //table layout
     const columns = [
-        {title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120, fixed: true},
+        {
+            title: "Fullname",
+            dataIndex: "fullname",
+            key: "fullname",
+            width: 120,
+            fixed: true,
+            render: (_: any, record: UserVO) => (
+                <Link
+                    href={`/admin/management/user/user-detail/${record.id}`}
+                    className="text-blue-600 hover:underline"
+                >
+                    {record.fullname}
+                </Link>
+            ),
+        },
         {title: "Email", dataIndex: "email", key: "email", width: 200},
         {title: "Phone No.", dataIndex: "phone", key: "phone", width: 100},
         {title: "Address", dataIndex: "address", key: "address", width: 400},

@@ -78,7 +78,12 @@ export default function SchoolListForm({ fetchPage, data, error, isFetching, onD
       dataIndex: "name",
       key: "name",
       width: 200,
-      fixed: true
+      fixed: true,
+      render: (text: string, record: SchoolVO) => (
+          <Link href={`/admin/management/school/school-detail/${record.id}`}>
+            {text}
+          </Link>
+      )
     },
     {
       title: <CenteredTitle title="Address" />,
