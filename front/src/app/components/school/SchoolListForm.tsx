@@ -79,6 +79,7 @@ export default function SchoolListForm({ fetchPage, data, error, isFetching, onD
       key: "name",
       width: 200,
       fixed: true
+
     },
     {
       title: <CenteredTitle title="Address" />,
