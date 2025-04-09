@@ -53,7 +53,7 @@ const SchoolDetailPage: FunctionComponent = () => {
     }
 
     return (
-        <div className="w-full mt-20">
+        <div className="w-full mt-20 px-10">
             <MyBreadcrumb
                 paths={[
                     { label: "School Search", href: "/public/search-school" },

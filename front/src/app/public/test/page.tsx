@@ -16,6 +16,8 @@ export default function Home() {
         { schoolId: 1,parentId:4, schoolName: "Example School 1", isUpdate: true },
         { schoolId: 2,parentId:4, schoolName: "Example School 2", isUpdate: true },
         { schoolId: 91,parentId:4, schoolName: "Example School 3", isUpdate: true },
+        { schoolId: 3,parentId:4, schoolName: "Example School 4", isUpdate: false },
+
     ];
 
     const handleOpenModal = (parentId: number,schoolId: number, schoolName: string, isUpdate: boolean) => {

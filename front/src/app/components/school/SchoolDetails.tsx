@@ -1,6 +1,6 @@
 "use client";
 import React, {FunctionComponent} from "react";
-import {Card, Col, Row, Descriptions, Tabs, Alert, Spin} from "antd";
+import {Card, Col, Row, Descriptions, Tabs, Alert, Spin, ConfigProvider} from "antd";
 import {
     EnvironmentOutlined,
     MailOutlined,
@@ -93,7 +93,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                         <Row gutter={[24, 24]} justify="space-between">
                             {/* Left Column: Basic Information */}
                             <Col xs={24} lg={16} className="flex">
-                                <Card className="w-full shadow-lg border border-cyan-500 bg-white p-6">
+                                <Card className="w-full shadow-lg border  bg-white p-6">
                                     <div
                                         className="text-gray-800 text-lg"
                                         dangerouslySetInnerHTML={{__html: description || "N/A"}}
@@ -105,7 +105,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                             <Col xs={24} lg={8} className="flex">
                                 <Card
                                     title="Facilities & Utilities"
-                                    className="w-full shadow-lg border border-cyan-500 bg-white p-6" styles={{
+                                    className="w-full shadow-lg border  bg-white p-6" styles={{
                                     body: {padding: 0}
                                 }}
                                 >
@@ -165,7 +165,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                     <CommentOutlined/>,
                 children:
                     (
-                        <Card className="w-full sha dow-lg border border-cyan-500 bg-white lg:p-6 md:p-0">
+                        <Card className="w-full sha dow-lg border-none bg-white lg:p-6 md:p-0">
                             {isLoading ? (
                                 <Spin tip="Loading reviews..."/>
                             ) : error ? (
@@ -203,7 +203,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                 <Col xs={24} lg={24} className="flex">
                                     <Card
                                         title="Basic Information"
-                                        className="w-full shadow-lg border border-cyan-500 bg-white p-6" styles={{
+                                        className="w-full  border  bg-white p-6" styles={{
                                         body: {padding: 0}
                                     }}
                                     >
@@ -309,8 +309,16 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
 
                         {/* Section 3: School Introduction and Comments with Tabs outside Card */}
                         <Col xs={24}>
-                            <Tabs defaultActiveKey="1" type="card" rootClassName="border-cyan-500" items={tabItems}
+                            <ConfigProvider
+                                theme={{
+                                    token: {
+                                        colorBorder: 'red'
+                                    }
+                                }}
+                            >
+                            <Tabs defaultActiveKey="1" type="card" rootClassName="" items={tabItems}
                                   size="large" animated={{inkBar: true, tabPane: true}}/>
+                            </ConfigProvider>
                         </Col>
                     </Row>
                 </Col>
