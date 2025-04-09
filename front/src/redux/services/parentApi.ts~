@@ -289,7 +289,7 @@ export const {
     useChangePasswordMutation,
     useListParentBySchoolWithFilterQuery,
     useListEnrollRequestBySchoolWithFilterQuery,
-    useGetCountEnrollRequestBySchoolQuery,//SO
+    useGetCountEnrollRequestBySchoolQuery,
     useGetAcademicHistoryByParentQuery,
     useToggleParentStatusMutation,
     useEnrollParentMutation,
@@ -297,6 +297,5 @@ export const {
     useRejectParentMutation,
     useChangeAvatarMutation,
     useGetPresentAcademicHistoryByParentQuery,
-    useGetPreviousAcademicHistoryByParentQuery,
-    useRequestEnrollingSchoolMutation
+    useGetPreviousAcademicHistoryByParentQuery
 } = parentApi;

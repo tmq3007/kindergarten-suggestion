@@ -60,7 +60,7 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
 
     return (
         <div className="mx-auto mt-1 px-4 py-5">
-            <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 items-start border-2 border-blue-300 rounded-lg shadow-md p-4 bg-gray-50">
+            <div className="grid grid-cols-1 lg:grid-cols-6 gap-2 items-start border-2 border-blue-300 rounded-lg shadow-md p-2 bg-gray-50">
                 {/* Request Card - Chiếm 3/6 cột */}
                 <div
                     className="md:col-span-3 bg-white border-2 border-blue-300 rounded-lg shadow-md p-4 min-h-[300px] h-auto">

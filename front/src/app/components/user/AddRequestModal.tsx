@@ -95,25 +95,40 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
     };
 
     return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center w-full px-4 sm:px-6 lg:px-8">
             {contextHolder}
-            <Button type="primary" onClick={showModal} disabled={isParentLoading}>
+            <Button
+                type="primary"
+                onClick={showModal}
+                disabled={isParentLoading}
+                className="w-full sm:w-auto"
+            >
                 Request Counselling
             </Button>
 
             <Modal
                 title={
-                    <div>
-                        <div className="text-center mt-1 text-3xl">Request Counselling</div>
-                        <div className="text-center text-md mt-1 text-gray-500">
+                    <div className="text-center">
+                        <div className="text-lg sm:text-2xl md:text-3xl font-bold mb-2">Request Counselling</div>
+                        <div className="text-xs sm:text-sm md:text-md text-gray-500">
                             Please check your details below and confirm to submit the request.
                         </div>
                     </div>
                 }
                 footer={
                     <div className="flex justify-center gap-4">
-                        <Button onClick={handleCancel}>Cancel</Button>
-                        <Button type="primary" loading={isLoading} onClick={handleOk}>
+                        <Button
+                            onClick={handleCancel}
+                            className="w-24"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="primary"
+                            loading={isLoading}
+                            onClick={handleOk}
+                            className="w-24"
+                        >
                             Submit
                         </Button>
                     </div>
@@ -122,46 +137,45 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
                 onOk={handleOk}
                 onCancel={handleCancel}
                 confirmLoading={isLoading}
-                className="text-2xl !w-2/5 !px-20 items-center"
+                className="!w-full sm:!w-4/5 md:!w-3/5 lg:!w-2/5 max-w-2xl px-4 sm:px-6 md:px-8"
                 centered
-                getContainer={false}
                 bodyStyle={{
-                    maxHeight: "67vh",
+                    maxHeight: "70vh",
                     overflowY: "auto",
-                    paddingRight: "10px",
+                    padding: "1rem",
                 }}
             >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" className="space-y-4">
                     <Form.Item
                         name="name"
                         label="Full Name"
                         rules={[{ required: true, message: "Name is required" }]}
                     >
-                        <Input />
+                        <Input className="w-full" />
                     </Form.Item>
                     <Form.Item
                         name="email"
                         label="Email"
                         rules={[{ required: true, type: "email", message: "Valid email is required" }]}
                     >
-                        <Input />
+                        <Input className="w-full" />
                     </Form.Item>
                     <Form.Item
                         name="phone"
                         label="Phone"
                         rules={[{ required: true, message: "Phone is required" }]}
                     >
-                        <Input />
+                        <Input className="w-full" />
                     </Form.Item>
                     <Form.Item
                         name="inquiry"
                         label="Inquiry"
                         rules={[{ required: true, message: "Please input your inquiry" }]}
                     >
-                        <Input.TextArea rows={3} />
+                        <Input.TextArea rows={3} className="w-full" />
                     </Form.Item>
 
-                    <div className="text-center text-sm !mt-1 mb-2 text-gray-500">
+                    <div className="text-center text-xs sm:text-sm text-gray-500">
                         Our staff will contact you in 24 hrs. If you need urgent counselling, please contact us via our
                         hotline{" "}
                         <a href="tel:09123456888" className="text-blue-400 font-semibold underline hover:text-blue-500">
@@ -172,14 +186,14 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
             </Modal>
 
             <Modal
-                title={<div className="text-center text-2xl">Login into your account</div>}
+                title={<div className="text-center text-lg sm:text-xl md:text-2xl font-bold">Login into your account</div>}
                 open={isLoginModalOpen}
                 onOk={() => setIsLoginModalOpen(false)}
                 onCancel={() => setIsLoginModalOpen(false)}
                 centered
                 footer={null}
                 destroyOnClose={true}
-                getContainer={false}
+                className="!w-full sm:!w-4/5 md:!w-3/5 lg:!w-2/5 max-w-xl px-4 sm:px-6"
             >
                 <ParentLoginForm
                     onSuccess={() => setIsLoginModalOpen(false)}
@@ -191,14 +205,14 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
             </Modal>
 
             <Modal
-                title={<div className="text-center text-2xl">Create a new user</div>}
+                title={<div className="text-center text-lg sm:text-xl md:text-2xl font-bold">Create a new user</div>}
                 open={isSignupModalOpen}
                 onOk={() => setIsSignupModalOpen(false)}
                 onCancel={() => setIsSignupModalOpen(false)}
                 centered
                 footer={null}
                 destroyOnClose={true}
-                getContainer={false}
+                className="!w-full sm:!w-4/5 md:!w-3/5 lg:!w-2/5 max-w-xl px-4 sm:px-6"
             >
                 <RegisterForm
                     onSuccess={() => {

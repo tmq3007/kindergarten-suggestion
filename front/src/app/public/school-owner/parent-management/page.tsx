@@ -54,7 +54,7 @@ export default function ParentManagementPage() {
             label: isMobile ? (
                 <UserOutlined className="text-xl"/>
             ) : (
-                <span className="font-bold text-lg flex content-center text-center justify-center gap-2">
+                <span className="font-bold flex content-center text-center justify-center gap-2">
                     <UserOutlined/> Active Parents
                 </span>
             ),
@@ -70,7 +70,7 @@ export default function ParentManagementPage() {
                     <ClockCircleOutlined className="text-2xl"/>
                 </Badge>
             ) : (
-                <span className="font-bold text-lg flex content-center text-center justify-center gap-2">
+                <span className="font-bold flex content-center text-center justify-center gap-2">
                     <ClockCircleOutlined/>
                     Pending Requests
                     <Badge
