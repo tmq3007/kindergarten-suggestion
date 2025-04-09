@@ -75,14 +75,13 @@ export default function PreviousSchoolsSection() {
     };
 
     const [selectedSchool, setSelectedSchool] = useState<{
-        parentId:number,
         schoolId: number;
         schoolName: string;
         isUpdate: boolean;
     } | null>(null);
 
-    const handleOpenModal = (parentId: number,schoolId: number, schoolName: string, isUpdate: boolean) => {
-        setSelectedSchool({parentId, schoolId, schoolName, isUpdate });
+    const handleOpenModal = (schoolId: number, schoolName: string, isUpdate: boolean) => {
+        setSelectedSchool({schoolId, schoolName, isUpdate });
     };
 
 
@@ -112,7 +111,7 @@ export default function PreviousSchoolsSection() {
                             <>
                                 {schoolData.map((pis, index) => (
                                     <div key={`${pis.id}-${current}-${index}`} className="w-full mb-4 transition-shadow">
-                                        <ParentSchoolInfo onOpenModalAction={handleOpenModal} onCloseModalAction={handleCloseModal} userId={userId} pis={pis} isCurrent={false}/>
+                                        <ParentSchoolInfo onOpenModalAction={handleOpenModal} onCloseModalAction={handleCloseModal} pis={pis} isCurrent={false}/>
                                     </div>
                                 ))}
 
@@ -128,7 +127,6 @@ export default function PreviousSchoolsSection() {
                                 </div>
                                 {selectedSchool && (
                                     <RatingsPopupWrapper
-                                        parentId={selectedSchool.parentId}
                                         schoolId={selectedSchool.schoolId}
                                         schoolName={selectedSchool.schoolName}
                                         isUpdate={selectedSchool.isUpdate}

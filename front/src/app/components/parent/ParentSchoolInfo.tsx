@@ -26,15 +26,13 @@ const ageMapping: AgeMapping = {
 interface ParentSchoolInfoProps {
     pis: ParentInSchoolDetailVO;
     isCurrent: boolean;
-    userId: number;
     onCloseModalAction: () => void;
-    onOpenModalAction: (parentId: number, schoolId: number, schoolName: string, isUpdate: boolean) => void;
+    onOpenModalAction: (schoolId: number, schoolName: string, isUpdate: boolean) => void;
 }
 
 export default function ParentSchoolInfo({
                                              pis,
                                              isCurrent,
-                                             userId,
                                              onCloseModalAction,
                                              onOpenModalAction,
                                          }: ParentSchoolInfoProps) {
@@ -189,7 +187,7 @@ export default function ParentSchoolInfo({
                         <Button
                             key={pis.school.id}
                             type="primary"
-                            onClick={() => onOpenModalAction(userId, pis.school.id, pis.school.name, false)}
+                            onClick={() => onOpenModalAction(pis.school.id, pis.school.name, false)}
                             className="text-lg px-6 py-2 h-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-none shadow-lg"
                             size="large"
                         >
@@ -207,7 +205,7 @@ export default function ParentSchoolInfo({
                         <Button
                             key={pis.school.id}
                             type="primary"
-                            onClick={() => onOpenModalAction(userId,pis.school.id, pis.school.name, true)}
+                            onClick={() => onOpenModalAction(pis.school.id, pis.school.name, true)}
                             className="text-lg px-6 py-2 h-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-none shadow-lg"
                             size="large"
                         >

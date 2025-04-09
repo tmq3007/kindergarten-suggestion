@@ -1,14 +1,14 @@
 'use client';
 
-import React, {Suspense, useEffect, useState} from 'react';
-import {useParams, useRouter} from "next/navigation";
+import React, { useEffect, useState} from 'react';
+import { useRouter} from "next/navigation";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {Empty, notification, Pagination} from "antd";
 import {ParentInSchoolDetailVO, useGetPresentAcademicHistoryByParentQuery} from "@/redux/services/parentApi";
 import ParentSchoolInfo from "@/app/components/parent/ParentSchoolInfo";
-import RatingsPopupWrapper from "@/app/components/review/ReviewPopupWrapper";
 import ParentSchoolListSkeleton from "@/app/components/skeleton/ParentSchoolListSkeleton";
+import RatingsPopupWrapper from "@/app/components/review/ReviewPopupWrapper";
 
 
 
@@ -68,14 +68,13 @@ export default function CurrentSchoolsSection() {
     };
 
     const [selectedSchool, setSelectedSchool] = useState<{
-        parentId:number,
         schoolId: number;
         schoolName: string;
         isUpdate: boolean;
     } | null>(null);
 
-    const handleOpenModal = (parentId: number,schoolId: number, schoolName: string, isUpdate: boolean) => {
-        setSelectedSchool({parentId, schoolId, schoolName, isUpdate });
+    const handleOpenModal = (schoolId: number, schoolName: string, isUpdate: boolean) => {
+        setSelectedSchool({ schoolId, schoolName, isUpdate });
     };
 
 
@@ -97,10 +96,10 @@ export default function CurrentSchoolsSection() {
                     <>
                         {schoolData.length ? (
                             <>
-                                {schoolData.map((pis) => (
+                                {schoolData.map((pis,index) => (
                                     <div key={`${pis.id}-${current}-${index}`} className="w-full mb-4 transition-shadow">
                                         <ParentSchoolInfo pis={pis} isCurrent={true} onCloseModalAction={handleCloseModal}
-                                                          onOpenModalAction={handleOpenModal} userId={userId}/>
+                                                          onOpenModalAction={handleOpenModal}/>
                                     </div>
                                 ))}
 
@@ -116,7 +115,6 @@ export default function CurrentSchoolsSection() {
                                 </div>
                                 {selectedSchool && (
                                     <RatingsPopupWrapper
-                                        parentId={selectedSchool.parentId}
                                         schoolId={selectedSchool.schoolId}
                                         schoolName={selectedSchool.schoolName}
                                         isUpdate={selectedSchool.isUpdate}

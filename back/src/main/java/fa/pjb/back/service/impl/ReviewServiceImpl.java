@@ -18,7 +18,6 @@ import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.ReviewService;
 import fa.pjb.back.service.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -33,7 +32,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -200,12 +198,9 @@ public class ReviewServiceImpl implements ReviewService {
         return projections.map(reviewMapper::toReviewVOFromProjection);
     }
 
-
     @Override
-    public ReviewVO getReviewBySchoolAndParent(Integer schoolId, Integer parentId) {
-//       if(!Objects.equals(parentId, userService.getCurrentUser().getParent().getId())){
-//            throw new UserNotFoundException();
-//       }
+    public ReviewVO getReviewBySchoolAndParent(Integer schoolId) {
+       Integer parentId = userService.getCurrentUser().getParent().getId();
 
         Review review = reviewRepository.findBySchoolIdAndParentId(schoolId, parentId);
 
@@ -216,7 +211,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     }
 
-
+    @PreAuthorize("hasRole('ROLE_PARENT')")
     @Transactional
     @Override
     public ReviewVO saveReview(ReviewDTO reviewData) {
@@ -224,10 +219,7 @@ public class ReviewServiceImpl implements ReviewService {
             // Fetch School and Parent entities
             School school = schoolRepository.findById(reviewData.schoolId())
                     .orElseThrow(SchoolNotFoundException::new);
-            Parent parent = parentRepository.findParentByUserId(reviewData.userId());
-            if (parent == null) {
-                throw new UserNotFoundException();
-            }
+            Parent parent = userService.getCurrentUser().getParent();
 
             // Set embedded ID
             ReviewId reviewId = new ReviewId();
@@ -246,7 +238,7 @@ public class ReviewServiceImpl implements ReviewService {
                     .teacherAndStaff(reviewData.teacherAndStaff())
                     .feedback(reviewData.feedback())
                     .receiveDate(LocalDateTime.now())
-                    .status((byte) 1)      // set this too, since it's @NotNull
+                    .status((byte) 0)
                     .build();
 
             temp = reviewRepository.save(temp);
@@ -254,7 +246,6 @@ public class ReviewServiceImpl implements ReviewService {
         } else {
             Review temp = reviewRepository.findByReviewId(reviewData.id())
                     .orElseThrow(ReviewNotFoundException::new);
-
             temp.setFeedback(reviewData.feedback());
             temp.setExtracurricularActivities(reviewData.extracurricularActivities());
             temp.setFacilitiesAndUtilities(reviewData.facilitiesAndUtilities());

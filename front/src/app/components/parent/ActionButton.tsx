@@ -37,7 +37,6 @@ const ActionButtons = ({
                        }: ActionButtonsProps) => {
     const dispatch = useDispatch();
     const [modal, contextHolder] = useModal();
-
     const [unenrollTrigger] = useUnEnrollParentMutation();
     const [approveTrigger] = useEnrollParentMutation();
     const [rejectTrigger] = useRejectParentMutation();

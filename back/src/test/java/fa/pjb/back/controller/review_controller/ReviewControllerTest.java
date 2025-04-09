@@ -75,7 +75,7 @@ class ReviewControllerTest {
         List<ReviewVO> reviews = Arrays.asList(
                 new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
                         (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5,
-                        "Great school", LocalDate.now(), null, (byte) 0)
+                        "Great school", LocalDateTime.now(), null, (byte) 0)
         );
 
         when(reviewService.getAllReviewByAdmin(eq(100),
