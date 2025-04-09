@@ -5,10 +5,7 @@ import fa.pjb.back.model.dto.ChangePasswordDTO;
 import fa.pjb.back.model.dto.ParentUpdateDTO;
 import fa.pjb.back.model.dto.RegisterDTO;
 import fa.pjb.back.model.entity.User;
-import fa.pjb.back.model.vo.MediaVO;
-import fa.pjb.back.model.vo.ParentInSchoolVO;
-import fa.pjb.back.model.vo.ParentVO;
-import fa.pjb.back.model.vo.RegisterVO;
+import fa.pjb.back.model.vo.*;
 import fa.pjb.back.service.ParentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -190,6 +187,32 @@ public class ParentController {
                 .code(HttpStatus.OK.value())
                 .message("School request count retrieved successfully")
                 .data(parentService.getSchoolRequestCount())
+                .build();
+    }
+
+    @Operation(summary = "Get Present Academic History", description = "This api used to get present academic history of parent by their ID")
+    @GetMapping("/get-present-academic-history")
+    public ApiResponse<Page<ParentInSchoolDetailVO>> getPresentAcademicHistory(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "2") @Max(value = 100, message = "Page size exceeds the maximum limit") int size) {
+        Page<ParentInSchoolDetailVO> academicHistory = parentService.getPresentAcademicHistory(page, size);
+        return ApiResponse.<Page<ParentInSchoolDetailVO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Present academic history retrieved successfully")
+                .data(academicHistory)
+                .build();
+    }
+
+    @Operation(summary = "Get Previous Academic History", description = "This api used to get previous academic history of parent by their ID")
+    @GetMapping("/get-previous-academic-history")
+    public ApiResponse<Page<ParentInSchoolDetailVO>> getPreviousAcademicHistory(
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "Invalid page number") int page,
+            @RequestParam(defaultValue = "2") @Max(value = 100, message = "Page size exceeds the maximum limit") int size) {
+        Page<ParentInSchoolDetailVO> academicHistory = parentService.getPreviousAcademicHistory(page, size);
+        return ApiResponse.<Page<ParentInSchoolDetailVO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Previous academic history retrieved successfully")
+                .data(academicHistory)
                 .build();
     }
 

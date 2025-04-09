@@ -2,6 +2,7 @@ package fa.pjb.back.service;
 
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.dto.RequestCounsellingUpdateDTO;
+import fa.pjb.back.model.vo.ParentRequestListVO;
 import fa.pjb.back.model.vo.RequestCounsellingVO;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -22,5 +23,7 @@ public interface RequestCounsellingService {
 
     void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
 
+    Page<ParentRequestListVO> getAllRequestsByParent(int page, int size);
 
+    Integer countOpenRequestByParent();
 }
