@@ -164,5 +164,15 @@ public class RequestCounsellingController {
                 .build();
     }
 
+    @Operation(summary = "Count open request counselling", description = "Count open request counselling")
+    @GetMapping("/count-open-request-by-parent")
+    public ApiResponse<Integer> countOpenRequestByParent() {
+        return ApiResponse.<Integer>builder()
+                .code(HttpStatus.OK.value())
+                .message("Count open request counselling successfully!")
+                .data(requestCounsellingService.countOpenRequestByParent())
+                .build();
+    }
+
 
 }

@@ -1,9 +1,11 @@
 // File: app/components/parent/ParentRequestInfo.tsx
 
 import React, {useState, useRef, useEffect} from 'react';
-import {Row, Col, Card, Tag, Typography, Rate} from 'antd';
+import {Row, Col, Card, Tag, Typography, Rate, Badge} from 'antd';
 import {ParentRequestListVO} from '@/redux/services/requestCounsellingApi';
 import {EnvironmentOutlined, GlobalOutlined, DollarOutlined, UserOutlined} from '@ant-design/icons';
+import {REQUEST_COUNSELLING_STATUS_OPTIONS} from "@/lib/constants";
+import clsx from "clsx";
 
 const {Title, Text, Paragraph} = Typography;
 
@@ -16,8 +18,15 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
     const [isOverflowing, setIsOverflowing] = useState(false);
     const inquiryRef = useRef<HTMLDivElement>(null);
 
-    const statusLabel = request.status === 1 ? 'Open' : 'Closed';
-    const statusColor = request.status === 1 ? 'green' : 'default';
+    const requestCounsellingStatus =
+        REQUEST_COUNSELLING_STATUS_OPTIONS.find(
+            (option) => option.value === String(request?.status))?.label || undefined;
+
+    const statusColors: Record<string, string> = {
+        "Closed": "bg-gray-200 text-gray-8",
+        "Overdue": "bg-yellow-200 text-yellow-800",
+        "Opened": "bg-green-200 text-green-800",
+    };
 
     const dueDate = new Date(request.dueDate).toLocaleString('en-US', {
         day: '2-digit',
@@ -63,7 +72,11 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
                     </div>
                     <div className="flex justify-between items-center mb-2">
                         <Text className='text-lg text-blue-500 underline'>Request Information:</Text>
-                        <Tag color={statusColor}>{statusLabel}</Tag>
+                        {requestCounsellingStatus && (
+                            <Badge className={clsx("h-1/2 py-2 px-5 rounded-xl font-medium", statusColors[requestCounsellingStatus])}>
+                                {requestCounsellingStatus}
+                            </Badge>
+                        )}
                     </div>
                     <div className="mt-2">
                         <Paragraph>

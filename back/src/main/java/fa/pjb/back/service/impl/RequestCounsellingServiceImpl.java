@@ -254,4 +254,14 @@ public class RequestCounsellingServiceImpl implements RequestCounsellingService 
         });
     }
 
+    @Override
+    public Integer countOpenRequestByParent() {
+        User currentUser = getCurrentUser();
+        Parent parent = parentRepository.findParentByUserId(currentUser.getId());
+        if (parent == null) {
+            throw new UserNotFoundException();
+        }
+        return requestCounsellingRepository.countOpenRequestByParentId(parent.getId());
+    }
+
 }

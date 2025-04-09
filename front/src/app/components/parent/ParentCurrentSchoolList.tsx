@@ -6,7 +6,6 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {Empty, notification, Pagination} from "antd";
 import {ParentInSchoolDetailVO, useGetPresentAcademicHistoryByParentQuery} from "@/redux/services/parentApi";
-import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import ParentSchoolInfo from "@/app/components/parent/ParentSchoolInfo";
 
 
@@ -62,7 +61,7 @@ export default function CurrentSchoolsSection() {
     const totalElements = data?.data?.page.totalElements || 0;
 
     const handlePageChange = (page: number, size: number) => {
-        setCurrent(page-1);
+        setCurrent(page);
         setPageSize(size);
     };
 
@@ -70,12 +69,6 @@ export default function CurrentSchoolsSection() {
         <>
             {contextHolder}
             <div className="">
-
-                {totalElements > 0 && (
-                    <p className="text-center">
-                        You have {totalElements} open requests
-                    </p>
-                )}
 
                 {(isLoading || isFetching) ? (
                     <div>Skeleton</div>
@@ -85,7 +78,7 @@ export default function CurrentSchoolsSection() {
                             <>
                                 {schoolData.map((pis) => (
                                     <div key={pis.id} className="w-full mb-4 transition-shadow">
-                                        <ParentSchoolInfo pis={pis} />
+                                        <ParentSchoolInfo pis={pis} isCurrent={true} />
                                     </div>
                                 ))}
 
@@ -101,7 +94,7 @@ export default function CurrentSchoolsSection() {
                                 </div>
                             </>
                         ) : (
-                            <Empty className="mt-10" description="No requests found" />
+                            <Empty className="mt-10" description="No schools found" />
                         )}
                     </>
                 )}

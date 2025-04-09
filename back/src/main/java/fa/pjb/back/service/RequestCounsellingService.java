@@ -24,4 +24,6 @@ public interface RequestCounsellingService {
     void updateRequestCounsellingBySchoolOwner(RequestCounsellingUpdateDTO requestCounsellingUpdateDTO);
 
     Page<ParentRequestListVO> getAllRequestsByParent(int page, int size);
+
+    Integer countOpenRequestByParent();
 }

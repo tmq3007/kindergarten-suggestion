@@ -1,12 +1,12 @@
 // File: app/components/parent/ParentRequestList.tsx
 
 'use client';
-import { Col, Empty, Pagination, Row } from 'antd';
-import React, { useEffect, useState } from 'react';
+import {Col, Empty, Pagination, Row} from 'antd';
+import React, {useEffect, useState} from 'react';
 import MyBreadcrumb from '@/app/components/common/MyBreadcrumb';
-import { ApiResponse } from '@/redux/services/config/baseQuery';
-import { ParentRequestListVO } from '@/redux/services/requestCounsellingApi';
-import { Pageable } from '@/redux/services/userApi';
+import {ApiResponse} from '@/redux/services/config/baseQuery';
+import {ParentRequestListVO} from '@/redux/services/requestCounsellingApi';
+import {Pageable} from '@/redux/services/userApi';
 import ParentRequestInfo from "@/app/components/parent/ParentRequestInfo";
 
 interface ParentRequestListFormProps {
@@ -15,6 +15,7 @@ interface ParentRequestListFormProps {
     isFetching: boolean;
     error: any;
     fetchPage: (page: number, size: number) => void;
+    totalOpenRequest: ApiResponse<{ content: number }> | undefined;
 }
 
 export default function ParentRequestList({
@@ -23,8 +24,10 @@ export default function ParentRequestList({
                                               isFetching,
                                               error,
                                               fetchPage,
+                                              totalOpenRequest
                                           }: ParentRequestListFormProps) {
     const [filteredRequests, setFilteredRequests] = useState<ParentRequestListVO[]>([]);
+    const [totalOpenReq, setTotalOpenReq] = useState<number>(0);
     const [current, setCurrent] = useState(1);
     const [pageSize, setPageSize] = useState(3);
 
@@ -43,6 +46,12 @@ export default function ParentRequestList({
         setFilteredRequests(requests);
     }, [data]);
 
+    useEffect(() => {
+        if (totalOpenRequest) {
+            setTotalOpenReq(totalOpenRequest.data.content);
+        }
+    }, [totalOpenRequest]);
+
     // Xử lý lỗi nếu có
     useEffect(() => {
         if (error) {
@@ -54,51 +63,55 @@ export default function ParentRequestList({
     const handlePageChange = (page: number, size: number) => {
         setCurrent(page);
         setPageSize(size);
-        fetchPage(page - 1, size); // API bắt đầu từ page 0
+        fetchPage(page, size); // API bắt đầu từ page 0
     };
 
     return (
         <div className="min-h-screen pt-24 px-3 md:px-10">
             <MyBreadcrumb
                 paths={[
-                    { label: 'My Requests' },
+                    {label: 'My Requests'},
                 ]}
             />
 
-            {totalElements > 0 && (
+            {(totalOpenReq > 0) ? (
                 <p className="text-center">
-                    You have {totalElements} open requests
+                    You have {totalOpenReq} open requests
                 </p>
-            )}
+            ) : (
+                <p className="text-center">
+                    You have no open requests
+                </p>
+                )}
 
-                    {(isLoading || isFetching) ? (
-                        <div>Skeleton</div>
-                    ) : (
+            {(isLoading || isFetching) ? (
+                <div>Skeleton</div>
+            ) : (
+                <>
+                    {filteredRequests.length ? (
                         <>
-                            {filteredRequests.length ? (
-                                <>
-                                    {filteredRequests.map((request) => (
-                                        <div key={request.id} className="w-full mb-4 transition-shadow">
-                                            <ParentRequestInfo request={request} />
-                                        </div>
-                                    ))}
+                            {filteredRequests.map((request) => (
+                                <div key={request.id} className="w-full mb-4 transition-shadow">
+                                    <ParentRequestInfo request={request}/>
+                                </div>
+                            ))}
 
-                                    <div className="mt-6 text-center">
-                                        <Pagination
-                                            current={current}
-                                            pageSize={pageSize}
-                                            total={totalElements}
-                                            onChange={handlePageChange}
-                                            align="center"
-                                            className="mb-5"
-                                        />
-                                    </div>
-                                </>
-                            ) : (
-                                <Empty className="mt-10" description="No requests found" />
-                            )}
+                            <div className="mt-6 text-center">
+                                <Pagination
+                                    current={current}
+                                    pageSize={pageSize}
+                                    total={totalElements}
+                                    onChange={handlePageChange}
+                                    align="center"
+                                    className="mb-5"
+                                />
+                            </div>
                         </>
+                    ) : (
+                        <Empty className="mt-10" description="No requests found"/>
                     )}
+                </>
+            )}
 
         </div>
     );

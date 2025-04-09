@@ -82,27 +82,27 @@ export const requestCounsellingApi = createApi({
             invalidatesTags: ["RequestCounselling", "RequestList"],
         }),
 
-    getAllRequests: builder.query<
-        ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
-        {
-          page?: number;
-          size?: number;
-          searchBy?: string;
-          keyword?: string;
-        }
-    >({
-      query: ({ page = 1, size = 10, searchBy, keyword }) => ({
-        url: "counselling/all",
-        method: "GET",
-        params: {
-          page,
-          size,
-          ...(searchBy && { searchBy }),
-          ...(keyword && { keyword }),
-        },
-      }),
-      providesTags: ["RequestList"],
-    }),
+        getAllRequests: builder.query<
+            ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
+            {
+                page?: number;
+                size?: number;
+                searchBy?: string;
+                keyword?: string;
+            }
+        >({
+            query: ({page = 1, size = 10, searchBy, keyword}) => ({
+                url: "counselling/all",
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(searchBy && {searchBy}),
+                    ...(keyword && {keyword}),
+                },
+            }),
+            providesTags: ["RequestList"],
+        }),
 
         getRequestCounsellingByAdmin: builder.query<ApiResponse<RequestCounsellingVO>, number>({
             query: (requestCounsellingId) => ({
@@ -137,41 +137,65 @@ export const requestCounsellingApi = createApi({
             invalidatesTags: ["RequestCounselling", "RequestList"],
         }),
 
-    getAllReminder: builder.query<
-        ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
-        { page?: number; size?: number; statuses?: number[]; searchBy?: string; keyword?: string } // Updated type
-    >({
-      query: ({ page = 1, size = 10, statuses, searchBy, keyword }) => ({
-        url: "counselling/all-reminder",
-        method: "GET",
-        params: {
-          page,
-          size,
-          ...(statuses && statuses.length > 0 && { statuses: statuses.join(",") }),
-          ...(searchBy && { searchBy }),
-          ...(keyword && { keyword }),
-        },
-      }),
-      providesTags: ["RequestList"],
+        getAllReminder: builder.query<
+            ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
+            { page?: number; size?: number; statuses?: number[]; searchBy?: string; keyword?: string } // Updated type
+        >({
+            query: ({page = 1, size = 10, statuses, searchBy, keyword}) => ({
+                url: "counselling/all-reminder",
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                    ...(statuses && statuses.length > 0 && {statuses: statuses.join(",")}),
+                    ...(searchBy && {searchBy}),
+                    ...(keyword && {keyword}),
+                },
+            }),
+            providesTags: ["RequestList"],
+        }),
+        getRemindersBySchoolOwner: builder.query<
+            ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
+            { page?: number; size?: number; schoolOwnerId: number }
+        >({
+            query: ({page = 1, size = 10, schoolOwnerId}) => ({
+                url: "counselling/school-owner-reminders",
+                method: "GET",
+                headers: {
+                    "School-Owner-Id": String(schoolOwnerId),
+                },
+                params: {
+                    page,
+                    size,
+                },
+            }),
+            providesTags: ["RequestList"],
+        }),
+        getAllRequestCounsellingByParent: builder.query<
+            ApiResponse<{ content: ParentRequestListVO[]; page: Pageable }> | undefined,
+            { page?: number; size?: number }
+        >({
+            query: ({page = 1, size = 10}) => ({
+                url: "counselling/get-by-parent",
+                method: "GET",
+                params: {
+                    page,
+                    size,
+                },
+            }),
+            providesTags: ["RequestList"],
+        }),
+        countOpenRequestCounsellingByParent: builder.query<
+            ApiResponse<{ content: number }> | undefined,
+            void
+        >({
+            query: () => ({
+                url: "counselling/count-open-request-by-parent",
+                method: "GET",
+            }),
+            providesTags: ["RequestList"],
+        })
     }),
-    getRemindersBySchoolOwner: builder.query<
-        ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined,
-        { page?: number; size?: number; schoolOwnerId: number }
-    >({
-      query: ({ page = 1, size = 10, schoolOwnerId }) => ({
-        url: "counselling/school-owner-reminders",
-        method: "GET",
-        headers: {
-          "School-Owner-Id": String(schoolOwnerId),
-        },
-        params: {
-          page,
-          size,
-        },
-      }),
-      providesTags: ["RequestList"],
-    }),
-  }),
 });
 
 // Export hooks for all endpoints
@@ -185,5 +209,6 @@ export const {
     useGetRequestCounsellingBySchoolOwnerQuery,
     useUpdateRequestCounsellingByAdminMutation,
     useUpdateRequestCounsellingBySchoolOwnerMutation,
-    useGetAllRequestCounsellingByParentQuery
+    useGetAllRequestCounsellingByParentQuery,
+    useCountOpenRequestCounsellingByParentQuery
 } = requestCounsellingApi;

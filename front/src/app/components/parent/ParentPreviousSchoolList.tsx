@@ -65,7 +65,7 @@ export default function PreviousSchoolsSection() {
     const totalElements = data?.data?.page.totalElements || 0;
 
     const handlePageChange = (page: number, size: number) => {
-        setCurrent(page-1);
+        setCurrent(page);
         setPageSize(size);
     };
 
@@ -75,8 +75,8 @@ export default function PreviousSchoolsSection() {
             <div className="">
 
                 {totalElements > 0 && (
-                    <p className="text-center">
-                        You have {totalElements} open requests
+                    <p className="text-start text-lg mt-5">
+                        There's {totalElements} schools that you previously enrolled in
                     </p>
                 )}
 
@@ -88,7 +88,7 @@ export default function PreviousSchoolsSection() {
                             <>
                                 {schoolData.map((pis) => (
                                     <div key={pis.id} className="w-full mb-4 transition-shadow">
-                                        <ParentSchoolInfo pis={pis} />
+                                        <ParentSchoolInfo pis={pis} isCurrent={false}/>
                                     </div>
                                 ))}
 
@@ -104,7 +104,7 @@ export default function PreviousSchoolsSection() {
                                 </div>
                             </>
                         ) : (
-                            <Empty className="mt-10" description="No requests found" />
+                            <Empty className="mt-10" description="No schools found" />
                         )}
                     </>
                 )}

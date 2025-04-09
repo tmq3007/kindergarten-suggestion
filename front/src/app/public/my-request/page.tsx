@@ -2,6 +2,7 @@
 
 import {Suspense, useEffect, useState} from 'react';
 import {
+    useCountOpenRequestCounsellingByParentQuery,
     useGetAllRequestCounsellingByParentQuery,
 } from "@/redux/services/requestCounsellingApi";
 import ParentRequestList from "@/app/components/parent/ParentRequestList";
@@ -9,7 +10,6 @@ import {useParams, useRouter} from "next/navigation";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {notification} from "antd";
-
 
 
 // Component chính của trang
@@ -25,15 +25,18 @@ export default function MyRequestPage() {
 
     if (!userId) {
         console.warn("No userId found in Redux store, redirecting to login");
-        router.push("/login");
+        router.push("/public");
         return null;
     }
 
     const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
-        notificationApi[type]({ message, description, placement: "topRight" });
+        notificationApi[type]({message, description, placement: "topRight"});
     };
 
     const {data, isLoading, isFetching, error} = useGetAllRequestCounsellingByParentQuery({page, size: pageSize});
+    const {
+        data: NumberRequestData,
+    } = useCountOpenRequestCounsellingByParentQuery();
 
     useEffect(() => {
         if (error) {
@@ -58,9 +61,10 @@ export default function MyRequestPage() {
             <ParentRequestList
                 data={data}
                 isLoading={isLoading}
-            isFetching={isFetching}
-            error={error}
-            fetchPage={fetchPage}/>
+                isFetching={isFetching}
+                error={error}
+                fetchPage={fetchPage}
+                totalOpenRequest={NumberRequestData}/>
         </>
     );
 }
