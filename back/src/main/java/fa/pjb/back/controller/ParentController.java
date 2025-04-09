@@ -150,7 +150,7 @@ public class ParentController {
                 .build();
     }
 
-    @Operation(summary = "Enroll Parent", description = "This api will be used to enroll a parent into a school")
+    @Operation(summary = "Enroll Parent", description = "This api will be used by school owner to enroll a parent into a school")
     @PutMapping("/enroll/{parentInSchoolId}")
     public ApiResponse<Boolean> enrollParent(@PathVariable Integer parentInSchoolId) {
         return ApiResponse.<Boolean>builder()

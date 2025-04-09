@@ -8,6 +8,8 @@ import {ApiResponse} from '@/redux/services/config/baseQuery';
 import {ParentRequestListVO} from '@/redux/services/requestCounsellingApi';
 import {Pageable} from '@/redux/services/userApi';
 import ParentRequestInfo from "@/app/components/parent/ParentRequestInfo";
+import ParentRequestListSkeleton from "@/app/components/skeleton/ParentRequestListSkeleton";
+import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 
 interface ParentRequestListFormProps {
     data: ApiResponse<{ content: ParentRequestListVO[]; page: Pageable }> | undefined;
@@ -46,9 +48,12 @@ export default function ParentRequestList({
         setFilteredRequests(requests);
     }, [data]);
 
+    console.log(totalOpenRequest);
+
     useEffect(() => {
         if (totalOpenRequest) {
-            setTotalOpenReq(totalOpenRequest.data.content);
+            // @ts-ignore
+            setTotalOpenReq(totalOpenRequest.data);
         }
     }, [totalOpenRequest]);
 
@@ -74,20 +79,21 @@ export default function ParentRequestList({
                 ]}
             />
 
-            {(totalOpenReq > 0) ? (
-                <p className="text-center">
-                    You have {totalOpenReq} open requests
-                </p>
-            ) : (
-                <p className="text-center">
-                    You have no open requests
-                </p>
-                )}
+            <SchoolManageTitle title={'My Requests'}/>
 
             {(isLoading || isFetching) ? (
-                <div>Skeleton</div>
+                <>
+                <ParentRequestListSkeleton/>
+                <ParentRequestListSkeleton/>
+                </>
             ) : (
                 <>
+                    {(totalOpenReq > 0) && (
+                        <p className="text-start ml-5 text-lg mt-5">
+                            You have {totalOpenReq} open requests
+                        </p>
+                    )}
+
                     {filteredRequests.length ? (
                         <>
                             {filteredRequests.map((request) => (

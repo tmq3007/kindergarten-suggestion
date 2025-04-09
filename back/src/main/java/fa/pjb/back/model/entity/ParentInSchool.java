@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
+@ToString(exclude = {"school", "parent"})
 @Table(name = "Parent_In_School")
 public class ParentInSchool {
 
