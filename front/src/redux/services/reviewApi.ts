@@ -22,7 +22,6 @@ export type RatingStats = {
     };
 }
 
-
 export type ReviewDTO ={
     id?: number
     schoolId: number;
@@ -82,6 +81,7 @@ export const reviewApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ['Review','ReviewStats'],
     endpoints: (build) => ({
+
         getReviewBySchoolId: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
             query: ({schoolId, fromDate, toDate, status}) => {
                 const params = new URLSearchParams();
@@ -182,6 +182,7 @@ export const reviewApi = createApi({
             }),
             invalidatesTags: ["Review","ReviewStats"],
         }),
+
     }),
 });
 

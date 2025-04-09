@@ -37,7 +37,10 @@ public interface ParentService {
 
     List<ParentInSchoolVO> getAcademicHistory(Integer parentId);
 
+    Boolean enrollSchool(Integer schoolId);
+
     Page<ParentInSchoolDetailVO> getPresentAcademicHistory(int page, int size);
 
     Page<ParentInSchoolDetailVO> getPreviousAcademicHistory(int page, int size);
+
 }

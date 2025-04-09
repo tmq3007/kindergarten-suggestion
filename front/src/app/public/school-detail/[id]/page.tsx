@@ -25,17 +25,16 @@ const SchoolDetailPage: FunctionComponent = () => {
     // Loading state with Skeleton
     if (isLoading) {
         return (
-            <div className="w-full mt-20 px-10">
-                <Skeleton active paragraph={{ rows: 1 }} title={false} /> {/* Breadcrumb skeleton */}
+            <div className="w-full mt-20 p-10">
                 <Row gutter={[24, 24]} justify="center">
                     <Col xs={24}>
-                        <Skeleton.Image active style={{ width: "100%", height: 300 }} /> {/* Image carousel */}
+                        <Skeleton.Image active className={'!w-full !h-80'} /> {/* Image carousel */}
                     </Col>
                     <Col xs={24}>
-                        <Skeleton active paragraph={{ rows: 8 }} title={{ width: "30%" }} /> {/* Basic info */}
+                        <Skeleton active paragraph={{ rows: 6 }}/> {/* Basic info */}
                     </Col>
                     <Col xs={24}>
-                        <Skeleton active paragraph={{ rows: 6 }} title={{ width: "20%" }} /> {/* Tabs */}
+                        <Skeleton active paragraph={{ rows: 6 }}/> {/* Tabs */}
                     </Col>
                 </Row>
             </div>
@@ -54,7 +53,7 @@ const SchoolDetailPage: FunctionComponent = () => {
     // Handle case when no data is returned (but not loading)
     if (!schoolData) {
         return (
-            <div className="w-full min-h-screen mt-20">
+            <div className="w-full h-screen mt-20">
                 <div className="text-center">
                     <p>No school data found</p>
                 </div>
