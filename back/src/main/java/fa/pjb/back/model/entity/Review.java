@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 @AllArgsConstructor
@@ -56,7 +57,7 @@ public class Review {
 
     @NotNull
     @Column(name = "receive_date", nullable = false)
-    private LocalDate receiveDate;
+    private LocalDateTime receiveDate;
 
     @Column(name = "report")
     private String report;
