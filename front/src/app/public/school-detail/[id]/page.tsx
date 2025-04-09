@@ -1,11 +1,12 @@
-'use client'
+"use client";
 
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent } from "react";
 import SchoolDetails from "@/app/components/school/SchoolDetails";
 import { SchoolDetailVO, useLoadSchoolDetailsQuery } from "@/redux/services/schoolApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import { useParams } from "next/navigation";
 import ErrorComponent from "@/app/components/common/ErrorComponent";
+import { Skeleton, Row, Col } from "antd"; // Import Skeleton from antd
 
 const SchoolDetailPage: FunctionComponent = () => {
     const params = useParams();
@@ -13,7 +14,7 @@ const SchoolDetailPage: FunctionComponent = () => {
     const {
         data: schoolResponse,
         isLoading,
-        error
+        error,
     } = useLoadSchoolDetailsQuery(Number(schoolId), {
         skip: !schoolId,
     });
@@ -21,13 +22,22 @@ const SchoolDetailPage: FunctionComponent = () => {
     // Extract the school data from the response
     const schoolData: SchoolDetailVO | undefined = schoolResponse?.data;
 
-    // Loading state
+    // Loading state with Skeleton
     if (isLoading) {
         return (
-            <div className="w-full mt-20">
-                <div className="flex justify-center items-center h-64">
-                    <p>Loading school details...</p>
-                </div>
+            <div className="w-full mt-20 px-10">
+                <Skeleton active paragraph={{ rows: 1 }} title={false} /> {/* Breadcrumb skeleton */}
+                <Row gutter={[24, 24]} justify="center">
+                    <Col xs={24}>
+                        <Skeleton.Image active style={{ width: "100%", height: 300 }} /> {/* Image carousel */}
+                    </Col>
+                    <Col xs={24}>
+                        <Skeleton active paragraph={{ rows: 8 }} title={{ width: "30%" }} /> {/* Basic info */}
+                    </Col>
+                    <Col xs={24}>
+                        <Skeleton active paragraph={{ rows: 6 }} title={{ width: "20%" }} /> {/* Tabs */}
+                    </Col>
+                </Row>
             </div>
         );
     }
@@ -36,12 +46,12 @@ const SchoolDetailPage: FunctionComponent = () => {
     if (error) {
         return (
             <div className="w-full min-h-screen content-center mt-20">
-               <ErrorComponent  error={error} />
+                <ErrorComponent error={error} />
             </div>
         );
     }
 
-    // Handle case when no data is returned
+    // Handle case when no data is returned (but not loading)
     if (!schoolData) {
         return (
             <div className="w-full min-h-screen mt-20">
@@ -52,6 +62,7 @@ const SchoolDetailPage: FunctionComponent = () => {
         );
     }
 
+    // Main content
     return (
         <div className="w-full mt-20 px-10">
             <MyBreadcrumb
@@ -60,7 +71,7 @@ const SchoolDetailPage: FunctionComponent = () => {
                     { label: "School Details" },
                 ]}
             />
-            <SchoolDetails schoolData={schoolData} />
+            <SchoolDetails schoolData={schoolData}/>
         </div>
     );
 };
