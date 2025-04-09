@@ -17,7 +17,6 @@ export default function Home() {
         { schoolId: 2,parentId:146, schoolName: "Example School 2", isUpdate: true },
         { schoolId: 91,parentId:146, schoolName: "Example School 3", isUpdate: true },
         { schoolId: 3,parentId:146, schoolName: "Example School 4", isUpdate: false },
-
     ];
 
     const handleOpenModal = (parentId: number,schoolId: number, schoolName: string, isUpdate: boolean) => {
@@ -39,7 +38,7 @@ export default function Home() {
                         className="text-lg px-6 py-2 h-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-none shadow-lg"
                         size="large"
                     >
-                        {school.isUpdate ? "Update" : "Rate"} {school.schoolName}
+                        {school.isUpdate ? "Update" : "Rate"}
                     </Button>
                 ))}
             </div>

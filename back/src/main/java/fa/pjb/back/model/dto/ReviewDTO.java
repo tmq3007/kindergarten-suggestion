@@ -9,7 +9,7 @@ public record ReviewDTO(
         @NotNull
         Integer schoolId,
         @NotNull
-        Integer parentId,
+        Integer userId,
         @NotNull
         Byte learningProgram,
         @NotNull

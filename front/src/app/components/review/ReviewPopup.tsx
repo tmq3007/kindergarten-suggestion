@@ -145,7 +145,7 @@ export default function RatingsPopup({
         const ratingsData : ReviewDTO = {
             id: initialRatings?.id,
             schoolId: schoolId || initialRatings?.schoolId || -1,
-            parentId: parentId || initialRatings?.parentId || -1,
+            userId: parentId || initialRatings?.parentId || -1,
             learningProgram: categories.find((c) => c.key === "learning")?.value || 0,
             facilitiesAndUtilities: categories.find((c) => c.key === "facilities")?.value || 0,
             extracurricularActivities: categories.find((c) => c.key === "activities")?.value || 0,

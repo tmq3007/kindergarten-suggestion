@@ -70,7 +70,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
-    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status){
+    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status) {
         SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
         School school = schoolOwner.getSchool();
         Byte statusByte = null;
@@ -84,7 +84,7 @@ public class ReviewServiceImpl implements ReviewService {
             };
         }
 
-        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeSO(school.getId(), fromDate, toDate,statusByte);
+        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeSO(school.getId(), fromDate, toDate, statusByte);
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
         }
@@ -107,7 +107,7 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewVO makeReport(ReviewReportDTO reviewReportDTO) {
         Review review = reviewRepository.findById(reviewReportDTO.id()).orElse(null);
 
-        if(review == null){
+        if (review == null) {
             throw new ReviewNotFoundException();
         }
 
@@ -127,7 +127,7 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewVO acceptReport(ReviewAcceptDenyDTO reviewAcceptDenyDTO) {
         Review review = reviewRepository.findById(reviewAcceptDenyDTO.id()).orElse(null);
 
-        if(review == null){
+        if (review == null) {
             throw new ReviewNotFoundException();
         }
 
@@ -139,9 +139,9 @@ public class ReviewServiceImpl implements ReviewService {
             throw new IllegalStateException("Review is not pending");
         }
 
-        if(reviewAcceptDenyDTO.decision()){
+        if (reviewAcceptDenyDTO.decision()) {
             review.setStatus((byte) 1);
-        }else {
+        } else {
             review.setStatus((byte) 0);
         }
 
@@ -209,7 +209,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = reviewRepository.findBySchoolIdAndParentId(schoolId, parentId);
 
-        if(review == null){
+        if (review == null) {
             throw new ReviewNotFoundException();
         }
         return reviewMapper.toReviewVO(review);
@@ -221,22 +221,24 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewVO saveReview(ReviewDTO reviewData) {
         if (reviewData.id() == null) {
-            // Step 1: Fetch School and Parent entities
+            // Fetch School and Parent entities
             School school = schoolRepository.findById(reviewData.schoolId())
                     .orElseThrow(SchoolNotFoundException::new);
-            Parent parent = parentRepository.findById(reviewData.parentId())
-                    .orElseThrow(UserNotFoundException::new);
+            Parent parent = parentRepository.findParentByUserId(reviewData.userId());
+            if (parent == null) {
+                throw new UserNotFoundException();
+            }
 
-            // Step 2: Set embedded ID
+            // Set embedded ID
             ReviewId reviewId = new ReviewId();
             reviewId.setParentId(parent.getId());
             reviewId.setSchoolId(school.getId());
 
-            // Step 3: Build the Review entity
+            // Build the Review entity
             Review temp = Review.builder()
                     .primaryId(reviewId)
-                    .school(school)        // required due to insertable = false
-                    .parent(parent)        // required due to insertable = false
+                    .school(school)
+                    .parent(parent)
                     .facilitiesAndUtilities(reviewData.facilitiesAndUtilities())
                     .extracurricularActivities(reviewData.extracurricularActivities())
                     .hygieneAndNutrition(reviewData.hygieneAndNutrition())

@@ -26,7 +26,7 @@ export type RatingStats = {
 export type ReviewDTO ={
     id?: number
     schoolId: number;
-    parentId: number;
+    userId: number;
     learningProgram: number;
     facilitiesAndUtilities: number;
     extracurricularActivities: number;
