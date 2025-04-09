@@ -1,6 +1,6 @@
 "use client";
 import React, {FunctionComponent} from "react";
-import {Card, Col, Row, Descriptions, Tabs, Alert, Spin, Button} from "antd";
+import {Card, Col, Row, Descriptions, Tabs, Alert, Spin, ConfigProvider, Button} from "antd";
 import {
     EnvironmentOutlined,
     MailOutlined,
@@ -26,10 +26,12 @@ import {ReviewVO, useGetReviewBySchoolForPublicQuery} from "@/redux/services/rev
 import AddRequestModal from "@/app/components/user/AddRequestModal";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
+import useIsMobile from "@/lib/hook/useIsMobile";
 
 interface SchoolDetailsProps {
     schoolData: SchoolDetailVO;
 }
+
 const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                                                   schoolData
                                                               }) => {
@@ -81,46 +83,111 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
     // Map facility and utility IDs from schoolData to their options
     const facilityIds = facilities.map((f) => String(f.fid));
     const utilityIds = utilities.map((u) => String(u.uid));
-
     const userRole = useSelector((state: RootState) => state.user?.role);
-
+    const isMobile = useIsMobile();
     // Define tab items
     const tabItems = [
-        {
-            key: "1",
-            label: "School Introduction",
-            icon: <PaperClipOutlined/>,
-            children: (
-                <Card className="w-full shadow-lg border border-cyan-500 bg-white p-6">
-                    <div
-                        className="text-gray-800 text-lg"
-                        dangerouslySetInnerHTML={{__html: description || "N/A"}}
-                    />
-                </Card>
-            ),
-        },
-        {
-            key: "2",
-            label: "Comments",
-            icon: <CommentOutlined/>,
-            children: (
-                <Card className="w-full sha dow-lg border border-cyan-500 bg-white lg:p-6 md:p-0">
-                    {isLoading ? (
-                        <Spin tip="Loading reviews..."/>
-                    ) : error ? (
-                        <Alert
-                            message="Error"
-                            description="Failed to load reviews. Please try again later."
-                            type="error"
-                            showIcon
-                        />
-                    ) : (
-                        <CommentSection reviews={reviews} schoolId={id}/>
-                    )}
-                </Card>
-            ),
-        },
-    ];
+            {
+                key: "1",
+                label: "School Introduction",
+                icon: <PaperClipOutlined/>,
+                children: (
+
+                    <Col xs={24}>
+                        <Row gutter={[24, 24]} justify="space-between">
+                            {/* Left Column: Basic Information */}
+                            <Col xs={24} lg={16} className="flex">
+                                <Card className="w-full shadow-lg border  bg-white p-6">
+                                    <div
+                                        className="text-gray-800 text-lg"
+                                        dangerouslySetInnerHTML={{__html: description || "N/A"}}
+                                    />
+                                </Card>
+                            </Col>
+
+                            {/* Right Column: Facilities & Utilities */}
+                            <Col xs={24} lg={8} className="flex">
+                                <Card
+                                    title="Facilities & Utilities"
+                                    className="w-full shadow-lg border  bg-white p-6" styles={{
+                                    body: {padding: 0}
+                                }}
+                                >
+                                    <div className="space-y-8">
+                                        <div>
+                                                <span className="flex items-center text-2xl font-bold mb-4">
+                                                    <BookOutlined className="mr-2"/>
+                                                    Facilities
+                                                </span>
+                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-lg">
+                                                {FACILITY_OPTIONS.map((option, index) => {
+                                                    const isPresent = facilityIds.includes(option.value);
+                                                    return (
+                                                        <li
+                                                            key={index}
+                                                            className={`facility-item ${isPresent ? "facility-present" : "facility-absent"} ml-4 md:ml-0`}
+                                                        >
+                                                            <span className="mr-2">{option.icon}</span>
+                                                            {option.label}
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                                <span className="flex items-center text-2xl font-bold mb-4">
+                                                    <ToolOutlined className="mr-2"/>
+                                                    Utilities
+                                                </span>
+                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-lg">
+                                                {UTILITY_OPTIONS.map((option, index) => {
+                                                    const isPresent = utilityIds.includes(option.value);
+                                                    return (
+                                                        <li
+                                                            key={index}
+                                                            className={`utility-item ${isPresent ? "utility-present" : "utility-absent"} ml-4 md:ml-0`}
+                                                        >
+                                                            <span className="mr-2">{option.icon}</span>
+                                                            {option.label}
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Col>
+                ),
+            },
+            {
+                key: "2",
+                label:
+                    "Comments",
+                icon:
+                    <CommentOutlined/>,
+                children:
+                    (
+                        <Card className="w-full sha dow-lg border-none bg-white lg:p-6 md:p-0">
+                            {isLoading ? (
+                                <Spin tip="Loading reviews..."/>
+                            ) : error ? (
+                                <Alert
+                                    message="Error"
+                                    description="Failed to load reviews. Please try again later."
+                                    type="error"
+                                    showIcon
+                                />
+                            ) : (
+                                <CommentSection reviews={reviews} schoolId={id}/>
+                            )}
+                        </Card>
+                    ),
+            }
+            ,
+        ]
+    ;
 
     return (
         <div className="w-full flex justify-center mb-8">
@@ -137,11 +204,11 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                         <Col xs={24}>
                             <Row gutter={[24, 24]} justify="space-between">
                                 {/* Left Column: Basic Information */}
-                                <Col xs={24} lg={16} className="flex">
+                                <Col xs={24} lg={24} className="flex">
                                     <Card
                                         title="Basic Information"
-                                        className="w-full shadow-lg border border-cyan-500 bg-white p-6" styles={{
-                                        body: { padding: 0 }
+                                        className="w-full  border  bg-white p-6" styles={{
+                                        body: {padding: 0}
                                     }}
                                     >
                                         <div className="flex mt-5 items-center justify-between mb-6">
@@ -152,10 +219,10 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             </div>
 
                                         </div>
-
-                                        <Descriptions bordered className="w-full text-xl"
+                                        <Descriptions bordered className="w-full text-xl"  column={1}
+                                                      layout={isMobile ? "vertical" : "horizontal"}
                                                       styles={{content: {fontSize: '16px'}}} size={"middle"}
-                                                        >
+                                        >
                                             <Descriptions.Item
                                                 label={
                                                     <span className="text-base">
@@ -248,66 +315,21 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                         </Descriptions>
                                     </Card>
                                 </Col>
-
-                                {/* Right Column: Facilities & Utilities */}
-                                <Col xs={24} lg={8} className="flex">
-                                    <Card
-                                        title="Facilities & Utilities"
-                                        className="w-full shadow-lg border border-cyan-500 bg-white p-6" styles={{
-                                        body: { padding: 0 }
-                                    }}
-                                    >
-                                        <div className="space-y-8">
-                                            <div>
-                                                <span className="flex items-center text-2xl font-bold mb-4">
-                                                    <BookOutlined className="mr-2"/>
-                                                    Facilities
-                                                </span>
-                                                <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-lg">
-                                                    {FACILITY_OPTIONS.map((option, index) => {
-                                                        const isPresent = facilityIds.includes(option.value);
-                                                        return (
-                                                            <li
-                                                                key={index}
-                                                                className={`facility-item ${isPresent ? "facility-present" : "facility-absent"} ml-4 md:ml-0`}
-                                                            >
-                                                                <span className="mr-2">{option.icon}</span>
-                                                                {option.label}
-                                                            </li>
-                                                        );
-                                                    })}
-                                                </ul>
-                                            </div>
-                                            <div>
-                                                <span className="flex items-center text-2xl font-bold mb-4">
-                                                    <ToolOutlined className="mr-2"/>
-                                                    Utilities
-                                                </span>
-                                                <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-lg">
-                                                    {UTILITY_OPTIONS.map((option, index) => {
-                                                        const isPresent = utilityIds.includes(option.value);
-                                                        return (
-                                                            <li
-                                                                key={index}
-                                                                className={`utility-item ${isPresent ? "utility-present" : "utility-absent"} ml-4 md:ml-0`}
-                                                            >
-                                                                <span className="mr-2">{option.icon}</span>
-                                                                {option.label}
-                                                            </li>
-                                                        );
-                                                    })}
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                </Col>
                             </Row>
                         </Col>
 
                         {/* Section 3: School Introduction and Comments with Tabs outside Card */}
                         <Col xs={24}>
-                            <Tabs defaultActiveKey="1" type="card" rootClassName="border-cyan-500" items={tabItems}
+                            <ConfigProvider
+                                theme={{
+                                    token: {
+                                        colorBorder: 'red'
+                                    }
+                                }}
+                            >
+                            <Tabs defaultActiveKey="1" type="card" rootClassName="" items={tabItems}
                                   size="large" animated={{inkBar: true, tabPane: true}}/>
+                            </ConfigProvider>
                         </Col>
                     </Row>
                 </Col>

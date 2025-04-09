@@ -1,9 +1,12 @@
 package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.ReviewNotFoundException;
 import fa.pjb.back.model.dto.ReviewAcceptDenyDTO;
+import fa.pjb.back.model.dto.ReviewDTO;
 import fa.pjb.back.model.dto.ReviewReportDTO;
 import fa.pjb.back.model.entity.Review;
+import fa.pjb.back.model.entity.ReviewId;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.enums.EReviewStatus;
@@ -28,6 +31,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -191,6 +195,55 @@ public class ReviewServiceImpl implements ReviewService {
 
         return projections.map(reviewMapper::toReviewVOFromProjection);
     }
+
+
+    @Override
+    public ReviewVO getReviewBySchoolAndParent(Integer schoolId, Integer parentId) {
+//       if(!Objects.equals(parentId, userService.getCurrentUser().getParent().getId())){
+//            throw new UserNotFoundException();
+//       }
+
+        Review review = reviewRepository.findBySchoolIdAndParentId(schoolId, parentId);
+
+        if(review == null){
+            throw new ReviewNotFoundException();
+        }
+        return reviewMapper.toReviewVO(review);
+
+    }
+    @Transactional
+    @Override
+    public ReviewVO saveReview(ReviewDTO reviewData) {
+        if(reviewData.id()==null){
+            ReviewId reviewId = new ReviewId();
+            reviewId.setParentId(reviewData.parentId());
+            reviewId.setSchoolId(reviewData.schoolId());
+            Review temp = Review.builder()
+                    .primaryId(reviewId)
+                    .facilitiesAndUtilities(reviewData.facilitiesAndUtilities())
+                    .extracurricularActivities(reviewData.extracurricularActivities())
+                    .hygieneAndNutrition(reviewData.hygieneAndNutrition())
+                    .learningProgram(reviewData.learningProgram())
+                    .teacherAndStaff(reviewData.teacherAndStaff())
+                    .feedback(reviewData.feedback())
+                    .receiveDate(LocalDate.now())
+                    .build();
+            temp = reviewRepository.save(temp);
+            return reviewMapper.toReviewVO(temp);
+        }else{
+            Review temp = reviewRepository.findByReviewId(reviewData.id()).orElseThrow(ReviewNotFoundException::new);
+            temp.setFeedback(reviewData.feedback());
+            temp.setExtracurricularActivities(reviewData.extracurricularActivities());
+            temp.setFacilitiesAndUtilities(reviewData.facilitiesAndUtilities());
+            temp.setHygieneAndNutrition(reviewData.hygieneAndNutrition());
+            temp.setLearningProgram(reviewData.learningProgram());
+            temp.setTeacherAndStaff(reviewData.teacherAndStaff());
+            temp.setReceiveDate(LocalDate.now());
+            temp = reviewRepository.save(temp);
+            return reviewMapper.toReviewVO(temp);
+        }
+    }
+
     @Override
     public RatingStatVO getReviewStatsBySchool(Integer schoolId) {
         Long totalRatings = reviewRepository.countBySchoolId(schoolId);

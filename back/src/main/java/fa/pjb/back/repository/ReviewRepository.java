@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -71,7 +70,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "s.name AS schoolName, " +
             "p.id AS parentId, " +
             "u.fullname AS parentName, " +
-            "u.parent.media.url AS parentImage, " +
+            "m.url AS parentImage, " +
             "r.learningProgram AS learningProgram, " +
             "r.facilitiesAndUtilities AS facilitiesAndUtilities, " +
             "r.extracurricularActivities AS extracurricularActivities, " +
@@ -85,13 +84,14 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "JOIN r.school s " +
             "JOIN r.parent p " +
             "JOIN p.user u " +
+            "LEFT JOIN u.parent.media m " +
             "WHERE r.school.id = :schoolId " +
             "AND (:star IS NULL OR FLOOR((r.extracurricularActivities " +
             "+ r.facilitiesAndUtilities " +
             "+ r.hygieneAndNutrition " +
             "+ r.learningProgram " +
             "+ r.teacherAndStaff) / 5) = :star) " +
-            "AND r.status IN (0 , 2) " +
+            "AND r.status IN (0, 2) " +
             "ORDER BY r.receiveDate DESC")
     Page<ReviewProjection> findReviewWithStarFilter(
             @Param("schoolId") Integer schoolId,
@@ -124,14 +124,16 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "WHERE r.school.id = :schoolId " +
             "AND r.status IN (0 , 2) ")
     List<Review> findBySchoolId(Integer schoolId);
-    @Query("SELECT r " +
-            "FROM Review r " +
-            "WHERE r.id = :id ")
-    Optional<Review> findById(Integer id);
+
+    Review findBySchoolIdAndParentId(Integer schoolId, Integer parentId);
+
+    @Query("SELECT r FROM Review r WHERE r.id = :id")
+    Optional<Review> findByReviewId(@Param("id") Integer id);
     @Query("SELECT COUNT(r), " +
             "((COALESCE(AVG(r.learningProgram), 0) + COALESCE(AVG(r.teacherAndStaff), 0) + " +
             "COALESCE(AVG(r.facilitiesAndUtilities), 0) + COALESCE(AVG(r.extracurricularActivities), 0) + " +
             "COALESCE(AVG(r.hygieneAndNutrition), 0)) / 5.0)" +
             "FROM Review r WHERE r.school.id = :schoolId")
     List<Object[]> getReviewStatisticsBySchoolId(@Param("schoolId") Integer schoolId);
+
 }

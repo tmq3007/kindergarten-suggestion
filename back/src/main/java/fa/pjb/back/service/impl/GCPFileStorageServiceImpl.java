@@ -79,7 +79,7 @@ public class GCPFileStorageServiceImpl implements GCPFileStorageService {
         if (fileFolder.equals(EFileFolder.SCHOOL_IMAGES)) {
             try (OutputStream os = new FileOutputStream(resizedFile)) {
                 Thumbnails.of(originalImage)
-                        .size(1280, 760)
+                        .size(1920, 1080)
                         .outputFormat("png")
 //                    .outputQuality(0.9)
                         .toOutputStream(os);

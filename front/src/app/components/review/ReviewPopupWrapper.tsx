@@ -1,71 +1,72 @@
-
 "use client";
 
 import { useDispatch } from "react-redux";
 import RatingsPopup from "@/app/components/review/ReviewPopup";
+import { useGetReviewBySchoolAndParentQuery } from "@/redux/services/reviewApi";
 
 interface RatingsPopupWrapperProps {
     schoolId: number;
-    onClose?: () => void; // Optional callback when popup closes
+    schoolName?: string;
+    isUpdate: boolean;
+    isOpen: boolean;
+    onCloseAction: () => void;
+    parentId: number;
 }
 
-export default function RatingsPopupWrapper({ schoolId, onClose }: RatingsPopupWrapperProps) {
-    // Fetch school details
-    const {
-        data: schoolData,
-        isLoading: isFetching,
-        error: fetchError
-    } = useGetSchoolDetailsQuery(schoolId);
-
-    // Submit ratings mutation
-    const [submitRatings, { isLoading: isSubmitting, error: submitError }] = useSubmitRatingsMutation();
-
+export default function RatingsPopupWrapper({
+                                                schoolId,
+                                                schoolName,
+                                                isUpdate,
+                                                isOpen,
+                                                onCloseAction,
+                                                parentId
+                                            }: RatingsPopupWrapperProps) {
     const dispatch = useDispatch();
 
-    // Handle submission
-    const handleSubmit = async (ratingsData: {
-        schoolId: number;
-        learningProgram: number;
-        facilitiesAndUtilities: number;
-        extracurricularActivities: number;
-        teacherAndStaff: number;
-        hygieneAndNutrition: number;
-        feedback: string;
-    }) => {
-        try {
-            await submitRatings(ratingsData).unwrap();
-            // Reset RTK Query cache for this school if needed
-            // dispatch(ratingsApi.util.invalidateTags([{ type: 'School', id: schoolId }]));
-            if (onClose) onClose();
-        } catch (err) {
-            console.error("Submission failed:", err);
-        }
-    };
-
-    // Handle cancel/close
-    const handleCancel = () => {
-        if (onClose) onClose();
-    };
+    // Fetch data only when the modal is open and isUpdate is true
+    const {
+        data: reviewData,
+        isLoading: isFetching,
+        error: fetchError,
+    } = useGetReviewBySchoolAndParentQuery(
+        { schoolId, parentId: parentId! },
+        { skip: !isOpen || !isUpdate || !parentId } // Fetch only when modal is open
+    );
 
     // Convert fetch error to string
-    const errorMessage = fetchError
-        ? 'status' in fetchError
-            ? `Error ${fetchError.status}: Failed to fetch school data`
-            : 'Network error occurred'
-        : submitError
-            ? 'status' in submitError
-                ? `Error ${submitError.status}: Failed to submit ratings`
-                : 'Submission error occurred'
+    const errorMessage =
+        fetchError
+            ? "status" in fetchError
+                ? `Error ${fetchError.status}: Failed to fetch review data`
+                : "Network error occurred"
             : undefined;
+
+    // Prepare initial ratings data if updating
+    const initialRatings = isUpdate && reviewData?.data
+        ? {
+            id: reviewData.data.id,
+            parentId: reviewData.data.parentId || parentId,
+            schoolId: reviewData.data.schoolId || schoolId,
+            learningProgram: reviewData.data.learningProgram,
+            facilitiesAndUtilities: reviewData.data.facilitiesAndUtilities,
+            extracurricularActivities: reviewData.data.extracurricularActivities,
+            teacherAndStaff: reviewData.data.teacherAndStaff,
+            hygieneAndNutrition: reviewData.data.hygieneAndNutrition,
+            feedback: reviewData.data.feedback,
+        }
+        : undefined;
 
     return (
         <RatingsPopup
             schoolId={schoolId}
-            schoolName={schoolData?.name || "School"}
-            isLoading={isFetching || isSubmitting}
+            parentId={parentId}
+            schoolName={schoolName || reviewData?.data?.schoolName || "School"}
+            isOpen={isOpen}
+            onCloseAction={onCloseAction}
+            isLoading={isFetching}
             error={errorMessage}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
+            initialRatings={initialRatings}
+            isUpdate={isUpdate}
         />
     );
 }

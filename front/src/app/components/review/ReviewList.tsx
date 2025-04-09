@@ -1,10 +1,10 @@
 // ReviewList.tsx
 "use client";
-import React, { useState, useEffect } from "react";
-import { List, Button } from "antd";
+import React, {useState, useEffect} from "react";
+import {List, Button} from "antd";
 import ReviewItem from "./ReviewItem";
-import { ReviewVO } from "@/redux/services/reviewApi";
-import { useGetReviewBySchoolForPublicQuery } from "@/redux/services/reviewApi";
+import {ReviewVO} from "@/redux/services/reviewApi";
+import {useGetReviewBySchoolForPublicQuery} from "@/redux/services/reviewApi";
 
 interface ReviewListProps {
     initialReviews: ReviewVO[];
@@ -19,13 +19,14 @@ const ReviewList: React.FC<ReviewListProps> = ({
                                                }) => {
     const [page, setPage] = useState(1);
     const [displayedReviews, setDisplayedReviews] = useState<ReviewVO[]>(initialReviews || []);
+    const [loadedReviewIds, setLoadedReviewIds] = useState<Set<number>>(new Set()); // Track loaded review IDs
     const pageSize = 15;
 
     const starFilter = selectedRating === "all" ? undefined : parseInt(selectedRating);
 
-    const { data, isLoading, isFetching } = useGetReviewBySchoolForPublicQuery({
+    const {data, isLoading, isFetching} = useGetReviewBySchoolForPublicQuery({
         schoolId: Number(schoolId),
-        page: page, // Convert to 0-based index for API
+        page: page,
         size: pageSize,
         star: starFilter,
     });
@@ -33,19 +34,32 @@ const ReviewList: React.FC<ReviewListProps> = ({
     // Reset when filter changes
     useEffect(() => {
         setPage(1);
-        setDisplayedReviews([]); // Clear existing reviews
+        setDisplayedReviews([]);
+        setLoadedReviewIds(new Set());
     }, [selectedRating]);
 
     // Handle data updates
     useEffect(() => {
-        // Handle API data
         if (data?.data?.content) {
             const newReviews = Array.isArray(data.data.content) ? data.data.content : [];
+
+            // Only add reviews that haven't been loaded yet
+            const reviewsToAdd: ReviewVO[] = [];
+            const newLoadedIds = new Set(loadedReviewIds);
+
+            newReviews.forEach((review) => {
+                if (!newLoadedIds.has(review.id)) {
+                    reviewsToAdd.push(review);
+                    newLoadedIds.add(review.id);
+                }
+            });
+
             setDisplayedReviews((prev) =>
-                page === 1 ? newReviews : [...prev, ...newReviews]
+                page === 1 ? reviewsToAdd : [...prev, ...reviewsToAdd]
             );
+            setLoadedReviewIds(newLoadedIds);
         }
-    }, [data, page, initialReviews]);
+    }, [data, page]);
 
     const hasMore = data?.data?.page
         ? page < data.data.page.totalPages
@@ -57,9 +71,9 @@ const ReviewList: React.FC<ReviewListProps> = ({
         }
     };
 
-    const loadMore = !isLoading && !isFetching && hasMore ? (
-        <div style={{ textAlign: "center", marginTop: 12, height: 32, lineHeight: "32px" }}>
-            <Button onClick={loadMoreData} loading={isFetching}>
+    const loadMore = hasMore ? (
+        <div style={{textAlign: "center", marginTop: 12, height: 32, lineHeight: "32px"}}>
+            <Button onClick={loadMoreData} loading={isFetching || isLoading}>
                 Load more
             </Button>
         </div>
@@ -76,7 +90,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
                     loadMore={loadMore}
                     renderItem={(review) => (
                         <List.Item key={review.id}>
-                            <ReviewItem review={review} />
+                            <ReviewItem review={review}/>
                         </List.Item>
                     )}
                 />
