@@ -2,6 +2,7 @@ package fa.pjb.back.controller;
 
 import fa.pjb.back.common.response.ApiResponse;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
+import fa.pjb.back.model.dto.ReviewDTO;
 import fa.pjb.back.model.dto.SchoolDTO;
 import fa.pjb.back.model.dto.SchoolSearchDTO;
 import fa.pjb.back.model.vo.*;
@@ -42,6 +43,7 @@ public class SchoolController {
                 .data(schoolService.getPublicSchoolInfo(schoolId))
                 .build();
     }
+
 
 
     @Operation(summary = "Get school info", description = "Get school information by school id")

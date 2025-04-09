@@ -23,6 +23,19 @@ export type RatingStats = {
     };
 }
 
+
+export type ReviewDTO ={
+    id?: number
+    schoolId: number;
+    parentId: number;
+    learningProgram: number;
+    facilitiesAndUtilities: number;
+    extracurricularActivities: number;
+    teacherAndStaff: number;
+    hygieneAndNutrition: number;
+    feedback: string;
+}
+
 export type ReviewVO = {
     id: number;
     schoolId?: number;
@@ -153,6 +166,21 @@ export const reviewApi = createApi({
             }),
             providesTags: ["ReviewStats"],
         }),
+
+        getReviewBySchoolAndParent: build.query<ApiResponse<ReviewVO>, { schoolId: number, parentId: number}>({
+            query: ({schoolId, parentId}) => ({
+                url: `/school/review/public/${schoolId}/${parentId}`,
+                method: "GET",
+            }),
+        }),
+
+        submitRatings: build.mutation<void,ReviewDTO >({
+            query: (ratingsData) => ({
+                url: `/school/review/public/save`,
+                method: 'POST',
+                body: ratingsData,
+            }),
+        }),
     }),
 });
 
@@ -164,5 +192,7 @@ export const {
     useReportDecisionMutation,
     useGetReviewReportRemindersQuery,
     useGetReviewBySchoolForPublicQuery,
-    useGetReviewStatsBySchoolQuery
+    useGetReviewStatsBySchoolQuery,
+    useGetReviewBySchoolAndParentQuery,
+    useSubmitRatingsMutation
 } = reviewApi;
