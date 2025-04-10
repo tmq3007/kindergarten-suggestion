@@ -79,8 +79,8 @@ class ReviewControllerTest {
         );
 
         when(reviewService.getAllReviewByAdmin(eq(100),
-                eq(LocalDate.parse("2024-01-01")),
-                eq(LocalDate.parse("2024-12-31")),
+                eq(LocalDateTime.parse("2024-01-01")),
+                eq(LocalDateTime.parse("2024-12-31")),
                 eq(null)))
                 .thenReturn(reviews);
 

@@ -1,9 +1,12 @@
 package fa.pjb.back.model.vo;
 
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+@Builder
 public record SchoolSearchVO(
 
         Integer id,
