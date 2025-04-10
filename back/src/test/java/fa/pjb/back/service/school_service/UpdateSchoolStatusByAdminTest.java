@@ -1,37 +1,39 @@
-package fa.pjb.back.service.school_service;
+package fa.pjb.back.service.impl;
 
+import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
+import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
+import fa.pjb.back.common.exception._13xx_school.InappropriateSchoolStatusException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.common.exception._13xx_school.StatusNotExistException;
+import fa.pjb.back.event.model.SchoolApprovedEvent;
+import fa.pjb.back.event.model.SchoolDeletedEvent;
+import fa.pjb.back.event.model.SchoolPublishedEvent;
+import fa.pjb.back.event.model.SchoolRejectedEvent;
 import fa.pjb.back.model.dto.ChangeSchoolStatusDTO;
 import fa.pjb.back.model.entity.School;
 import fa.pjb.back.model.entity.SchoolOwner;
 import fa.pjb.back.model.entity.User;
+import fa.pjb.back.model.enums.ERole;
 import fa.pjb.back.repository.SchoolOwnerRepository;
 import fa.pjb.back.repository.SchoolRepository;
-import fa.pjb.back.service.EmailService;
-import fa.pjb.back.service.SchoolService;
-import fa.pjb.back.service.impl.SchoolServiceImpl;
+import fa.pjb.back.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static fa.pjb.back.model.enums.ESchoolStatus.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UpdateSchoolStatusByAdminTest {
-
-    @InjectMocks
-    private SchoolServiceImpl schoolService;
+class UpdateSchoolStatusByAdminTest {
 
     @Mock
     private SchoolRepository schoolRepository;
@@ -40,218 +42,107 @@ public class UpdateSchoolStatusByAdminTest {
     private SchoolOwnerRepository schoolOwnerRepository;
 
     @Mock
-    private EmailService emailService;
+    private UserService userService;
 
     @Mock
-    private SecurityContext securityContext;
+    private ApplicationEventPublisher eventPublisher;
 
-    @Mock
-    private Authentication authentication;
+    @InjectMocks
+    private SchoolServiceImpl schoolService;
 
-    private User mockUser;
+    private User adminUser;
+    private School school;
+    private ChangeSchoolStatusDTO dto;
 
     @BeforeEach
     void setUp() {
-        // Thiết lập mock cho SecurityContextHolder
-        mockUser = new User();
-        mockUser.setUsername("adminUser");
+        adminUser = new User();
+        adminUser.setId(1);
+        adminUser.setUsername("admin");
+        adminUser.setRole(ERole.ROLE_ADMIN);
 
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getPrincipal()).thenReturn(mockUser);
-        SecurityContextHolder.setContext(securityContext);
-    }
-
-    /**
-     * Normal Case:
-     * Description: Update a school status successfully with valid data and admin role.
-     * Expected: Returns HTTP 200 OK with a response containing the updated school status.
-     */
-    @Test
-    void testUpdateSchoolStatusByAdmin_NormalCase_Approved() {
-        // Arrange
-        ChangeSchoolStatusDTO dto = ChangeSchoolStatusDTO.builder()
-                .schoolId(1)
-                .status((byte) 2) // Approved
-                .build();
-
-        School school = new School();
+        school = new School();
         school.setId(1);
-        school.setStatus((byte) 1); // Submitted
         school.setEmail("school@example.com");
         school.setName("Test School");
 
-        String link = "http://localhost:3000/public/school-owner";
+        dto = new ChangeSchoolStatusDTO(1, (byte) 2, "Response");
+    }
 
+    @Test
+    void testUpdateSchoolStatusByAdmin_Approved_Success() {
+        school.setStatus(SUBMITTED.getValue());
         when(schoolRepository.findById(1)).thenReturn(Optional.of(school));
+        when(userService.getCurrentUser()).thenReturn(adminUser);
 
-        // Act
         schoolService.updateSchoolStatusByAdmin(dto);
 
-        // Assert
-        verify(schoolRepository).findById(1);
-        assert school.getStatus() == 2; // Approved
+        assertEquals(APPROVED.getValue(), school.getStatus());
+        verify(eventPublisher).publishEvent(any(SchoolApprovedEvent.class));
+        verify(schoolRepository, never()).save(any(School.class)); // Không cần save vì không có flush
     }
 
-    /**
-     * Abnormal Case:
-     * Description: Attempt to update a school status with an invalid status value.
-     * Expected: Throws StatusNotExistException as the status does not exist.
-     */
     @Test
-    void testUpdateSchoolStatusByAdmin_AbnormalCase_InvalidStatus() {
-        // Arrange: Create a DTO with an invalid status that does not exist
-        ChangeSchoolStatusDTO dto = ChangeSchoolStatusDTO.builder()
-                .schoolId(1)
-                .status((byte) 7) // Invalid status
-                .build();
-
-        // Create a mock school entity with a valid initial status
-        School school = new School();
-        school.setId(1);
-        school.setStatus((byte) 1); // Submitted
-
-        // Mock the repository to return the mock school when queried by ID
+    void testUpdateSchoolStatusByAdmin_Approved_InvalidStatus() {
+        school.setStatus(SAVED.getValue());
         when(schoolRepository.findById(1)).thenReturn(Optional.of(school));
+        when(userService.getCurrentUser()).thenReturn(adminUser);
 
-        // Act & Assert: Verify that the service throws a StatusNotExistException
-        assertThrows(StatusNotExistException.class, () -> schoolService.updateSchoolStatusByAdmin(dto));
-
-        // Verify interactions
-        verify(schoolRepository).findById(1); // Verify the repository was queried
-        verifyNoInteractions(emailService); // Ensure no email was sent
+        assertThrows(InappropriateSchoolStatusException.class, () -> schoolService.updateSchoolStatusByAdmin(dto));
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
-    /**
-     * Boundary Case:
-     * Description: Update the school status from "Approved" to "Published" by an admin.
-     * Expected: The school status is updated to "Published" and the owner's public permission is set.
-     */
     @Test
-    void testUpdateSchoolStatusByAdmin_BoundaryCase_PublishedFromApproved() {
-        // Arrange: Set up a DTO for changing the school status to "Published"
-        ChangeSchoolStatusDTO dto = ChangeSchoolStatusDTO.builder()
-                .schoolId(1)
-                .status((byte) 4) // Published
-                .build();
+    void testUpdateSchoolStatusByAdmin_Rejected_Success() {
+        dto = new ChangeSchoolStatusDTO(1, (byte) 3, "Rejected reason");
+        school.setStatus(SUBMITTED.getValue());
+        when(schoolRepository.findById(1)).thenReturn(Optional.of(school));
+        when(userService.getCurrentUser()).thenReturn(adminUser);
 
-        // Create a mock school entity with the current status as "Approved"
-        School school = new School();
-        school.setId(1);
-        school.setStatus((byte) 2); // Approved
-        school.setEmail("school@example.com");
-        school.setName("Test School");
+        schoolService.updateSchoolStatusByAdmin(dto);
 
-        // Create a mock school owner with no public permission initially
+        assertEquals(REJECTED.getValue(), school.getStatus());
+        verify(eventPublisher).publishEvent(any(SchoolRejectedEvent.class));
+    }
+
+    @Test
+    void testUpdateSchoolStatusByAdmin_Published_Success() {
+        dto = new ChangeSchoolStatusDTO(1, (byte) 4, null);
+        school.setStatus(APPROVED.getValue());
         SchoolOwner owner = new SchoolOwner();
-        owner.setId(1);
-        owner.setSchool(school);
-        owner.setPublicPermission(false);
-
-        // Mock repository methods to return the mock entities
         when(schoolRepository.findById(1)).thenReturn(Optional.of(school));
-        when(schoolOwnerRepository.findAllBySchoolId(1)).thenReturn(List.of(owner));
+        when(schoolOwnerRepository.findAllBySchoolId(1)).thenReturn(Collections.singletonList(owner));
+        when(userService.getCurrentUser()).thenReturn(adminUser);
 
-        // Act: Attempt to update the school status using the service
         schoolService.updateSchoolStatusByAdmin(dto);
 
-        // Assert: Verify the interactions and the expected state changes
-        verify(schoolRepository).findById(1);
-        verify(schoolOwnerRepository).findAllBySchoolId(1);
+        assertEquals(PUBLISHED.getValue(), school.getStatus());
+        assertTrue(owner.getPublicPermission());
+        verify(eventPublisher).publishEvent(any(SchoolPublishedEvent.class));
         verify(schoolOwnerRepository).saveAndFlush(owner);
-        assert school.getStatus() == 4; // Published
-        assert owner.getPublicPermission(); // Public permission should be true
     }
 
-    /**
-     * Boundary Case:
-     * Description: Update the school status from "Published" to "Unpublished" by an admin.
-     * Expected: The school status is updated to "Unpublished" and the owner's public permission is removed.
-     */
     @Test
-    void testUpdateSchoolStatusByAdmin_BoundaryCase_UnpublishedFromPublished() {
-        // Arrange
-        ChangeSchoolStatusDTO dto = ChangeSchoolStatusDTO.builder()
-                .schoolId(1)
-                .status((byte) 5) // Unpublished
-                .build();
-
-        School school = new School();
-        school.setId(1);
-        school.setStatus((byte) 4); // Published
-
+    void testUpdateSchoolStatusByAdmin_Deleted_Success() {
+        dto = new ChangeSchoolStatusDTO(1, (byte) 6, "Deleted reason");
         SchoolOwner owner = new SchoolOwner();
-        owner.setId(1);
-        owner.setSchool(school);
-        owner.setPublicPermission(true);
-
         when(schoolRepository.findById(1)).thenReturn(Optional.of(school));
-        when(schoolOwnerRepository.findAllBySchoolId(1)).thenReturn(List.of(owner));
+        when(schoolOwnerRepository.findAllBySchoolId(1)).thenReturn(Collections.singletonList(owner));
+        when(userService.getCurrentUser()).thenReturn(adminUser);
 
-        // Act
         schoolService.updateSchoolStatusByAdmin(dto);
 
-        // Assert
-        verify(schoolRepository).findById(1);
-        verify(schoolOwnerRepository).findAllBySchoolId(1);
+        assertEquals(DELETED.getValue(), school.getStatus());
+        assertNull(owner.getSchool());
+        verify(eventPublisher).publishEvent(any(SchoolDeletedEvent.class));
         verify(schoolOwnerRepository).saveAndFlush(owner);
-        assert school.getStatus() == 5; // Unpublished
-        assert !owner.getPublicPermission(); // Public permission should be false
     }
 
-    /**
-     * Boundary Case:
-     * Description: Update the school status to the minimum possible value (Byte.MIN_VALUE = -128).
-     * Expected: Throws a StatusNotExistException since the status value does not exist.
-     */
     @Test
-    void testUpdateSchoolStatusByAdmin_BoundaryCase_StatusMinValue() {
-        // Arrange
-        ChangeSchoolStatusDTO dto = ChangeSchoolStatusDTO.builder()
-                .schoolId(1)
-                .status(Byte.MIN_VALUE) // -128
-                .build();
+    void testUpdateSchoolStatusByAdmin_SchoolNotFound() {
+        when(schoolRepository.findById(1)).thenReturn(Optional.empty());
 
-        School school = new School();
-        school.setId(1);
-        school.setStatus((byte) 1); // Submitted
-
-        when(schoolRepository.findById(1)).thenReturn(Optional.of(school));
-
-        // Act & Assert
-        assertThrows(StatusNotExistException.class, () -> schoolService.updateSchoolStatusByAdmin(dto));
-
-        // Verify interactions
-        verify(schoolRepository).findById(1);
-        verifyNoInteractions(emailService); // Ensure no email was sent
-    }
-
-    /**
-     * Boundary Case:
-     * Description: Update the school status to the maximum possible value (Byte.MAX_VALUE = 127).
-     * Expected: Throws a StatusNotExistException since the status value does not exist.
-     */
-    @Test
-    void testUpdateSchoolStatusByAdmin_BoundaryCase_StatusMaxValue() {
-        // Arrange
-        ChangeSchoolStatusDTO dto = ChangeSchoolStatusDTO.builder()
-                .schoolId(1)
-                .status(Byte.MAX_VALUE) // 127
-                .build();
-
-        School school = new School();
-        school.setId(1);
-        school.setStatus((byte) 1); // Submitted
-
-        when(schoolRepository.findById(1)).thenReturn(Optional.of(school));
-
-        // Act & Assert
-        // Verify that attempting to update the school status to an invalid value
-        // (Byte.MAX_VALUE) throws a StatusNotExistException.
-        assertThrows(StatusNotExistException.class, () -> schoolService.updateSchoolStatusByAdmin(dto));
-
-        // Verify that the repository was queried by ID, and that the email service
-        // was not called (since the status update failed).
-        verify(schoolRepository).findById(1);
-        verifyNoInteractions(emailService);
+        assertThrows(SchoolNotFoundException.class, () -> schoolService.updateSchoolStatusByAdmin(dto));
+        verify(eventPublisher, never()).publishEvent(any());
     }
 }
