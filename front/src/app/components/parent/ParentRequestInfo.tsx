@@ -14,12 +14,9 @@ interface ParentRequestInfoProps {
 }
 
 const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
-    const [expanded, setExpanded] = useState(false);
-    const [isOverflowing, setIsOverflowing] = useState(false);
-    const inquiryRef = useRef<HTMLDivElement>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const MAX_INQUIRY_LENGTH = 100
+    const MAX_INQUIRY_LENGTH = 300
 
     const shouldTruncate = request.inquiry && request.inquiry.length > MAX_INQUIRY_LENGTH
     const displayInquiry = shouldTruncate
@@ -52,19 +49,6 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
     const admissionAge = request.school?.receivingAge
         ? `From ${request.school.receivingAge} months to 5 years`
         : 'N/A';
-
-
-    useEffect(() => {
-        const element = inquiryRef.current;
-        if (element) {
-            // Kiểm tra xem nội dung có bị overflow không
-            const lineHeight = parseInt(getComputedStyle(element).lineHeight);
-            const maxHeight = lineHeight * 3; // 3 dòng
-            const actualHeight = element.scrollHeight;
-
-            setIsOverflowing(actualHeight > maxHeight);
-        }
-    }, [request.inquiry]);
 
     return (
         <>
