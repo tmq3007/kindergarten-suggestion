@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Tooltip, Badge } from 'antd';
 import { BellFilled, BellOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
@@ -15,6 +15,7 @@ const NotificationTooltip = () => {
 
     const isSchoolOwner = userRole === 'ROLE_SCHOOL_OWNER';
     const isAdmin = userRole === 'ROLE_ADMIN';
+    const [showAllAdminNotifications, setShowAllAdminNotifications] = useState(false);
 
     // Fetch notifications for School Owner with polling
     const { data, error, isLoading } = useAlertReminderQuery(Number(userId), {
@@ -104,8 +105,9 @@ const NotificationTooltip = () => {
     );
 
     // Admin Notifications content for Tooltip
+    // Admin Notifications content for Tooltip
     const adminTooltipContent = (
-        <div className="w-[230px] bg-white p-2">
+        <div className="w-[230px] bg-white p-2 max-h-[350px] overflow-y-auto">
             {(adminLoading || adminNewRequestLoading || adminChangeRequestLoading) ? (
                 <div className="py-2 text-center">Loading...</div>
             ) : (adminError && adminNewRequestError && adminChangeRequestError) ? (
@@ -148,23 +150,35 @@ const NotificationTooltip = () => {
 
                     {/* Review Reports Section */}
                     {adminReviewNotifications.length > 0 && (
-                        adminReviewNotifications.map((item) => (
-                            <div key={item.schoolId} className="py-2 flex justify-between items-center">
-                                <div>
-                                    {item.total} pending reports of
-                                    <span className="font-medium"> {item.schoolName} </span>
+                        <>
+                            {(showAllAdminNotifications ? adminReviewNotifications : adminReviewNotifications.slice(0, 5)).map((item) => (
+                                <div key={item.schoolId} className="py-2 flex justify-between items-center">
+                                    <div>
+                                        {item.total} pending reports of
+                                        <span className="font-medium"> {item.schoolName} </span>
+                                    </div>
+                                    <Link
+                                        className="text-blue-400 ml-1.5 font-medium"
+                                        href={`/admin/management/school/rating-feedback/${item.schoolId}?from=notification`}
+                                    >
+                                        Details
+                                    </Link>
                                 </div>
-                                <Link
-                                    className="text-blue-400 ml-1.5 font-medium"
-                                    href={`/admin/management/school/rating-feedback/${item.schoolId}?from=notification`}
+                            ))}
+
+                            {/* Toggle Show More / Show Less */}
+                            {adminReviewNotifications.length  > 3 && (
+                                <div
+                                    className="text-center text-blue-500 font-medium cursor-pointer pt-2"
+                                    onClick={() => setShowAllAdminNotifications(prev => !prev)}
                                 >
-                                    Details
-                                </Link>
-                            </div>
-                        ))
+
+                                </div>
+                            )}
+                        </>
                     )}
 
-                    {/* Show "No new notifications" only if all sections are empty */}
+                    {/* No notifications fallback */}
                     {(newRequestCount === 0 && changeRequestCount === 0 && adminReviewNotifications.length === 0) && (
                         <div className="py-2 text-center">No new notifications</div>
                     )}
@@ -172,6 +186,7 @@ const NotificationTooltip = () => {
             )}
         </div>
     );
+
 
     return (
         <Tooltip
