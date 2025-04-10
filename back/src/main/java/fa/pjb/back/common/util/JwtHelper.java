@@ -1,5 +1,6 @@
 package fa.pjb.back.common.util;
 
+
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ public class JwtHelper {
     @Value("${refresh-token-exp}")
     private long REFRESH_TOKEN_EXP;
 
+
     /**
      * Phuơng thức dùng để trích xuất tất cà các claims (thông tin được mã hóa) từ token
      *
@@ -33,10 +35,11 @@ public class JwtHelper {
      */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+            .setSigningKey(SECRET_KEY)
+            .parseClaimsJws(token)
+            .getBody();
     }
+
 
     /**
      * Phương thức dùng để trích xuất 1 claim cụ thể từ JWT
@@ -51,6 +54,7 @@ public class JwtHelper {
         return claimsResolver.apply(claims);
     }
 
+
     /**
      * Phương thức dùng để trích xuất sub trong claims được phân tích từ token
      * Claims::getSubject là 1 Functional Interface
@@ -62,12 +66,13 @@ public class JwtHelper {
         return extractClaim(token, Claims::getSubject);
     }
 
+
     public String extractUsernameIgnoreExpiration(String token) {
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody();
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
             return claims.getSubject();
         } catch (ExpiredJwtException e) {
             // Nếu token hết hạn, vẫn lấy được username từ claims trong ngoại lệ
@@ -78,20 +83,24 @@ public class JwtHelper {
         }
     }
 
+
     // Phương thức dùng để trích xuất thời gian hết hạn của token
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+
     public long extractExpirationTimestamp(String token) {
         return extractExpiration(token).getTime() / 1000; // convert millis -> seconds
     }
+
 
     // Phương thúc dùng để kiểm tra token đã hết hạn hay chưa
     // Nếu thời gian hết hạn trước thời gian hiện tại thì chứng tỏ token đó đã hết hạn
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
+
 
     /**
      * Phương thức này dùng để tạo JWT token
@@ -108,13 +117,14 @@ public class JwtHelper {
      */
     private String createToken(Map<String, Object> claims, String subject, long expirationTime) {
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
-                .compact();
+            .setClaims(claims)
+            .setSubject(subject)
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+            .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+            .compact();
     }
+
 
     // Phương thức dùng để tạo ra Access Token từ thông tin người dùng (UserDetails)
     public String generateAccessToken(UserDetails userDetails, String userId, String userRole) {
@@ -124,6 +134,7 @@ public class JwtHelper {
         return createToken(claims, userDetails.getUsername(), ACCESS_TOKEN_EXP);
     }
 
+
     // Phương thức dùng để tạo ra Refresh Token từ thông tin người dùng (UserDetails)
     public String generateRefreshToken(UserDetails userDetails, String userId, String userRole) {
         Map<String, Object> claims = new HashMap<>();
@@ -132,10 +143,12 @@ public class JwtHelper {
         return createToken(claims, userDetails.getUsername(), REFRESH_TOKEN_EXP);
     }
 
+
     // Phương thức dùng để tạo ra CSRF Token
     public String generateCsrfToken() {
         return UUID.randomUUID().toString().replace("-", "");
     }
+
 
     // Phương thức dùng để tạo ra ForgotPassword Token
     public String generateForgotPasswordToken(String username) {
@@ -153,3 +166,4 @@ public class JwtHelper {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }
+

@@ -24,7 +24,7 @@ async function fetchSchools(params: SchoolSearchDTO) {
     console.log("Final API query:", queryParams.toString());
 
     const response = await fetch(
-        `http://localhost:8080/api/school/search-by-criteria?${queryParams.toString()}`,
+        `http://kindergartenshop.online/api/school/search-by-criteria?${queryParams.toString()}`,
         {cache: "no-store"}
     );
 
