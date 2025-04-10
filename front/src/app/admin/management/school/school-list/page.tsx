@@ -271,7 +271,6 @@ const SchoolListWrapper: React.FC<SchoolListWrapperProps> = ({ useQueryTrigger, 
               error={error}
               isLoading={isLoading}
               isFetching={isFetching}
-              onDelete={(id: number) => (document.getElementById("delete-modal") as any)?.setModalVisible(true, id)}
               hideEditButton={title === "Change Requests"}
           />
         </div>
