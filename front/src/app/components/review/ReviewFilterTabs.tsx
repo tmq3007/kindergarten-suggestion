@@ -1,66 +1,66 @@
-"use client"
+"use client";
 
-import {useState} from "react"
-import type React from "react"
-import {Radio, Badge, Flex} from "antd"
-import {Star} from "lucide-react";
-import {RatingStats} from "@/redux/services/reviewApi";
+import { useState } from "react";
+import type React from "react";
+import { Radio, Badge, Flex } from "antd";
+import { Star } from "lucide-react";
+import { RatingStats } from "@/redux/services/reviewApi";
 
 interface ReviewFilterTabsProps {
     onTabChange: (key: string) => void;
     statsData?: RatingStats;
-    isLoading: boolean
+    isLoading: boolean;
 }
 
 const defaultStats = {
-    ratingsByStarRange: {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0},
+    ratingsByStarRange: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 },
     totalRatings: 0,
 };
-const ReviewFilterTabs: React.FC<ReviewFilterTabsProps> = ({onTabChange, statsData, isLoading}) => {
-    const [selectedTab, setSelectedTab] = useState("all")
+
+const ReviewFilterTabs: React.FC<ReviewFilterTabsProps> = ({ onTabChange, statsData, isLoading }) => {
+    const [selectedTab, setSelectedTab] = useState("all");
     const stats = statsData || defaultStats;
     const tabOptions = [
-        {key: "all", label: "All", count: stats.totalRatings},
-        {key: "5", label: "5", count: stats.ratingsByStarRange["5"]},
-        {key: "4", label: "4", count: stats.ratingsByStarRange["4"]},
-        {key: "3", label: "3", count: stats.ratingsByStarRange["3"]},
-        {key: "2", label: "2", count: stats.ratingsByStarRange["2"]},
-        {key: "1", label: "1", count: stats.ratingsByStarRange["1"]},
+        { key: "all", label: "All", count: stats.totalRatings },
+        { key: "5", label: "5", count: stats.ratingsByStarRange["5"] },
+        { key: "4", label: "4", count: stats.ratingsByStarRange["4"] },
+        { key: "3", label: "3", count: stats.ratingsByStarRange["3"] },
+        { key: "2", label: "2", count: stats.ratingsByStarRange["2"] },
+        { key: "1", label: "1", count: stats.ratingsByStarRange["1"] },
     ];
 
-    // Add custom styles scoped to this component only
     const customStyles = `
-  .review-filter-tabs .ant-radio-button-wrapper {
-    border-radius: 999px !important;
-  }
-  .review-filter-tabs .ant-radio-button-wrapper:first-child {
-    border-radius: 999px !important;
-  }
-  .review-filter-tabs .ant-radio-button-wrapper:last-child {
-    border-radius: 999px !important;
-  }
-  .review-filter-tabs .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
-    color: black !important;
-    background: #fcd34d !important;
-    border-color: #fcd34d !important;
-  }
-  .review-filter-tabs .ant-radio-button-wrapper:hover {
-    color: black !important;
-  }
-  .review-filter-tabs .ant-badge-count {
-    background-color: #f59e0b !important;
-    color: white !important;
-    font-size: 10px !important;
-    height: 16px !important;
-    line-height: 16px !important;
-    padding: 0 4px !important;
-  }
-`
+        .review-filter-tabs .ant-radio-button-wrapper {
+            border-radius: 999px !important;
+        }
+        .review-filter-tabs .ant-radio-button-wrapper:first-child {
+            border-radius: 999px !important;
+        }
+        .review-filter-tabs .ant-radio-button-wrapper:last-child {
+            border-radius: 999px !important;
+        }
+        .review-filter-tabs .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+            color: black !important;
+            background: #fcd34d !important;
+            border-color: #fcd34d !important;
+        }
+        .review-filter-tabs .ant-radio-button-wrapper:hover {
+            color: black !important;
+        }
+        .review-filter-tabs .ant-badge-count {
+            background-color: #f59e0b !important;
+            color: white !important;
+            font-size: 10px !important;
+            height: 16px !important;
+            line-height: 16px !important;
+            padding: 0 4px !important;
+        }
+    `;
 
     const handleChange = (e: any) => {
-        setSelectedTab(e.target.value)
-        onTabChange(e.target.value)
-    }
+        setSelectedTab(e.target.value);
+        onTabChange(e.target.value);
+    };
 
     return (
         <div className="mt-8 review-filter-tabs">
@@ -79,18 +79,17 @@ const ReviewFilterTabs: React.FC<ReviewFilterTabsProps> = ({onTabChange, statsDa
                 }
             >
                 {tabOptions.map((tab) => (
-                    <Badge count={tab.count} showZero>
+                    <Badge key={tab.key} count={tab.count} showZero>
                         <Radio.Button
                             value={tab.key}
                             className={`flex items-center justify-center gap-1 font-medium rounded-full px-4 py-1.5 
-                        ${selectedTab === tab.key ? "bg-amber-300 text-black" : "border-amber-300 text-amber-400"}`}
-                            style={{borderColor: "#fcd34d", borderRadius: "999px"}}
-                            key={tab.key}
+                                ${selectedTab === tab.key ? "bg-amber-300 text-black" : "border-amber-300 text-amber-400"}`}
+                            style={{ borderColor: "#fcd34d", borderRadius: "999px" }}
                         >
                             <Flex align="center" gap={4}>
                                 {tab.label}
                                 {tab.key !== "all" && (
-                                    <Star className="w-5 h-5 fill-amber-400 text-amber-400"/>
+                                    <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                                 )}
                             </Flex>
                         </Radio.Button>
@@ -98,8 +97,7 @@ const ReviewFilterTabs: React.FC<ReviewFilterTabsProps> = ({onTabChange, statsDa
                 ))}
             </Radio.Group>
         </div>
-    )
-}
+    );
+};
 
-export default ReviewFilterTabs
-
+export default ReviewFilterTabs;
