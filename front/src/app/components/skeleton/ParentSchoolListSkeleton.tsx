@@ -17,10 +17,10 @@ import {SCHOOL_TYPE_OPTIONS} from "@/lib/constants";
 const ParentSchoolListSkeleton: React.FC = () => {
     return (
         <div
-            className="grid grid-cols-1 lg:grid-cols-6 border-blue-300 items-start border-2 rounded-lg shadow-md p-2 mt-10 bg-gray-50">
+            className="grid grid-cols-1 lg:grid-cols-6 gap-2 border-blue-300 items-start border-2 rounded-lg shadow-md p-2 mt-10 bg-gray-50">
             {/*School Section*/}
             <div
-                className={'col-span-5 border-2 border-blue-300 bg-white rounded-lg shadow-md p-4 h-full flex flex-col md:flex-row'}>
+                className={'col-span-1 lg:col-span-5 border-2 border-blue-300 bg-white rounded-lg shadow-md p-4 h-full flex flex-col md:flex-row'}>
                 <div className={'h-full w-full md:w-1/2 lg:w-1/3'}>
                     <Skeleton.Image/>
                     <Skeleton.Input active className={'!w-full'}/>
@@ -81,7 +81,7 @@ const ParentSchoolListSkeleton: React.FC = () => {
                 </div>
             </div>
             {/*Rate Section*/}
-            <div className={'col-span-1 border-2 border-blue-300 bg-white rounded-lg shadow-md ml-2 p-4 h-full'}>
+            <div className={'col-span-1 border-2 border-blue-300 bg-white rounded-lg shadow-md p-4 h-full'}>
             </div>
         </div>
     );
