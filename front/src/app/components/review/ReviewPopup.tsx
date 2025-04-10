@@ -37,6 +37,7 @@ interface RatingsPopupProps {
         feedback: string;
     };
     isUpdate?: boolean;
+    isViewOnly?: boolean;
 }
 
 const COLORS = {
@@ -54,6 +55,7 @@ export default function RatingsPopup({
                                          onCloseAction,
                                          isLoading = false,
                                          error,
+                                         isViewOnly= false,
                                          initialRatings,
                                          isUpdate = false,
                                      }: RatingsPopupProps) {
@@ -244,6 +246,7 @@ export default function RatingsPopup({
                                                 </motion.div>
                                             )}
                                             <Rate
+                                                disabled={isViewOnly}
                                                 value={category.value || 0}
                                                 onChange={(value) => handleRatingChange(value, index)}
                                                 onHoverChange={(value) => {
@@ -282,6 +285,7 @@ export default function RatingsPopup({
                                     Feedback: <span className="text-gray-400 text-sm">(optional)</span>
                                 </Text>
                                 <TextArea
+                                    disabled={isViewOnly}
                                     rows={4}
                                     value={feedback}
                                     onChange={(e) => setFeedback(e.target.value)}
@@ -309,6 +313,7 @@ export default function RatingsPopup({
                                     onClick={handleSubmit}
                                     className="min-w-[120px] text-base h-12 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-none shadow-md"
                                     size="large"
+                                    disabled={isViewOnly}
                                     loading={isSubmitting}
                                 >
                                     {isUpdate ? "Update" : "Rate"}
