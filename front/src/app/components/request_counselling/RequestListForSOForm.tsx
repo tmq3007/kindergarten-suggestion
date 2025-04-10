@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { ClockCircleOutlined, FileTextOutlined, HomeOutlined } from "@ant-design/icons";
 import useIsMobile from "@/lib/hook/useIsMobile";
 import { SegmentedValue } from "antd/es/segmented";
+import dayjs from "dayjs";
 
 interface RequestListFormProps {
   data: ApiResponse<{ content: RequestCounsellingVO[]; page: Pageable }> | undefined;
@@ -101,6 +102,7 @@ export default function RequestListForSOForm({
       email: request.email ?? "N/A",
       phone: request.phone ?? "N/A",
       status: statusOption ? statusOption.label : "Unknown",
+      postedDate: dayjs(request.dueDate).format("YYYY-MM-DD HH:mm"),
     };
   });
 
@@ -126,12 +128,6 @@ export default function RequestListForSOForm({
             <span className="text-blue-500 hover:underline">{fullName}</span>
           </Link>
       ),
-    },
-    {
-      title: <CenteredTitle title="School Name" />,
-      dataIndex: "schoolName",
-      key: "schoolName",
-      width: 250,
     },
     {
       title: <CenteredTitle title="Email" />,
@@ -173,6 +169,13 @@ export default function RequestListForSOForm({
       render: (status: string) => (
           <Tag color={statusColorMap[status] || "default"}>{status.toUpperCase()}</Tag>
       ),
+    },
+    {
+      title: <CenteredTitle title="Posted Date" />,
+      dataIndex: "postedDate",
+      key: "postedDate",
+      width: 250,
+      align: "center" as const,
     },
   ];
 
