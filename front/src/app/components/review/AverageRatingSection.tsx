@@ -75,7 +75,7 @@ const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat, i
                 </ConfigProvider>
             </div>
 
-            <div className="w-1/2 mx-auto">
+            <div className="md:w-1/2 mx-auto">
                 <div className="space-y-3 md:space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_50px] items-center gap-2 md:gap-4">
                         <span className="text-gray-700 text-sm md:text-base">Learning program:</span>
