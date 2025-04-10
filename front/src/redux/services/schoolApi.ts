@@ -497,8 +497,8 @@ export const {
     useIsDraftQuery,
     useGetActiveSchoolsWithoutRefIdQuery,
     useGetAllDraftsQuery,
-    useCountActiveSchoolsWithoutRefIdQuery,
-    useCountAllDraftsQuery,
+    useCountActiveSchoolsWithoutRefIdQuery, //Admin (New Request)
+    useCountAllDraftsQuery,//Admin (new change request)
     useLazySearchByCriteriaQuery,
     useLoadSchoolDetailsQuery
 } = schoolApi;

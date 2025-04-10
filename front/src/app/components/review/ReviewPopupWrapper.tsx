@@ -10,7 +10,6 @@ interface RatingsPopupWrapperProps {
     isUpdate: boolean;
     isOpen: boolean;
     onCloseAction: () => void;
-    parentId: number;
 }
 
 export default function RatingsPopupWrapper({
@@ -19,7 +18,6 @@ export default function RatingsPopupWrapper({
                                                 isUpdate,
                                                 isOpen,
                                                 onCloseAction,
-                                                parentId
                                             }: RatingsPopupWrapperProps) {
     const dispatch = useDispatch();
 
@@ -29,8 +27,8 @@ export default function RatingsPopupWrapper({
         isLoading: isFetching,
         error: fetchError,
     } = useGetReviewBySchoolAndParentQuery(
-        { schoolId, parentId: parentId! },
-        { skip: !isOpen || !isUpdate || !parentId } // Fetch only when modal is open
+        { schoolId },
+        { skip: !isOpen || !isUpdate } // Fetch only when modal is open
     );
 
     // Convert fetch error to string
@@ -45,7 +43,6 @@ export default function RatingsPopupWrapper({
     const initialRatings = isUpdate && reviewData?.data
         ? {
             id: reviewData.data.id,
-            parentId: reviewData.data.parentId || parentId,
             schoolId: reviewData.data.schoolId || schoolId,
             learningProgram: reviewData.data.learningProgram,
             facilitiesAndUtilities: reviewData.data.facilitiesAndUtilities,
@@ -59,7 +56,6 @@ export default function RatingsPopupWrapper({
     return (
         <RatingsPopup
             schoolId={schoolId}
-            parentId={parentId}
             schoolName={schoolName || reviewData?.data?.schoolName || "School"}
             isOpen={isOpen}
             onCloseAction={onCloseAction}

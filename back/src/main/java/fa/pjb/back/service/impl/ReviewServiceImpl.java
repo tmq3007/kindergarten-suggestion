@@ -18,7 +18,6 @@ import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.repository.SchoolRepository;
 import fa.pjb.back.service.ReviewService;
 import fa.pjb.back.service.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -33,7 +32,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -70,7 +68,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
-    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status){
+    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status) {
         SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
         School school = schoolOwner.getSchool();
         Byte statusByte = null;
@@ -84,7 +82,7 @@ public class ReviewServiceImpl implements ReviewService {
             };
         }
 
-        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeSO(school.getId(), fromDate, toDate,statusByte);
+        List<Review> reviews = reviewRepository.findAllBySchoolIdWithDateRangeSO(school.getId(), fromDate, toDate, statusByte);
         if (reviews.isEmpty()) {
             throw new ReviewNotFoundException();
         }
@@ -105,9 +103,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
     public ReviewVO makeReport(ReviewReportDTO reviewReportDTO) {
-        Review review = reviewRepository.findById(reviewReportDTO.id()).orElse(null);
+        Review review = reviewRepository.findByReviewId(reviewReportDTO.id()).orElse(null);
 
-        if(review == null){
+        if (review == null) {
             throw new ReviewNotFoundException();
         }
 
@@ -125,9 +123,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ReviewVO acceptReport(ReviewAcceptDenyDTO reviewAcceptDenyDTO) {
-        Review review = reviewRepository.findById(reviewAcceptDenyDTO.id()).orElse(null);
+        Review review = reviewRepository.findByReviewId(reviewAcceptDenyDTO.id()).orElse(null);
 
-        if(review == null){
+        if (review == null) {
             throw new ReviewNotFoundException();
         }
 
@@ -139,9 +137,9 @@ public class ReviewServiceImpl implements ReviewService {
             throw new IllegalStateException("Review is not pending");
         }
 
-        if(reviewAcceptDenyDTO.decision()){
+        if (reviewAcceptDenyDTO.decision()) {
             review.setStatus((byte) 1);
-        }else {
+        } else {
             review.setStatus((byte) 0);
         }
 
@@ -200,43 +198,39 @@ public class ReviewServiceImpl implements ReviewService {
         return projections.map(reviewMapper::toReviewVOFromProjection);
     }
 
-
     @Override
-    public ReviewVO getReviewBySchoolAndParent(Integer schoolId, Integer parentId) {
-//       if(!Objects.equals(parentId, userService.getCurrentUser().getParent().getId())){
-//            throw new UserNotFoundException();
-//       }
+    public ReviewVO getReviewBySchoolAndParent(Integer schoolId) {
+       Integer parentId = userService.getCurrentUser().getParent().getId();
 
         Review review = reviewRepository.findBySchoolIdAndParentId(schoolId, parentId);
 
-        if(review == null){
+        if (review == null) {
             throw new ReviewNotFoundException();
         }
         return reviewMapper.toReviewVO(review);
 
     }
 
-
+    @PreAuthorize("hasRole('ROLE_PARENT')")
     @Transactional
     @Override
     public ReviewVO saveReview(ReviewDTO reviewData) {
         if (reviewData.id() == null) {
-            // Step 1: Fetch School and Parent entities
+            // Fetch School and Parent entities
             School school = schoolRepository.findById(reviewData.schoolId())
                     .orElseThrow(SchoolNotFoundException::new);
-            Parent parent = parentRepository.findById(reviewData.parentId())
-                    .orElseThrow(UserNotFoundException::new);
+            Parent parent = userService.getCurrentUser().getParent();
 
-            // Step 2: Set embedded ID
+            // Set embedded ID
             ReviewId reviewId = new ReviewId();
             reviewId.setParentId(parent.getId());
             reviewId.setSchoolId(school.getId());
 
-            // Step 3: Build the Review entity
+            // Build the Review entity
             Review temp = Review.builder()
                     .primaryId(reviewId)
-                    .school(school)        // required due to insertable = false
-                    .parent(parent)        // required due to insertable = false
+                    .school(school)
+                    .parent(parent)
                     .facilitiesAndUtilities(reviewData.facilitiesAndUtilities())
                     .extracurricularActivities(reviewData.extracurricularActivities())
                     .hygieneAndNutrition(reviewData.hygieneAndNutrition())
@@ -244,7 +238,7 @@ public class ReviewServiceImpl implements ReviewService {
                     .teacherAndStaff(reviewData.teacherAndStaff())
                     .feedback(reviewData.feedback())
                     .receiveDate(LocalDateTime.now())
-                    .status((byte) 1)      // set this too, since it's @NotNull
+                    .status((byte) 0)
                     .build();
 
             temp = reviewRepository.save(temp);
@@ -252,7 +246,6 @@ public class ReviewServiceImpl implements ReviewService {
         } else {
             Review temp = reviewRepository.findByReviewId(reviewData.id())
                     .orElseThrow(ReviewNotFoundException::new);
-
             temp.setFeedback(reviewData.feedback());
             temp.setExtracurricularActivities(reviewData.extracurricularActivities());
             temp.setFacilitiesAndUtilities(reviewData.facilitiesAndUtilities());

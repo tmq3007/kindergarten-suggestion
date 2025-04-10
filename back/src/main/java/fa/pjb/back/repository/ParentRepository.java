@@ -13,7 +13,6 @@ import java.util.Optional;
 public interface ParentRepository extends JpaRepository<Parent, Integer> {
 
     Parent findParentByUserId(Integer id);
-
     @Query(
             value = "SELECT DISTINCT " +
                     "    p.id AS id, " +
