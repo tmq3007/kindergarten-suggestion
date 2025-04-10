@@ -59,7 +59,8 @@ export default function RateButton({ schoolId, schoolName = "School" }: RateButt
             <Button
                 type="primary"
                 onClick={handleOpenModal}
-                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                className="bg-amber-500 hover:!bg-amber-400 w-[81%] md:w-[73%]
+                 mx-auto"
                 size="large"
                 disabled={buttonConfig.disabled}
             >

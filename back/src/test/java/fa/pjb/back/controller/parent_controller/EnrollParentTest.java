@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,7 +49,7 @@ public class EnrollParentTest {
         when(parentService.enrollParent(anyInt())).thenReturn(true);
 
         // Perform the request and assert the response
-        mockMvc.perform(post("/parent/enroll/1"))
+        mockMvc.perform(put("/parent/enroll/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.message").value("Parent enrolled successfully"))
@@ -66,7 +67,7 @@ public class EnrollParentTest {
         when(parentService.enrollParent(anyInt())).thenReturn(false);
 
         // Perform the request and assert the response
-        mockMvc.perform(post("/parent/enroll/999"))
+        mockMvc.perform(put("/parent/enroll/999"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.message").value("Parent enrolled successfully"))
@@ -84,7 +85,7 @@ public class EnrollParentTest {
         when(parentService.enrollParent(1)).thenReturn(true);
 
         // Perform the request and assert the response
-        mockMvc.perform(post("/parent/enroll/1"))
+        mockMvc.perform(put("/parent/enroll/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.message").value("Parent enrolled successfully"))
@@ -102,7 +103,7 @@ public class EnrollParentTest {
         when(parentService.enrollParent(Integer.MAX_VALUE)).thenReturn(true);
 
         // Perform the request and assert the response
-        mockMvc.perform(post("/parent/enroll/" + Integer.MAX_VALUE))
+        mockMvc.perform(put("/parent/enroll/" + Integer.MAX_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.message").value("Parent enrolled successfully"))
@@ -120,10 +121,11 @@ public class EnrollParentTest {
         when(parentService.enrollParent(anyInt())).thenReturn(false);
 
         // Perform the request and assert the response
-        mockMvc.perform(post("/parent/enroll/1"))
+        mockMvc.perform(put("/parent/enroll/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.message").value("Parent enrolled successfully"))
                 .andExpect(jsonPath("$.data").value(false));
     }
+
 }
