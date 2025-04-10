@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -46,6 +47,7 @@ public class ReviewController {
                 .data(reviews)
                 .build();
     }
+
     @Operation(summary = "Get review by school and parent", description = "Get review by school and parent for update rating")
     @GetMapping("/{schoolId}/parent")
     public ApiResponse<ReviewVO> getReviewBySchoolAndParent(@PathVariable Integer schoolId) {
@@ -55,13 +57,24 @@ public class ReviewController {
                 .data(reviewService.getReviewBySchoolAndParent(schoolId))
                 .build();
     }
+
     @Operation(summary = "Save review", description = "This API use the save review of parent")
     @PostMapping("/save")
-    public ApiResponse<ReviewVO> saveReview(@RequestBody @Valid ReviewDTO reviewData){
+    public ApiResponse<ReviewVO> saveReview(@RequestBody @Valid ReviewDTO reviewData) {
         return ApiResponse.<ReviewVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Review Saved")
                 .data(reviewService.saveReview(reviewData))
+                .build();
+    }
+
+    @Operation(summary = "Get reviews permission ", description = "Get review permission of school for public school details")
+    @GetMapping("/permission")
+    public ApiResponse<String> getReviewPermission(@RequestParam Integer schoolId) {
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message("Review permission retrieved successfully")
+                .data(reviewService.checkReviewPermission(schoolId))
                 .build();
     }
 
@@ -80,6 +93,7 @@ public class ReviewController {
                 .data(reviews)
                 .build();
     }
+
     @Operation(summary = "Get reviews stats by school public", description = "Get review stats of school for public school details")
     @GetMapping("public/{schoolId}/stats")
     public ApiResponse<RatingStatVO> getReviewStatsBySchool(@PathVariable Integer schoolId) {
@@ -89,14 +103,15 @@ public class ReviewController {
                 .data(reviewService.getReviewStatsBySchool(schoolId))
                 .build();
     }
+
     @Operation(summary = "Get reviews by school owner", description = "Get review of school in date range")
     @GetMapping("/")
     public ApiResponse<List<ReviewVO>> getReviewsBySchoolOwner(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
-            @RequestParam(required = false) String status ) {
+            @RequestParam(required = false) String status) {
 
-        List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner( fromDate, toDate,status);
+        List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner(fromDate, toDate, status);
         return ApiResponse.<List<ReviewVO>>builder()
                 .code(200)
                 .message("Reviews retrieved successfully")
@@ -107,12 +122,12 @@ public class ReviewController {
     @Operation(summary = "Get top 4 review", description = "Get top 4 review of school which has five star rating recently")
     @GetMapping("/top4")
     public ApiResponse<List<ReviewVO>> getTop4Reviews() {
-            List<ReviewVO> reviewVO = reviewService.getTop4RecentFiveStarFeedbacks();
-            return ApiResponse.<List<ReviewVO>>builder()
-                    .code(200)
-                    .message("Top 4 reviews retrieved successfully")
-                    .data(reviewVO)
-                    .build();
+        List<ReviewVO> reviewVO = reviewService.getTop4RecentFiveStarFeedbacks();
+        return ApiResponse.<List<ReviewVO>>builder()
+                .code(200)
+                .message("Top 4 reviews retrieved successfully")
+                .data(reviewVO)
+                .build();
     }
 
     /**
@@ -121,7 +136,7 @@ public class ReviewController {
      */
     @Operation(summary = "Make report", description = "Parents make report to school owner")
     @PutMapping("/report")
-    public ApiResponse<ReviewVO> makeReport(@RequestBody @Valid ReviewReportDTO reviewDTO ) {
+    public ApiResponse<ReviewVO> makeReport(@RequestBody @Valid ReviewReportDTO reviewDTO) {
         // Call the makeReport method of the ReviewService to make the report
         ReviewVO reportReview = reviewService.makeReport(reviewDTO);
         // Return the reported review
@@ -134,12 +149,13 @@ public class ReviewController {
 
     /**
      * Update the status of the review report
+     *
      * @param reviewDTO - The reviewDTO object which contains the review to be updated and the status of the report
      * @return - The updated review
      */
     @Operation(summary = "Update report decision", description = "School owner update report decision")
     @PutMapping("/report/decision")
-    public ApiResponse<ReviewVO> reportDecision(@RequestBody @Valid ReviewAcceptDenyDTO reviewDTO ) {
+    public ApiResponse<ReviewVO> reportDecision(@RequestBody @Valid ReviewAcceptDenyDTO reviewDTO) {
         // Call the acceptReport method of the ReviewService to update the status of the review report
         ReviewVO reportReview = reviewService.acceptReport(reviewDTO);
         // Return the updated review

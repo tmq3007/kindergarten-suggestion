@@ -34,4 +34,6 @@ public interface ReviewService {
     ReviewVO getReviewBySchoolAndParent(Integer schoolId);
 
     ReviewVO saveReview( ReviewDTO reviewData);
+
+    String checkReviewPermission(Integer schoolId);
 }

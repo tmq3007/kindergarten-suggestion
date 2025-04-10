@@ -99,10 +99,14 @@ function ParentList({
         setIsModalOpen(false);
         setSelectedParent(undefined);
     };
+    const CenteredTitle = ({ title }: { title: string }) => (
+        <div style={{ textAlign: "center", width: "100%" }}>{title}</div>
+    );
+
 
     const columns = [
         {
-            title: "Fullname",
+            title: <CenteredTitle title="Fullname" />,
             dataIndex: "fullname",
             key: "fullname",
             width: 250,
@@ -127,19 +131,19 @@ function ParentList({
             ),
         },
         {
-            title: "Email",
+            title: <CenteredTitle title="Email" />,
             dataIndex: "email",
             key: "email",
             width: 200,
         },
         {
-            title: "Phone No.",
+            title: <CenteredTitle title="Phone No." />,
             dataIndex: "phone",
             key: "phone",
             width: 100,
         },
         {
-            title: "Address",
+            title: <CenteredTitle title="Address" />,
             key: "address",
             width: 350,
             render: (_: any, record: ParentVO) => <span>{getFullAddress(record)}</span>,
@@ -147,7 +151,7 @@ function ParentList({
         ...(!isEnrollPage
             ? [
                 {
-                    title: "Status",
+                    title: <CenteredTitle title="Status" />,
                     dataIndex: "status",
                     key: "status",
                     width: 150,
@@ -164,7 +168,7 @@ function ParentList({
         ...(isAdminPage
             ? [
                 {
-                    title: "Account Status",
+                    title: <CenteredTitle title="Account Status" />,
                     dataIndex: "accountStatus",
                     key: "accountStatus",
                     width: 150,
@@ -180,7 +184,7 @@ function ParentList({
             : []),
         isAdminPage
             ? {
-                title: "Action",
+                title: <CenteredTitle title="Action" />,
                 key: "action",
                 width: 100,
                 render: (_: any, record: ParentVO) => (
@@ -194,7 +198,7 @@ function ParentList({
                 ),
             }
             : {
-                title: "Actions",
+                title: <CenteredTitle title="Actions" />,
                 key: "actions",
                 width: 150,
                 render: (_: any, record: ParentVO) =>

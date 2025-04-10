@@ -13,6 +13,7 @@ import fa.pjb.back.model.mapper.ReviewProjection;
 import fa.pjb.back.model.vo.RatingStatVO;
 import fa.pjb.back.model.vo.ReviewReportReminderVO;
 import fa.pjb.back.model.vo.ReviewVO;
+import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.ReviewRepository;
 import fa.pjb.back.repository.SchoolRepository;
@@ -44,7 +45,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final UserService userService;
     private final SchoolRepository schoolRepository;
-    private final ParentRepository parentRepository;
+    private final ParentInSchoolRepository pisRepository;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
@@ -200,7 +201,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewVO getReviewBySchoolAndParent(Integer schoolId) {
-       Integer parentId = userService.getCurrentUser().getParent().getId();
+        Integer parentId = userService.getCurrentUser().getParent().getId();
 
         Review review = reviewRepository.findBySchoolIdAndParentId(schoolId, parentId);
 
@@ -326,4 +327,31 @@ public class ReviewServiceImpl implements ReviewService {
         return categoryRatings;
     }
 
+    @Override
+    public String checkReviewPermission(Integer schoolId) {
+        LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
+        Integer parentId = userService.getCurrentUser().getParent().getId();
+        Pageable pageable = PageRequest.of(0, 1);
+
+        // Query to get the latest PIS (active or inactive) and associated review
+        Object[] temp = pisRepository.findLatestPisWithReview(parentId, schoolId, pageable).get(0);
+        ParentInSchool latestPis = (ParentInSchool) temp[0];
+        Review currentReview = (Review) temp[1];
+
+        // Determine permission
+        boolean hasPermission = latestPis != null &&
+                (latestPis.getStatus() == 1 ||
+                        (latestPis.getStatus() == 0 && latestPis.getTo() != null && !latestPis.getTo().isBefore(thirtyDaysAgo)));
+
+        // Return based on permission and review existence
+        if (hasPermission && currentReview != null) {
+            return "update";
+        } else if (hasPermission && currentReview == null) {
+            return "add";
+        } else if (!hasPermission && currentReview != null) {
+            return "view";
+        } else {
+            return "hidden";
+        }
+    }
 }

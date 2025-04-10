@@ -85,9 +85,8 @@ export const SCHOOL_TYPE_OPTIONS = [
 ];
 
 export const CHILD_RECEIVING_AGE_OPTIONS = [
-    {label: "6m - 1y", value: "0"},
-    {label: "1y - 3y", value: "1"},
-    {label: "3y - 6y", value: "2"}
+    {label: "6m - 5y", value: "0"},
+    {label: "12m - 5y", value: "1"}
 ];
 
 export const FACILITIES = {

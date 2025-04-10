@@ -8,6 +8,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -26,13 +27,21 @@ import java.util.concurrent.Executors;
 
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final Configuration freemarkerConfig;
     private final UserRepository userRepository;
+
+    public EmailServiceImpl(
+        JavaMailSender mailSender,
+        @Qualifier("freemarkerConfig") Configuration freemarkerConfig, // Specify the bean name
+        UserRepository userRepository) {
+        this.mailSender = mailSender;
+        this.freemarkerConfig = freemarkerConfig;
+        this.userRepository = userRepository;
+    }
 
     private void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> model) throws MessagingException, IOException, TemplateException {
 
