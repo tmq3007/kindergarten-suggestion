@@ -1,5 +1,5 @@
 'use client'
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import { Tabs, Form, Input, DatePicker, Button, notification, Select } from 'antd';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
@@ -48,7 +48,7 @@ const Profile = () => {
    const [api, contextHolder] = notification.useNotification();
 
 
-   useEffect(() => {
+   useLayoutEffect(() => {
        if (parentData?.data && countries) {
            const phoneNumber = parentData.data.phone || '';
            const country = countries?.find((c) => phoneNumber.startsWith(c.dialCode)) || countries.find((c) => c.code === 'VN');
@@ -79,7 +79,7 @@ const Profile = () => {
                });
            }
        }
-   }, [parentData, countries, form]);
+   }, [parentData, countries, form, triggerCheckPhone,triggerCheckEmail]);
 
    const handleCancel = async () => {
        if (parentData?.data && countries) {
@@ -276,7 +276,6 @@ const Profile = () => {
                                            <DatePicker className="w-full" />
                                        </Form.Item>
                                        <PhoneInput form={form}
-                                                   onPhoneChange={(phone) => form.setFieldsValue({ phone })}
                                                    ref={phoneInputRef}
                                                     triggerCheckPhone={triggerCheckPhone}
                                                    id={userIdNumber}

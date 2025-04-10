@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import type React from "react";
-import { Radio, Badge, Flex } from "antd";
-import { Star } from "lucide-react";
-import { RatingStats } from "@/redux/services/reviewApi";
+import {useState} from "react"
+import type React from "react"
+import {Radio, Badge, Flex} from "antd"
+import {Star} from "lucide-react";
+import {RatingStats} from "@/redux/services/reviewApi";
 
 interface ReviewFilterTabsProps {
     onTabChange: (key: string) => void;
@@ -13,7 +13,7 @@ interface ReviewFilterTabsProps {
 }
 
 const defaultStats = {
-    ratingsByStarRange: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 },
+    ratingsByStarRange: {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0},
     totalRatings: 0,
 };
 
@@ -82,14 +82,19 @@ const ReviewFilterTabs: React.FC<ReviewFilterTabsProps> = ({ onTabChange, statsD
                     <Badge key={tab.key} count={tab.count} showZero>
                         <Radio.Button
                             value={tab.key}
-                            className={`flex items-center justify-center gap-1 font-medium rounded-full px-4 py-1.5 
-                                ${selectedTab === tab.key ? "bg-amber-300 text-black" : "border-amber-300 text-amber-400"}`}
-                            style={{ borderColor: "#fcd34d", borderRadius: "999px" }}
+                            className={`
+                            w-0 md:w-full
+                            flex items-center justify-center gap-1 text-sm font-medium
+                            rounded-full px-4 py-1.5 transition-all
+                            border border-amber-300
+                            ${selectedTab === tab.key ? "bg-amber-300 text-black" : "text-amber-400"}
+                            `}
+                            key={tab.key}
                         >
                             <Flex align="center" gap={4}>
                                 {tab.label}
                                 {tab.key !== "all" && (
-                                    <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                                    <Star className="w-2 h-2 md:w-5 md:h-5 fill-amber-400 text-amber-400"/>
                                 )}
                             </Flex>
                         </Radio.Button>

@@ -1,6 +1,7 @@
 package fa.pjb.back.controller.auth_controller;
 
 import fa.pjb.back.common.exception._12xx_auth.JwtUnauthorizedException;
+import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.controller.AuthController;
 import fa.pjb.back.model.vo.LoginVO;
 import fa.pjb.back.service.AuthService;
@@ -29,6 +30,9 @@ class RefreshTokenTest {
     private MockMvc mockMvc;
 
     @Mock
+    private JwtHelper jwtHelper;
+
+    @Mock
     private AuthService authService;
 
     @InjectMocks
@@ -37,6 +41,8 @@ class RefreshTokenTest {
     @BeforeEach
     void setup() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        when(jwtHelper.extractExpirationTimestamp(any(String.class)))
+                .thenReturn(System.currentTimeMillis() / 1000 + 3600);
     }
 
     /**

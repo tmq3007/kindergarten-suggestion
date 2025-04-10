@@ -5,6 +5,7 @@ import ErrorComponent from "../common/ErrorComponent";
 import {Pageable, UserVO, useToggleUserStatusMutation} from "@/redux/services/userApi";
 import message from "antd/lib/message";
 import UserActionButtons from "@/app/components/user/UserActionButtons";
+import Link from "next/link";
 
 interface UserListProps {
     data: ApiResponse<{ content: UserVO[]; page: Pageable }> | undefined;
@@ -28,15 +29,33 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
         fetchPage(page, size);
     };
 
+    const CenteredTitle = ({ title }: { title: string }) => (
+        <div style={{ textAlign: "center", width: "100%" }}>{title}</div>
+    );
+
     //table layout
     const columns = [
-        {title: "Fullname", dataIndex: "fullname", key: "fullname", width: 120, fixed: true},
-        {title: "Email", dataIndex: "email", key: "email", width: 200},
-        {title: "Phone No.", dataIndex: "phone", key: "phone", width: 100},
-        {title: "Address", dataIndex: "address", key: "address", width: 400},
-        {title: "Role", dataIndex: "role", key: "role", width: 100},
         {
-            title: "Status",
+            title: <CenteredTitle title="Fullname" />,
+            dataIndex: "fullname",
+            key: "fullname",
+            width: 120,
+            fixed: true,
+            render: (_: any, record: UserVO) => (
+                <Link
+                    href={`/admin/management/user/user-detail?userId=${record.id}`}
+                    className="text-blue-600 hover:underline"
+                >
+                    {record.fullname}
+                </Link>
+            ),
+        },
+        {title: <CenteredTitle title="Email" />, dataIndex: "email", key: "email", width: 200},
+        {title: <CenteredTitle title="Phone No." />, dataIndex: "phone", key: "phone", width: 100},
+        {title: <CenteredTitle title="Address" />, dataIndex: "address", key: "address", width: 400},
+        {title: <CenteredTitle title="Role" />, dataIndex: "role", key: "role", width: 100},
+        {
+            title: <CenteredTitle title="Status" />,
             dataIndex: "status",
             key: "status",
             width: 120,
@@ -50,7 +69,7 @@ export default function UserList({fetchPage, data, error, isFetching}: UserListP
             ),
         },
         {
-            title: "Action",
+            title: <CenteredTitle title="Action" />,
             key: "action",
             width: 100,
             render: (_: any, record: UserVO) => (

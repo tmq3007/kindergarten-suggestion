@@ -1,12 +1,12 @@
 "use client";
 
-import React, { FunctionComponent } from "react";
-import { SchoolDetailVO, useLoadSchoolDetailsQuery } from "@/redux/services/schoolApi";
+import React, {FunctionComponent} from "react";
+import {SchoolDetailVO, useLoadSchoolDetailsQuery} from "@/redux/services/schoolApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
-import { useParams } from "next/navigation";
+import {useParams} from "next/navigation";
 import ErrorComponent from "@/app/components/common/ErrorComponent";
-import { Skeleton, Row, Col } from "antd";
-import SchoolDetails from "@/app/components/school/SchoolDetail"; // Import Skeleton from antd
+import {Col, Row, Skeleton} from "antd";
+import SchoolDetails from "@/app/components/school/SchoolDetails";
 
 const SchoolDetailPage: FunctionComponent = () => {
     const params = useParams();
@@ -28,23 +28,23 @@ const SchoolDetailPage: FunctionComponent = () => {
             <div className="w-full mt-20 px-10">
                 <MyBreadcrumb
                     paths={[
-                        { label: "School Search", href: "/public/search-school" },
-                        { label: "School Details" },
+                        {label: "School Search", href: "/public/search-school"},
+                        {label: "School Details"},
                     ]}
                 />
                 <Row gutter={[24, 24]} justify="center">
                     <Col xs={24}>
-                        <Skeleton.Image active className={'!w-full !h-[500px]'} /> {/* Image carousel */}
+                        <Skeleton.Image active className={'!w-full !h-[500px]'}/> {/* Image carousel */}
                     </Col>
 
                     <Col xs={24}>
-                        <Skeleton.Image active className={'!w-full !h-[200px]'} /> {/* Image carousel */}
+                        <Skeleton.Image active className={'!w-full !h-[200px]'}/> {/* Image carousel */}
                     </Col>
                     <Col xs={24}>
-                        <Skeleton active paragraph={{ rows: 8 }} title={{ width: "30%" }} /> {/* Basic info */}
+                        <Skeleton active paragraph={{rows: 8}} title={{width: "30%"}}/> {/* Basic info */}
                     </Col>
                     <Col xs={24}>
-                        <Skeleton active paragraph={{ rows: 10 }}  /> {/* Tabs */}
+                        <Skeleton active paragraph={{rows: 10}}/> {/* Tabs */}
                     </Col>
                 </Row>
             </div>
@@ -55,7 +55,7 @@ const SchoolDetailPage: FunctionComponent = () => {
     if (error) {
         return (
             <div className="w-full min-h-screen content-center mt-20">
-                <ErrorComponent error={error} />
+                <ErrorComponent error={error}/>
             </div>
         );
     }
@@ -76,8 +76,8 @@ const SchoolDetailPage: FunctionComponent = () => {
         <div className="w-full mt-20 px-10">
             <MyBreadcrumb
                 paths={[
-                    { label: "School Search", href: "/public/search-school" },
-                    { label: "School Details" },
+                    {label: "School Search", href: "/public/search-school"},
+                    {label: "School Details"},
                 ]}
             />
             <SchoolDetails schoolData={schoolData}/>

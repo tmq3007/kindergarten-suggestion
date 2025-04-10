@@ -21,7 +21,7 @@ export default function MyEditor({ description, onChange, isReadOnly }: MyEditor
 
     return (
          <Editor
-             apiKey="hcj4antti91v237hd9gyjh3f6p9hpk2rbuwvpc9dcpahror2"
+             apiKey="qdpj1n5blzsosfex6p2z77kzdul5vrvw55kzro1ooqjfvd7v"
              init={{
                branding: false,
                plugins: "link image media table lists code",

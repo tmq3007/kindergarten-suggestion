@@ -33,9 +33,10 @@ interface SchoolListFormProps {
   error: any;
   fetchPage: (page: number, size: number) => void;
   isFetching: boolean;
+  hideEditButton?: boolean;
 }
 
-export default function SchoolListForm({ fetchPage, data, error, isFetching}: SchoolListFormProps) {
+export default function SchoolListForm({ fetchPage, data, error, isFetching, hideEditButton }: SchoolListFormProps) {
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(15);
   const schools = data?.data.content.map((school) => ({ ...school, key: school.id })) || [];
@@ -119,7 +120,13 @@ export default function SchoolListForm({ fetchPage, data, error, isFetching}: Sc
       dataIndex: "name",
       key: "name",
       width: 200,
-      fixed: true
+      fixed: true,
+      render: (text: string, record: SchoolVO) => (
+          <Link className={"underline"} href={`/admin/management/school/school-detail/${record.id}`}>
+            {text}
+          </Link>
+      )
+
     },
     {
       title: <CenteredTitle title="Address" />,
@@ -176,9 +183,11 @@ export default function SchoolListForm({ fetchPage, data, error, isFetching}: Sc
       align: "center" as const,
       render: (_: any, record: SchoolVO) => (
           <Space size="middle" className="flex justify-center">
-            <Link href={`/admin/management/school/edit-school/${record.id}`}>
-              <Button type="link" icon={<EditOutlined />} />
-            </Link>
+            {!hideEditButton && (
+                <Link href={`/admin/management/school/edit-school/${record.id}`}>
+                  <Button type="link" icon={<EditOutlined />} />
+                </Link>
+            )}
             <Button
                 type="link"
                 onClick={() => handleOpenModalDelete(record.id)}
@@ -186,7 +195,7 @@ export default function SchoolListForm({ fetchPage, data, error, isFetching}: Sc
                 danger
             />
           </Space>
-      ),
+      )
     },
   ];
 
