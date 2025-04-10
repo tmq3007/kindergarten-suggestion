@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
@@ -34,8 +35,8 @@ public class ReviewController {
     @GetMapping("/{schoolId}")
     public ApiResponse<List<ReviewVO>> getReviews(
             @PathVariable Integer schoolId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
             @RequestParam(required = false) String status) {
 
         List<ReviewVO> reviews = reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate, status);
@@ -101,8 +102,8 @@ public class ReviewController {
     @Operation(summary = "Get reviews by school owner", description = "Get review of school in date range")
     @GetMapping("/")
     public ApiResponse<List<ReviewVO>> getReviewsBySchoolOwner(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
             @RequestParam(required = false) String status ) {
 
         List<ReviewVO> reviews = reviewService.getAllReviewBySchoolOwner( fromDate, toDate,status);

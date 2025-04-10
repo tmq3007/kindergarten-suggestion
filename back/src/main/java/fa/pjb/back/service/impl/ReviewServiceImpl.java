@@ -49,7 +49,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Override
-    public List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate, String status) {
+    public List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDateTime fromDate, LocalDateTime toDate, String status) {
         Byte statusByte = null;
         if (status != null) {
             statusByte = switch (status.toUpperCase()) {
@@ -69,7 +69,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @PreAuthorize("hasRole('ROLE_SCHOOL_OWNER')")
-    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status) {
+    public List<ReviewVO> getAllReviewBySchoolOwner(LocalDateTime fromDate, LocalDateTime toDate, String status){
         SchoolOwner schoolOwner = userService.getCurrentSchoolOwner();
         School school = schoolOwner.getSchool();
         Byte statusByte = null;

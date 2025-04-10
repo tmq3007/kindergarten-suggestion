@@ -181,7 +181,7 @@ export const reviewApi = createApi({
             }),
             invalidatesTags: ["Review","ReviewStats"],
         }),
-        getReviewPermission: build.query<string, number >({
+        getReviewPermission: build.query<ApiResponse<string>, number >({
             query: (schoolId) => ({
                 url: "/school/review/permission",
                 params: { schoolId },

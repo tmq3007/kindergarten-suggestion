@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -74,7 +75,7 @@ class ReviewServiceImplTest {
                 .hygieneAndNutrition((byte) 5)
                 .feedback("Great school!")
                 .status(EReviewStatus.APPROVED.getValue())
-//                .receiveDate(LocalDate.of(2025, 3, 1))
+                .receiveDate(LocalDateTime.now())
                 .build();
 
         testReviewVO = ReviewVO.builder()
@@ -89,21 +90,21 @@ class ReviewServiceImplTest {
                 .hygieneAndNutrition((byte) 5)
                 .feedback("Great school!")
                 .status(EReviewStatus.APPROVED.getValue())
-//                .receiveDate(LocalDate.of(2025, 3, 1))
+                .receiveDate(LocalDateTime.now())
                 .build();
     }
     // Normal Case
     @Test
     void getAllReviewBySchoolOwner_success() {
-        LocalDate fromDate = LocalDate.of(2025, 1, 1);
-        LocalDate toDate = LocalDate.of(2025, 3, 1);
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime toDate = LocalDateTime.now();
         String status = "APPROVED";
 
         List<Review> reviews = List.of(testReview);
         List<ReviewVO> expectedVOs = List.of(testReviewVO);
 
         when(userService.getCurrentSchoolOwner()).thenReturn(testSchoolOwner);
-        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), fromDate, toDate, EReviewStatus.APPROVED.getValue()))
+        when(reviewRepository.findAllBySchoolIdWithDateRangeSO(testSchool.getId(), (fromDate), (toDate), EReviewStatus.APPROVED.getValue()))
                 .thenReturn(reviews);
         when(reviewMapper.toReviewVOList(reviews)).thenReturn(expectedVOs);
 
@@ -120,8 +121,8 @@ class ReviewServiceImplTest {
     // Abnormal Case - Empty Result
     @Test
     void getAllReviewBySchoolOwner_emptyResult_throwsException() {
-        LocalDate fromDate = LocalDate.of(2025, 1, 1);
-        LocalDate toDate = LocalDate.of(2025, 3, 1);
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime toDate = LocalDateTime.now();
         String status = "APPROVED";
 
         when(userService.getCurrentSchoolOwner()).thenReturn(testSchoolOwner);
@@ -138,8 +139,8 @@ class ReviewServiceImplTest {
     // Abnormal Case - Invalid Status
     @Test
     void getAllReviewBySchoolOwner_invalidStatus_throwsException() {
-        LocalDate fromDate = LocalDate.of(2025, 1, 1);
-        LocalDate toDate = LocalDate.of(2025, 3, 1);
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime toDate = LocalDateTime.now();
         String status = "INVALID";
 
         when(userService.getCurrentSchoolOwner()).thenReturn(testSchoolOwner);
@@ -154,8 +155,8 @@ class ReviewServiceImplTest {
     // Boundary Case - Null Dates
     @Test
     void getAllReviewBySchoolOwner_nullDates_success() {
-        LocalDate fromDate = null;
-        LocalDate toDate = null;
+        LocalDateTime fromDate = null;
+        LocalDateTime toDate = null;
         String status = "PENDING";
 
         List<Review> reviews = List.of(testReview);
@@ -179,8 +180,8 @@ class ReviewServiceImplTest {
     // Boundary Case - Null Status
     @Test
     void getAllReviewBySchoolOwner_nullStatus_success() {
-        LocalDate fromDate = LocalDate.of(2025, 1, 1);
-        LocalDate toDate = LocalDate.of(2025, 3, 1);
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime toDate = LocalDateTime.now();
         String status = null;
 
         List<Review> reviews = List.of(testReview);
@@ -203,8 +204,8 @@ class ReviewServiceImplTest {
     @Test
     void getAllReview_ByAdmin_success() {
         Integer schoolId = 1;
-        LocalDate fromDate = LocalDate.of(2025, 1, 1);
-        LocalDate toDate = LocalDate.of(2025, 3, 1);
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime toDate = LocalDateTime.now();
 
         List<Review> reviews = List.of(testReview);
         List<ReviewVO> expectedVOs = List.of(testReviewVO);
@@ -226,8 +227,8 @@ class ReviewServiceImplTest {
     @Test
     void getAllReview_ByAdmin_invalidStatus_throwsException() {
         Integer schoolId = 1;
-        LocalDate fromDate = LocalDate.of(2025, 1, 1);
-        LocalDate toDate = LocalDate.of(2025, 3, 1);
+        LocalDateTime fromDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime toDate = LocalDateTime.now();
 
         assertThrows(IllegalArgumentException.class, () ->
                 reviewService.getAllReviewByAdmin(schoolId, fromDate, toDate, "INVALID"));
@@ -274,7 +275,7 @@ class ReviewServiceImplTest {
                 .status(EReviewStatus.PENDING.getValue())
                 .build();
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.of(testReview));
         // Stub the mapper to return updatedReviewVO when called with any Review object
         when(reviewMapper.toReviewVO(any(Review.class))).thenReturn(updatedReviewVO);
 
@@ -283,7 +284,7 @@ class ReviewServiceImplTest {
         assertNotNull(result);
         assertEquals("Inappropriate content", result.report());
         assertEquals(EReviewStatus.PENDING.getValue(), result.status());
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verify(reviewMapper).toReviewVO(any(Review.class));
     }
 
@@ -291,11 +292,11 @@ class ReviewServiceImplTest {
     void makeReport_reviewNotFound_throwsException() {
         ReviewReportDTO reportDTO = new ReviewReportDTO(1, "Inappropriate content");
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.empty());
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.empty());
 
         assertThrows(ReviewNotFoundException.class, () ->
                 reviewService.makeReport(reportDTO));
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verifyNoInteractions(reviewMapper);
     }
 
@@ -304,11 +305,11 @@ class ReviewServiceImplTest {
         ReviewReportDTO reportDTO = new ReviewReportDTO(1, "Inappropriate content");
         testReview.setStatus(EReviewStatus.PENDING.getValue()); // Not APPROVED
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.of(testReview));
 
         assertThrows(IllegalStateException.class, () ->
                 reviewService.makeReport(reportDTO));
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verifyNoInteractions(reviewMapper);
     }
 
@@ -323,14 +324,14 @@ class ReviewServiceImplTest {
                 .status(EReviewStatus.REJECTED.getValue())
                 .build();
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.of(testReview));
         when(reviewMapper.toReviewVO(any(Review.class))).thenReturn(updatedReviewVO);
 
         ReviewVO result = reviewService.acceptReport(acceptDTO);
 
         assertNotNull(result);
         assertEquals(EReviewStatus.REJECTED.getValue(), result.status());
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verify(reviewMapper).toReviewVO(any(Review.class));
     }
 
@@ -345,14 +346,14 @@ class ReviewServiceImplTest {
                 .status(EReviewStatus.APPROVED.getValue())
                 .build();
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.of(testReview));
         when(reviewMapper.toReviewVO(any(Review.class))).thenReturn(updatedReviewVO);
 
         ReviewVO result = reviewService.acceptReport(denyDTO);
 
         assertNotNull(result);
         assertEquals(EReviewStatus.APPROVED.getValue(), result.status());
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verify(reviewMapper).toReviewVO(any(Review.class));
     }
 
@@ -360,11 +361,11 @@ class ReviewServiceImplTest {
     void acceptReport_reviewNotFound_throwsException() {
         ReviewAcceptDenyDTO acceptDTO = new ReviewAcceptDenyDTO(1, true);
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.empty());
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.empty());
 
         assertThrows(ReviewNotFoundException.class, () ->
                 reviewService.acceptReport(acceptDTO));
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verifyNoInteractions(reviewMapper);
     }
 
@@ -373,11 +374,11 @@ class ReviewServiceImplTest {
         ReviewAcceptDenyDTO acceptDTO = new ReviewAcceptDenyDTO(1, true);
         testReview.setStatus(EReviewStatus.APPROVED.getValue());
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.of(testReview));
 
         assertThrows(IllegalStateException.class, () ->
                 reviewService.acceptReport(acceptDTO));
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verifyNoInteractions(reviewMapper);
     }
 
@@ -386,11 +387,11 @@ class ReviewServiceImplTest {
         ReviewAcceptDenyDTO acceptDTO = new ReviewAcceptDenyDTO(1, null);
         testReview.setStatus(EReviewStatus.PENDING.getValue());
 
-        when(reviewRepository.findById(1)).thenReturn(Optional.of(testReview));
+        when(reviewRepository.findByReviewId(1)).thenReturn(Optional.of(testReview));
 
         assertThrows(IllegalArgumentException.class, () ->
                 reviewService.acceptReport(acceptDTO));
-        verify(reviewRepository).findById(1);
+        verify(reviewRepository).findByReviewId(1);
         verifyNoInteractions(reviewMapper);
     }
 

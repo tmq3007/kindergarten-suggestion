@@ -92,12 +92,12 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
         } else if (isAdminOrSo) {
             notificationApi.error({
                 message: "Access Denied",
-                description: "You have to be a parent to request counselling! Please login or sign up to continue.",
+                description: "You have to be a parent to enroll to school! Please login or sign up to continue.",
             });
         } else {
             notificationApi.error({
                 message: "Access Denied",
-                description: "You have to be a parent to request counselling! Please login or sign up to continue.",
+                description: "You have to be a parent to enroll to school! Please login or sign up to continue.",
             });
             setIsLoginModalOpen(true);
             setIsModalOpen(false);
@@ -172,6 +172,7 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
         border-bottom: none !important;
         z-index: 2;
     }
+
     .ant-tabs-content-holder {
         border: 1px solid #002F77;
         border-top: none;
