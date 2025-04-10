@@ -1,6 +1,7 @@
 package fa.pjb.back.controller.auth_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fa.pjb.back.common.util.JwtHelper;
 import fa.pjb.back.controller.AuthController;
 import fa.pjb.back.model.dto.LoginDTO;
 import fa.pjb.back.model.vo.LoginVO;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -30,6 +32,9 @@ class LoginTest {
     private ObjectMapper objectMapper;
 
     @Mock
+    private JwtHelper jwtHelper;
+
+    @Mock
     private AuthService authService;
 
     @InjectMocks
@@ -39,6 +44,8 @@ class LoginTest {
     void setup() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
         this.objectMapper = new ObjectMapper();
+        lenient().when(jwtHelper.extractExpirationTimestamp(any(String.class)))
+                .thenReturn(System.currentTimeMillis() / 1000 + 3600);
     }
 
     /**

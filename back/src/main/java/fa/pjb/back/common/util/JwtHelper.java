@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
-
 @Service
 public class JwtHelper {
     private final Dotenv dotenv = Dotenv.load();

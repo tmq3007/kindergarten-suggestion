@@ -1,7 +1,7 @@
 package fa.pjb.back.service.parent_service;
 
-import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
-import fa.pjb.back.model.entity.*;
+import fa.pjb.back.common.exception._14xx_data.RecordNotFoundException;
+import fa.pjb.back.model.entity.ParentInSchool;
 import fa.pjb.back.model.enums.EParentInSchool;
 import fa.pjb.back.repository.ParentInSchoolRepository;
 import fa.pjb.back.repository.UserRepository;
@@ -12,20 +12,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration
-@EnableMethodSecurity(prePostEnabled = true) // Enable security annotations
 public class EnrollParentTest {
 
     @Mock
@@ -38,92 +33,60 @@ public class EnrollParentTest {
     private UserService userService;
 
     @InjectMocks
-    private ParentServiceImpl parentService; // Changed to implementation class
+    private ParentServiceImpl parentService;
 
     @Test
     @WithMockUser(roles = "SCHOOL_OWNER")
     void enrollParent_Success() {
-        // Setup test data
-        Integer userId = 1;
-        User user = new User();
-        Parent parent = new Parent();
-        user.setParent(parent);
+        Integer pisId = 1;
 
-        SchoolOwner schoolOwner = new SchoolOwner();
-        School school = new School();
-        schoolOwner.setSchool(school);
+        ParentInSchool pis = new ParentInSchool();
+        pis.setId(pisId);
+        pis.setStatus(EParentInSchool.PENDING.getValue());
 
-        // Mock repository behavior
-        when(userRepository.findByIdWithParent(userId)).thenReturn(Optional.of(user));
-        when(userService.getCurrentSchoolOwner()).thenReturn(schoolOwner);
-        when(parentInSchoolRepository.save(any(ParentInSchool.class))).thenReturn(new ParentInSchool());
+        when(parentInSchoolRepository.findOneById(pisId)).thenReturn(Optional.of(pis));
+        when(parentInSchoolRepository.save(any())).thenReturn(pis);
 
-        // Execute
-        Boolean result = parentService.enrollParent(userId);
+        Boolean result = parentService.enrollParent(pisId);
 
-        // Verify
         assertTrue(result);
-        verify(userRepository).findByIdWithParent(userId);
-        verify(userService).getCurrentSchoolOwner();
-        verify(parentInSchoolRepository).save(any(ParentInSchool.class));
+        assertEquals(EParentInSchool.ACTIVE.getValue(), pis.getStatus());
+        assertEquals(LocalDate.now(), pis.getFrom());
+
+        verify(parentInSchoolRepository).findOneById(pisId);
+        verify(parentInSchoolRepository).save(pis);
     }
 
     @Test
     @WithMockUser(roles = "SCHOOL_OWNER")
-    void enrollParent_UserNotFound() {
-        Integer userId = 999;
+    void enrollParent_NotFound_ThrowsException() {
+        Integer pisId = 999;
 
-        when(userRepository.findByIdWithParent(userId)).thenReturn(Optional.empty());
+        when(parentInSchoolRepository.findOneById(pisId)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> {
-            parentService.enrollParent(userId);
+        assertThrows(RecordNotFoundException.class, () -> {
+            parentService.enrollParent(pisId);
         });
 
-        verify(userRepository).findByIdWithParent(userId);
-        verifyNoInteractions(parentInSchoolRepository);
+        verify(parentInSchoolRepository).findOneById(pisId);
+        verify(parentInSchoolRepository, never()).save(any());
     }
 
     @Test
     @WithMockUser(roles = "SCHOOL_OWNER")
-    void enrollParent_NoParentProfile() {
-        Integer userId = 1;
-        User user = new User(); // User without parent profile
-        user.setParent(null);
+    void enrollParent_StatusChangeToActive() {
+        Integer pisId = 2;
+        ParentInSchool pis = new ParentInSchool();
+        pis.setId(pisId);
+        pis.setStatus(EParentInSchool.PENDING.getValue());
 
-        when(userRepository.findByIdWithParent(userId)).thenReturn(Optional.of(user));
+        when(parentInSchoolRepository.findOneById(pisId)).thenReturn(Optional.of(pis));
 
-        Boolean result = parentService.enrollParent(userId);
+        parentService.enrollParent(pisId);
 
-        assertFalse(result);
-        verify(userRepository).findByIdWithParent(userId);
-        verifyNoInteractions(parentInSchoolRepository);
+        assertEquals(EParentInSchool.ACTIVE.getValue(), pis.getStatus());
+        assertEquals(LocalDate.now(), pis.getFrom());
+
+        verify(parentInSchoolRepository).save(pis);
     }
-
-    @Test
-    @WithMockUser(roles = "SCHOOL_OWNER")
-    void enrollParent_VerifyParentInSchoolCreation() {
-        Integer userId = 1;
-        User user = new User();
-        Parent parent = new Parent();
-        user.setParent(parent);
-
-        SchoolOwner schoolOwner = new SchoolOwner();
-        School school = new School();
-        school.setId(100);
-        schoolOwner.setSchool(school);
-
-        when(userRepository.findByIdWithParent(userId)).thenReturn(Optional.of(user));
-        when(userService.getCurrentSchoolOwner()).thenReturn(schoolOwner);
-
-        parentService.enrollParent(userId);
-
-        // Verify the ParentInSchool object creation
-        verify(parentInSchoolRepository).save(argThat(pis ->
-                pis.getSchool().equals(school) &&
-                        pis.getParent().equals(parent) &&
-                        pis.getFrom().equals(LocalDate.now()) &&
-                        pis.getStatus().equals(EParentInSchool.ACTIVE.getValue())
-        ));
-    }
-
 }

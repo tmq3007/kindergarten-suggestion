@@ -53,7 +53,7 @@ interface SchoolDetailsProps {
     schoolData: SchoolDetailVO;
 }
 
-const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => {
+const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => {
     const {
         id,
         name,
@@ -223,7 +223,7 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
                 <Col xs={24} className="!p-0">
                     <Row gutter={[0, 0]} justify="space-between">
                         <Col xs={24} lg={16} className="flex">
-                            <Card className="w-full border-0 bg-white shadow-md">
+                            <Card className="w-full border-0 bg-white">
                                 <div
                                     className="text-gray-800"
                                     dangerouslySetInnerHTML={{__html: description || "N/A"}}
@@ -232,7 +232,7 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
                         </Col>
                         <Col xs={24} lg={8} className="flex">
                             <Card
-                                className="w-full border-l-0 lg:border-l border-t-1 lg:border-t-0 border-r-0 border-b-0 rounded-t-none rounded-bl-none bg-white shadow-md p-6"
+                                className="w-full border-l-0 lg:border-l border-t-1 lg:border-t-0 border-r-0 border-b-0 rounded-t-none rounded-bl-none bg-white p-6"
                             >
                                 <div className="space-y-8">
                                     <div>
@@ -287,7 +287,7 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
             label: "Comments",
             icon: <CommentOutlined/>,
             children: (
-                <Card className="w-full shadow-md border bg-white lg:p-6 md:p-0">
+                <Card styles={{body: {padding: 0}}} className="w-full border-none bg-white p-0">
                     {isLoading ? (
                         <Spin tip="Loading reviews..."/>
                     ) : error ? (
@@ -317,51 +317,61 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
 
                     <Col xs={24} className="flex justify-center">
                         <Row gutter={[24, 24]} justify="center" className="w-full">
-                            <Card className="w-full border-custom-700 bg-white shadow-md px-4 py-0 rounded-lg">
+                            <Card className="w-full border-custom-700 bg-white px-4 py-0 rounded-lg">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                                     <h2 className="text-4xl font-bold text-black">{name || "Unknown School"}</h2>
-                                    <div className="button-group">
+                                    <div className="button-group flex flex-col">
                                         <AddRequestModal schoolId={id} schoolName={name}/>
                                         <RateButton schoolId={id}/>
-                                        <Button danger onClick={showModal} size="large">
+                                        <Button
+                                            type={'primary'}
+                                            className="bg-red-500 hover:!bg-red-400 w-[81%] md:w-[73%] mx-auto"
+                                            onClick={showModal}
+                                            size="large">
                                             Enroll
                                         </Button>
                                     </div>
                                 </div>
 
-                                <Row gutter={[16, 16]} className="text-3xl">
+                                <Row gutter={[16, 16]} className="">
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <EnvironmentOutlined/>
                                                 Address:
                                             </Col>
-                                            <Col xs={24} md={18} className="text-gray-700">
+                                            <Col xs={24} md={18} className="text-gray-700 text-lg">
                                                 {[street, ward, district, province].filter(Boolean).join(", ") || "N/A"}
                                             </Col>
                                         </Row>
                                     </Col>
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <MailOutlined/>
                                                 Email:
                                             </Col>
-                                            <Col xs={24} md={18} className="text-gray-700">{email || "N/A"}</Col>
+                                            <Col xs={24} md={18}
+                                                 className="text-gray-700 text-lg">{email || "N/A"}</Col>
                                         </Row>
                                     </Col>
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <PhoneOutlined/>
                                                 Contact:
                                             </Col>
-                                            <Col xs={24} md={18} className="text-gray-700">{phone || "N/A"}</Col>
+                                            <Col xs={24} md={18}
+                                                 className="text-gray-700 text-lg">{phone || "N/A"}</Col>
                                         </Row>
                                     </Col>
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <GlobalOutlined/>
                                                 Website:
                                             </Col>
@@ -370,7 +380,7 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
                                                     href={website}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-blue-500 break-all hover:underline"
+                                                    className="text-blue-500 break-all hover:underline text-lg"
                                                 >
                                                     {website || "N/A"}
                                                 </a>
@@ -379,11 +389,12 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
                                     </Col>
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <DollarOutlined/>
                                                 Tuition Fee:
                                             </Col>
-                                            <Col xs={24} md={18} className="text-gray-700">
+                                            <Col xs={24} md={18} className="text-gray-700 text-lg">
                                                 From {feeFrom?.toLocaleString() || "N/A"} VND/month
                                                 {feeTo ? ` to ${feeTo?.toLocaleString()} VND/month` : ""}
                                             </Col>
@@ -391,33 +402,36 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
                                     </Col>
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <CalendarOutlined/>
                                                 Admission Age:
                                             </Col>
-                                            <Col xs={24} md={18} className="text-gray-700">
+                                            <Col xs={24} md={18} className="text-gray-700 text-lg">
                                                 {CHILD_RECEIVING_AGE_OPTIONS.find((opt) => opt.value === String(receivingAge))?.label || "N/A"}
                                             </Col>
                                         </Row>
                                     </Col>
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <BankOutlined/>
                                                 School Type:
                                             </Col>
-                                            <Col xs={24} md={18} className="text-gray-700">
+                                            <Col xs={24} md={18} className="text-gray-700 text-lg">
                                                 {SCHOOL_TYPE_OPTIONS.find((opt) => opt.value === String(schoolType))?.label || "N/A"}
                                             </Col>
                                         </Row>
                                     </Col>
                                     <Col span={24}>
                                         <Row>
-                                            <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
+                                            <Col xs={24} md={6}
+                                                 className="font-semibold flex items-center gap-2 text-lg">
                                                 <BookOutlined/>
                                                 Education Method:
                                             </Col>
-                                            <Col xs={24} md={18} className="text-gray-700">
+                                            <Col xs={24} md={18} className="text-gray-700 text-xl">
                                                 {EDUCATION_METHOD_OPTIONS.find((opt) => opt.value === String(educationMethod))?.label || "N/A"}
                                             </Col>
                                         </Row>
@@ -504,4 +518,4 @@ const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => 
     );
 };
 
-export default SchoolDetails2;
+export default SchoolDetails;

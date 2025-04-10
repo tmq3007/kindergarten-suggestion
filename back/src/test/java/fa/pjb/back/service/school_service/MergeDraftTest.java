@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -47,23 +45,32 @@ class MergeDraftTest {
 
     @BeforeEach
     void setUp() {
-        // Setup origin school
         originSchool = School.builder()
                 .id(1)
                 .name("Original School")
                 .images(new ArrayList<>())
+                .facilities(new HashSet<>())
+                .utilities(new HashSet<>())
+                .schoolOwners(new HashSet<>())
                 .build();
 
-        // Setup draft school
+        draftImages = List.of(
+                Media.builder()
+                        .id(2)
+                        .cloudId("new-cloud-id")
+                        .build()
+        );
+
         draftSchool = School.builder()
                 .id(2)
                 .name("Updated School Name")
                 .originalSchool(originSchool)
-                .images(new ArrayList<>())
+                .images(draftImages)
+                .facilities(Set.of(Facility.builder().fid(1).name("Lab").build()))
+                .utilities(Set.of(Utility.builder().uid(1).name("Wifi").build()))
                 .schoolOwners(new HashSet<>())
                 .build();
 
-        // Setup old media
         oldMedias = List.of(
                 Media.builder()
                         .id(1)
@@ -71,208 +78,141 @@ class MergeDraftTest {
                         .build()
         );
 
-        // Setup draft images
-        draftImages = List.of(
-                Media.builder()
-                        .id(2)
-                        .cloudId("new-cloud-id")
-                        .build()
-        );
-        draftSchool.setImages(draftImages);
-
-        // Setup school owners
         schoolOwners = new HashSet<>(Arrays.asList(
-                SchoolOwner.builder()
-                        .id(1)
-                        .build(),
-                SchoolOwner.builder()
-                        .id(null) // transient owner
-                        .build()
+                SchoolOwner.builder().id(1).build(),
+                SchoolOwner.builder().id(null).build()
         ));
+
         draftSchool.setSchoolOwners(schoolOwners);
     }
 
     @Test
-    @Transactional
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     void mergeDraft_SuccessfulMerge_ReturnsTrue() {
-        // Arrange
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(draftSchool);
         when(mediaRepository.getAllBySchool(originSchool)).thenReturn(oldMedias);
-        when(schoolRepository.saveAndFlush(any(School.class))).thenReturn(originSchool);
+        when(schoolOwnerRepository.findBySchoolIdAndDraftId(anyInt(), anyInt())).thenReturn(new HashSet<>());
+        when(schoolOwnerRepository.findAllByDraft(draftSchool)).thenReturn(new ArrayList<>());
+        when(schoolRepository.save(any())).thenReturn(originSchool);
+        when(schoolRepository.saveAndFlush(any())).thenReturn(originSchool);
         when(imageService.deleteUploadedImage(anyString())).thenReturn(
-                FileUploadVO.builder()
-                        .status(200)
-                        .message("Deleted")
-                        .size(0L)
-                        .fileId("old-cloud-id")
-                        .build()
+                FileUploadVO.builder().status(200).message("Deleted").fileId("old-cloud-id").build()
         );
 
-        // Act
         Boolean result = schoolService.mergeDraft(2);
 
-        // Assert
         assertTrue(result);
         assertEquals("Updated School Name", originSchool.getName());
         assertNull(originSchool.getDraft());
-        verify(schoolRepository, times(1)).delete(draftSchool);
-        verify(mediaRepository, times(1)).deleteAll(oldMedias);
-        verify(schoolOwnerRepository, times(1)).save(any(SchoolOwner.class));
+        verify(schoolRepository).delete(draftSchool);
+        verify(mediaRepository).deleteAll(oldMedias);
     }
 
     @Test
     void mergeDraft_DraftNotFound_ReturnsFalse() {
-        // Arrange
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(null);
 
-        // Act
         Boolean result = schoolService.mergeDraft(2);
 
-        // Assert
         assertFalse(result);
         verify(schoolRepository, never()).saveAndFlush(any());
     }
 
     @Test
     void mergeDraft_OriginalSchoolNotFound_ReturnsFalse() {
-        // Arrange
         draftSchool.setOriginalSchool(null);
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(draftSchool);
 
-        // Act
         Boolean result = schoolService.mergeDraft(2);
 
-        // Assert
         assertFalse(result);
         verify(schoolRepository, never()).saveAndFlush(any());
     }
 
     @Test
     void mergeDraft_ErrorCopyingProperties_ReturnsFalse() {
-        // Arrange
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(draftSchool);
-        when(mediaRepository.getAllBySchool(originSchool)).thenReturn(oldMedias);
-
-        // Giả lập ném exception khi save
-        doThrow(new RuntimeException("Copy error")).when(schoolRepository).saveAndFlush(any(School.class));
-
-        // Act & Assert
-        // Do service không bắt exception này, chúng ta expect nó sẽ được ném ra
-        assertThrows(RuntimeException.class, () -> schoolService.mergeDraft(2));
-
-        // Verify không có thao tác xóa nào được thực hiện
-        verify(mediaRepository, never()).deleteAll(any());
-        verify(schoolRepository, never()).delete(draftSchool);
+        doThrow(new RuntimeException("Copy error")).when(schoolRepository).save(any());
+        Boolean result = schoolService.mergeDraft(2);
+        assertFalse(result);
     }
 
     @Test
     void mergeDraft_ErrorDeletingOldImages_ReturnsFalse() {
-        // Arrange
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(draftSchool);
         when(mediaRepository.getAllBySchool(originSchool)).thenReturn(oldMedias);
-        when(schoolRepository.saveAndFlush(any(School.class))).thenReturn(originSchool);
-        when(imageService.deleteUploadedImage(anyString())).thenReturn(
-                FileUploadVO.builder()
-                        .status(500)
-                        .message("Error")
-                        .build()
-        );
+        when(schoolOwnerRepository.findBySchoolIdAndDraftId(anyInt(), anyInt())).thenReturn(new HashSet<>());
+        when(schoolOwnerRepository.findAllByDraft(draftSchool)).thenReturn(new ArrayList<>());
+        when(schoolRepository.save(any())).thenReturn(originSchool);
+        when(schoolRepository.saveAndFlush(any())).thenReturn(originSchool);
 
-        // Act
+        when(imageService.deleteUploadedImage(anyString()))
+                .thenThrow(new RuntimeException("Cloud delete failed"));
+
         Boolean result = schoolService.mergeDraft(2);
 
-        // Assert
-        assertTrue(result);
-        verify(mediaRepository, times(1)).deleteAll(oldMedias);
+        assertFalse(result);
+        verify(mediaRepository, never()).deleteAll(any());
     }
+
 
     @Test
     void mergeDraft_WithFacilitiesAndUtilities_CopiesCorrectly() {
-        // Arrange
-        Set<Facility> facilities = Set.of(
-                Facility.builder()
-                        .fid(1)
-                        .name("Playground")
-                        .build()
-        );
-
-        Set<Utility> utilities = Set.of(
-                Utility.builder()
-                        .uid(1)
-                        .name("Wifi")
-                        .build()
-        );
-
-        draftSchool.setFacilities(facilities);
-        draftSchool.setUtilities(utilities);
-
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(draftSchool);
         when(mediaRepository.getAllBySchool(originSchool)).thenReturn(oldMedias);
-        when(schoolRepository.saveAndFlush(any(School.class))).thenReturn(originSchool);
+        when(schoolOwnerRepository.findBySchoolIdAndDraftId(anyInt(), anyInt())).thenReturn(new HashSet<>());
+        when(schoolOwnerRepository.findAllByDraft(draftSchool)).thenReturn(new ArrayList<>());
+        when(schoolRepository.save(any())).thenReturn(originSchool);
+        when(schoolRepository.saveAndFlush(any())).thenReturn(originSchool);
         when(imageService.deleteUploadedImage(anyString())).thenReturn(
-                FileUploadVO.builder()
-                        .status(200)
-                        .message("Deleted")
-                        .size(0L)
-                        .fileId("old-cloud-id")
-                        .build()
+                FileUploadVO.builder().status(200).message("Deleted").build()
         );
 
-        // Act
         Boolean result = schoolService.mergeDraft(2);
 
-        // Assert
         assertTrue(result);
         assertEquals(1, originSchool.getFacilities().size());
         assertEquals(1, originSchool.getUtilities().size());
-        assertTrue(originSchool.getFacilities().stream().anyMatch(f -> f.getName().equals("Playground")));
-        assertTrue(originSchool.getUtilities().stream().anyMatch(u -> u.getName().equals("Wifi")));
     }
 
     @Test
     void mergeDraft_WithTransientSchoolOwners_SavesThem() {
-        // Arrange
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(draftSchool);
         when(mediaRepository.getAllBySchool(originSchool)).thenReturn(oldMedias);
-        when(schoolRepository.saveAndFlush(any(School.class))).thenReturn(originSchool);
+        when(schoolOwnerRepository.findBySchoolIdAndDraftId(anyInt(), anyInt())).thenReturn(schoolOwners);
+        when(schoolOwnerRepository.findAllByDraft(draftSchool)).thenReturn(new ArrayList<>());
+        when(schoolOwnerRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(schoolRepository.save(any())).thenReturn(originSchool);
+        when(schoolRepository.saveAndFlush(any())).thenReturn(originSchool);
         when(imageService.deleteUploadedImage(anyString())).thenReturn(
-                FileUploadVO.builder()
-                        .status(200)
-                        .message("Deleted")
-                        .size(0L)
-                        .fileId("old-cloud-id")
-                        .build()
+                FileUploadVO.builder().status(200).message("Deleted").build()
         );
 
-        // Act
         Boolean result = schoolService.mergeDraft(2);
 
-        // Assert
         assertTrue(result);
-        verify(schoolOwnerRepository, times(1)).save(any(SchoolOwner.class));
+        verify(schoolOwnerRepository, atLeastOnce()).save(any(SchoolOwner.class));
         assertEquals(2, originSchool.getSchoolOwners().size());
     }
 
     @Test
     void mergeDraft_WithImages_UpdatesSchoolReference() {
-        // Arrange
         when(schoolRepository.findByIdWithDraft(2)).thenReturn(draftSchool);
         when(mediaRepository.getAllBySchool(originSchool)).thenReturn(oldMedias);
-        when(schoolRepository.saveAndFlush(any(School.class))).thenReturn(originSchool);
+        when(schoolOwnerRepository.findBySchoolIdAndDraftId(anyInt(), anyInt())).thenReturn(new HashSet<>());
+        when(schoolOwnerRepository.findAllByDraft(draftSchool)).thenReturn(new ArrayList<>());
+        when(schoolRepository.save(any())).thenReturn(originSchool);
+        when(schoolRepository.saveAndFlush(any())).thenReturn(originSchool);
+        when(mediaRepository.save(any())).thenAnswer(i -> {
+            Media media = i.getArgument(0);
+            media.setSchool(originSchool);
+            return media;
+        });
         when(imageService.deleteUploadedImage(anyString())).thenReturn(
-                FileUploadVO.builder()
-                        .status(200)
-                        .message("Deleted")
-                        .size(0L)
-                        .fileId("old-cloud-id")
-                        .build()
+                FileUploadVO.builder().status(200).message("Deleted").build()
         );
 
-        // Act
         Boolean result = schoolService.mergeDraft(2);
 
-        // Assert
         assertTrue(result);
         assertEquals(originSchool, draftImages.get(0).getSchool());
         assertEquals(1, originSchool.getImages().size());

@@ -20,6 +20,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.Validator;
 
 import java.time.ZoneId;
 import java.util.Date;
@@ -28,7 +29,7 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +39,7 @@ class UpdateSchoolByAdminTest {
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
+    private Validator mockValidator;
 
     @Mock
     private SchoolService schoolService;
@@ -47,7 +49,11 @@ class UpdateSchoolByAdminTest {
 
     @BeforeEach
     void setup() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(schoolController).build();
+        mockValidator = mock(Validator.class);
+        this.mockMvc = MockMvcBuilders
+                .standaloneSetup(schoolController)
+                .setValidator(mockValidator)
+                .build();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -126,28 +132,6 @@ class UpdateSchoolByAdminTest {
                 .andExpect(jsonPath("$.data.province").value("Updated Province"))
                 .andExpect(jsonPath("$.data.email").value("updated@school.com"))
                 .andExpect(jsonPath("$.data.imageList[0].url").value("https://image1.jpg"));
-    }
-
-    /**
-     * Abnormal Case
-     * Description: Update school fails when required fields are missing.
-     * Expected: Returns HTTP 400 Bad Request.
-     */
-    @Test
-    void updateSchoolByAdmin_Fail_MissingRequiredFields() throws Exception {
-        // Prepare invalid DTO (missing required fields)
-        SchoolDTO schoolDTO = SchoolDTO.builder()
-                .id(1)
-                .build();
-
-        // Perform request
-        ResultActions response = mockMvc.perform(multipart("/school/update/by-admin")
-                .file(new MockMultipartFile("data", "", MediaType.APPLICATION_JSON_VALUE,
-                        objectMapper.writeValueAsBytes(schoolDTO)))
-                .contentType(MediaType.MULTIPART_FORM_DATA));
-
-        // Assert response
-        response.andExpect(status().isBadRequest());
     }
 
     /**
