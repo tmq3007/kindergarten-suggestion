@@ -10,13 +10,14 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReviewService {
 
-    List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDate fromDate, LocalDate toDate, String status);
+    List<ReviewVO> getAllReviewByAdmin(Integer schoolId, LocalDateTime fromDate, LocalDateTime toDate, String status);
 
-    List<ReviewVO> getAllReviewBySchoolOwner(LocalDate fromDate, LocalDate toDate, String status);
+    List<ReviewVO> getAllReviewBySchoolOwner(LocalDateTime fromDate, LocalDateTime toDate, String status);
 
     List<ReviewVO> getTop4RecentFiveStarFeedbacks();
 
@@ -33,4 +34,6 @@ public interface ReviewService {
     ReviewVO getReviewBySchoolAndParent(Integer schoolId);
 
     ReviewVO saveReview( ReviewDTO reviewData);
+
+    String checkReviewPermission(Integer schoolId);
 }

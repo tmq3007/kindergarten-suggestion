@@ -1,4 +1,4 @@
-import {Button, Dropdown, MenuProps, message, Modal, Space} from "antd";
+import {Button, Dropdown, Menu, MenuProps, message, Modal, Space, Tooltip} from "antd";
 import {DownOutlined, UserOutlined} from "@ant-design/icons";
 import React, {useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -191,33 +191,37 @@ export default function UserDropdown({username}: UserDropdownProps) {
         <>
             {contextHolder}
             <div ref={modalContainerRef}>
-                <Dropdown
-                    className="text-blue-500 z-0"
-                    menu={menuProps}
-                    trigger={["hover"]}
-                    open={isDropdownVisible}
-                    onOpenChange={(open) => setIsDropdownVisible(open)}
-                >
+                <Tooltip
+                    title={
+                        <Menu
+                            items={items}
+
+                        />
+                    }
+                    placement="bottomRight"
+                     trigger="click"
+                    color="white"
+                 >
                     <div onClick={() => setIsDropdownVisible(true)}>
                         <Space>
-                            <UserOutlined className="text-white text-sm md:text-2xl"/>
+                            <UserOutlined className="text-white text-sm md:text-lg"/>
+                            {/* Thêm lớp hidden md:inline-block để ẩn trên mobile và hiển thị trên desktop */}
                             <motion.span
-                                className="text-sm md:text-lg hover:cursor-pointer font-bold"
+                                className="hidden md:inline-block text-sm md:text-lg hover:cursor-pointer font-bold"
                                 style={{
                                     backgroundClip: "text",
                                     WebkitBackgroundClip: "text",
                                     color: "transparent",
-                                    display: "inline-block", // Ensure gradient isn't clipped
                                 }}
-                                animate={gradientAnimation} // Apply gradient and blinking animation
+                                animate={gradientAnimation}
                                 transition={{
                                     backgroundImage: {
-                                        duration: 5, // Increase duration for smoother movement
-                                        repeat: Infinity, // Repeat infinitely
-                                        ease: "easeInOut", // Smoother motion with easeInOut
+                                        duration: 5,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
                                     },
                                     opacity: {
-                                        duration: 0.5, // Faster blink for subtle effect
+                                        duration: 0.5,
                                         repeat: Infinity,
                                         ease: "easeInOut",
                                     },
@@ -225,14 +229,15 @@ export default function UserDropdown({username}: UserDropdownProps) {
                             >
                                 {`Welcome! ${username}`}
                             </motion.span>
+                            {/* Thêm lớp hidden md:inline-block cho DownOutlined */}
                             <DownOutlined
-                                className={`text-white transition-transform duration-300 ${
+                                className={`hidden   text-white transition-transform duration-300 ${
                                     isDropdownVisible ? "rotate-180" : "rotate-0"
                                 }`}
                             />
                         </Space>
                     </div>
-                </Dropdown>
+                </Tooltip>
 
                 <Modal
                     title="Are you leaving?"

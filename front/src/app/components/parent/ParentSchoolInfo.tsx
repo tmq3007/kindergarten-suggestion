@@ -50,10 +50,10 @@ export default function ParentSchoolInfo({
     return (
 
         <div
-            className="grid grid-cols-1 lg:grid-cols-6 items-start border-2 border-blue-300 rounded-lg shadow-md p-2 mt-10 bg-gray-50">
+            className="grid grid-cols-1 lg:grid-cols-6 gap-2 items-start border-2 border-blue-300 rounded-lg shadow-md p-2 mt-10 bg-gray-50">
             {/*School Section*/}
             <div
-                className={'col-span-5 border-2 bg-white rounded-lg border-blue-300 shadow-md p-4 h-full flex flex-col md:flex-row'}>
+                className={'col-span-1 lg:col-span-5 border-2 bg-white rounded-lg border-blue-300 shadow-md p-4 h-full flex flex-col md:flex-row'}>
                 <div className={'h-full w-full md:w-1/2 lg:w-1/3'}>
                     <Image
                         src={pis.school.imageList?.[0] ? pis.school.imageList?.[0].url : image}
@@ -178,7 +178,7 @@ export default function ParentSchoolInfo({
                 </div>
             </div>
             {/*Rate Section*/}
-            <div className={'col-span-1 border-2 border-blue-300 bg-white rounded-lg shadow-md ml-2 p-4 h-full'}>
+            <div className={'col-span-1 border-2 border-blue-300 bg-white rounded-lg shadow-md p-4 h-full'}>
                 {/*Case 1: You haven't rated the school yet and status is Active*/}
                 {(isCurrent && pis.providedRating === null) && (
                     <div className={'flex flex-col items-center justify-center h-full'}>
@@ -230,6 +230,10 @@ export default function ParentSchoolInfo({
                             View Rating Details
                         </Button>
 
+                    </div>)}
+                {(!isCurrent && pis.providedRating !== null && !pis.hasEditCommentPermission) && (
+                    <div className={'flex flex-col items-center justify-center h-full'}>
+                        <span className={'text-lg font-bold text-custom-600'}>There's no rating of yours for this school. You can only rate the school you're currently enrolled in.</span>
                     </div>)}
             </div>
         </div>
