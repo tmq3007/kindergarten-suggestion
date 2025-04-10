@@ -1,7 +1,7 @@
 // File: app/components/parent/ParentRequestInfo.tsx
 
 import React, {useState, useRef, useEffect} from 'react';
-import {Row, Col, Card, Tag, Typography, Rate, Badge} from 'antd';
+import {Row, Col, Card, Tag, Typography, Rate, Badge, Modal, Button} from 'antd';
 import {ParentRequestListVO} from '@/redux/services/requestCounsellingApi';
 import {EnvironmentOutlined, GlobalOutlined, DollarOutlined, UserOutlined} from '@ant-design/icons';
 import {REQUEST_COUNSELLING_STATUS_OPTIONS} from "@/lib/constants";
@@ -14,9 +14,14 @@ interface ParentRequestInfoProps {
 }
 
 const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
-    const [expanded, setExpanded] = useState(false);
-    const [isOverflowing, setIsOverflowing] = useState(false);
-    const inquiryRef = useRef<HTMLDivElement>(null);
+
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const MAX_INQUIRY_LENGTH = 300
+
+    const shouldTruncate = request.inquiry && request.inquiry.length > MAX_INQUIRY_LENGTH
+    const displayInquiry = shouldTruncate
+        ? `${request.inquiry?.substring(0, MAX_INQUIRY_LENGTH)}...`
+        : request.inquiry
 
     const requestCounsellingStatus =
         REQUEST_COUNSELLING_STATUS_OPTIONS.find(
@@ -45,22 +50,10 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
         ? `From ${request.school.receivingAge} months to 5 years`
         : 'N/A';
 
-    // Kiểm tra xem nội dung Inquiry có vượt quá 3 dòng không
-    useEffect(() => {
-        const element = inquiryRef.current;
-        if (element) {
-            // Kiểm tra xem nội dung có bị overflow không
-            const lineHeight = parseInt(getComputedStyle(element).lineHeight);
-            const maxHeight = lineHeight * 3; // 3 dòng
-            const actualHeight = element.scrollHeight;
-
-            setIsOverflowing(actualHeight > maxHeight);
-        }
-    }, [request.inquiry]);
-
     return (
+        <>
         <div className="mx-auto mt-1 px-4 py-5">
-            <div className="grid grid-cols-1 lg:grid-cols-6 gap-2 items-start border-2 border-blue-300 rounded-lg shadow-md p-2 bg-gray-50">
+            <div className="grid grid-cols-1 lg:grid-cols-6 gap-2 items-start max-sm:border-2 max-sm:border-blue-300 max-sm:rounded-lg max-sm:shadow-md p-2 max-sm:bg-gray-50">
                 {/* Request Card - Chiếm 3/6 cột */}
                 <div
                     className="md:col-span-3 bg-white border-2 border-blue-300 rounded-lg shadow-md p-4 min-h-[300px] h-auto">
@@ -93,42 +86,23 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
                         </Paragraph>
                         <Paragraph className="w-full">
                             <Text>Inquiry: </Text>
-                            <div style={{position: 'relative'}}>
-                                <div
-                                    ref={inquiryRef}
-                                    style={{
-                                        lineHeight: '1.5',
-                                        maxHeight: expanded ? 'none' : '4.5em', // 3 dòng (1.5 * 3)
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        display: '-webkit-box',
-                                        WebkitBoxOrient: 'vertical',
-                                        WebkitLineClamp: expanded ? 'unset' : 3,
-                                        whiteSpace: 'pre-line',
-                                        wordBreak: 'break-word'
-                                    }}
-                                >
-                                    {request.inquiry || 'N/A'}
-                                </div>
-                                {isOverflowing && !expanded && (
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            right: 0,
-                                            bottom: 0,
-                                            background: 'linear-gradient(to right, transparent, white 50%)',
-                                            paddingLeft: '70px'
-                                        }}
-                                    >
-                                        <Text
-                                            className="text-blue-500 underline cursor-pointer"
-                                            onClick={() => setExpanded(true)}
-                                        >
-                                            See more...
-                                        </Text>
+                            {request.inquiry && (
+                                <div className="col-span-full">
+                                    <span className="font-medium">Inquiry:</span>
+                                    <div className="mt-1">
+                                        {displayInquiry}
+                                        {shouldTruncate && (
+                                            <Button
+                                                type="link"
+                                                onClick={() => setIsModalOpen(true)}
+                                                className="p-0 ml-1 h-auto"
+                                            >
+                                                See more
+                                            </Button>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </Paragraph>
                         <Paragraph className="mt-2 text-xs text-gray-500">
                             Our staff will contact with you within 24 hrs. If you need urgent assistance, please contact
@@ -139,10 +113,8 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
                 </div>
 
                 {/* School Section Card */}
-
-                {(isOverflowing && !expanded) ? (
                     <div
-                        className="md:col-span-2 bg-white rounded-lg border-2 border-blue-300 shadow-md p-4 md:h-[349px] sm:h-auto">
+                        className="md:col-span-2 bg-white rounded-lg border-2 border-blue-300 shadow-md p-4 md:h-full sm:h-auto">
                         <Text className='text-lg text-blue-500'>School Summary</Text>
                         <br/>
                         <Title level={2} underline={true}
@@ -174,65 +146,39 @@ const ParentRequestInfo: React.FC<ParentRequestInfoProps> = ({request}) => {
                             </Text>
                         </div>
                     </div>
-                ) : (
-                    <div
-                        className="md:col-span-2 bg-white rounded-lg border-2 border-blue-300 shadow-md p-4 md:h-[307px] sm:h-auto">
-                        <Text className='text-lg text-blue-500'>School Summary</Text>
-                        <br/>
-                        <Title level={2} underline={true}
-                               style={{color: '#3C82F6'}}>{request.school?.name || 'N/A'}</Title>
-                        <Paragraph>
-                            <EnvironmentOutlined className="mr-2"/>
-                            <Text>Address: </Text>
-                            {request.school?.ward + ', ' + request.school?.street + ', ' + request.school?.district + ', ' + request.school?.province || 'N/A'}
-                        </Paragraph>
-                        <Paragraph>
-                            <GlobalOutlined className="mr-2"/>
-                            <Text>Website: </Text>
-                            {request.school?.website || 'N/A'}
-                        </Paragraph>
-                        <Paragraph>
-                            <DollarOutlined className="mr-2"/>
-                            <Text>Tuition fee: </Text>
-                            {tuitionFee}
-                        </Paragraph>
-                        <Paragraph>
-                            <UserOutlined className="mr-2"/>
-                            <Text>Admission age: </Text>
-                            {admissionAge}
-                        </Paragraph>
-                        <div className="flex md:flex-row flex-col items-center">
-                            <Rate disabled value={request.averageSchoolRating || 0} allowHalf/>
-                            <Text className="ml-1">
-                                {request.averageSchoolRating || 0}/5 ({request.totalSchoolReview || 0} ratings)
-                            </Text>
-                        </div>
-                    </div>
-                )}
 
                 {/* Response Section Card */}
-                {(isOverflowing && !expanded) ? (
                     <div
-                        className="md:col-span-1 bg-white rounded-lg border-2 border-blue-300 shadow-md p-4 md:h-[349px] sm:h-auto">
+                        className="md:col-span-1 bg-white rounded-lg border-2 border-blue-300 shadow-md p-4 md:h-full sm:h-auto">
                         <Text className='text-lg text-blue-500'>Response</Text>
                         <div
                             className="text-gray-800"
                             dangerouslySetInnerHTML={{__html: request.response || "N/A"}}
                         />
                     </div>
-                ) : (
-                    <div
-                        className="md:col-span-1 bg-white rounded-lg border-2 border-blue-300 shadow-md p-4 md:h-[307px] sm:h-auto">
-                        <Text className='text-lg text-blue-500'>Response</Text>
-                        <div
-                            className="text-gray-800"
-                            dangerouslySetInnerHTML={{__html: request.response || "N/A"}}
-                        />
-                    </div>
-                )}
 
             </div>
         </div>
+
+    <Modal
+        title="Inquiry Details"
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        footer={[
+            <Button key="close" type="primary" onClick={() => setIsModalOpen(false)}>
+                Close
+            </Button>,
+        ]}
+        width={800}
+    >
+        <div
+            className="max-h-[60vh] overflow-y-auto p-2 whitespace-pre-wrap"
+            style={{ wordBreak: 'break-word' }}
+        >
+            {request.inquiry || '' || 'No inquiry content'}
+        </div>
+    </Modal>
+        </>
     );
 };
 
