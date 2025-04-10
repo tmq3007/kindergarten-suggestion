@@ -29,6 +29,14 @@ public interface ParentInSchoolRepository extends JpaRepository<ParentInSchool, 
            "ORDER BY pis.status ASC , pis.from DESC")
     List<Object[]> findAcademicHistoryWithReviews(@Param("parentId") Integer parentId);
 
+    @Query("SELECT pis, r " +
+            "FROM ParentInSchool pis " +
+            "LEFT JOIN Review r ON pis.school.id = r.school.id AND pis.parent.id = r.parent.id " +
+            "WHERE pis.parent.id = :parentId AND pis.school.id = :schoolId " +
+            "ORDER BY pis.from DESC")
+    List<Object[]> findLatestPisWithReview(@Param("parentId") Integer parentId,
+                                     @Param("schoolId") Integer schoolId,
+                                     Pageable pageable);
     @Query("SELECT pis, s, r " +
            "FROM ParentInSchool pis " +
            "JOIN pis.school s " +

@@ -95,13 +95,13 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
     };
 
     return (
-        <div className="flex items-center justify-center w-full  ">
+        <div className="flex items-center justify-center px-4 sm:px-6 lg:px-8">
             {contextHolder}
             <Button
                 type="primary"
                 onClick={showModal}
                 disabled={isParentLoading}
-                className="!w-[180px] sm:w-full"
+                size={"large"}
             >
                 Request Counselling
             </Button>

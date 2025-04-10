@@ -2,6 +2,7 @@
 import React from "react";
 import { Star, StarHalf } from "lucide-react";
 import { RatingStats } from "@/redux/services/reviewApi";
+import {ConfigProvider, Rate} from "antd";
 
 interface AverageRatingSectionProps {
     dataStat?: RatingStats;
@@ -34,26 +35,6 @@ const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat, i
         );
     };
 
-    const StarRating = ({ rating }: { rating: number }) => {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-
-        return (
-            <div className="flex">
-                {[...Array(fullStars)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 md:w-6 md:h-6 fill-amber-400 text-amber-400" />
-                ))}
-                {hasHalfStar && <StarHalf className="w-5 h-5 md:w-6 md:h-6 fill-amber-400 text-amber-400" />}
-                {[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
-                    <Star
-                        key={i + fullStars + (hasHalfStar ? 1 : 0)}
-                        className="w-5 h-5 md:w-6 md:h-6 text-amber-400"
-                    />
-                ))}
-            </div>
-        );
-    };
-
     if (isLoading) {
         return (
             <div className="mb-6 md:mb-8 md:px-0">
@@ -73,13 +54,25 @@ const AverageRatingSection: React.FC<AverageRatingSectionProps> = ({ dataStat, i
     }
 
     return (
-        <div className="mb-6 md:mb-8 md:px-0">
+        <div>
             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Average ratings</h2>
             <div className="flex flex-col items-center mb-4 md:mb-6">
                 <div className="text-lg md:text-xl font-semibold mb-2">
                     {stats.averageRating.toFixed(1)} Stars ({stats.totalRatings} Ratings)
                 </div>
-                <StarRating rating={stats.averageRating} />
+                <ConfigProvider
+                    theme={{
+                        components: {
+                            Rate: {
+                                starSize: 40,
+                                starColor: "#fbbf24"
+                            },
+                        },
+                    }}
+                >
+                    <Rate defaultValue={stats.averageRating} disabled allowHalf/>
+
+                </ConfigProvider>
             </div>
 
             <div className="w-1/2 mx-auto">

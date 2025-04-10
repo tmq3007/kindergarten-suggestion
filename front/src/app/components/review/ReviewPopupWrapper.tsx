@@ -10,6 +10,7 @@ interface RatingsPopupWrapperProps {
     isUpdate: boolean;
     isOpen: boolean;
     onCloseAction: () => void;
+    isViewOnly?: boolean;
 }
 
 export default function RatingsPopupWrapper({
@@ -18,6 +19,7 @@ export default function RatingsPopupWrapper({
                                                 isUpdate,
                                                 isOpen,
                                                 onCloseAction,
+                                                isViewOnly = false
                                             }: RatingsPopupWrapperProps) {
     const dispatch = useDispatch();
 
@@ -63,6 +65,7 @@ export default function RatingsPopupWrapper({
             error={errorMessage}
             initialRatings={initialRatings}
             isUpdate={isUpdate}
+            isViewOnly={isViewOnly}
         />
     );
 }
