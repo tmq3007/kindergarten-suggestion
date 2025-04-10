@@ -25,7 +25,6 @@ export type RatingStats = {
 export type ReviewDTO ={
     id?: number
     schoolId: number;
-    parentId: number;
     learningProgram: number;
     facilitiesAndUtilities: number;
     extracurricularActivities: number;
@@ -166,9 +165,9 @@ export const reviewApi = createApi({
             providesTags: ["ReviewStats"],
         }),
 
-        getReviewBySchoolAndParent: build.query<ApiResponse<ReviewVO>, { schoolId: number, parentId: number}>({
-            query: ({schoolId, parentId}) => ({
-                url: `/school/review/public/${schoolId}/${parentId}`,
+        getReviewBySchoolAndParent: build.query<ApiResponse<ReviewVO>, { schoolId: number}>({
+            query: ({schoolId}) => ({
+                url: `/school/review/${schoolId}/parent`,
                 method: "GET",
             }),
             providesTags: ["Review"],

@@ -6,7 +6,7 @@ import {
     HomeOutlined,
     LogoutOutlined,
     MenuFoldOutlined,
-    MenuUnfoldOutlined, PaperClipOutlined, TeamOutlined,
+    MenuUnfoldOutlined, PaperClipOutlined, RetweetOutlined, TeamOutlined,
     UsergroupAddOutlined,
     UserOutlined,
     WindowsOutlined,
@@ -266,7 +266,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                 <UserOutlined/>
                             </Link>
                             <Link href="/admin/management/reminder/request-reminder">
-                                <BellOutlined/>
+                                <RetweetOutlined />
                             </Link>
                             <Link href="/admin/management/parent/parent-list">
                                 <UsergroupAddOutlined/>
@@ -274,11 +274,13 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             <Link href="/admin/management/request/request-list">
                                 <WindowsOutlined/>
                             </Link>
-                             <Link href="" onClick={() => setIsModalOpen(true)}>
+                            <NotificationDropdown />
+                             <Link className={"text-red-500"} href="" onClick={() => setIsModalOpen(true)}>
                                 <LogoutOutlined/>
                             </Link>
+
                         </Space>
-                        <Space className="hidden md:flex items-center gap-4">
+                        <Space className="hidden md:flex text-sm items-center gap-4">
                             <NotificationDropdown />
                             <Button
                                 type="text"
