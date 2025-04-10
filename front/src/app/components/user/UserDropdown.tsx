@@ -192,7 +192,7 @@ export default function UserDropdown({username}: UserDropdownProps) {
             {contextHolder}
             <div ref={modalContainerRef}>
                 <Tooltip
-                    title={
+                     title={
                         <Menu
                             items={items}
 
@@ -201,6 +201,9 @@ export default function UserDropdown({username}: UserDropdownProps) {
                     placement="bottomRight"
                      trigger="click"
                     color="white"
+                    overlayInnerStyle={{
+                        width: '230px', // hoặc lớn hơn nếu bạn muốn
+                    }}
                  >
                     <div onClick={() => setIsDropdownVisible(true)}>
                         <Space>
