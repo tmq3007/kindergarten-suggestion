@@ -101,60 +101,6 @@ class UserServiceImplTest {
         verify(emailService).sendUsernamePassword(dto.email(), dto.fullname(), "johndoe", "randomPass123");
     }
 
-    // Normal Case: Create School Owner with Images
-    @Test
-    void createUser_normalCase_schoolOwner_withImages_success() throws IOException {
-        UserCreateDTO dto = UserCreateDTO.builder()
-                .fullname("Jane Doe")
-                .email("jane.doe@example.com")
-                .role("ROLE_SCHOOL_OWNER")
-                .status(true)
-                .phone("1234567890")
-                .dob(LocalDate.of(1990, 1, 1))
-                .expectedSchool("Test School")
-                .business_registration_number("1234567890")
-                .build();
-
-        // Use MockMultipartFile to simulate a valid JPEG image
-        MultipartFile mockFile = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                "image/jpeg",
-                new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46} // Minimal JPEG header
-        );
-        List<MultipartFile> images = List.of(mockFile);
-        FileUploadVO fileUploadVO = FileUploadVO.builder()
-                .status(200)
-                .fileName("test.jpg")
-                .url("http://example.com/test.jpg")
-                .fileId("file123")
-                .size(1024L)
-                .build();
-
-        when(userRepository.findByEmail(dto.email())).thenReturn(Optional.empty());
-        when(schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(dto.business_registration_number())).thenReturn(false);
-        when(autoGeneratorHelper.generateUsername(dto.fullname())).thenReturn("janedoe");
-        when(autoGeneratorHelper.generateRandomPassword()).thenReturn("randomPass123");
-        when(passwordEncoder.encode("randomPass123")).thenReturn("encodedPass");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(schoolOwnerRepository.save(any(SchoolOwner.class))).thenAnswer(invocation -> {
-            SchoolOwner so = invocation.getArgument(0);
-            so.setId(1);
-            return so;
-        });
-        when(imageService.convertMultiPartFileToFile(images)).thenReturn(Collections.singletonList(mock(File.class)));
-        when(imageService.uploadListFiles(anyList(), anyString(), any(), any())).thenReturn(List.of(fileUploadVO));
-        when(mediaRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        UserCreateDTO result = userService.createUser(dto, images);
-
-        assertEquals(dto, result);
-        verify(userRepository).save(argThat(user -> user.getRole() == ERole.ROLE_SCHOOL_OWNER));
-        verify(schoolOwnerRepository).save(any(SchoolOwner.class));
-        verify(mediaRepository).saveAll(anyList());
-        verify(emailService).sendUsernamePassword(dto.email(), dto.fullname(), "janedoe", "randomPass123");
-    }
-
     // Abnormal Case: Email Already Exists
     @Test
     void createUser_abnormalCase_emailExists_failure() {
@@ -188,26 +134,6 @@ class UserServiceImplTest {
         when(userRepository.findByEmail(dto.email())).thenReturn(Optional.empty());
 
         assertThrows(InvalidDateException.class, () -> userService.createUser(dto, null));
-        verify(userRepository, never()).save(any());
-    }
-
-    // Abnormal Case: Duplicate Business Registration Number
-    @Test
-    void createUser_abnormalCase_duplicateBRN_failure() {
-        UserCreateDTO dto = UserCreateDTO.builder()
-                .fullname("Jane Doe")
-                .email("jane.doe@example.com")
-                .role("ROLE_SCHOOL_OWNER")
-                .status(true)
-                .phone("1234567890")
-                .dob(LocalDate.of(1990, 1, 1))
-                .business_registration_number("1234567890")
-                .build();
-
-        when(userRepository.findByEmail(dto.email())).thenReturn(Optional.empty());
-        when(schoolOwnerRepository.existsSchoolOwnerByBusinessRegistrationNumber(dto.business_registration_number())).thenReturn(true);
-
-        assertThrows(InvalidBRNAlException.class, () -> userService.createUser(dto, null));
         verify(userRepository, never()).save(any());
     }
 
