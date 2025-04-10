@@ -42,7 +42,7 @@ export async function middleware(req: NextRequest) {
             }
 
             cookie.set({
-                name: 'FORGOT_PASSWORD_TOKEN',
+                name: 'FORGOT_PASSWORD_TOKEN2',
                 value: forgotPasswordToken,
                 httpOnly: true,
                 secure: true,
@@ -51,7 +51,7 @@ export async function middleware(req: NextRequest) {
                 sameSite: 'none',
             });
             cookie.set({
-                name: 'FORGOT_PASSWORD_USERNAME',
+                name: 'FORGOT_PASSWORD_USERNAME2',
                 value: username,
                 httpOnly: true,
                 secure: true,
