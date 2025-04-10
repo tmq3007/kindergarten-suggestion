@@ -13,7 +13,10 @@ export default function Page() {
             transition={{duration: 1.8, ease: "easeInOut"}}
             className="w-full min-h-[800px] relative"
         >
+            {/*Preload image*/}
+            <img src={background.src} alt="" style={{display: 'none'}}/>
             <div
+                id="school-search"
                 style={{
                     backgroundImage: `url(${background.src})`,
                     backgroundSize: "cover",

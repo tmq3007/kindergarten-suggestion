@@ -2,16 +2,16 @@
 import React, {useEffect, useRef, useState} from 'react';
 import logo from '@public/KSS.png';
 import {
-    BellOutlined,
+    BellOutlined, FolderOpenOutlined,
     HomeOutlined,
     LogoutOutlined,
     MenuFoldOutlined,
-    MenuUnfoldOutlined,
+    MenuUnfoldOutlined, PaperClipOutlined, RetweetOutlined, TeamOutlined,
     UsergroupAddOutlined,
     UserOutlined,
     WindowsOutlined,
 } from '@ant-design/icons';
-import {Button, ConfigProvider, Layout, Menu, message, Modal, Space, theme} from 'antd';
+import {Button, ConfigProvider, Drawer, DrawerProps, Layout, Menu, message, Modal, Space, theme} from 'antd';
 import Image from 'next/image';
 import Link from 'next/link';
 import {useLogoutMutation} from '@/redux/services/authApi';
@@ -36,6 +36,16 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.user);
     const role = user.role;
+    const [open, setOpen] = useState(false);
+    const [placement, setPlacement] = useState<DrawerProps['placement']>('left');
+
+    const showDrawer = () => {
+        setOpen(true);
+    };
+
+    const onClose = () => {
+        setOpen(false);
+    };
 
     let selectedKeys = ['1'];
     if (pathname.startsWith('/admin/management/user/user-list')) {
@@ -62,7 +72,6 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     const {
         token: {colorBgContainer, borderRadiusLG},
     } = theme.useToken();
-
 
     const handleLogout = async () => {
 
@@ -100,6 +109,55 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
     return (
         <div className={'min-h-screen'}>
             {contextHolder}
+            <Button
+                type="primary"
+                onClick={showDrawer}
+                className="md:hidden fixed top-16 -left-6 z-50 pl-8 pr-2 bg-blue-500 text-white rounded-xl"
+            >
+                Menu
+            </Button>
+            <Drawer
+                title="Admin"
+                placement={placement}
+                closable={true}
+                onClose={onClose}
+                open={open}
+                key={placement}
+            >
+                <Menu
+                    className={'w-full !border-0'}
+                    theme="light"
+                    selectedKeys={selectedKeys}
+                    items={[
+                        {
+                            key: '1',
+                            icon: <HomeOutlined/>,
+                            label: <Link href="/admin/management/school/school-list">School
+                                Management</Link>,
+                        },
+                        {
+                            key: '2',
+                            icon: <UserOutlined/>,
+                            label: <Link href="/admin/management/user/user-list">User Management</Link>,
+                        },
+                        {
+                            key: '3',
+                            icon: <BellOutlined/>,
+                            label: <Link href="/admin/management/reminder/request-reminder">Reminder</Link>,
+                        },
+                        {
+                            key: '4',
+                            icon: <UsergroupAddOutlined/>,
+                            label: <Link href="/admin/management/parent/parent-list">Parent Management</Link>,
+                        },
+                        {
+                            key: '5',
+                            icon: <WindowsOutlined/>,
+                            label: <Link href="/admin/management/request/request-list">Request Management</Link>,
+                        },
+                    ]}
+                />
+            </Drawer>
             <Layout className={'min-h-screen'}>
                 <ConfigProvider
                     theme={{
@@ -208,7 +266,7 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                                 <UserOutlined/>
                             </Link>
                             <Link href="/admin/management/reminder/request-reminder">
-                                <BellOutlined/>
+                                <RetweetOutlined />
                             </Link>
                             <Link href="/admin/management/parent/parent-list">
                                 <UsergroupAddOutlined/>
@@ -216,11 +274,13 @@ export default function AdminLayout({children}: { children: React.ReactNode }) {
                             <Link href="/admin/management/request/request-list">
                                 <WindowsOutlined/>
                             </Link>
-                             <Link href="" onClick={() => setIsModalOpen(true)}>
+                            <NotificationDropdown />
+                             <Link className={"text-red-500"} href="" onClick={() => setIsModalOpen(true)}>
                                 <LogoutOutlined/>
                             </Link>
+
                         </Space>
-                        <Space className="hidden md:flex items-center gap-4">
+                        <Space className="hidden md:flex text-sm items-center gap-4">
                             <NotificationDropdown />
                             <Button
                                 type="text"

@@ -59,7 +59,7 @@ export default function SchoolListPage() {
       label: isMobile ? (
           <HomeOutlined className="text-xl" />
       ) : (
-          <span className="font-bold text-lg flex items-center justify-center gap-2">
+          <span className="font-bold flex items-center justify-center gap-2">
                     <HomeOutlined /> All Schools
                 </span>
       ),
@@ -71,7 +71,7 @@ export default function SchoolListPage() {
             <FileTextOutlined className="text-xl" />
           </Badge>
       ) : (
-          <span className="font-bold text-lg flex items-center justify-center gap-2">
+          <span className="font-bold flex items-center justify-center gap-2">
                     <FileTextOutlined /> New School Requests
                     <Badge count={activeCount} overflowCount={99} offset={[10, 0]} />
                 </span>
@@ -84,7 +84,7 @@ export default function SchoolListPage() {
             <ClockCircleOutlined className="text-xl" />
           </Badge>
       ) : (
-          <span className="font-bold text-lg flex items-center justify-center gap-2">
+          <span className="font-bold flex items-center justify-center gap-2">
                     <ClockCircleOutlined /> Change Requests
                     <Badge count={draftCount} overflowCount={99} offset={[10, 0]} />
                 </span>

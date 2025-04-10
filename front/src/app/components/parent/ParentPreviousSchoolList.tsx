@@ -1,7 +1,7 @@
 'use client';
 
-import React, {Suspense, useEffect, useState} from 'react';
-import {useParams, useRouter} from "next/navigation";
+import React, { useEffect, useState} from 'react';
+import { useRouter} from "next/navigation";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {Empty, notification, Pagination} from "antd";
@@ -9,15 +9,15 @@ import {
     ParentInSchoolDetailVO,
     useGetPreviousAcademicHistoryByParentQuery
 } from "@/redux/services/parentApi";
-import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import ParentSchoolInfo from "@/app/components/parent/ParentSchoolInfo";
+import ParentSchoolListSkeleton from "@/app/components/skeleton/ParentSchoolListSkeleton";
 
-
+import RatingsPopupWrapper from "@/app/components/review/ReviewPopupWrapper";
 
 // Component chính của trang
 export default function PreviousSchoolsSection() {
     const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(2);
+    const pageSize = 2;
     const router = useRouter();
 
     const userIdString = useSelector((state: RootState) => state.user?.id);
@@ -33,16 +33,22 @@ export default function PreviousSchoolsSection() {
     }
 
     const openNotificationWithIcon = (type: "success" | "error", message: string, description: string) => {
-        notificationApi[type]({ message, description, placement: "topRight" });
+        notificationApi[type]({message, description, placement: "topRight"});
     };
 
-    const {data, isLoading, isFetching, error} = useGetPreviousAcademicHistoryByParentQuery({page: current, size: pageSize});
+    const {data, isLoading, isFetching, error} = useGetPreviousAcademicHistoryByParentQuery({
+        page: current,
+        size: pageSize
+    });
 
     useEffect(() => {
         if (!data?.data?.content) {
             setSchoolData([]);
             return;
         }
+
+        // Debug dữ liệu từ API
+        console.log(`Page ${current} data:`, data.data.content);
 
         const schools = [...data.data.content].sort(
             (a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime()
@@ -66,7 +72,21 @@ export default function PreviousSchoolsSection() {
 
     const handlePageChange = (page: number, size: number) => {
         setCurrent(page);
-        setPageSize(size);
+    };
+
+    const [selectedSchool, setSelectedSchool] = useState<{
+        schoolId: number;
+        schoolName: string;
+        isUpdate: boolean;
+    } | null>(null);
+
+    const handleOpenModal = (schoolId: number, schoolName: string, isUpdate: boolean) => {
+        setSelectedSchool({schoolId, schoolName, isUpdate });
+    };
+
+
+    const handleCloseModal = () => {
+        setSelectedSchool(null);
     };
 
     return (
@@ -81,14 +101,17 @@ export default function PreviousSchoolsSection() {
                 )}
 
                 {(isLoading || isFetching) ? (
-                    <div>Skeleton</div>
+                    <div className='mb-4'>
+                        <ParentSchoolListSkeleton/>
+                        <ParentSchoolListSkeleton/>
+                    </div>
                 ) : (
                     <>
                         {schoolData.length ? (
                             <>
-                                {schoolData.map((pis) => (
-                                    <div key={pis.id} className="w-full mb-4 transition-shadow">
-                                        <ParentSchoolInfo pis={pis} isCurrent={false}/>
+                                {schoolData.map((pis, index) => (
+                                    <div key={`${pis.id}-${current}-${index}`} className="w-full mb-4 transition-shadow">
+                                        <ParentSchoolInfo onOpenModalAction={handleOpenModal} onCloseModalAction={handleCloseModal} pis={pis} isCurrent={false}/>
                                     </div>
                                 ))}
 
@@ -102,9 +125,18 @@ export default function PreviousSchoolsSection() {
                                         className="mb-5"
                                     />
                                 </div>
+                                {selectedSchool && (
+                                    <RatingsPopupWrapper
+                                        schoolId={selectedSchool.schoolId}
+                                        schoolName={selectedSchool.schoolName}
+                                        isUpdate={selectedSchool.isUpdate}
+                                        isOpen={!!selectedSchool}
+                                        onCloseAction={handleCloseModal}
+                                    />
+                                )}
                             </>
                         ) : (
-                            <Empty className="mt-10" description="No schools found" />
+                            <Empty className="mt-10" description="No schools found"/>
                         )}
                     </>
                 )}

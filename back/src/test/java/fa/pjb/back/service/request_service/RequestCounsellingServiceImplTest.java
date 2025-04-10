@@ -1,7 +1,6 @@
-package fa.pjb.back.service.impl;
+package fa.pjb.back.service.request_service;
 
 import fa.pjb.back.common.exception._10xx_user.UserNotFoundException;
-import fa.pjb.back.common.exception._12xx_auth.AuthenticationFailedException;
 import fa.pjb.back.common.exception._13xx_school.SchoolNotFoundException;
 import fa.pjb.back.model.dto.RequestCounsellingDTO;
 import fa.pjb.back.model.entity.*;
@@ -10,20 +9,15 @@ import fa.pjb.back.model.vo.RequestCounsellingVO;
 import fa.pjb.back.repository.ParentRepository;
 import fa.pjb.back.repository.RequestCounsellingRepository;
 import fa.pjb.back.repository.SchoolRepository;
+import fa.pjb.back.service.impl.RequestCounsellingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;

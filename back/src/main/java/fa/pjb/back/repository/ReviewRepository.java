@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +29,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "ORDER BY r.receiveDate DESC")
     List<Review> findAllBySchoolIdWithDateRangeAdmin(
             @Param("schoolId") Integer schoolId,
-            @Param("fromDate") LocalDate fromDate,
-            @Param("toDate") LocalDate toDate,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
             @Param("status") Byte status);
 
     @Query("SELECT r FROM Review r " +
@@ -44,8 +45,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "ORDER BY r.receiveDate DESC")
     List<Review> findAllBySchoolIdWithDateRangeSO(
             @Param("schoolId") Integer schoolId,
-            @Param("fromDate") LocalDate fromDate,
-            @Param("toDate") LocalDate toDate,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
             @Param("status") Byte status);
 
     @Query("SELECT r FROM Review r " +

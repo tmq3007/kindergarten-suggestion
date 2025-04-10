@@ -128,6 +128,7 @@ export type SchoolVO = {
     schoolOwners?: SchoolOwnerVO[];
     refId: number;
 };
+
 export type ExpectedSchool = {
     expectedSchool: string
     BRN?: string
@@ -183,12 +184,12 @@ export interface SchoolCreateDTO extends SchoolDTO {
 
 }
 
-
 export const schoolApi = createApi({
     reducerPath: "schoolApi",
     baseQuery: baseQueryWithReauth,
     tagTypes: ["School", "SchoolList",'SchoolDetails'],
     endpoints: (build) => ({
+
         // Get school list
         getSchoolList: build.query<
             ApiResponse<{ content: SchoolVO[]; page: Pageable }>,
@@ -258,8 +259,6 @@ export const schoolApi = createApi({
                 method: "POST",
             }),
         }),
-
-
 
         addSchool: build.mutation<ApiResponse<SchoolDetailVO>, SchoolCreateDTO>({
             query: (schoolDTO) => {
@@ -366,7 +365,7 @@ export const schoolApi = createApi({
                 method: 'GET',
             }),
         }),
-// ver 1.0
+
         searchByCriteria: build.query<ApiResponse<Page<SchoolVO>>, SchoolSearchDTO>({
             query: (schoolSearchDetail) => {
                 const params = new URLSearchParams();
@@ -401,6 +400,7 @@ export const schoolApi = createApi({
                     ]
                     : [{type: 'SchoolList', id: 'SEARCH'}],
         }),
+
         getActiveSchoolsWithoutRefId: build.query<
             ApiResponse<Page<SchoolVO>>,
             {
@@ -430,6 +430,7 @@ export const schoolApi = createApi({
             }),
             providesTags: ["SchoolList"],
         }),
+
         getAllDrafts: build.query<
             ApiResponse<Page<SchoolVO>>,
             { page?: number; size?: number; name?: string; district?: string; email?: string; phone?: string }
@@ -448,6 +449,7 @@ export const schoolApi = createApi({
             }),
             providesTags: ["SchoolList"],
         }),
+
         countActiveSchoolsWithoutRefId: build.query<ApiResponse<number>, void>({
             query: () => ({
                 url: `/school/count/active-no-ref`,
@@ -495,8 +497,8 @@ export const {
     useIsDraftQuery,
     useGetActiveSchoolsWithoutRefIdQuery,
     useGetAllDraftsQuery,
-    useCountActiveSchoolsWithoutRefIdQuery,
-    useCountAllDraftsQuery,
+    useCountActiveSchoolsWithoutRefIdQuery, //Admin (New Request)
+    useCountAllDraftsQuery,//Admin (new change request)
     useLazySearchByCriteriaQuery,
     useLoadSchoolDetailsQuery
 } = schoolApi;

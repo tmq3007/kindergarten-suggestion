@@ -106,6 +106,7 @@ public class UserController {
                 .build();
     }
 
+    @Operation(summary = "Check phone exist", description = "Check phone exist")
     @GetMapping("/check-phone-exist")
     public ApiResponse<Boolean> checkPhoneExist(@RequestParam String phone) {
         return ApiResponse.<Boolean>builder()
@@ -114,6 +115,7 @@ public class UserController {
                 .data(userService.checkPhoneExist(phone)).build();
     }
 
+    @Operation(summary = "Check phone exist except", description = "Check phone exist except")
     @GetMapping("/check-phone-exist-except")
     public ApiResponse<Boolean> checkPhoneExistExcept(@RequestParam String phone, @RequestParam Integer userId) {
         log.info("phone: {}, userId: {}", phone, userId);
@@ -123,7 +125,7 @@ public class UserController {
                 .data(userService.checkPhoneExistExcept(phone, userId)).build();
     }
 
-    @GetMapping("/check-email-exist-except")
+     @GetMapping("/check-email-exist-except")
     public ApiResponse<Boolean> checkEmailExistExcept(@RequestParam String email, @RequestParam Integer userId) {
         log.info("email: {}, userId: {}", email, userId);
         return ApiResponse.<Boolean>builder()

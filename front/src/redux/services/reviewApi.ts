@@ -22,11 +22,9 @@ export type RatingStats = {
     };
 }
 
-
 export type ReviewDTO ={
     id?: number
     schoolId: number;
-    parentId: number;
     learningProgram: number;
     facilitiesAndUtilities: number;
     extracurricularActivities: number;
@@ -82,6 +80,7 @@ export const reviewApi = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ['Review','ReviewStats'],
     endpoints: (build) => ({
+
         getReviewBySchoolId: build.query<ApiResponse<ReviewVO[]>, ReviewRequest>({
             query: ({schoolId, fromDate, toDate, status}) => {
                 const params = new URLSearchParams();
@@ -166,9 +165,9 @@ export const reviewApi = createApi({
             providesTags: ["ReviewStats"],
         }),
 
-        getReviewBySchoolAndParent: build.query<ApiResponse<ReviewVO>, { schoolId: number, parentId: number}>({
-            query: ({schoolId, parentId}) => ({
-                url: `/school/review/public/${schoolId}/${parentId}`,
+        getReviewBySchoolAndParent: build.query<ApiResponse<ReviewVO>, { schoolId: number}>({
+            query: ({schoolId}) => ({
+                url: `/school/review/${schoolId}/parent`,
                 method: "GET",
             }),
             providesTags: ["Review"],
@@ -182,6 +181,7 @@ export const reviewApi = createApi({
             }),
             invalidatesTags: ["Review","ReviewStats"],
         }),
+
     }),
 });
 

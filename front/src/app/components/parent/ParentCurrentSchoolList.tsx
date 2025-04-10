@@ -1,19 +1,21 @@
 'use client';
 
-import React, {Suspense, useEffect, useState} from 'react';
-import {useParams, useRouter} from "next/navigation";
+import React, { useEffect, useState} from 'react';
+import { useRouter} from "next/navigation";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {Empty, notification, Pagination} from "antd";
 import {ParentInSchoolDetailVO, useGetPresentAcademicHistoryByParentQuery} from "@/redux/services/parentApi";
 import ParentSchoolInfo from "@/app/components/parent/ParentSchoolInfo";
+import ParentSchoolListSkeleton from "@/app/components/skeleton/ParentSchoolListSkeleton";
+import RatingsPopupWrapper from "@/app/components/review/ReviewPopupWrapper";
 
 
 
 // Component chính của trang
 export default function CurrentSchoolsSection() {
     const [current, setCurrent] = useState(1);
-    const [pageSize, setPageSize] = useState(2);
+    const pageSize = 2;
     const router = useRouter();
 
     const userIdString = useSelector((state: RootState) => state.user?.id);
@@ -58,11 +60,26 @@ export default function CurrentSchoolsSection() {
         }
     }, [error, router]);
 
+
     const totalElements = data?.data?.page.totalElements || 0;
 
     const handlePageChange = (page: number, size: number) => {
         setCurrent(page);
-        setPageSize(size);
+    };
+
+    const [selectedSchool, setSelectedSchool] = useState<{
+        schoolId: number;
+        schoolName: string;
+        isUpdate: boolean;
+    } | null>(null);
+
+    const handleOpenModal = (schoolId: number, schoolName: string, isUpdate: boolean) => {
+        setSelectedSchool({ schoolId, schoolName, isUpdate });
+    };
+
+
+    const handleCloseModal = () => {
+        setSelectedSchool(null);
     };
 
     return (
@@ -71,14 +88,18 @@ export default function CurrentSchoolsSection() {
             <div className="">
 
                 {(isLoading || isFetching) ? (
-                    <div>Skeleton</div>
+                    <div className='mb-4'>
+                        <ParentSchoolListSkeleton/>
+                        <ParentSchoolListSkeleton/>
+                    </div>
                 ) : (
                     <>
                         {schoolData.length ? (
                             <>
-                                {schoolData.map((pis) => (
-                                    <div key={pis.id} className="w-full mb-4 transition-shadow">
-                                        <ParentSchoolInfo pis={pis} isCurrent={true} />
+                                {schoolData.map((pis,index) => (
+                                    <div key={`${pis.id}-${current}-${index}`} className="w-full mb-4 transition-shadow">
+                                        <ParentSchoolInfo pis={pis} isCurrent={true} onCloseModalAction={handleCloseModal}
+                                                          onOpenModalAction={handleOpenModal}/>
                                     </div>
                                 ))}
 
@@ -92,6 +113,15 @@ export default function CurrentSchoolsSection() {
                                         className="mb-5"
                                     />
                                 </div>
+                                {selectedSchool && (
+                                    <RatingsPopupWrapper
+                                        schoolId={selectedSchool.schoolId}
+                                        schoolName={selectedSchool.schoolName}
+                                        isUpdate={selectedSchool.isUpdate}
+                                        isOpen={!!selectedSchool}
+                                        onCloseAction={handleCloseModal}
+                                    />
+                                )}
                             </>
                         ) : (
                             <Empty className="mt-10" description="No schools found" />
@@ -100,6 +130,7 @@ export default function CurrentSchoolsSection() {
                 )}
 
             </div>
+
         </>
     );
 }

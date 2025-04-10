@@ -9,8 +9,6 @@ public record ReviewDTO(
         @NotNull
         Integer schoolId,
         @NotNull
-        Integer parentId,
-        @NotNull
         Byte learningProgram,
         @NotNull
         Byte facilitiesAndUtilities,
