@@ -1,12 +1,12 @@
 "use client";
 
 import React, { FunctionComponent } from "react";
-import SchoolDetails from "@/app/components/school/SchoolDetails";
 import { SchoolDetailVO, useLoadSchoolDetailsQuery } from "@/redux/services/schoolApi";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import { useParams } from "next/navigation";
 import ErrorComponent from "@/app/components/common/ErrorComponent";
-import { Skeleton, Row, Col } from "antd"; // Import Skeleton from antd
+import { Skeleton, Row, Col } from "antd";
+import SchoolDetails from "@/app/components/school/SchoolDetail"; // Import Skeleton from antd
 
 const SchoolDetailPage: FunctionComponent = () => {
     const params = useParams();

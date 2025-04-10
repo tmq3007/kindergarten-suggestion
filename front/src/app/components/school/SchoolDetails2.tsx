@@ -12,7 +12,8 @@ import {
     Button,
     Modal,
     Space,
-    notification, message
+    notification,
+    message,
 } from "antd";
 import {
     EnvironmentOutlined,
@@ -23,7 +24,9 @@ import {
     CalendarOutlined,
     BankOutlined,
     BookOutlined,
-    ToolOutlined, CommentOutlined, PaperClipOutlined,
+    ToolOutlined,
+    CommentOutlined,
+    PaperClipOutlined,
 } from "@ant-design/icons";
 import {SchoolDetailVO} from "@/redux/services/schoolApi";
 import {
@@ -31,7 +34,7 @@ import {
     EDUCATION_METHOD_OPTIONS,
     FACILITY_OPTIONS,
     SCHOOL_TYPE_OPTIONS,
-    UTILITY_OPTIONS
+    UTILITY_OPTIONS,
 } from "@/lib/constants";
 import SchoolImageCarousel from "@/app/components/common/SchoolImageCarousel";
 import CommentSection from "@/app/components/review/CommentSection";
@@ -44,14 +47,13 @@ import {useRequestEnrollingSchoolMutation} from "@/redux/services/parentApi";
 import useNotification from "antd/es/notification/useNotification";
 import ParentLoginForm from "@/app/components/user/ParentLoginForm";
 import RegisterForm from "@/app/components/user/RegisterForm";
+import RateButton from "@/app/components/review/RateButton";
 
 interface SchoolDetailsProps {
     schoolData: SchoolDetailVO;
 }
 
-const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
-                                                                  schoolData
-                                                              }) => {
+const SchoolDetails2: FunctionComponent<SchoolDetailsProps> = ({schoolData}) => {
     const {
         id,
         name,
@@ -100,7 +102,7 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
             setIsLoginModalOpen(true);
             setIsModalOpen(false);
         }
-     };
+    };
 
     const handleCancel = () => {
         setIsModalOpen(false);
@@ -167,11 +169,9 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
         margin-right: 4px !important;
     }
     .ant-tabs-tab-active {
-    background: #f0f7ff !important;
-    border-bottom: none !important;
-    z-index: 2;
+        border-bottom: none !important;
+        z-index: 2;
     }
-
     .ant-tabs-content-holder {
         border: 1px solid #002F77;
         border-top: none;
@@ -186,8 +186,22 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
         height: 1px;
         background-color: #002F77;
         z-index: 1;
-    }`;
-    // Fetch reviews using the API query
+    }
+    /* Button Group */
+    .button-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+    @media (max-width: 767px) {
+        .button-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+    `;
+
     const {data, error, isLoading} = useGetReviewBySchoolForPublicQuery({
         schoolId: id,
         page: 1,
@@ -195,118 +209,106 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
     });
 
     const reviews: ReviewVO[] = data?.data?.content || [];
-
-    // Map facility and utility IDs from schoolData to their options
     const facilityIds = facilities.map((f) => String(f.fid));
     const utilityIds = utilities.map((u) => String(u.uid));
-     const isMobile = useIsMobile();
-    // Define tab items
+    const isMobile = useIsMobile();
+
     const tabItems = [
-            {
-                key: "1",
-                label: "School Introduction",
-                icon: <PaperClipOutlined/>,
-                children: (
-
-                    <Col xs={24} className={'!p-0'}>
-                        <Row gutter={[0, 0]} justify="space-between">
-                            {/* Left Column: Basic Information */}
-                            <Col xs={24} lg={16} className="flex">
-                                <Card className="w-full border-0 bg-white">
-                                    <div
-                                        className="text-gray-800"
-                                        dangerouslySetInnerHTML={{__html: description || "N/A"}}
-                                    />
-                                </Card>
-                            </Col>
-
-                            {/* Right Column: Facilities & Utilities */}
-                            <Col xs={24} lg={8} className="flex">
-                                <Card
-                                    className="w-full border-l-0 lg:border-l border-t-1 lg:border-t-0 border-r-0 border-b-0 rounded-t-none rounded-bl-none bg-white p-6"
-                                >
-                                    <div className="space-y-8">
-                                        <div>
-                                                <span className="flex items-center text-2xl font-bold mb-4">
-                                                    <BookOutlined className="mr-2"/>
-                                                    Facilities
-                                                </span>
-                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                                                {FACILITY_OPTIONS.map((option, index) => {
-                                                    const isPresent = facilityIds.includes(option.value);
-                                                    return (
-                                                        <li
-                                                            key={index}
-                                                            className={`facility-item ${isPresent ? "facility-present" : "facility-absent"} ml-4 md:ml-0`}
-                                                        >
-                                                            <span className="mr-2">{option.icon}</span>
-                                                            {option.label}
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
-                                        </div>
-                                        <div>
-                                                <span className="flex items-center text-2xl font-bold mb-4">
-                                                    <ToolOutlined className="mr-2"/>
-                                                    Utilities
-                                                </span>
-                                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                                                {UTILITY_OPTIONS.map((option, index) => {
-                                                    const isPresent = utilityIds.includes(option.value);
-                                                    return (
-                                                        <li
-                                                            key={index}
-                                                            className={`utility-item ${isPresent ? "utility-present" : "utility-absent"} ml-4 md:ml-0`}
-                                                        >
-                                                            <span className="mr-2">{option.icon}</span>
-                                                            {option.label}
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Col>
-                ),
-            },
-            {
-                key: "2",
-                label:
-                    "Comments",
-                icon:
-                    <CommentOutlined/>,
-                children:
-                    (
-                        <Card className="w-full sha dow-lg border-none bg-white lg:p-6 md:p-0">
-                            {isLoading ? (
-                                <Spin tip="Loading reviews..."/>
-                            ) : error ? (
-                                <Alert
-                                    message="Error"
-                                    description="Failed to load reviews. Please try again later."
-                                    type="error"
-                                    showIcon
+        {
+            key: "1",
+            label: "School Introduction",
+            icon: <PaperClipOutlined/>,
+            children: (
+                <Col xs={24} className="!p-0">
+                    <Row gutter={[0, 0]} justify="space-between">
+                        <Col xs={24} lg={16} className="flex">
+                            <Card className="w-full border-0 bg-white shadow-md">
+                                <div
+                                    className="text-gray-800"
+                                    dangerouslySetInnerHTML={{__html: description || "N/A"}}
                                 />
-                            ) : (
-                                <CommentSection reviews={reviews} schoolId={id}/>
-                            )}
-                        </Card>
-                    ),
-            }
-            ,
-        ]
-    ;
+                            </Card>
+                        </Col>
+                        <Col xs={24} lg={8} className="flex">
+                            <Card
+                                className="w-full border-l-0 lg:border-l border-t-1 lg:border-t-0 border-r-0 border-b-0 rounded-t-none rounded-bl-none bg-white shadow-md p-6"
+                            >
+                                <div className="space-y-8">
+                                    <div>
+                                        <span className="flex items-center text-2xl font-bold mb-4">
+                                            <BookOutlined className="mr-2"/>
+                                            Facilities
+                                        </span>
+                                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                                            {FACILITY_OPTIONS.map((option, index) => {
+                                                const isPresent = facilityIds.includes(option.value);
+                                                return (
+                                                    <li
+                                                        key={index}
+                                                        className={`facility-item ${isPresent ? "facility-present" : "facility-absent"} ml-4 md:ml-0`}
+                                                    >
+                                                        <span className="mr-2">{option.icon}</span>
+                                                        {option.label}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <span className="flex items-center text-2xl font-bold mb-4">
+                                            <ToolOutlined className="mr-2"/>
+                                            Utilities
+                                        </span>
+                                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                                            {UTILITY_OPTIONS.map((option, index) => {
+                                                const isPresent = utilityIds.includes(option.value);
+                                                return (
+                                                    <li
+                                                        key={index}
+                                                        className={`utility-item ${isPresent ? "utility-present" : "utility-absent"} ml-4 md:ml-0`}
+                                                    >
+                                                        <span className="mr-2">{option.icon}</span>
+                                                        {option.label}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </Card>
+                        </Col>
+                    </Row>
+                </Col>
+            ),
+        },
+        {
+            key: "2",
+            label: "Comments",
+            icon: <CommentOutlined/>,
+            children: (
+                <Card className="w-full shadow-md border bg-white lg:p-6 md:p-0">
+                    {isLoading ? (
+                        <Spin tip="Loading reviews..."/>
+                    ) : error ? (
+                        <Alert
+                            message="Error"
+                            description="Failed to load reviews. Please try again later."
+                            type="error"
+                            showIcon
+                        />
+                    ) : (
+                        <CommentSection reviews={reviews} schoolId={id}/>
+                    )}
+                </Card>
+            ),
+        },
+    ];
 
     return (
         <>
             {contextHolder}
             <div className="w-full flex justify-center mb-8">
                 <Row gutter={[24, 24]} justify="center">
-                    {/* Section 1: School Images */}
                     <style>{styles}</style>
                     <Col xs={24}>
                         <SchoolImageCarousel imageList={imageList}/>
@@ -314,78 +316,19 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
 
                     <Col xs={24} className="flex justify-center">
                         <Row gutter={[24, 24]} justify="center" className="w-full">
-                            {/* Section 2: Basic Information and Facilities & Utilities */}
-                            <Card className="w-full border-custom-700 bg-white px-4 py-0 rounded-lg">
-                                {/* Header: Title + Action Buttons */}
+                            <Card className="w-full border-custom-700 bg-white shadow-md px-4 py-0 rounded-lg">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                                     <h2 className="text-4xl font-bold text-black">{name || "Unknown School"}</h2>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="button-group">
                                         <AddRequestModal schoolId={id} schoolName={name}/>
-                                        <Button  >Rate School</Button>
-                                        <Button danger onClick={showModal} >
+                                        <RateButton schoolId={id}/>
+                                        <Button danger onClick={showModal} size="large">
                                             Enroll
                                         </Button>
-                                        <Modal
-                                            title={<span
-                                                className={'text-2xl'}>Do you want to enroll into this school</span>}
-                                            open={isModalOpen}
-                                            onOk={handleOk}
-                                            onCancel={handleCancel}
-                                            confirmLoading={isRequestEnrollingSchoolLoading}
-                                            getContainer={false}
-                                        >
-                                            <Space>
-                                                <span className={'font-medium'}>School name:</span>
-                                                <span>{name}</span>
-                                            </Space>
-                                            <Space>
-                                                <span className={'font-medium'}>School address:</span>
-                                                <span>{[street, ward, district, province].filter(Boolean).join(", ") || "N/A"}</span>
-                                            </Space>
-                                        </Modal>
-                                        <Modal
-                                            title={<div className="text-center text-2xl">Login into your account</div>}
-                                            open={isLoginModalOpen}
-                                            onOk={() => setIsLoginModalOpen(false)}
-                                            onCancel={() => setIsLoginModalOpen(false)}
-                                            centered
-                                            footer={null}
-                                            destroyOnClose={true}
-                                            getContainer={false}
-                                        >
-                                            <ParentLoginForm
-                                                onSuccess={() => setIsLoginModalOpen(false)}
-                                                onCancel={() => {
-                                                    setIsLoginModalOpen(false);
-                                                    setIsSignupModalOpen(true);
-                                                }}
-                                            />
-                                        </Modal>
-
-                                        <Modal
-                                            title={<div className="text-center text-2xl">Create a new user</div>}
-                                            open={isSignupModalOpen}
-                                            onOk={() => setIsSignupModalOpen(false)}
-                                            onCancel={() => setIsSignupModalOpen(false)}
-                                            centered
-                                            footer={null}
-                                            destroyOnClose={true}
-                                            getContainer={false}
-                                        >
-                                            <RegisterForm
-                                                onSuccess={() => {
-                                                    setIsLoginModalOpen(true);
-                                                    setIsSignupModalOpen(false);
-                                                }}
-                                                onCancel={() => setIsSignupModalOpen(false)}
-                                            />
-                                        </Modal>
                                     </div>
                                 </div>
 
-                                {/* Info Rows */}
-                                <Row gutter={[16, 16]}>
-                                    {/* Address */}
+                                <Row gutter={[16, 16]} className="text-3xl">
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -397,8 +340,6 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             </Col>
                                         </Row>
                                     </Col>
-
-                                    {/* Email */}
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -408,8 +349,6 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             <Col xs={24} md={18} className="text-gray-700">{email || "N/A"}</Col>
                                         </Row>
                                     </Col>
-
-                                    {/* Contact */}
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -419,8 +358,6 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             <Col xs={24} md={18} className="text-gray-700">{phone || "N/A"}</Col>
                                         </Row>
                                     </Col>
-
-                                    {/* Website */}
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -439,8 +376,6 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             </Col>
                                         </Row>
                                     </Col>
-
-                                    {/* Tuition Fee */}
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -453,8 +388,6 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             </Col>
                                         </Row>
                                     </Col>
-
-                                    {/* Admission Age */}
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -466,8 +399,6 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             </Col>
                                         </Row>
                                     </Col>
-
-                                    {/* School Type */}
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -479,8 +410,6 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                             </Col>
                                         </Row>
                                     </Col>
-
-                                    {/* Education Method */}
                                     <Col span={24}>
                                         <Row>
                                             <Col xs={24} md={6} className="font-semibold flex items-center gap-2">
@@ -495,14 +424,12 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                 </Row>
                             </Card>
 
-
-                            {/* Section 3: School Introduction and Comments with Tabs outside Card */}
-                            <Col xs={24} className={'!p-0 mt-5'}>
+                            <Col xs={24} className="!p-0 mt-5">
                                 <ConfigProvider
                                     theme={{
                                         token: {
-                                            colorBorderSecondary: '#002F77',
-                                        }
+                                            colorBorderSecondary: "#002F77",
+                                        },
                                     }}
                                 >
                                     <Tabs
@@ -513,14 +440,67 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                         items={tabItems}
                                     />
                                 </ConfigProvider>
-
                             </Col>
                         </Row>
                     </Col>
                 </Row>
             </div>
+
+            <Modal
+                title={<span className="text-2xl">Do you want to enroll into this school</span>}
+                open={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}
+                confirmLoading={isRequestEnrollingSchoolLoading}
+                getContainer={false}
+            >
+                <Space>
+                    <span className="font-medium">School name:</span>
+                    <span>{name}</span>
+                </Space>
+                <Space>
+                    <span className="font-medium">School address:</span>
+                    <span>{[street, ward, district, province].filter(Boolean).join(", ") || "N/A"}</span>
+                </Space>
+            </Modal>
+            <Modal
+                title={<div className="text-center text-2xl">Login into your account</div>}
+                open={isLoginModalOpen}
+                onOk={() => setIsLoginModalOpen(false)}
+                onCancel={() => setIsLoginModalOpen(false)}
+                centered
+                footer={null}
+                destroyOnClose={true}
+                getContainer={false}
+            >
+                <ParentLoginForm
+                    onSuccess={() => setIsLoginModalOpen(false)}
+                    onCancel={() => {
+                        setIsLoginModalOpen(false);
+                        setIsSignupModalOpen(true);
+                    }}
+                />
+            </Modal>
+            <Modal
+                title={<div className="text-center text-2xl">Create a new user</div>}
+                open={isSignupModalOpen}
+                onOk={() => setIsSignupModalOpen(false)}
+                onCancel={() => setIsSignupModalOpen(false)}
+                centered
+                footer={null}
+                destroyOnClose={true}
+                getContainer={false}
+            >
+                <RegisterForm
+                    onSuccess={() => {
+                        setIsLoginModalOpen(true);
+                        setIsSignupModalOpen(false);
+                    }}
+                    onCancel={() => setIsSignupModalOpen(false)}
+                />
+            </Modal>
         </>
     );
 };
 
-export default SchoolDetails;
+export default SchoolDetails2;

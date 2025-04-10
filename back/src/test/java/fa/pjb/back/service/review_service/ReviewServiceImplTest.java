@@ -74,7 +74,7 @@ class ReviewServiceImplTest {
                 .hygieneAndNutrition((byte) 5)
                 .feedback("Great school!")
                 .status(EReviewStatus.APPROVED.getValue())
-                .receiveDate(LocalDate.of(2025, 3, 1))
+//                .receiveDate(LocalDate.of(2025, 3, 1))
                 .build();
 
         testReviewVO = ReviewVO.builder()
@@ -89,7 +89,7 @@ class ReviewServiceImplTest {
                 .hygieneAndNutrition((byte) 5)
                 .feedback("Great school!")
                 .status(EReviewStatus.APPROVED.getValue())
-                .receiveDate(LocalDate.of(2025, 3, 1))
+//                .receiveDate(LocalDate.of(2025, 3, 1))
                 .build();
     }
     // Normal Case

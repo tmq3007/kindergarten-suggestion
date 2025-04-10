@@ -136,4 +136,19 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "FROM Review r WHERE r.school.id = :schoolId")
     List<Object[]> getReviewStatisticsBySchoolId(@Param("schoolId") Integer schoolId);
 
+
+    @Query("SELECT CASE " +
+            "WHEN (r IS NOT NULL AND pis IS NOT NULL AND (pis.status = 1 OR pis.to >= :thirtyDaysAgo)) THEN 'update' " +
+            "WHEN (r IS NULL AND pis IS NOT NULL AND (pis.status = 1 OR pis.to >= :thirtyDaysAgo)) THEN 'add' " +
+            "WHEN (r IS NOT NULL AND (pis IS NULL OR (pis.status = 0 AND pis.to < :thirtyDaysAgo))) THEN 'view' " +
+            "ELSE 'hidden' " +
+            "END " +
+            "FROM ParentInSchool pis " +
+            "LEFT JOIN Review r " +
+            "ON pis.parent.id = r.parent.id AND pis.school.id = r.school.id AND pis.status = 1 " +
+            "WHERE (pis.school.id = :schoolId AND pis.parent.id = :parentId) " +
+            "OR (r.school.id = :schoolId AND r.parent.id = :parentId)")
+    String determineReviewPermission(@Param("schoolId") Integer schoolId,
+                                     @Param("parentId") Integer parentId,
+                                     @Param("thirtyDaysAgo") LocalDate thirtyDaysAgo);
 }

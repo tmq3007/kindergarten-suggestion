@@ -64,6 +64,16 @@ public class ReviewController {
                 .build();
     }
 
+    @Operation(summary = "Get reviews permission ", description = "Get review permission of school for public school details")
+    @GetMapping("/permission")
+    public ApiResponse<String> getReviewPermission(@RequestParam Integer schoolId) {
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message("Review permission retrieved successfully")
+                .data(reviewService.checkReviewPermission(schoolId))
+                .build();
+    }
+
     @Operation(summary = "Get reviews list by school public", description = "Get reviews list of school for public school details")
     @GetMapping("/public/{schoolId}")
     public ApiResponse<Page<ReviewVO>> getReviewsPublic(

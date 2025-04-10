@@ -1,0 +1,59 @@
+@startuml
+actor Parent
+participant "ReviewDTO" as DTO
+participant "ReviewController" as Controller
+participant "ReviewService" as Service
+participant "SchoolRepository" as SchoolRepo
+participant "UserService" as UserSvc
+participant "ReviewRepository" as ReviewRepo
+participant "ReviewMapper" as Mapper
+
+Parent -> Controller: POST /save (ReviewDTO)
+activate Controller
+Controller -> DTO: validate()
+activate DTO
+alt Validation Succeeds
+  DTO --> Controller: Validation passed
+else Validation Fails
+  DTO --> Controller: MethodArgumentNotValidException
+deactivate DTO
+  Controller --> Parent: Error Response (400)
+end alt
+
+Controller -> Service: saveReview(reviewData)
+activate Service
+
+alt reviewData.id() == null [Add Review]
+  Service -> SchoolRepo: findById(schoolId)
+  activate SchoolRepo
+  SchoolRepo --> Service: School
+  deactivate SchoolRepo
+  Service -> UserSvc: getCurrentUser()
+  activate UserSvc
+  UserSvc --> Service: Parent
+  deactivate UserSvc
+  Service -> ReviewRepo: save(new Review)
+  activate ReviewRepo
+  ReviewRepo --> Service: Saved Review
+  deactivate ReviewRepo
+else reviewData.id() != null [Update Review]
+  Service -> ReviewRepo: findByReviewId(id)
+  activate ReviewRepo
+  ReviewRepo --> Service: Existing Review
+  deactivate ReviewRepo
+  Service -> ReviewRepo: save(updated Review)
+  activate ReviewRepo
+  ReviewRepo --> Service: Updated Review
+  deactivate ReviewRepo
+end alt
+
+Service -> Mapper: toReviewVO(Review)
+activate Mapper
+Mapper --> Service: ReviewVO
+deactivate Mapper
+Service --> Controller: ReviewVO
+deactivate Service
+Controller --> Parent: ApiResponse<ReviewVO>
+deactivate Controller
+
+@enduml

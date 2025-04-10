@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +55,7 @@ class ReviewControllerTest {
         List<ReviewVO> reviews = Arrays.asList(
                 new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
                         (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5,
-                        "Great school", LocalDate.now(), null, (byte) 0)
+                        "Great school", LocalDateTime.now(), null, (byte) 0)
         );
 
         when(reviewService.getAllReviewByAdmin(eq(100), any(), any(), any()))
@@ -107,10 +108,10 @@ class ReviewControllerTest {
         List<ReviewVO> reviews = Arrays.asList(
                 new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
                         (byte) 5, (byte) 5, (byte) 5, (byte) 5, (byte) 5,
-                        "Excellent", LocalDate.now(), null, (byte) 0),
+                        "Excellent", LocalDateTime.now(), null, (byte) 0),
                 new ReviewVO(2, 101, "School B", 201, "Parent B", "imageB.jpg",
                         (byte) 5, (byte) 5, (byte) 5, (byte) 5, (byte) 5,
-                        "Perfect", LocalDate.now(), null, (byte) 0)
+                        "Perfect", LocalDateTime.now(), null, (byte) 0)
         );
 
         when(reviewService.getTop4RecentFiveStarFeedbacks()).thenReturn(reviews);
@@ -142,7 +143,7 @@ class ReviewControllerTest {
         ReviewReportDTO reportDTO = new ReviewReportDTO(1, "Inappropriate content");
         ReviewVO reportedReview = new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
                 (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5,
-                "Great school", LocalDate.now(), "Inappropriate content", (byte) 1);
+                "Great school", LocalDateTime.now(), "Inappropriate content", (byte) 1);
 
         when(reviewService.makeReport(any(ReviewReportDTO.class))).thenReturn(reportedReview);
 
@@ -173,7 +174,7 @@ class ReviewControllerTest {
         ReviewAcceptDenyDTO decisionDTO = new ReviewAcceptDenyDTO(1, true);
         ReviewVO updatedReview = new ReviewVO(1, 100, "School A", 200, "Parent A", "imageA.jpg",
                 (byte) 5, (byte) 4, (byte) 5, (byte) 4, (byte) 5,
-                "Great school", LocalDate.now(), "Inappropriate content", (byte) 2);
+                "Great school", LocalDateTime.now(), "Inappropriate content", (byte) 2);
 
         when(reviewService.acceptReport(any(ReviewAcceptDenyDTO.class))).thenReturn(updatedReview);
 
