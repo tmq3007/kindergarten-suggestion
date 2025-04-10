@@ -178,6 +178,7 @@ const NotificationTooltip = () => {
             title={isSchoolOwner ? schoolOwnerTooltipContent : isAdmin ? adminTooltipContent : null}
             placement="bottomRight"
             color="white"
+            trigger="click"
             overlayInnerStyle={{ color: '#000' }}
             className="z-0"
         >
@@ -201,9 +202,9 @@ const NotificationTooltip = () => {
                     className="mr-3"
                 >
                     {isAdmin ? (
-                        <BellOutlined className="text-2xl text-black" />
+                        <BellOutlined className="text-sm md:text-lg text-black" />
                     ) : (
-                        <BellFilled className="text-2xl text-white" />
+                        <BellFilled className="text-sm md:text-lg text-white" />
                     )}
                 </Badge>
             </div>

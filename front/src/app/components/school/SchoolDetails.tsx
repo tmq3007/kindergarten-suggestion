@@ -90,12 +90,12 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
         } else if (isAdminOrSo) {
             notificationApi.error({
                 message: "Access Denied",
-                description: "You have to be a parent to request counselling! Please login or sign up to continue.",
+                description: "You have to be a parent to enroll to school! Please login or sign up to continue.",
             });
         } else {
             notificationApi.error({
                 message: "Access Denied",
-                description: "You have to be a parent to request counselling! Please login or sign up to continue.",
+                description: "You have to be a parent to enroll to school! Please login or sign up to continue.",
             });
             setIsLoginModalOpen(true);
             setIsModalOpen(false);
@@ -319,10 +319,10 @@ const SchoolDetails: FunctionComponent<SchoolDetailsProps> = ({
                                 {/* Header: Title + Action Buttons */}
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                                     <h2 className="text-4xl font-bold text-black">{name || "Unknown School"}</h2>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col items-center gap-2">
                                         <AddRequestModal schoolId={id} schoolName={name}/>
-                                        <Button  >Rate School</Button>
-                                        <Button danger onClick={showModal} >
+                                        <Button className="!w-[180px] " >Rate School</Button>
+                                        <Button type={'primary'} danger className="!w-[180px]  " onClick={showModal} >
                                             Enroll
                                         </Button>
                                         <Modal

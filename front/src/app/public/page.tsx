@@ -16,6 +16,7 @@ export default function Page() {
             {/*Preload image*/}
             <img src={background.src} alt="" style={{display: 'none'}}/>
             <div
+                id="school-search"
                 style={{
                     backgroundImage: `url(${background.src})`,
                     backgroundSize: "cover",
