@@ -141,7 +141,7 @@ export default function RequestListForm({
               pageSize={pageSize}
               total={totalElements}
               onChange={handlePageChange}
-              pageSizeOptions={["15", "20", "50", "100"]}
+              pageSizeOptions={["10", "20", "50", "100"]}
               showSizeChanger
           />
         </div>

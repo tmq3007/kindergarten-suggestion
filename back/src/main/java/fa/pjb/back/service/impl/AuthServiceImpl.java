@@ -115,7 +115,6 @@ public class AuthServiceImpl implements AuthService {
                 draft = school.getDraft();
             }
         }
-
         return LoginVO.builder()
                 .accessToken(accessToken)
                 .csrfToken(csrfToken)

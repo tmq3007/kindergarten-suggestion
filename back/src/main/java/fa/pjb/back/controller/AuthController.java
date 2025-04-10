@@ -40,7 +40,7 @@ public class AuthController {
 
         int cookieTtl = (int) (ttl + 86400);
 
-        String domain = "kindergartenshop.online";
+        String domain = "localhost";
 
         // Cookie ACCESS_TOKEN (HttpOnly, Secure, SameSite=None)
         String accessTokenCookie = "ACCESS_TOKEN=" + loginVO.accessToken()
@@ -54,33 +54,6 @@ public class AuthController {
 
         response.setHeader("Set-Cookie", accessTokenCookie);
         response.addHeader("Set-Cookie", csrfTokenCookie);
-    }
-
-    private void setForgotPasswordCookies(HttpServletResponse response, ForgotPasswordVO forgotPasswordVO) {
-        long nowInSeconds = System.currentTimeMillis() / 1000;
-        long exp = jwtHelper.extractExpirationTimestamp(forgotPasswordVO.fpToken());
-        long ttl = exp - nowInSeconds;
-
-        if (ttl <= 0) {
-            throw new JwtUnauthorizedException("Access token is expired");
-        }
-
-        int cookieTtl = (int) (ttl + 86400);
-
-        String domain = "kindergartenshop.online";
-
-        // Cookie ACCESS_TOKEN (HttpOnly, Secure, SameSite=None)
-        String forgotPasswordTokenCookie = "FORGOT_PASSWORD_TOKEN=" + forgotPasswordVO.fpToken()
-            + "; Domain=" + domain
-            + "; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=" + cookieTtl;
-
-        // Cookie CSRF_TOKEN (Secure, SameSite=None)
-        String usernameCookie = "FORGOT_PASSWORD_USERNAME=" + forgotPasswordVO.username()
-            + "; Domain=" + domain
-            + "; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=" + cookieTtl;
-
-        response.setHeader("Set-Cookie", forgotPasswordTokenCookie);
-        response.addHeader("Set-Cookie", usernameCookie);
     }
 
     @Operation(summary = "Login", description = "Login into content website")
@@ -110,12 +83,10 @@ public class AuthController {
     @Operation(summary = "Forgot password", description = "Send forgot password link to user's email")
     @PostMapping("forgot-password")
     public ApiResponse<ForgotPasswordVO> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO, HttpServletResponse response) {
-        ForgotPasswordVO forgotPasswordVO = authService.forgotPassword(forgotPasswordDTO, response);
-        setForgotPasswordCookies(response, forgotPasswordVO);
         return ApiResponse.<ForgotPasswordVO>builder()
                 .code(HttpStatus.OK.value())
                 .message("Link password reset sent successfully!")
-                .data(forgotPasswordVO)
+                .data(authService.forgotPassword(forgotPasswordDTO, response))
                 .build();
     }
 

@@ -71,6 +71,7 @@ public class SecurityConfig {
 
 
                                 .anyRequest().authenticated()
+//                                .anyRequest().permitAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -82,7 +83,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://kinder-taupe.vercel.app/", "https://kss.kindergartenshop.online"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://kinder-taupe.vercel.app/"));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Collections.singletonList("*"));

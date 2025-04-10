@@ -3,7 +3,6 @@ import { EditOutlined, SwitcherOutlined} from "@ant-design/icons";
 import { Popconfirm, Space } from "antd";
 import Link from "antd/lib/typography/Link";
 import {MessageInstance} from "antd/lib/message/interface";
-import {IoMdPower} from "react-icons/io";
 
 interface UserActionButtonsProps {
     id: number | string;
@@ -37,7 +36,7 @@ function UserActionButtons({ id, onStatusToggle ,triggerStatus,message, hasEditB
                 okText="Yes"
                 cancelText="No"
             >
-                <IoMdPower style={{ fontSize: "18px", color: "red" }} />
+                <SwitcherOutlined style={{ fontSize: "18px", color: "red" }} />
             </Popconfirm>
         </Space>
     );

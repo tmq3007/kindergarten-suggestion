@@ -65,9 +65,9 @@ access-token-exp: 600000
 refresh-token-exp: 60000000
 csrf-token-exp: 600000
 forgot-password-token-exp: 300000
-reset-password-link-header: 'https://kss.kindergartenshop.online/forgot-password/reset-password'
-school-detailed-link: 'https://kss.kindergartenshop.online/public/school-owner'
-school-detail-link-admin: 'https://kss.kindergartenshop.online/admin/management/school/school-detail/'
+reset-password-link-header: 'http://localhost:3000/forgot-password/reset-password'
+school-detailed-link: 'http://localhost:3000/public/school-owner'
+school-detail-link-admin: 'http://localhost:3000/admin/management/school/school-detail/'
 
 
 

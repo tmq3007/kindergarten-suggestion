@@ -7,7 +7,7 @@ import {jwtDecode, JwtPayload} from "jwt-decode";
 import setClientCookie from "@/lib/util/setClientCookie";
 
 // BASE_URL của server
-export const BASE_URL = 'https://kindergartenshop.online/api';
+export const BASE_URL = 'http://localhost:8080/api';
 
 export const baseQuery = fetchBaseQuery({
     baseUrl: BASE_URL,
@@ -20,7 +20,6 @@ export const baseQuery = fetchBaseQuery({
         // Gắn CSRF token vào Header
         if (csrfToken) {
             headers.set('X-Csrf-Token', csrfToken);
-            console.log("csrf", csrfToken)
         }
         headers.set('Accept', 'application/json');
         return headers;
@@ -33,7 +32,6 @@ export const baseQueryWithReauth = async (
     extraOptions: FetchBaseQueryMeta | any
 ) => {
     let result = await baseQuery(args, api, extraOptions);
-    console.log("Response status:", result.error ? result.error.status : result.meta);
     // Nếu lỗi 403 Unauthorized thì gửi lại request bằng PUT method
     if (
         result.error &&
@@ -41,7 +39,6 @@ export const baseQueryWithReauth = async (
         (result.error as CustomFetchBaseQueryError).data?.code !== 1200 &&
         (result.error as CustomFetchBaseQueryError).data?.message !== "You don't have permission to manage this request"
     ) {
-        console.log("Error 403 detected, attempting refresh...");
         interface RefreshResponse {
             code: number;
             data: {
@@ -60,7 +57,7 @@ export const baseQueryWithReauth = async (
             api,
             extraOptions,
         ) as { data: RefreshResponse };
-        console.log("Refresh result:", refreshResult.data ? "Success" : "Failed");
+
         if (refreshResult.data) {
             const {accessToken, csrfToken} = refreshResult.data.data;
             // Save csrfToken in client Cookie
@@ -81,8 +78,6 @@ export const baseQueryWithReauth = async (
                 extraOptions,
             );
         } else {
-            console.log("Refresh failed, triggering logout...");
-            console.log("Loi ne" )
             // Nếu không thể refresh token thì đăng xuất người dùng
             await fetch('/api/logout', {
                 method: 'PUT',

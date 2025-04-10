@@ -152,8 +152,7 @@ export default function ReminderListForm({
               total={totalElements}
               pageSize={pageSize}
               onChange={handlePageChange}
-              pageSizeOptions={["15", "20", "50", "100"]}
-              showSizeChanger
+              pageSizeOptions={[10, 30, 50, 100]}
           />
         </div>
       </div>
