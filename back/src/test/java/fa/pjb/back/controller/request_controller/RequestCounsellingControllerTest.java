@@ -244,10 +244,10 @@ class RequestCounsellingControllerTest {
         RequestCounsellingDTO minimumRequest = new RequestCounsellingDTO(
                 null, // userId can be null
                 1,
-                "",   // empty inquiry is acceptable
+                "a",
                 (byte) 0,
                 "a@b.c", // minimum valid email
-                "1",     // minimum phone
+                "1234",     // minimum phone
                 "A",     // minimum name
                 LocalDateTime.now().plusDays(1)
         );
@@ -258,7 +258,7 @@ class RequestCounsellingControllerTest {
                 .inquiry("")
                 .status((byte) 0)
                 .email("a@b.c")
-                .phone("1")
+                .phone("1234")
                 .name("A")
                 .address("123 Test Street")
                 .dueDate(LocalDateTime.now().plusDays(1))
