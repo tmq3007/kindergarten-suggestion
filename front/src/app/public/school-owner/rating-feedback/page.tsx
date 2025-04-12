@@ -38,7 +38,10 @@ import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
 import {REVIEW_STATUS} from "@/lib/constants";
 import {MakeReportLink} from "@/app/components/review/ReviewButton";
 import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
-import {usePathname} from "next/navigation"; // Replace useRouter with usePathname
+import {usePathname} from "next/navigation";
+import ReviewItem from "@/app/components/review/ReviewComponent";
+import {useSelector} from "react-redux";
+import {RootState} from "@/redux/store"; // Replace useRouter with usePathname
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -585,81 +588,25 @@ const RatingsDashboard = () => {
                             }
                             className="w-full"
                         >
-                            <List
-                                dataSource={displayedReviews}
-                                renderItem={(item) => (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        whileHover={{
-                                            scale: 1.01,
-                                            boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
-                                            transition: { duration: 0.3, ease: "easeInOut" },
-                                        }}
-                                    >
-                                        <List.Item className="!px-2 sm:!px-3 md:!px-4 lg:!px-5 flex flex-col lg:flex-row lg:items-center">
-                                            <div className="flex items-center mb-2 lg:mb-0">
-                                                <Avatar
-                                                    src={item.parentImage}
-                                                    className="bg-blue-500 mr-1 sm:mr-2 md:mr-3"
-                                                    size={{ xs: 24, sm: 28, md: 32, lg: 36, xl: 40 }}
-                                                >
-                                                    {item.parentImage || "A"}
-                                                </Avatar>
-                                                <div className="flex-1">
-                                                    <Text strong className="text-sm sm:text-base md:text-lg line-clamp-2">
-                                                        {item.feedback || "No feedback provided"}
-                                                    </Text>
-                                                    <div className="flex flex-col gap-0.5 sm:gap-1 md:gap-1.5 mt-1">
-                                                        <Text type="secondary" className="text-xs sm:text-sm">
-                                                            {item.parentName || "Anonymous"}
-                                                        </Text>
-                                                        <div className="flex">
-                                                            {[...Array(Math.floor(item.reviewAverage || 0))].map(
-                                                                (_, i) => (
-                                                                    <StarFilled
-                                                                        key={i}
-                                                                        className="text-yellow-400 text-xs sm:text-sm"
-                                                                    />
-                                                                )
-                                                            )}
-                                                        </div>
-                                                        <Text type="secondary" className="text-xs sm:text-sm">
-                                                            {item.receiveDate.isValid()
-                                                                ? item.receiveDate.format(
-                                                                    window.innerWidth < 640 ? "D MMM YYYY" : "D MMMM YYYY"
-                                                                )
-                                                                : "Date unavailable"}
-                                                        </Text>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-1 sm:gap-2 md:gap-3 lg:ml-auto pr-1 sm:pr-2 md:pr-3">
-                                                {(item.status === REVIEW_STATUS.APPROVED) && (
-                                                    <MakeReportLink
-                                                        onFetching={isFetching && loadingReviewId === item.id}
-                                                        onClick={() => openModal({ id: item.id, reason: item.report })}
-                                                    />
-                                                )}
-                                                {(item.status === REVIEW_STATUS.REJECTED) && (
-                                                    <Tooltip open={false} placement="topRight" title={item.report} color="red" key="rejected-tooltip">
-                                                                    <span className="text-xs text-gray-500 cursor-default">
-                                                                        This review will be hidden
-                                                                    </span>
-                                                    </Tooltip>
-                                                )}
-                                                {(item.status === REVIEW_STATUS.PENDING) && (
-                                                    <Tooltip open={false} placement="topRight" title={item.report} color="red" key="pending-tooltip">
-                                                                    <span className="text-xs text-gray-500 cursor-default">
-                                                                        This review is waiting for confirm by admin
-                                                                    </span>
-                                                    </Tooltip>
-                                                )}
-                                            </div>
-                                        </List.Item>
-                                    </motion.div>
-                                )}
-                            />
+                            <div className="space-y-4">
+                                {displayedReviews.map((item) => {
+                                    const reviewVO: ReviewVO = {
+                                        ...item,
+                                        receiveDate: item.receiveDate.toISOString()
+                                    };
+                                    return (
+                                        <ReviewItem
+                                            key={item.id}
+                                            review={reviewVO}
+                                            isFetching={isFetching}
+                                            loadingReviewId={loadingReviewId}
+                                            onReportClick={openModal}
+                                            userRole={"ROLE_SCHOOL_OWNER"}
+                                        />
+                                    );
+                                })}
+                            </div>
+
                             {filteredReviews.length > 5 && (
                                 <div className="text-center mt-2 sm:mt-3 md:mt-4">
                                     <Button type="link" onClick={() => setShowAll(!showAll)}>
@@ -667,6 +614,7 @@ const RatingsDashboard = () => {
                                     </Button>
                                 </div>
                             )}
+
                             <SchoolOwnerReportModal
                                 open={isModalOpen}
                                 onSubmit={handleSubmitReport}

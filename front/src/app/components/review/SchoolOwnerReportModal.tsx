@@ -60,7 +60,7 @@ const SchoolOwnerReportModal: React.FC<SchoolOwnerReportModalProps> = ({
             ]}
             onCancel={handleCancel}
         >
-            <div className="mb-4">
+            <div className="mb-6">
                 <TextArea
                     rows={4}
                     value={reportContent}
@@ -68,6 +68,8 @@ const SchoolOwnerReportModal: React.FC<SchoolOwnerReportModalProps> = ({
                     placeholder="Enter your report content here..."
                     disabled={loading}
                     className="w-full"
+                    maxLength={200}
+                    showCount
                 />
             </div>
         </Modal>

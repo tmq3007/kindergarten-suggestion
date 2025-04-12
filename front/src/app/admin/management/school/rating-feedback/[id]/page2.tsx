@@ -43,7 +43,6 @@ import NoData from "@/app/components/review/NoData";
 import {REVIEW_STATUS} from "@/lib/constants";
 import AdminReportModal from "@/app/components/review/AdminReportModal";
 import {  ViewReportLink} from "@/app/components/review/ReviewButton";
-import ReviewItem from "@/app/components/review/ReviewComponent";
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
@@ -601,23 +600,78 @@ const RatingsDashboard = () => {
                                 />
                             }
                         >
-                            {displayedReviews.map((item) => {
-                                const reviewVO: ReviewVO = {
-                                    ...item,
-                                    receiveDate: item.receiveDate.toISOString() // Chuyển Dayjs thành string
-                                };
+                            <List
+                                dataSource={displayedReviews.slice(0, showAll ? displayedReviews.length : 5)}
+                                renderItem={(item) => (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        whileHover={{
+                                            scale: 1.01,
+                                            boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
+                                            transition: { duration: 0.3, ease: "easeInOut" },
+                                        }}
+                                        className="p-2 md:p-3"
+                                    >
+                                        <List.Item className="!px-2 sm:!px-3">
+                                            <List.Item.Meta
+                                                avatar={
+                                                    <Avatar src={item.parentImage} className="bg-blue-500">
+                                                        {item.parentImage || "A"}
+                                                    </Avatar>
+                                                }
+                                                title={
+                                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                                        <Text strong className="text-sm sm:text-base">
+                                                            {item.feedback || "No feedback provided"}
+                                                        </Text>
+                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                                                            {item.report && item.status === REVIEW_STATUS.PENDING && (
+                                                                <ViewReportLink
+                                                                    onClick={() => openModal({ id: item.id, report: item.report })}
+                                                                    disabled={false}
+                                                                    onFetching={isFetching && loadingReviewId === item.id}
+                                                                />
+                                                            )}
 
-                                return (
-                                    <ReviewItem
-                                        key={item.id}
-                                        review={reviewVO} // Truyền đối tượng đã chuyển đổi
-                                        isFetching={isFetching}
-                                        loadingReviewId={loadingReviewId}
-                                        onViewReportClick={openModal}
-                                        userRole="ROLE_ADMIN"
-                                    />
-                                );
-                            })}
+                                                            {(item.status === REVIEW_STATUS.REJECTED) && (
+                                                                <Tooltip placement="topRight" title={item.report} color="gray" key="rejected-tooltip">
+                                                                    <span className="text-xs text-gray-500 cursor-default">
+                                                                        This review will be hidden
+                                                                    </span>
+                                                                </Tooltip>
+                                                            )}
+
+                                                        </div>
+                                                    </div>
+                                                }
+                                                description={
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <Text type="secondary">{item.parentName || "Anonymous"}</Text>
+                                                            <div className="flex">
+                                                                {[...Array(Math.floor(item.reviewAverage || 0))].map(
+                                                                    (_, i) => (
+                                                                        <StarFilled
+                                                                            key={i}
+                                                                            className="text-yellow-400 text-sm"
+                                                                        />
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                            <Text type="secondary" className="text-xs sm:text-sm">
+                                                                {item.receiveDate.isValid()
+                                                                    ? item.receiveDate.format("D MMMM YYYY")
+                                                                    : "Date unavailable"}
+                                                            </Text>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            />
+                                        </List.Item>
+                                    </motion.div>
+                                )}
+                            />
                             {filteredReviews.length > 5 && (
                                 <div className="text-center mt-4">
                                     <Button

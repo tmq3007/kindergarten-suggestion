@@ -193,7 +193,7 @@ const NotificationTooltip = () => {
             title={isSchoolOwner ? schoolOwnerTooltipContent : isAdmin ? adminTooltipContent : null}
             placement="bottomRight"
             color="white"
-            trigger="click"
+            trigger="hover"
             overlayInnerStyle={{ color: '#000' }}
             className="z-0"
         >

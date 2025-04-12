@@ -1,57 +1,47 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
-import {Card, List, Typography, Avatar, Button, DatePicker, Select, Tooltip} from "antd";
-import { StarFilled, SyncOutlined } from "@ant-design/icons";
-import "antd/dist/reset.css";
-import { motion } from "framer-motion";
+import React, {useEffect, useMemo, useState} from "react";
+import {Avatar, Button, Card, DatePicker, List, message, Select, Tooltip, Typography} from "antd";
 import {
+    BookOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    FileTextOutlined,
+    HomeOutlined,
+    MedicineBoxOutlined,
+    StarFilled,
+    StarOutlined,
+    SyncOutlined,
+    TeamOutlined,
+    TrophyOutlined
+} from "@ant-design/icons";
+import "antd/dist/reset.css";
+import {motion} from "framer-motion";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
     Cell,
     Pie,
     PieChart,
     ResponsiveContainer,
-    BarChart,
-    Bar,
+    Tooltip as RechartsTooltip,
     XAxis,
     YAxis,
-    CartesianGrid,
-    Tooltip as RechartsTooltip,
 } from "recharts";
-import dayjs, { Dayjs } from "dayjs";
-import {
-    ReviewAcceptDenyDTO,
-    ReviewVO,
-    useGetReviewBySchoolIdQuery,
-    useReportDecisionMutation
-} from "@/redux/services/reviewApi";
-import {
-    FileTextOutlined,
-    CheckCircleOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    StarOutlined,
-    BookOutlined,
-    HomeOutlined,
-    TrophyOutlined,
-    TeamOutlined,
-    MedicineBoxOutlined,
-} from "@ant-design/icons";
-import {useParams, useSearchParams} from "next/navigation";
+import dayjs, {Dayjs} from "dayjs";
+import {ReviewVO, useGetReviewBySchoolOwnerQuery, useReportReviewMutation} from "@/redux/services/reviewApi";
+import NoData from "../../../components/review/NoData";
 import MyBreadcrumb from "@/app/components/common/MyBreadcrumb";
 import SchoolManageTitle from "@/app/components/school/SchoolManageTitle";
 import RatingSkeleton from "@/app/components/skeleton/RatingSkeleton";
-import NoData from "@/app/components/review/NoData";
 import {REVIEW_STATUS} from "@/lib/constants";
-import AdminReportModal from "@/app/components/review/AdminReportModal";
-import {  ViewReportLink} from "@/app/components/review/ReviewButton";
-import ReviewItem from "@/app/components/review/ReviewComponent";
+import {MakeReportLink} from "@/app/components/review/ReviewButton";
+import SchoolOwnerReportModal from "@/app/components/review/SchoolOwnerReportModal";
+import {usePathname} from "next/navigation"; // Replace useRouter with usePathname
+
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
-
-
-interface Report {
-    id: number;
-    report: string | undefined;
-}
 
 interface ReviewWithDayjs extends Omit<ReviewVO, "receiveDate"> {
     receiveDate: Dayjs;
@@ -61,79 +51,85 @@ interface EnhancedReview extends ReviewWithDayjs {
     reviewAverage: number;
 }
 
-const RatingsDashboard = () => {
-    const params = useParams();
-    const schoolId = Number(params.id as string);
-    const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+interface QueryParams {
+    fromDate?: string;
+    toDate?: string;
+    status?:string
+}
 
+interface Report {
+    id: number;
+    reason: string | undefined;
+}
+const RatingsDashboard = () => {
+    const pathname = usePathname(); // Get the current pathname
+    const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
     const [filteredReviews, setFilteredReviews] = useState<EnhancedReview[]>([]);
     const [showAll, setShowAll] = useState(false);
-
-    const searchParams = useSearchParams();
-    const fromSource = searchParams.get("from");
+    const [queryParams, setQueryParams] = useState<QueryParams>({});
+    const [reviews, setReviews] = useState<EnhancedReview[]>([]);
+    const [isNavigating, setIsNavigating] = useState(false);
     const initialStatus = "";
     const [statusFilter, setStatusFilter] = useState<string | undefined>(
-        fromSource === "notification" ? "PENDING" : initialStatus || undefined
+        initialStatus || undefined
     );
-    const [visibleModal, setVisibleModal] = useState(false);
+
+    const { data, isLoading, isFetching, error, refetch } = useGetReviewBySchoolOwnerQuery(queryParams);
+
+    useEffect(() => {
+        refetch();
+    }, [queryParams, refetch]);
+
+    useEffect(() => {
+        if (pathname === "/public/school-owner/rating-feedback") {
+            setIsNavigating(true);
+            refetch().finally(() => setIsNavigating(false)); // Reset after refetch completes
+        }
+    }, [pathname, refetch]);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-    const [reportDecision, { isLoading: isDecisionLoading }] = useReportDecisionMutation();
+
+    const [reportReview, { isLoading: isReporting }] = useReportReviewMutation();
+
     const [loadingReviewId, setLoadingReviewId] = useState<number | null>(null);
 
-    const closeModal = () => {
-        setVisibleModal(false);
-        setSelectedReport(null);
-    };
+    const handleSubmitReport = async (reportContent: string, reviewId: number | null) => {
+        if (!reviewId || !reportContent) return;
 
-    const handleAccept = async () => {
-        if (selectedReport && 'id' in selectedReport) {
-            try {
-                const dto: ReviewAcceptDenyDTO = {
-                    id: selectedReport.id,
-                    decision: true
-                };
-                await reportDecision(dto).unwrap();
-                console.log("Report accepted successfully");
-                setLoadingReviewId( selectedReport.id)
-                setVisibleModal(false);
-                setSelectedReport(null);
-                // Optionally refetch the reviews after successful decision
-                refetch();
-            } catch (error) {
-                console.error("Failed to accept report:", error);
-            }
+        try {
+            setLoadingReviewId(reviewId); // Set the specific review ID that's loading
+            const reportDTO = {
+                id: reviewId,
+                reason: reportContent
+            };
+            await reportReview(reportDTO).unwrap();
+            message.success('Report submitted successfully');
+            setIsModalOpen(false);
+            setSelectedReport(null);
+            refetch();
+        } catch (error) {
+            message.error('Failed to submit report');
+            console.error('Report submission failed:', error);
         }
     };
 
-    const handleDeny = async () => {
-        if (selectedReport && 'id' in selectedReport) {
-            try {
-                // @ts-ignore
-                const dto: ReviewAcceptDenyDTO = {
-                    id: selectedReport.id,
-                    decision: false
-                };
-                setLoadingReviewId( selectedReport.id)
-                await reportDecision(dto).unwrap();
-                console.log("Report denied successfully");
-                setVisibleModal(false);
-                setSelectedReport(null);
-                refetch();
-            } catch (error) {
-                console.error("Failed to deny report:", error);
-            }
+    useEffect(() => {
+        if (!isFetching) {
+            setLoadingReviewId(null);
         }
-    };
+    }, [isFetching]);
 
-    const openModal = (report: { id: number; report: string | undefined } | null) => {
+    const openModal = (report: { id: number; reason: string | undefined } | null) => {
         setSelectedReport(report);
-        setVisibleModal(true);
+        setIsModalOpen(true);
     };
 
-    // Memoize query parameters for the API call
-    const queryParams = useMemo(() => {
-        const params: { schoolId: number; fromDate?: string; toDate?: string; status?: string } = { schoolId };
-        if (dateRange && dateRange[0] && dateRange[1]) {
+    const handleCancelModal = () => setIsModalOpen(false);
+
+    useEffect(() => {
+        const params: QueryParams = {};
+        if (dateRange?.[0] && dateRange?.[1]) {
             // Convert to full ISO datetime
             params.fromDate = dateRange[0].startOf('day').toISOString();
             params.toDate = dateRange[1].endOf('day').toISOString();
@@ -141,26 +137,16 @@ const RatingsDashboard = () => {
         if (statusFilter) {
             params.status = statusFilter;
         }
-        return params;
-    }, [schoolId, dateRange, statusFilter]);
-
-
-
-    const { data, isLoading, error,isFetching, refetch } = useGetReviewBySchoolIdQuery(queryParams);
+        setQueryParams(params);
+    }, [dateRange, statusFilter]);
 
     useEffect(() => {
         refetch();
     }, [queryParams, refetch]);
 
     useEffect(() => {
-        if (!isFetching) {
-            setLoadingReviewId(null);
-        }
-    }, [isFetching]);
-    // Transform reviews data to use Dayjs for receiveDate and calculate reviewAverage
-    const reviews: EnhancedReview[] = useMemo(
-        () =>
-            data?.data?.map((review) => ({
+        if (data?.data) {
+            const transformedReviews = data.data.map((review) => ({
                 ...review,
                 receiveDate: dayjs(review.receiveDate).isValid() ? dayjs(review.receiveDate) : dayjs(),
                 reviewAverage: (
@@ -170,26 +156,17 @@ const RatingsDashboard = () => {
                     (review.teacherAndStaff || 0) +
                     (review.hygieneAndNutrition || 0)
                 ) / 5,
-            })) || [],
-        [data]
-    );
+            }));
+            const sortedReviews = [...transformedReviews].sort((a, b) => b.reviewAverage - a.reviewAverage);
+            setReviews(transformedReviews);
+            setFilteredReviews(sortedReviews);
+        } else {
+            setReviews([]);
+            setFilteredReviews([]);
+        }
+    }, [data]);
 
-    console.log("test",reviews[0]?.status);
-
-    // Sort reviews by reviewAverage in descending order
-    const sortedReviews = useMemo(() => {
-        return [...reviews].sort((a, b) => b.reviewAverage - a.reviewAverage);
-    }, [reviews]);
-
-    // Handle date range change
-    const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
-        setDateRange(dates);
-    };
-
-    // Handle status filter change
-    const handleStatusChange = (value: string | undefined) => {
-        setStatusFilter(value);
-    };
+    const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => setDateRange(dates);
 
     // Handle refresh button click
     const handleRefresh = () => {
@@ -198,7 +175,10 @@ const RatingsDashboard = () => {
         refetch();
     };
 
-    // Calculate metrics
+    const handleStatusChange = (value: string | undefined) => {
+        setStatusFilter(value);
+    };
+
     const metrics = useMemo(() => {
         if (!reviews.length) {
             return {
@@ -302,7 +282,7 @@ const RatingsDashboard = () => {
         };
     }, [reviews]);
 
-    // Pie chart data
+    // Sử dụng useMemo để tính toán pieData
     const pieData = useMemo(
         () => [
             { name: "Learning Program", value: metrics.totalLearningProgram },
@@ -314,7 +294,8 @@ const RatingsDashboard = () => {
         [metrics]
     );
 
-    // Sử dụng useMemo để tính toán barData với 3 tháng gần nhất
+
+// Sử dụng useMemo để tính toán barData với 3 tháng gần nhất
     const barData = useMemo(() => {
         // Lấy ngày hiện tại
         const currentDate = dayjs();
@@ -339,16 +320,11 @@ const RatingsDashboard = () => {
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
-    // Update filtered reviews when reviews change
-    useEffect(() => {
-        setFilteredReviews(sortedReviews);
-    }, [sortedReviews]);
-
-    // Filter reviews by rating
     const filterFeedbackByRate = (selectedRates: string[]) => {
+        const sortedReviews = [...reviews].sort((a, b) => b.reviewAverage - a.reviewAverage);
         setFilteredReviews(
             selectedRates.length === 0
-                ? sortedReviews // If no rates selected, show all sorted reviews
+                ? sortedReviews
                 : sortedReviews.filter((review) => {
                     const reviewRating = Math.round(review.reviewAverage);
                     return selectedRates.includes(reviewRating.toString());
@@ -356,24 +332,22 @@ const RatingsDashboard = () => {
         );
     };
 
-    // Limit displayed reviews based on showAll state
-    const displayedReviews = showAll ? filteredReviews : filteredReviews.slice(0, 5);
+    const displayedReviews = useMemo(
+        () => (showAll ? filteredReviews : filteredReviews.slice(0, 5)),
+        [filteredReviews, showAll]
+    );
 
-    if (isLoading) {
-        return <RatingSkeleton />;
-    }
+    if (isLoading || isNavigating) return <RatingSkeleton />;
 
     return (
-        <div className={'pt-2'}>
+        <div className="pt-2 sm:px-6 lg:px-8">
             <MyBreadcrumb
                 paths={[
-                    { label: "School Management", href: "/admin/management/school/school-list" },
-                    { label: "School List", href: "/admin/management/school/school-list" },
-                    { label: "School Detail", href: `/admin/management/school/school-detail/${schoolId}` },
+                    { label: "My School", href: "/public/school-owner" },
                     { label: "Ratings & Feedback" },
                 ]}
             />
-            <SchoolManageTitle title={"Ratings & Feedback"} />
+            <SchoolManageTitle title="Ratings & Feedback" />
 
             <div className="min-h-screen p-2">
                 <motion.div
@@ -386,7 +360,7 @@ const RatingsDashboard = () => {
                     className="flex gap-4 mb-8 justify-center relative"
                 >
                     {isFetching && (
-                        <div className="absolute inset-0  bg-opacity-70 flex items-center justify-center z-10">
+                        <div className="absolute inset-0 bg-opacity-70 flex items-center justify-center z-10">
                             <SyncOutlined spin className="text-2xl text-blue-500" />
                         </div>
                     )}
@@ -423,18 +397,27 @@ const RatingsDashboard = () => {
                 ) : (
                     <>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
-                                <Card title="Rating Distribution">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <Card title="Rating Distribution" className="w-full">
                                     <ResponsiveContainer width="100%" height={300}>
                                         <PieChart>
                                             <Pie
                                                 data={pieData}
                                                 dataKey="value"
-                                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                label={({ name, percent }) =>
+                                                    `${name}: ${(percent * 100).toFixed(0)}%`
+                                                }
                                                 outerRadius={80}
                                             >
                                                 {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={COLORS[index % COLORS.length]}
+                                                    />
                                                 ))}
                                             </Pie>
                                             <RechartsTooltip />
@@ -443,19 +426,19 @@ const RatingsDashboard = () => {
                                 </Card>
                             </motion.div>
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                whileHover={{ scale: 1.02 }}
+                                initial={{opacity: 0, y: 20}}
+                                animate={{opacity: 1, y: 0}}
+                                whileHover={{scale: 1.02}}
                             >
                                 <Card title="Monthly Reviews" className="w-full">
                                     {barData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height={300}>
                                             <BarChart data={barData}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="month" />
-                                                <YAxis />
-                                                <RechartsTooltip />
-                                                <Bar dataKey="reviews" fill="#8884d8" />
+                                                <CartesianGrid strokeDasharray="3 3"/>
+                                                <XAxis dataKey="month"/>
+                                                <YAxis/>
+                                                <RechartsTooltip/>
+                                                <Bar dataKey="reviews" fill="#8884d8"/>
                                             </BarChart>
                                         </ResponsiveContainer>
                                     ) : (
@@ -597,55 +580,105 @@ const RatingsDashboard = () => {
                                         value: n.toString(),
                                         label: `${n} Star${n !== 1 ? "s" : ""}`,
                                     }))}
-                                    className="w-full sm:w-48"
+                                    className="w-full sm:w-40 md:w-48 lg:w-56 xl:w-64"
                                 />
                             }
+                            className="w-full"
                         >
-                            {displayedReviews.map((item) => {
-                                const reviewVO: ReviewVO = {
-                                    ...item,
-                                    receiveDate: item.receiveDate.toISOString() // Chuyển Dayjs thành string
-                                };
-
-                                return (
-                                    <ReviewItem
-                                        key={item.id}
-                                        review={reviewVO} // Truyền đối tượng đã chuyển đổi
-                                        isFetching={isFetching}
-                                        loadingReviewId={loadingReviewId}
-                                        onViewReportClick={openModal}
-                                        userRole="ROLE_ADMIN"
-                                    />
-                                );
-                            })}
-                            {filteredReviews.length > 5 && (
-                                <div className="text-center mt-4">
-                                    <Button
-                                        type="link"
-                                        onClick={() => setShowAll(!showAll)}
-                                        className={`${
-                                            filteredReviews.length <= 5 ? "blur-sm opacity-50 cursor-not-allowed" : "cursor-pointer"
-                                        }`}
-                                        disabled={filteredReviews.length <= 5}
+                            <List
+                                dataSource={displayedReviews}
+                                renderItem={(item) => (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        whileHover={{
+                                            scale: 1.01,
+                                            boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.15)",
+                                            transition: { duration: 0.3, ease: "easeInOut" },
+                                        }}
                                     >
+                                        <List.Item className="!px-2 sm:!px-3 md:!px-4 lg:!px-5 flex flex-col lg:flex-row lg:items-center">
+                                            <div className="flex items-center mb-2 lg:mb-0">
+                                                <Avatar
+                                                    src={item.parentImage}
+                                                    className="bg-blue-500 mr-1 sm:mr-2 md:mr-3"
+                                                    size={{ xs: 24, sm: 28, md: 32, lg: 36, xl: 40 }}
+                                                >
+                                                    {item.parentImage || "A"}
+                                                </Avatar>
+                                                <div className="flex-1">
+                                                    <Text strong className="text-sm sm:text-base md:text-lg line-clamp-2">
+                                                        {item.feedback || "No feedback provided"}
+                                                    </Text>
+                                                    <div className="flex flex-col gap-0.5 sm:gap-1 md:gap-1.5 mt-1">
+                                                        <Text type="secondary" className="text-xs sm:text-sm">
+                                                            {item.parentName || "Anonymous"}
+                                                        </Text>
+                                                        <div className="flex">
+                                                            {[...Array(Math.floor(item.reviewAverage || 0))].map(
+                                                                (_, i) => (
+                                                                    <StarFilled
+                                                                        key={i}
+                                                                        className="text-yellow-400 text-xs sm:text-sm"
+                                                                    />
+                                                                )
+                                                            )}
+                                                        </div>
+                                                        <Text type="secondary" className="text-xs sm:text-sm">
+                                                            {item.receiveDate.isValid()
+                                                                ? item.receiveDate.format(
+                                                                    window.innerWidth < 640 ? "D MMM YYYY" : "D MMMM YYYY"
+                                                                )
+                                                                : "Date unavailable"}
+                                                        </Text>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-1 sm:gap-2 md:gap-3 lg:ml-auto pr-1 sm:pr-2 md:pr-3">
+                                                {(item.status === REVIEW_STATUS.APPROVED) && (
+                                                    <MakeReportLink
+                                                        onFetching={isFetching && loadingReviewId === item.id}
+                                                        onClick={() => openModal({ id: item.id, reason: item.report })}
+                                                    />
+                                                )}
+                                                {(item.status === REVIEW_STATUS.REJECTED) && (
+                                                    <Tooltip open={false} placement="topRight" title={item.report} color="red" key="rejected-tooltip">
+                                                                    <span className="text-xs text-gray-500 cursor-default">
+                                                                        This review will be hidden
+                                                                    </span>
+                                                    </Tooltip>
+                                                )}
+                                                {(item.status === REVIEW_STATUS.PENDING) && (
+                                                    <Tooltip open={false} placement="topRight" title={item.report} color="red" key="pending-tooltip">
+                                                                    <span className="text-xs text-gray-500 cursor-default">
+                                                                        This review is waiting for confirm by admin
+                                                                    </span>
+                                                    </Tooltip>
+                                                )}
+                                            </div>
+                                        </List.Item>
+                                    </motion.div>
+                                )}
+                            />
+                            {filteredReviews.length > 5 && (
+                                <div className="text-center mt-2 sm:mt-3 md:mt-4">
+                                    <Button type="link" onClick={() => setShowAll(!showAll)}>
                                         {showAll ? "Show Less" : `View More (${filteredReviews.length - 5})`}
                                     </Button>
                                 </div>
                             )}
-                            <AdminReportModal
-                                open={visibleModal}
-                                onClose={closeModal}
-                                onAccept={handleAccept}
-                                onDeny={handleDeny}
-                                reportContent={selectedReport?.report}
+                            <SchoolOwnerReportModal
+                                open={isModalOpen}
+                                onSubmit={handleSubmitReport}
+                                onCancel={handleCancelModal}
+                                reviewId={selectedReport?.id || null}
+                                onReporting={isReporting}
                             />
                         </Card>
-
                     </>
                 )}
             </div>
         </div>
-
     );
 };
 

@@ -195,16 +195,17 @@ export default function UserDropdown({username}: UserDropdownProps) {
                      title={
                         <Menu
                             items={items}
-
+                            className="!border-none"
                         />
                     }
                     placement="bottomRight"
-                     trigger="click"
+                     trigger="hover"
                     color="white"
                     overlayInnerStyle={{
-                        width: '230px', // hoặc lớn hơn nếu bạn muốn
+                        width: '230px',
                     }}
-                 >
+                     overlayStyle={{ boxShadow: 'none' }}
+                >
                     <div onClick={() => setIsDropdownVisible(true)}>
                         <Space>
                             <UserOutlined className="text-white text-sm md:text-lg"/>

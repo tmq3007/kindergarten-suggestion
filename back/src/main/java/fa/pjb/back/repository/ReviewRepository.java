@@ -41,6 +41,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "AND (:fromDate IS NULL OR r.receiveDate >= :fromDate) " +
             "AND (:toDate IS NULL OR r.receiveDate <= :toDate) " +
             "AND (s.status != 6 )" +
+            "AND (s.status != 0)" +
             "AND (:status IS NULL OR r.status = :status) " +
             "ORDER BY r.receiveDate DESC")
     List<Review> findAllBySchoolIdWithDateRangeSO(
@@ -53,7 +54,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
             "WHERE (r.learningProgram + r.facilitiesAndUtilities + r.extracurricularActivities + " +
             "r.teacherAndStaff + r.hygieneAndNutrition) / 5.0 = 5 " +
             "AND r.feedback IS NOT NULL " +
-            "AND r.status = 0 " +
+            "AND r.status IN (0, 2)  " +
             "ORDER BY r.receiveDate DESC")
     List<Review> getTop4RecentFiveStarFeedbacks(Pageable pageable);
 

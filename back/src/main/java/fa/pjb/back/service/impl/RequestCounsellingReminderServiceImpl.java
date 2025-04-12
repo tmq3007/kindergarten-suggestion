@@ -73,7 +73,7 @@ public class RequestCounsellingReminderServiceImpl implements RequestCounselling
     }
 
     // Runs every day at 9:00 AM
-    @Scheduled(cron = "0 50 10 * * ?")
+    @Scheduled(cron = "0 16 20 * * ?")
     @Override
     @Transactional(readOnly = true)
     public void checkDueDateAndSendEmail() {

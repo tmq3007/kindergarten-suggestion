@@ -172,7 +172,7 @@ const RequestCounsellingModal: React.FC<Props> = ({ schoolId, schoolName }) => {
                         label="Inquiry"
                         rules={[{ required: true, message: "Please input your inquiry" }]}
                     >
-                        <Input.TextArea rows={3} className="w-full" />
+                        <Input.TextArea maxLength={400} showCount rows={5} className="w-full" />
                     </Form.Item>
 
                     <div className="text-center text-xs sm:text-sm text-gray-500">
